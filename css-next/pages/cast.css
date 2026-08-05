@@ -158,6 +158,13 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-suit { width: 36px; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(2) { width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(n+3):nth-child(-n+6) { width: 36px; min-width: 36px; max-width: 36px; padding-inline: 1px; text-align: center; }
+#tab-session .panel-ability { border-color: #5fe7ff; box-shadow: inset 0 3px 0 rgb(95 231 255 / 72%); }
+#tab-session .panel-skills { border-color: #82f2b0; box-shadow: inset 0 3px 0 rgb(130 242 176 / 72%); }
+#tab-session .panel-combos { border-color: #f7c76e; box-shadow: inset 0 3px 0 rgb(247 199 110 / 72%); }
+#tab-session .panel-ability > .data-panel__header { background: linear-gradient(90deg, rgb(46 167 199 / 22%), transparent); }
+#tab-session .panel-skills > .data-panel__header { background: linear-gradient(90deg, rgb(56 178 112 / 22%), transparent); }
+#tab-session .panel-combos > .data-panel__header { background: linear-gradient(90deg, rgb(209 142 44 / 22%), transparent); }
+#outfit-container .panel-outfits { border-color: #d998ff; box-shadow: inset 0 3px 0 rgb(217 152 255 / 68%); }
 .panel-style-skills { margin-top: 16px; border-color: color-mix(in srgb, #9f8cff 58%, var(--color-border)); box-shadow: inset 0 3px 0 #9f8cff; }
 .cast-style-skill-analysis > .data-panel__header { background: linear-gradient(90deg, color-mix(in srgb, #9f8cff 24%, transparent), transparent); }
 .style-skill-panel__body { padding: 0; overflow-x: auto; }
