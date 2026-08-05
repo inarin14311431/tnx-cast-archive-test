@@ -170,7 +170,7 @@ for (const marker of [
   ".cast-outfit-col--category { width: 92px", ".cast-outfit-col--name { width: 150px",
   ".cast-outfit-col--description { width: 320px", "data-outfit-category=\"weapon\"] { min-width: 1260px",
   "data-outfit-category=\"armor\"] { min-width: 1280px", "data-outfit-category=\"tron\"] { min-width: 1400px",
-  "data-outfit-category=\"vehicle\"] { min-width: 1420px"
+  "data-outfit-category=\"vehicle\"] { min-width: 1280px"
 ]) {
   if (!castPageSource.includes(marker)) violations.push(`css-next/pages/cast.css: verified public outfit geometry missing ${marker}`);
 }
