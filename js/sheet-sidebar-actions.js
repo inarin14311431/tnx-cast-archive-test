@@ -4,6 +4,15 @@
 
   const ensureHelpLink = () => {
     if (document.querySelector('[data-sheet-help-link]')) return;
+    const importButton = panel.querySelector('#legacy-import-open');
+    if (!importButton) return;
+    let control = importButton.closest('.sheet-import-control');
+    if (!control) {
+      control = document.createElement('div');
+      control.className = 'sheet-import-control';
+      importButton.before(control);
+      control.append(importButton);
+    }
     const link = document.createElement('a');
     link.href = './manual-data-import.html';
     link.target = '_blank';
@@ -12,8 +21,8 @@
     link.setAttribute('data-sheet-help-link', '1');
     link.setAttribute('aria-label', 'データ取込マニュアルを開く');
     link.title = 'データ取込マニュアル';
-    link.innerHTML = '<img src="./assets/help-cyberpunk.svg" alt="" class="floating-help-link__icon"><span class="floating-help-link__label">HELP</span>';
-    panel.append(link);
+    link.innerHTML = '<span class="floating-help-link__label">HELP</span>';
+    control.append(link);
   };
 
   const GROUP_COLORS = {
@@ -24,7 +33,7 @@
   };
 
   const classify = () => {
-    panel.querySelectorAll(':scope > button, :scope > a.sheet-view-link').forEach(element => {
+    panel.querySelectorAll(':scope > button, :scope > a.sheet-view-link, :scope > .sheet-import-control > button').forEach(element => {
       const label = String(element.textContent || '').replace(/\s+/g, ' ').trim();
       let group = '';
 
