@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <script src="./js/css-next-theme.js"></script>
+  <link rel="stylesheet" href="./css-next/index.css" data-css-system="next">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CAST ARCHIVE</title>
+</head>
+<body data-page="index.html">
+  <div class="background-grid"></div>
+  <div class="scanlines"></div>
+  <header class="site-header app-header">
+    <div class="site-header__top">
+      <div>
+        <p class="site-header__system">N◎VA MUNICIPAL DATABASE</p>
+        <h1 class="site-title"><span class="site-title__archive">CAST ARCHIVE</span></h1>
+      </div>
+      <div class="site-header__operator">
+        <nav id="auth-navigation" class="auth-navigation" aria-label="アカウント">ログイン状態を確認中…</nav>
+        <label class="theme-picker">
+          <span>表示テーマ <small>COLOR THEME</small></span>
+          <select id="theme-select" data-theme-select aria-label="表示テーマ">
+            <option value="nova">トーキョーＮ◎ＶＡ</option>
+            <option value="moon">オーサカM○●N</option>
+            <option value="star">カムイST☆R</option>
+            <option value="eden">ミトラスGARDEN</option>
+            <option value="vlad">ヴラド・コロニー</option>
+            <option value="lutetia">ヴィル・ヌーヴ・ルテチア</option>
+            <option value="buena">ブエナIЯA</option>
+            <option value="canberra">キャンベラAXYZ</option>
+            <option value="hongkong">ホンコンHEAVEN</option>
+            <option value="fesler">フェスラー公国</option>
+            <option value="intron">イントロン</option>
+            <option value="axleraters">ニューロ！</option>
+            <option value="inagaki">稲垣 光平</option>
+            <option value="astral">アストラル</option>
+            <option value="orbital">軌道</option>
+            <option value="japanese-army">日本</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <p id="status-text">データベースへ接続中…</p>
+  </header>
+  <main>
+    <section class="archive-controls" aria-label="キャスト検索">
+      <label class="archive-control archive-control--search"><span>検索 <small>SEARCH</small></span><input id="archive-search" type="search" placeholder="名前・ハンドル・PL・所属・概要" autocomplete="off"></label>
+      <label class="archive-control"><span>スタイル <small>STYLE</small></span><select id="archive-style-filter"><option value="">すべてのスタイル</option></select></label>
+      <label class="archive-control"><span>プレイヤー <small>PLAYER</small></span><select id="archive-player-filter"><option value="">すべてのプレイヤー</option></select></label>
+      <label class="archive-control"><span>並び順 <small>SORT</small></span><select id="archive-sort"><option value="updated-desc">更新が新しい順</option><option value="updated-asc">更新が古い順</option><option value="name-asc">名前昇順</option><option value="name-desc">名前降順</option><option value="exp-desc">経験点が高い順</option><option value="exp-asc">経験点が低い順</option></select></label>
+      <label class="archive-control archive-control--page-size"><span>表示件数 <small>ITEMS PER PAGE</small></span><select id="archive-page-size"><option value="12" selected>12件</option><option value="25">25件</option><option value="50">50件</option><option value="100">100件</option></select></label>
+      <button id="archive-reset" type="button">検索条件をリセット <small>RESET</small></button>
+    </section>
+    <section class="archive-summary"><p id="archive-result-count">0件表示</p></section>
+    <section id="cast-grid" class="cast-grid" aria-live="polite"></section>
+    <nav id="archive-pagination" class="archive-pagination" aria-label="キャスト一覧ページ" hidden>
+      <button id="archive-page-prev" type="button">&lt; 前へ <small>PREVIOUS</small></button>
+      <p id="archive-page-status" aria-live="polite">1 / 1</p>
+      <button id="archive-page-next" type="button">次へ &gt; <small>NEXT</small></button>
+    </nav>
+  </main>
+  <script type="module" src="./js/archive.js?v=40"></script>
+</body>
+</html>
