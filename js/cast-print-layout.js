@@ -10,6 +10,18 @@
       if (enabled) panel.dataset.printExpanded = "true";
       else delete panel.dataset.printExpanded;
     });
+    document.querySelectorAll("#cast-content .data-panel").forEach(panel => {
+      if (enabled) {
+        panel.dataset.printWasCollapsed = String(panel.classList.contains("is-collapsed"));
+        panel.classList.remove("is-collapsed");
+        panel.querySelector(":scope > .data-panel__header")?.setAttribute("aria-expanded", "true");
+      } else if (panel.dataset.printWasCollapsed) {
+        const wasCollapsed = panel.dataset.printWasCollapsed === "true";
+        panel.classList.toggle("is-collapsed", wasCollapsed);
+        panel.querySelector(":scope > .data-panel__header")?.setAttribute("aria-expanded", String(!wasCollapsed));
+        delete panel.dataset.printWasCollapsed;
+      }
+    });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }
