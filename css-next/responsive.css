@@ -23,7 +23,7 @@
   body .ability-matrix--cs .ability-matrix__row { grid-template-columns: 70px minmax(0, 1fr); }
 }
 @media (max-width: 1199px) {
-  .floating-help-link { top: 8px; right: 8px; gap: 0; padding: 4px; }
-  body .floating-help-link__icon { width: 22px; height: 22px; }
-  body .floating-help-link__label { display: none; }
+  body[data-page="sheet.html"] .exp-panel .floating-help-link { grid-template-columns: 42px minmax(0, 1fr); min-height: 62px; gap: 10px; padding: 8px 10px; }
+  body[data-page="sheet.html"] .exp-panel .floating-help-link__icon { width: 42px; height: 42px; }
+  body[data-page="sheet.html"] .exp-panel .floating-help-link__label { display: block; }
 }

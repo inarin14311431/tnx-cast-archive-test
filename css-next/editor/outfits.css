@@ -17,9 +17,9 @@
 .outfit-table :is(th, td) { box-sizing: border-box; height: 44px; padding: 4px 3px; overflow: hidden; border-right: 1px solid var(--color-border-muted); border-bottom: 1px solid var(--color-border-muted); vertical-align: middle; }
 .outfit-table th { height: 34px; color: var(--color-muted); background: var(--color-accent-soft); font: 700 .66rem/1.1 var(--font-data); text-align: center; white-space: normal; }
 .outfit-table td { color: var(--color-text); }
-.outfit-table :is(input, select, textarea) { box-sizing: border-box; width: 100%; min-width: 0; height: 34px; min-height: 34px; margin: 0; padding: 5px 4px; font-size: inherit; }
-.outfit-table :is(input, select) { padding-block: 0; line-height: normal; }
-.outfit-table textarea { resize: vertical; overflow-x: hidden; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; line-height: 1.2; }
+.outfit-table :is(input, select, textarea) { display: block; box-sizing: border-box; width: 100%; min-width: 0; height: 34px; min-height: 34px; margin: 0; font-size: inherit; }
+.outfit-table :is(input, select) { padding: 0 4px; line-height: 32px; }
+.outfit-table textarea { padding: 8px 4px; resize: vertical; overflow-x: hidden; overflow-y: auto; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; line-height: 16px; }
 .outfit-table-cell--actions, .outfit-table-head--actions { width: var(--row-action-column); min-width: var(--row-action-column); max-width: var(--row-action-column); }
 .outfit-table-cell--actions { text-align: center; }
 .outfit-table :is(.outfit-table-head--category, .outfit-table-cell--category) { width: 5.5%; }

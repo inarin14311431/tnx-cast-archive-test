@@ -18,17 +18,17 @@ body[data-page="account.html"] .account-layout { display: grid; gap: 16px; margi
 .account-panel__header h2 { margin: 0; color: var(--color-text); }
 .owned-cast-list { display: grid; gap: 12px; }
 .owned-cast { display: flex; justify-content: space-between; gap: 14px; min-width: 0; padding: 12px 14px; border-left: 2px solid var(--color-accent); background: color-mix(in srgb, var(--color-bg) 72%, transparent); }
-.owned-cast__identity { min-width: 0; }
+.owned-cast__identity { flex: 1 1 260px; min-width: 0; padding-right: 8px; }
 .owned-cast__identity h3 { margin: 2px 0 0; }
 .owned-cast__handle { margin: 2px 0 0; color: var(--color-accent); font-size: .78rem; }
-.owned-cast__meta { display: flex; flex: 1 1 640px; min-width: min(100%, 640px); flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.owned-cast__meta { display: flex; flex: 0 1 610px; width: min(100%, 610px); min-width: 0; max-width: 610px; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 8px; }
 .owned-cast__status-row { display: flex; width: 100%; align-items: center; justify-content: flex-end; gap: 10px; color: var(--color-muted); font: .72rem/1 var(--font-data); }
 .owned-cast__visibility { color: var(--color-text); font-size: .82rem; font-weight: 800; white-space: nowrap; }
 .owned-cast__serial { display: inline-block; padding: 6px 10px 5px; border: 1px solid color-mix(in srgb, var(--color-accent) 55%, transparent); border-bottom-width: 2px; color: var(--color-accent); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 14%, transparent), color-mix(in srgb, var(--color-accent) 3.5%, transparent)); font-size: .72rem; font-weight: 800; letter-spacing: .12em; line-height: 1; white-space: nowrap; box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 12%, transparent), inset 0 0 10px color-mix(in srgb, var(--color-accent) 5%, transparent); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
 .owned-cast__links { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; width: 100%; margin-top: 4px; }
-.owned-cast__links :where(a, button) { display: grid; width: 100%; min-width: 0; min-height: 54px; place-items: center; gap: 3px; padding: 9px 8px; border: 1px solid color-mix(in srgb, var(--color-accent) 85%, transparent); color: var(--color-text); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 20%, var(--color-surface)), color-mix(in srgb, var(--color-bg) 76%, var(--color-accent) 8%)); text-align: center; white-space: nowrap; }
+.owned-cast__links :where(a, button) { display: grid; width: 100%; min-width: 0; min-height: 50px; place-items: center; gap: 3px; padding: 7px 5px; border: 1px solid color-mix(in srgb, var(--color-accent) 85%, transparent); color: var(--color-text); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 20%, var(--color-surface)), color-mix(in srgb, var(--color-bg) 76%, var(--color-accent) 8%)); text-align: center; white-space: nowrap; }
 .owned-cast__links button[data-delete] { border-color: color-mix(in srgb, var(--color-danger) 90%, transparent); color: #ffdbe3; background: linear-gradient(180deg, color-mix(in srgb, var(--color-danger) 28%, var(--color-surface)), color-mix(in srgb, var(--color-bg) 78%, var(--color-danger) 10%)); }
-.action-label__jp { display: block; font-size: 1rem; font-weight: 900; line-height: 1.15; letter-spacing: .02em; }
+.action-label__jp { display: block; font-size: .9rem; font-weight: 900; line-height: 1.15; letter-spacing: .01em; }
 .action-label__en { display: block; color: color-mix(in srgb, var(--color-muted) 72%, var(--color-text)); font: 700 .68rem/1.1 var(--font-data); letter-spacing: .1em; }
 :where(.empty-data, .auth-error) { padding: 24px; text-align: center; }
 

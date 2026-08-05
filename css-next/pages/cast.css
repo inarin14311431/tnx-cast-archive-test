@@ -42,7 +42,14 @@ body[data-page="cast.html"] .cast-header__actions { display: flex; align-items: 
 .cast-style-card-simple::after { position: absolute; z-index: 2; top: 7px; right: 10px; content: attr(data-style-role); color: color-mix(in srgb, var(--style-local) 68%, white 20%); font: 800 .62rem/1 var(--font-data); letter-spacing: .12em; opacity: .82; }
 .cast-style-card-simple .style-chip__index { position: relative; z-index: 1; display: grid; flex: 0 0 auto; min-width: 24px; height: 24px; place-items: center; padding: 0 6px; border: 1px solid color-mix(in srgb, var(--style-local) 55%, transparent); border-radius: 4px; color: color-mix(in srgb, var(--style-local) 72%, white 28%); background: color-mix(in srgb, var(--style-local) 10%, var(--color-bg)); font: 800 .68rem/1 var(--font-data); }
 .cast-style-card-simple .style-chip__name { position: relative; z-index: 1; min-width: 0; overflow: hidden; color: var(--color-text); font-size: clamp(1.05rem, 1.5vw, 1.32rem); font-weight: 900; line-height: 1.1; letter-spacing: .03em; text-overflow: ellipsis; white-space: nowrap; }
-.cast-style-card-simple .style-chip__mark { position: relative; z-index: 1; color: #fff; font: 900 1.08rem/1 var(--font-data); text-shadow: 0 0 10px color-mix(in srgb, var(--style-local) 35%, transparent); }
+.cast-style-card-simple .style-chip__mark { position: relative; z-index: 1; display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; color: #fff; text-shadow: 0 0 10px color-mix(in srgb, var(--style-local) 35%, transparent); }
+.cast-style-card-simple .style-mark-glyph { position: relative; display: block; box-sizing: border-box; width: 20px; min-width: 20px; height: 20px; min-height: 20px; flex: 0 0 20px; }
+.cast-style-card-simple .style-mark-glyph::before,
+.cast-style-card-simple .style-mark-glyph--persona::after { position: absolute; box-sizing: border-box; border-radius: 50%; content: ""; }
+.cast-style-card-simple .style-mark-glyph::before { inset: 0; }
+.cast-style-card-simple .style-mark-glyph--persona::before { border: 2px solid currentColor; }
+.cast-style-card-simple .style-mark-glyph--persona::after { top: 50%; left: 50%; width: 8px; height: 8px; border: 2px solid currentColor; transform: translate(-50%, -50%); }
+.cast-style-card-simple .style-mark-glyph--key::before { background: currentColor; }
 
 .cast-divine-authority { margin-top: 22px; }
 .cast-divine-authority > header { position: relative; display: flex; min-height: 40px; align-items: center; justify-content: space-between; gap: 14px; padding: 0 14px 8px; border-bottom: 1px solid color-mix(in srgb, var(--color-danger) 52%, transparent); }
@@ -210,6 +217,8 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-outfit-table .cast-outfit-col--slot { width: 112px; }
 .cast-outfit-table .cast-outfit-col--residence_electric_area { width: 62px; text-align: center; }
 .cast-outfit-table .cast-outfit-col--description { width: 320px; min-width: 320px; max-width: 320px; border-inline-color: var(--color-border); }
+.cast-outfit-table[data-outfit-category="residence"] .cast-outfit-col--slot { width: 52px; min-width: 52px; max-width: 52px; }
+.cast-outfit-table[data-outfit-category="residence"] .cast-outfit-col--description { width: 380px; min-width: 380px; max-width: 380px; }
 .cast-outfit-table tbody td.cast-outfit-col--description { height: 45px; min-height: 45px; padding: 4px; text-overflow: clip; }
 .cast-outfit-table tbody tr.is-description-expanded > td.cast-outfit-col--description { height: auto; min-height: 0; vertical-align: top; }
 .cast-outfit-table .style-description-expandable { display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 35px; min-height: 35px; margin: 0; padding: 7px 8px; resize: none; overflow: hidden; border: 1px solid var(--color-border); border-radius: 4px; white-space: nowrap; overflow-wrap: normal; word-break: normal; cursor: text; }
@@ -221,7 +230,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-outfit-table[data-outfit-category="armor"] { min-width: 1280px; }
 .cast-outfit-table[data-outfit-category="cyberware"] { min-width: 1060px; }
 .cast-outfit-table[data-outfit-category="tron"] { min-width: 1400px; }
-.cast-outfit-table[data-outfit-category="vehicle"] { min-width: 1420px; }
+.cast-outfit-table[data-outfit-category="vehicle"] { min-width: 1280px; }
 .cast-outfit-table[data-outfit-category="residence"] { min-width: 1080px; }
 .cast-outfit-table[data-outfit-category="other"] { min-width: 920px; }
 .cast-armor-total-row > * { background: var(--color-accent-soft); font-weight: 800; }

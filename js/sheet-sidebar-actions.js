@@ -13,7 +13,7 @@
     link.setAttribute('aria-label', 'データ取込マニュアルを開く');
     link.title = 'データ取込マニュアル';
     link.innerHTML = '<img src="./assets/help-cyberpunk.svg" alt="" class="floating-help-link__icon"><span class="floating-help-link__label">HELP</span>';
-    document.body.append(link);
+    panel.append(link);
   };
 
   const GROUP_COLORS = {
