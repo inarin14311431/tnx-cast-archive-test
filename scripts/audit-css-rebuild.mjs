@@ -281,7 +281,7 @@ const showcaseCssSource = await readFile(path.join(root, "css-next", "pages", "s
 if (!showcaseCssSource.includes("width: min(1440px, calc(100% - 32px))") ||
     !showcaseCssSource.includes(".showcase-panel:nth-of-type(4)") ||
     !/\.cast-pick-card img\s*\{[^}]*width:\s*72px[^}]*height:\s*78px[^}]*object-fit:\s*cover[^}]*object-position:\s*50%\s+0/s.test(showcaseCssSource) ||
-    !/\.selected-cast > img\s*\{[^}]*width:\s*70px[^}]*height:\s*90px/s.test(showcaseCssSource)) {
+    !/\.selected-cast > img\s*\{[^}]*width:\s*112px[^}]*height:\s*100%[^}]*min-height:\s*230px[^}]*object-fit:\s*cover[^}]*object-position:\s*50%\s+0/s.test(showcaseCssSource)) {
   violations.push("css-next/pages/showcase.css: restored showcase geometry/image crop contract missing");
 }
 
