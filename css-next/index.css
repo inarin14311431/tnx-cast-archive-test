@@ -1,0 +1,32 @@
+/*
+ * CSS rebuild entry point.
+ * Keep imports in architecture order. Phase 0 intentionally contains no
+ * visual rules beyond tokens and a small diagnostic banner.
+ */
+@import url("./tokens/core.css");
+@import url("./tokens/themes.css");
+@import url("./foundation/reset.css");
+@import url("./foundation/base.css");
+@import url("./foundation/typography.css");
+@import url("./layout/app-shell.css");
+@import url("./layout/page.css");
+@import url("./components/buttons.css");
+@import url("./components/forms.css");
+@import url("./components/panel.css");
+@import url("./components/table.css");
+@import url("./components/row-actions.css");
+@import url("./components/dialog.css");
+@import url("./components/status.css");
+@import url("./editor/editor.css");
+@import url("./editor/skills.css");
+@import url("./editor/style-skills.css");
+@import url("./editor/outfits.css");
+@import url("./editor/import.css");
+@import url("./pages/archive.css");
+@import url("./pages/cast.css");
+@import url("./pages/auth.css");
+@import url("./pages/account.css");
+@import url("./pages/acts.css");
+@import url("./pages/showcase.css");
+@import url("./responsive.css");
+@import url("./print.css");
