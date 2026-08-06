@@ -16,6 +16,6 @@ select:where(:not([multiple])) {
   padding-block: 0;
   line-height: normal;
 }
-input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--color-muted) 62%, transparent); }
+input::placeholder, textarea::placeholder { color: var(--color-placeholder, color-mix(in srgb, var(--color-muted) 62%, transparent)); }
 input:focus, select:focus, textarea:focus { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-field) 88%, var(--color-accent)); box-shadow: 0 0 0 2px var(--color-accent-soft), var(--shadow-glow); }
 select:where(:not([multiple])) { accent-color: var(--color-accent); }
