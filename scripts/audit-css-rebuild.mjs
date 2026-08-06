@@ -142,25 +142,25 @@ const castGeometry = {
   styleKind: Number(castPageSource.match(/col\.style-col-kind\s*\{\s*width:\s*(\d+)px/)?.[1]),
   styleLevel: Number(castPageSource.match(/col\.style-col-level\s*\{\s*width:\s*(\d+)px/)?.[1])
 };
-if (castGeometry.anchor !== 300 ||
+if (castGeometry.anchor !== 260 ||
     castGeometry.suit !== 48 ||
     castGeometry.generalName + castGeometry.generalLevel !== castGeometry.anchor ||
     castGeometry.styleName + castGeometry.styleKind + castGeometry.styleLevel !== castGeometry.anchor) {
   violations.push(`css-next/pages/cast.css: skill suit anchor mismatch ${JSON.stringify(castGeometry)}`);
 }
 if (!castPageSource.includes(".cast-general-columns") ||
-    !/\.cast-general-columns\s*\{[^}]*492px/s.test(castPageSource) ||
-    !/\.cast-general-column--left \.skill-data-table--general col\.skill-col-name\s*\{\s*width:\s*252px/s.test(castPageSource) ||
+    !/\.cast-general-columns\s*\{[^}]*452px/s.test(castPageSource) ||
+    !/\.cast-general-column--left \.skill-data-table--general col\.skill-col-name\s*\{\s*width:\s*212px/s.test(castPageSource) ||
     !/\.cast-general-column--left \.skill-data-table--general col\.skill-col-level\s*\{\s*width:\s*48px/s.test(castPageSource)) {
-  violations.push("css-next/pages/cast.css: two-column public General-skill layout or left 300px suit anchor missing");
+  violations.push("css-next/pages/cast.css: two-column public General-skill layout or left 260px suit anchor missing");
 }
 if (!/\.cast-tab\s*\{[^}]*color:\s*var\(--color-accent\)[^}]*background:/s.test(castPageSource) ||
     !/\.cast-tab\.is-active small\s*\{\s*color:\s*inherit/s.test(castPageSource)) {
   violations.push("css-next/pages/cast.css: public PROFILE / OUTFITS tab contrast contract missing");
 }
-if (!/\.style-skill-view-table\s*\{[^}]*min-width:\s*1364px/s.test(castPageSource) ||
+if (!/\.style-skill-view-table\s*\{[^}]*min-width:\s*1328px/s.test(castPageSource) ||
     !/\.cast-header, \.cast-content\s*\{[^}]*min\(1400px/s.test(castPageSource)) {
-  violations.push("css-next/pages/cast.css: verified 1400px view / 1364px style-skill geometry missing");
+  violations.push("css-next/pages/cast.css: verified 1400px view / 1328px style-skill geometry missing");
 }
 if (!/#personal-data\.profile-list\s*\{[^}]*repeat\(2[^}]*repeat\(4[^}]*column-gap:\s*28px/s.test(castPageSource) ||
     !/#personal-data\.profile-list\s*>\s*div\s*\{[^}]*120px[^}]*gap:\s*18px/s.test(castPageSource)) {
