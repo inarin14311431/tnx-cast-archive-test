@@ -200,14 +200,21 @@ if (!/body\[data-page="cast\.html"\] \.ability-grid\s*\{[^}]*repeat\(4[^}]*minma
 const castGeometry = {
   anchor: Number(castPageSource.match(/--cast-suit-anchor:\s*(\d+)px/)?.[1]),
   suit: Number(castPageSource.match(/--cast-suit-column:\s*(\d+)px/)?.[1]),
+  compactWidth: Number(castPageSource.match(/--cast-compact-skill-width:\s*(\d+)px/)?.[1]),
+  generalSlotWidth: Number(castPageSource.match(/\.cast-general-columns\s*\{[^}]*repeat\(2,\s*(\d+)px\)/s)?.[1]),
+  sideSlotWidth: Number(castPageSource.match(/\.cast-skill-layout\s*\{[^}]*minmax\(0,\s*1fr\)\s+(\d+)px/s)?.[1]),
   generalName: Number(castPageSource.match(/col\.skill-col-name\s*\{\s*width:\s*(\d+)px/)?.[1]),
   generalLevel: Number(castPageSource.match(/col\.skill-col-level\s*\{\s*width:\s*(\d+)px/)?.[1]),
   styleName: Number(castPageSource.match(/col\.style-col-name\s*\{\s*width:\s*(\d+)px/)?.[1]),
   styleKind: Number(castPageSource.match(/col\.style-col-kind\s*\{\s*width:\s*(\d+)px/)?.[1]),
   styleLevel: Number(castPageSource.match(/col\.style-col-level\s*\{\s*width:\s*(\d+)px/)?.[1])
 };
-if (castGeometry.anchor !== 248 ||
+if (castGeometry.anchor !== 240 ||
     castGeometry.suit !== 48 ||
+    castGeometry.compactWidth !== 432 ||
+    castGeometry.generalName + castGeometry.generalLevel + (castGeometry.suit * 4) !== castGeometry.compactWidth ||
+    castGeometry.generalSlotWidth - castGeometry.compactWidth < 8 ||
+    castGeometry.sideSlotWidth - castGeometry.compactWidth < 8 ||
     castGeometry.generalName + castGeometry.generalLevel !== castGeometry.anchor ||
     castGeometry.styleName + castGeometry.styleKind + castGeometry.styleLevel !== castGeometry.anchor) {
   violations.push(`css-next/pages/cast.css: skill suit anchor mismatch ${JSON.stringify(castGeometry)}`);
@@ -218,11 +225,12 @@ if (!/\.style-skill-view-table \.style-suit-cell\s*\{[^}]*text-align:\s*center/s
 if (!/\.cast-general-columns\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*440px\)[^}]*overflow-x:\s*hidden/s.test(castPageSource) ||
     !/\.cast-skill-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+440px/s.test(castPageSource) ||
     !/@media \(max-width:\s*1409px\)[\s\S]*?\.cast-skill-layout\s*\{\s*grid-template-columns:\s*1fr/s.test(castPageSource) ||
-    !/\.cast-general-column \.data-table, \.cast-skill-layout :is\(\.skill-data-table--social, \.skill-data-table--connection\)\s*\{[^}]*width:\s*440px[^}]*min-width:\s*440px[^}]*max-width:\s*440px/s.test(castPageSource) ||
-    !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-name\s*\{\s*width:\s*200px/s.test(castPageSource) ||
+    !/--cast-compact-skill-width:\s*432px/s.test(castPageSource) ||
+    !/\.cast-general-column \.data-table, \.cast-skill-layout :is\(\.skill-data-table--social, \.skill-data-table--connection\)\s*\{[^}]*width:\s*var\(--cast-compact-skill-width\)[^}]*min-width:\s*var\(--cast-compact-skill-width\)[^}]*max-width:\s*var\(--cast-compact-skill-width\)/s.test(castPageSource) ||
+    !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-name\s*\{\s*width:\s*192px/s.test(castPageSource) ||
     !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-level\s*\{\s*width:\s*48px/s.test(castPageSource) ||
     !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-suit\s*\{\s*width:\s*var\(--cast-suit-column\)/s.test(castPageSource)) {
-  violations.push("css-next/pages/cast.css: General / Social / Connection fields do not share the scroll-free 200/48/48px geometry");
+  violations.push("css-next/pages/cast.css: General / Social / Connection fields do not share the 432px scroll-free geometry with border slack");
 }
 if (!/\.style-skill-view-table\s*\{[^}]*width:\s*1328px[^}]*min-width:\s*1328px[^}]*max-width:\s*1328px/s.test(castPageSource)) {
   violations.push("css-next/pages/cast.css: public Style-skill table can stretch and redistribute the fixed suit columns");
