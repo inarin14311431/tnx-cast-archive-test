@@ -131,7 +131,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-skill-layout > .skill-section.is-general .data-table { width: 100%; table-layout: fixed; }
 .cast-skill-layout > .skill-section.is-style { display: none; }
 .cast-skill-side { display: grid; gap: 16px; }
-.cast-general-columns { display: grid; grid-template-columns: minmax(492px, 1.12fr) minmax(0, .88fr); gap: 12px; min-width: 0; }
+.cast-general-columns { display: grid; grid-template-columns: 492px minmax(0, 1fr); gap: 12px; min-width: 0; }
 .cast-general-column { min-width: 0; }
 .cast-general-column--left .data-table { min-width: 492px; }
 .cast-general-column--right .data-table { min-width: 0; }
