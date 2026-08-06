@@ -21,6 +21,10 @@
 .cast-card__handle { margin-top: 10px; color: var(--color-accent); }
 .cast-card__name { margin: 4px 0 12px; }
 .cast-card__styles, .cast-card__player { color: var(--color-muted); }
+.cast-card__styles { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; }
+.cast-card__style-chip { --style-color: var(--color-muted); position: relative; display: inline-flex; min-height: 24px; align-items: center; gap: 5px; padding: 4px 8px 4px 10px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--style-color) 72%, transparent); color: color-mix(in srgb, var(--style-color) 82%, var(--color-text)); background: linear-gradient(135deg, color-mix(in srgb, var(--style-color) 13%, transparent), color-mix(in srgb, var(--color-surface-alt) 82%, transparent)); font: 800 .69rem/1 var(--font-data); letter-spacing: .025em; box-shadow: inset 2px 0 0 var(--style-color), 0 0 10px color-mix(in srgb, var(--style-color) 8%, transparent); }
+.cast-card__style-chip::before { content: attr(data-style-index); color: color-mix(in srgb, var(--style-color) 62%, var(--color-muted)); font-size: .52rem; letter-spacing: .05em; }
+.cast-card__style-chip b { color: var(--style-color); font-size: .82rem; line-height: 1; text-shadow: 0 0 8px color-mix(in srgb, var(--style-color) 55%, transparent); }
 .cast-card__player { margin-top: 12px; font-size: .74rem; }
 .cast-card__affiliation { margin-top: 8px; }
 .cast-card__summary { display: -webkit-box; margin-top: 12px; overflow: hidden; color: var(--color-muted); line-height: 1.7; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
