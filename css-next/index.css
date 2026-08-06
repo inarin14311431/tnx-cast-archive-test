@@ -6,7 +6,7 @@
 @import url("./tokens/core.css?v=2");
 @import url("./tokens/themes.css?v=3");
 @import url("./foundation/reset.css");
-@import url("./foundation/base.css");
+@import url("./foundation/base.css?v=1");
 @import url("./foundation/typography.css");
 @import url("./layout/app-shell.css");
 @import url("./layout/page.css");
