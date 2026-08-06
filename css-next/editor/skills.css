@@ -26,9 +26,9 @@ body[data-page="sheet.html"] .skill-toolbar--three { display: none; }
 #general-skills input[data-f="level"] { text-align: center; font-weight: 800; }
 #general-skills .is-fixed-general .row-action--delete { visibility: hidden; }
 
-/* General skills derive their type from the slot/name; the editor does not need a separate type control. */
-#general-skills .general-skill-column .type-col,
-#general-skills .general-skill-column .skill-table tbody tr > td:nth-child(2) { display: none; }
+/* General, social and connection skills do not need a separate type control in the editor. */
+#general-skills :is(.general-skill-column, .skill-group.social, .skill-group.connection) .type-col,
+#general-skills :is(.general-skill-column, .skill-group.social, .skill-group.connection) .skill-table tbody tr > td:nth-child(2) { display: none; }
 
 @media (max-width: 900px) {
   body[data-page="sheet.html"] #general-skills { grid-template-columns: 1fr; grid-template-rows: auto; }
