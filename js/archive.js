@@ -214,8 +214,8 @@ function createCharacterCard(character) {
     [character.style_1, character.style_1_mark],
     [character.style_2, character.style_2_mark],
     [character.style_3, character.style_3_mark]
-  ].filter(([name]) => name).map(([name, mark], index) => `
-    <span class="cast-card__style-chip" style="--style-color:${getStyleColor(name)}" data-style-index="0${index + 1}">
+  ].filter(([name]) => name).map(([name, mark]) => `
+    <span class="cast-card__style-chip" style="--style-color:${getStyleColor(name)}">
       <span>${escapeHtml(name)}</span>${mark ? `<b>${escapeHtml(mark)}</b>` : ""}
     </span>`).join("");
 
