@@ -216,6 +216,8 @@ if (!/\.style-skill-view-table \.style-suit-cell\s*\{[^}]*text-align:\s*center/s
   violations.push("css-next/pages/cast.css: public Style-skill suit marks are not centered on the General-skill suit columns");
 }
 if (!/\.cast-general-columns\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*440px\)[^}]*overflow-x:\s*hidden/s.test(castPageSource) ||
+    !/\.cast-skill-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+440px/s.test(castPageSource) ||
+    !/@media \(max-width:\s*1409px\)[\s\S]*?\.cast-skill-layout\s*\{\s*grid-template-columns:\s*1fr/s.test(castPageSource) ||
     !/\.cast-general-column \.data-table, \.cast-skill-layout :is\(\.skill-data-table--social, \.skill-data-table--connection\)\s*\{[^}]*width:\s*440px[^}]*min-width:\s*440px[^}]*max-width:\s*440px/s.test(castPageSource) ||
     !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-name\s*\{\s*width:\s*200px/s.test(castPageSource) ||
     !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-level\s*\{\s*width:\s*48px/s.test(castPageSource) ||

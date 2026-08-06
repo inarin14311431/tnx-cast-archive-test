@@ -126,7 +126,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 #personal-data.profile-list > div:nth-child(6) { grid-column: 2; grid-row: 3; }
 #personal-data.profile-list > div:nth-child(7) { grid-column: 2; grid-row: 4; }
 
-.cast-skill-layout { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(440px, .8fr); column-gap: 16px; align-items: start; }
+.cast-skill-layout { display: grid; grid-template-columns: minmax(0, 1fr) 440px; column-gap: 16px; align-items: start; }
 .cast-skill-layout > .skill-section.is-general, .cast-skill-layout > .cast-skill-side { min-width: 0; }
 .cast-skill-layout > .skill-section.is-general .data-table { width: 100%; table-layout: fixed; }
 .cast-skill-layout > .skill-section.is-style { display: none; }
@@ -266,6 +266,10 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-access-log strong { color: var(--color-accent); }
 .cast-access-log .ok { color: var(--color-accent-strong); }
 @keyframes cast-data-rain-fall { to { transform: translateY(170vh); } }
+
+@media (max-width: 1409px) {
+  body[data-page="cast.html"] .cast-skill-layout { grid-template-columns: 1fr; }
+}
 
 @media (min-width: 1200px) {
   html body[data-page="cast.html"] .cast-hero { --cast-hero-compact-height: clamp(610px, 43vw, 650px); align-items: start; }
