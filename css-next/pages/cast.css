@@ -166,8 +166,8 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .style-skill-view-editorlike { overflow: hidden; }
 .style-skill-view-wrapper { overflow-x: auto; }
 .style-skill-view-table { width: 1328px; min-width: 1328px; max-width: 1328px; table-layout: fixed; border-collapse: collapse; }
-.style-skill-view-table col.style-col-name { width: 120px; }
-.style-skill-view-table col.style-col-kind { width: 72px; }
+.style-skill-view-table col.style-col-name { width: 144px; }
+.style-skill-view-table col.style-col-kind { width: 48px; }
 .style-skill-view-table col.style-col-level { width: 48px; }
 .style-skill-view-table col.style-col-suit { width: var(--cast-suit-column); }
 .style-skill-view-table col.style-col-skill { width: 90px; }

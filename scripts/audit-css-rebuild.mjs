@@ -216,6 +216,9 @@ if (castGeometry.anchor !== 240 ||
     castGeometry.generalSlotWidth - castGeometry.compactWidth < 8 ||
     castGeometry.sideSlotWidth - castGeometry.compactWidth < 8 ||
     castGeometry.generalName + castGeometry.generalLevel !== castGeometry.anchor ||
+    castGeometry.styleName !== 144 ||
+    castGeometry.styleKind !== 48 ||
+    castGeometry.styleLevel !== 48 ||
     castGeometry.styleName + castGeometry.styleKind + castGeometry.styleLevel !== castGeometry.anchor) {
   violations.push(`css-next/pages/cast.css: skill suit anchor mismatch ${JSON.stringify(castGeometry)}`);
 }
