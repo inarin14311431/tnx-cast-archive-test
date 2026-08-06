@@ -183,14 +183,18 @@
 }
 
 :root[data-theme="orbital"] {
+  color-scheme: light;
   --color-bg: #eaf3f8;
   --color-surface: #ffffff;
   --color-surface-alt: #ebf5f9;
+  --color-field: #edf6fa;
   --color-text: #243746;
-  --color-muted: #607887;
-  --color-accent: #3e9bc6;
-  --color-accent-strong: #3e9bc6;
-  --color-danger: #f2a24a;
+  --color-muted: #526b7a;
+  --color-placeholder: #5a7180;
+  --color-accent: #206f95;
+  --color-accent-strong: #175f82;
+  --color-danger: #a55300;
+  --color-overlay: rgb(36 55 70 / 48%);
   --theme-body-bg: radial-gradient(circle at 88% 10%, rgba(62,155,198,.18), transparent 27%), radial-gradient(circle at 10% 80%, rgba(72,193,181,.12), transparent 30%), linear-gradient(145deg, #f8fbfc, #eaf3f8 58%, #f3f8fa);
   --theme-panel-bg: linear-gradient(145deg, rgba(255,255,255,.97), rgba(235,245,249,.96));
 }
