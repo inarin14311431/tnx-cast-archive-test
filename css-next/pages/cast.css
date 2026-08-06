@@ -154,7 +154,10 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-general-column--left .skill-data-table--general :where(th, td):first-child { width: 212px; min-width: 212px; max-width: 212px; }
 .cast-general-column--left .skill-data-table--general :where(th, td):nth-child(2) { width: 48px; min-width: 48px; max-width: 48px; text-align: center; }
 .cast-general-column--left .skill-data-table--general :where(th, td):nth-child(n+3):nth-child(-n+6) { width: var(--cast-suit-column); min-width: var(--cast-suit-column); max-width: var(--cast-suit-column); padding-inline: 2px; text-align: center; }
-.cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) { width: 100%; min-width: 0; }
+.cast-general-column--right .skill-data-table--general { width: 396px; min-width: 396px; max-width: 396px; }
+.cast-general-column--right .skill-data-table--general col.skill-col-name { width: 212px; }
+.cast-general-column--right .skill-data-table--general :where(th, td):first-child { width: 212px; min-width: 212px; max-width: 212px; }
+.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) { width: 100%; min-width: 0; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-level { width: 40px; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-suit { width: 36px; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(2) { width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
