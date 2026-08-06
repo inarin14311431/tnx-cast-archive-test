@@ -4,14 +4,14 @@
  * visual rules beyond tokens and a small diagnostic banner.
  */
 @import url("./tokens/core.css");
-@import url("./tokens/themes.css");
+@import url("./tokens/themes.css?v=2");
 @import url("./foundation/reset.css");
 @import url("./foundation/base.css");
 @import url("./foundation/typography.css");
 @import url("./layout/app-shell.css");
 @import url("./layout/page.css");
 @import url("./components/buttons.css");
-@import url("./components/forms.css");
+@import url("./components/forms.css?v=2");
 @import url("./components/panel.css");
 @import url("./components/table.css");
 @import url("./components/row-actions.css");
