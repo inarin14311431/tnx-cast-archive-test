@@ -3,6 +3,22 @@
 .master-search-toolbar--outfit { display: flex; flex-wrap: wrap; gap: 8px; }
 .master-search-open { min-width: 148px; }
 
+/* Keep editor add-actions visually consistent; longer labels may grow naturally. */
+body[data-page="sheet.html"] .sheet-section .skill-inline-add,
+body[data-page="sheet.html"] .sheet-section #add-style-skill {
+  box-sizing: border-box;
+  width: auto;
+  min-width: 148px;
+  min-height: 42px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+body[data-page="sheet.html"] #general-skills .skill-inline-add {
+  min-width: 148px;
+  min-height: 42px;
+  padding: 8px 12px;
+}
+
 /* Style-skill actions: database tools on the left, row creation on the right. */
 body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar {
   display: flex;
@@ -11,10 +27,11 @@ body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar
   gap: 8px;
 }
 body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar > button {
-  flex: 0 1 220px;
-  width: 220px;
-  min-width: 0;
-  min-height: 48px;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 148px;
+  min-height: 42px;
+  padding-inline: 12px;
 }
 body[data-page="sheet.html"] .sheet-section--style-skills #import-skd { order: 1; }
 body[data-page="sheet.html"] .sheet-section--style-skills #search-skd-master { order: 2; }
