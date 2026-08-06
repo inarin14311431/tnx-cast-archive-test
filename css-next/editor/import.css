@@ -1,8 +1,39 @@
 .master-search-toolbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-flow: row; gap: 8px; }
 .skill-toolbar.master-search-toolbar > button { width: 100%; min-width: 0; min-height: 48px; }
-.skill-toolbar.master-search-toolbar #add-style-separator { grid-column: 1; }
 .master-search-toolbar--outfit { display: flex; flex-wrap: wrap; gap: 8px; }
 .master-search-open { min-width: 148px; }
+
+/* Style-skill actions: database tools on the left, row creation on the right. */
+body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
+body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar > button {
+  flex: 0 1 220px;
+  width: 220px;
+  min-width: 0;
+  min-height: 48px;
+}
+body[data-page="sheet.html"] .sheet-section--style-skills #import-skd { order: 1; }
+body[data-page="sheet.html"] .sheet-section--style-skills #search-skd-master { order: 2; }
+body[data-page="sheet.html"] .sheet-section--style-skills #add-style-skill {
+  order: 3;
+  margin-left: auto;
+}
+body[data-page="sheet.html"] .sheet-section--style-skills #add-style-separator {
+  order: 4;
+  border-style: dotted;
+}
+
+@media (max-width: 767px) {
+  body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar > button {
+    flex: 1 1 calc(50% - 4px);
+    width: auto;
+  }
+  body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar > #add-style-skill { margin-left: 0; }
+}
 
 /* Compact SKD/OFC import terminal. Keep the desktop dialog inside one viewport. */
 #tsv-dialog {
