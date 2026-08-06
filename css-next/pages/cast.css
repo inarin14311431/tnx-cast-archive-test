@@ -126,7 +126,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 #personal-data.profile-list > div:nth-child(6) { grid-column: 2; grid-row: 3; }
 #personal-data.profile-list > div:nth-child(7) { grid-column: 2; grid-row: 4; }
 
-.cast-skill-layout { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(320px, .8fr); column-gap: 16px; align-items: start; }
+.cast-skill-layout { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(396px, .8fr); column-gap: 16px; align-items: start; }
 .cast-skill-layout > .skill-section.is-general, .cast-skill-layout > .cast-skill-side { min-width: 0; }
 .cast-skill-layout > .skill-section.is-general .data-table { width: 100%; table-layout: fixed; }
 .cast-skill-layout > .skill-section.is-style { display: none; }
@@ -157,7 +157,9 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-general-column--right .skill-data-table--general { width: 396px; min-width: 396px; max-width: 396px; }
 .cast-general-column--right .skill-data-table--general col.skill-col-name { width: 212px; }
 .cast-general-column--right .skill-data-table--general :where(th, td):first-child { width: 212px; min-width: 212px; max-width: 212px; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) { width: 100%; min-width: 0; }
+.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) { width: 396px; min-width: 396px; max-width: 396px; }
+.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) col.skill-col-name { width: 212px; }
+.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) :where(th, td):first-child { width: 212px; min-width: 212px; max-width: 212px; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-level { width: 40px; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-suit { width: 36px; }
 .cast-skill-layout :is(.cast-general-column--right .skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(2) { width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
