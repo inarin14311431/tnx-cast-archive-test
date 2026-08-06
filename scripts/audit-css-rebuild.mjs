@@ -215,11 +215,14 @@ if (castGeometry.anchor !== 260 ||
 if (!/\.style-skill-view-table \.style-suit-cell\s*\{[^}]*text-align:\s*center/s.test(castPageSource)) {
   violations.push("css-next/pages/cast.css: public Style-skill suit marks are not centered on the General-skill suit columns");
 }
-if (!castPageSource.includes(".cast-general-columns") ||
-    !/\.cast-general-columns\s*\{[^}]*452px/s.test(castPageSource) ||
-    !/\.cast-general-column--left \.skill-data-table--general col\.skill-col-name\s*\{\s*width:\s*212px/s.test(castPageSource) ||
-    !/\.cast-general-column--left \.skill-data-table--general col\.skill-col-level\s*\{\s*width:\s*48px/s.test(castPageSource)) {
-  violations.push("css-next/pages/cast.css: two-column public General-skill layout or left 260px suit anchor missing");
+if (!/\.cast-general-columns\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*452px\)/s.test(castPageSource) ||
+    !/\.cast-general-column \.skill-data-table--general col\.skill-col-name\s*\{\s*width:\s*212px/s.test(castPageSource) ||
+    !/\.cast-general-column \.skill-data-table--general col\.skill-col-level\s*\{\s*width:\s*48px/s.test(castPageSource) ||
+    !/\.cast-general-column \.skill-data-table--general col\.skill-col-suit\s*\{\s*width:\s*var\(--cast-suit-column\)/s.test(castPageSource)) {
+  violations.push("css-next/pages/cast.css: two-column public General-skill fields do not share the 212/48/48px geometry");
+}
+if (!/\.style-skill-view-table\s*\{[^}]*width:\s*1328px[^}]*min-width:\s*1328px[^}]*max-width:\s*1328px/s.test(castPageSource)) {
+  violations.push("css-next/pages/cast.css: public Style-skill table can stretch and redistribute the fixed suit columns");
 }
 if (!/\.cast-tab\s*\{[^}]*color:\s*var\(--color-accent\)[^}]*background:/s.test(castPageSource) ||
     !/\.cast-tab\.is-active small\s*\{\s*color:\s*inherit/s.test(castPageSource)) {
