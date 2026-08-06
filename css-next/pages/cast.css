@@ -191,6 +191,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .style-skill-view-table col.style-col-description { width: 320px; }
 .style-skill-view-table col.style-col-page { width: 64px; }
 .style-skill-view-table :is(th, td) { padding: 5px 4px; }
+.style-skill-view-table .style-suit-cell { text-align: center; }
 .style-skill-view-table th { height: 36px; min-height: 36px; white-space: nowrap; font-size: .7rem; }
 .style-skill-view-table tbody :is(tr, td) { height: 45px; min-height: 45px; }
 .style-skill-view-table .style-field-scroll { height: 35px; min-height: 35px; padding: 7px 5px; overflow: hidden; font-size: .9rem; line-height: 1.2; white-space: nowrap; }

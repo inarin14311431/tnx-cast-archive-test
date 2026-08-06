@@ -212,6 +212,9 @@ if (castGeometry.anchor !== 260 ||
     castGeometry.styleName + castGeometry.styleKind + castGeometry.styleLevel !== castGeometry.anchor) {
   violations.push(`css-next/pages/cast.css: skill suit anchor mismatch ${JSON.stringify(castGeometry)}`);
 }
+if (!/\.style-skill-view-table \.style-suit-cell\s*\{[^}]*text-align:\s*center/s.test(castPageSource)) {
+  violations.push("css-next/pages/cast.css: public Style-skill suit marks are not centered on the General-skill suit columns");
+}
 if (!castPageSource.includes(".cast-general-columns") ||
     !/\.cast-general-columns\s*\{[^}]*452px/s.test(castPageSource) ||
     !/\.cast-general-column--left \.skill-data-table--general col\.skill-col-name\s*\{\s*width:\s*212px/s.test(castPageSource) ||
