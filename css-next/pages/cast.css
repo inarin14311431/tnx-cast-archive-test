@@ -1,5 +1,5 @@
 /* Public cast view. Rebuilt from the verified cyber-scan screen specification. */
-.cast-header, .cast-content { --cast-suit-anchor: 260px; --cast-suit-column: 48px; width: min(1400px, calc(100% - 32px)); margin-inline: auto; }
+.cast-header, .cast-content { --cast-suit-anchor: 248px; --cast-suit-column: 48px; width: min(1400px, calc(100% - 32px)); margin-inline: auto; }
 .cast-header { position: sticky; top: 0; z-index: 50; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; min-height: 106px; padding: 12px 0; border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent); background: color-mix(in srgb, var(--color-bg) 84%, transparent); backdrop-filter: blur(14px); box-shadow: 0 10px 30px rgb(0 0 0 / 28%); }
 body[data-page="cast.html"] .cast-header__actions { display: flex; align-items: center; gap: 10px; margin: 0 0 0 12px; }
 .cast-header__actions .cast-edit-link { display: grid; min-width: 150px; gap: 2px; padding: 9px 14px; border: 1px solid var(--color-border); color: var(--color-accent); background: var(--color-accent-soft); text-decoration: none; white-space: nowrap; }
@@ -131,9 +131,9 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-skill-layout > .skill-section.is-general .data-table { width: 100%; table-layout: fixed; }
 .cast-skill-layout > .skill-section.is-style { display: none; }
 .cast-skill-side { display: grid; gap: 16px; }
-.cast-general-columns { display: grid; grid-template-columns: repeat(2, 452px); gap: 12px; min-width: 0; max-width: 100%; overflow-x: auto; }
+.cast-general-columns { display: grid; grid-template-columns: repeat(2, 440px); gap: 12px; min-width: 0; max-width: 100%; overflow-x: hidden; }
 .cast-general-column { min-width: 0; }
-.cast-general-column .data-table { min-width: 452px; max-width: 452px; }
+.cast-general-column .data-table, .cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) { width: 440px; min-width: 440px; max-width: 440px; }
 .cast-general-column .data-table-wrapper { overflow-x: hidden; }
 .skill-section { display: grid; gap: 8px; margin-bottom: 16px; }
 .skill-section > h3 { margin: 0; color: var(--color-accent); font-size: 1rem; letter-spacing: .08em; }
@@ -147,19 +147,12 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .cast-suit-box, .style-suit-mark { box-sizing: border-box; display: inline-grid; width: 27px; min-width: 27px; height: 27px; min-height: 27px; place-items: center; border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-muted); background: var(--color-surface-alt); font-size: 21px; line-height: 1; }
 .cast-suit-box.is-active, .style-suit-mark.is-active { border-color: var(--color-accent); color: var(--color-bg); background: var(--color-accent); box-shadow: var(--shadow-glow); }
 .cast-skill-layout :is(.skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) { table-layout: fixed; }
-.cast-general-column .skill-data-table--general col.skill-col-name { width: 212px; }
-.cast-general-column .skill-data-table--general col.skill-col-level { width: 48px; }
-.cast-general-column .skill-data-table--general col.skill-col-suit { width: var(--cast-suit-column); }
-.cast-general-column .skill-data-table--general :where(th, td):first-child { width: 212px; min-width: 212px; max-width: 212px; }
-.cast-general-column .skill-data-table--general :where(th, td):nth-child(2) { width: 48px; min-width: 48px; max-width: 48px; text-align: center; }
-.cast-general-column .skill-data-table--general :where(th, td):nth-child(n+3):nth-child(-n+6) { width: var(--cast-suit-column); min-width: var(--cast-suit-column); max-width: var(--cast-suit-column); padding-inline: 2px; text-align: center; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) { width: 396px; min-width: 396px; max-width: 396px; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) col.skill-col-name { width: 212px; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) :where(th, td):first-child { width: 212px; min-width: 212px; max-width: 212px; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) col.skill-col-level { width: 40px; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) col.skill-col-suit { width: 36px; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(2) { width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
-.cast-skill-layout :is(.skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(n+3):nth-child(-n+6) { width: 36px; min-width: 36px; max-width: 36px; padding-inline: 1px; text-align: center; }
+.cast-skill-layout :is(.skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-name { width: 200px; }
+.cast-skill-layout :is(.skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-level { width: 48px; }
+.cast-skill-layout :is(.skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) col.skill-col-suit { width: var(--cast-suit-column); }
+.cast-skill-layout :is(.skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) :where(th, td):first-child { width: 200px; min-width: 200px; max-width: 200px; }
+.cast-skill-layout :is(.skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(2) { width: 48px; min-width: 48px; max-width: 48px; text-align: center; }
+.cast-skill-layout :is(.skill-data-table--general, .skill-data-table--social, .skill-data-table--connection) :where(th, td):nth-child(n+3):nth-child(-n+6) { width: var(--cast-suit-column); min-width: var(--cast-suit-column); max-width: var(--cast-suit-column); padding-inline: 2px; text-align: center; }
 #tab-session .panel-ability { border-color: var(--color-section-ability); box-shadow: inset 0 3px 0 color-mix(in srgb, var(--color-section-ability) 72%, transparent); }
 #tab-session .panel-skills { border-color: var(--color-section-skills); box-shadow: inset 0 3px 0 color-mix(in srgb, var(--color-section-skills) 72%, transparent); }
 #tab-session .panel-combos { border-color: #f7c76e; box-shadow: inset 0 3px 0 rgb(247 199 110 / 72%); }
@@ -173,7 +166,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .style-skill-view-editorlike { overflow: hidden; }
 .style-skill-view-wrapper { overflow-x: auto; }
 .style-skill-view-table { width: 1328px; min-width: 1328px; max-width: 1328px; table-layout: fixed; border-collapse: collapse; }
-.style-skill-view-table col.style-col-name { width: 140px; }
+.style-skill-view-table col.style-col-name { width: 128px; }
 .style-skill-view-table col.style-col-kind { width: 72px; }
 .style-skill-view-table col.style-col-level { width: 48px; }
 .style-skill-view-table col.style-col-suit { width: var(--cast-suit-column); }
@@ -184,7 +177,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .style-skill-view-table col.style-col-range { width: 58px; }
 .style-skill-view-table col.style-col-difficulty { width: 64px; }
 .style-skill-view-table col.style-col-confrontation { width: 64px; }
-.style-skill-view-table col.style-col-description { width: 320px; }
+.style-skill-view-table col.style-col-description { width: 332px; }
 .style-skill-view-table col.style-col-page { width: 64px; }
 .style-skill-view-table :is(th, td) { padding: 5px 4px; }
 .style-skill-view-table .style-suit-cell { text-align: center; }

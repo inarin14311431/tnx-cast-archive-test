@@ -206,7 +206,7 @@ const castGeometry = {
   styleKind: Number(castPageSource.match(/col\.style-col-kind\s*\{\s*width:\s*(\d+)px/)?.[1]),
   styleLevel: Number(castPageSource.match(/col\.style-col-level\s*\{\s*width:\s*(\d+)px/)?.[1])
 };
-if (castGeometry.anchor !== 260 ||
+if (castGeometry.anchor !== 248 ||
     castGeometry.suit !== 48 ||
     castGeometry.generalName + castGeometry.generalLevel !== castGeometry.anchor ||
     castGeometry.styleName + castGeometry.styleKind + castGeometry.styleLevel !== castGeometry.anchor) {
@@ -215,11 +215,12 @@ if (castGeometry.anchor !== 260 ||
 if (!/\.style-skill-view-table \.style-suit-cell\s*\{[^}]*text-align:\s*center/s.test(castPageSource)) {
   violations.push("css-next/pages/cast.css: public Style-skill suit marks are not centered on the General-skill suit columns");
 }
-if (!/\.cast-general-columns\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*452px\)/s.test(castPageSource) ||
-    !/\.cast-general-column \.skill-data-table--general col\.skill-col-name\s*\{\s*width:\s*212px/s.test(castPageSource) ||
-    !/\.cast-general-column \.skill-data-table--general col\.skill-col-level\s*\{\s*width:\s*48px/s.test(castPageSource) ||
-    !/\.cast-general-column \.skill-data-table--general col\.skill-col-suit\s*\{\s*width:\s*var\(--cast-suit-column\)/s.test(castPageSource)) {
-  violations.push("css-next/pages/cast.css: two-column public General-skill fields do not share the 212/48/48px geometry");
+if (!/\.cast-general-columns\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*440px\)[^}]*overflow-x:\s*hidden/s.test(castPageSource) ||
+    !/\.cast-general-column \.data-table, \.cast-skill-layout :is\(\.skill-data-table--social, \.skill-data-table--connection\)\s*\{[^}]*width:\s*440px[^}]*min-width:\s*440px[^}]*max-width:\s*440px/s.test(castPageSource) ||
+    !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-name\s*\{\s*width:\s*200px/s.test(castPageSource) ||
+    !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-level\s*\{\s*width:\s*48px/s.test(castPageSource) ||
+    !/\.cast-skill-layout :is\(\.skill-data-table--general, \.skill-data-table--social, \.skill-data-table--connection\) col\.skill-col-suit\s*\{\s*width:\s*var\(--cast-suit-column\)/s.test(castPageSource)) {
+  violations.push("css-next/pages/cast.css: General / Social / Connection fields do not share the scroll-free 200/48/48px geometry");
 }
 if (!/\.style-skill-view-table\s*\{[^}]*width:\s*1328px[^}]*min-width:\s*1328px[^}]*max-width:\s*1328px/s.test(castPageSource)) {
   violations.push("css-next/pages/cast.css: public Style-skill table can stretch and redistribute the fixed suit columns");
