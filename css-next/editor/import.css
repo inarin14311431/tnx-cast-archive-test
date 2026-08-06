@@ -18,6 +18,21 @@ body[data-page="sheet.html"] #general-skills .skill-inline-add {
   min-height: 42px;
   padding: 8px 12px;
 }
+body[data-page="sheet.html"] #outfit-list .outfit-category-add {
+  width: auto;
+  min-width: 148px;
+  height: 42px;
+  min-height: 42px;
+  padding: 8px 12px;
+  font-size: .72rem;
+  line-height: 1.05;
+}
+body[data-page="sheet.html"] #outfit-list .outfit-category-add small {
+  margin-top: 2px;
+  font-size: .54rem;
+  line-height: 1.05;
+  letter-spacing: .05em;
+}
 
 /* Style-skill actions: database tools on the left, row creation on the right. */
 body[data-page="sheet.html"] .sheet-section--style-skills .master-search-toolbar {
