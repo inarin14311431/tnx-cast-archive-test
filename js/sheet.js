@@ -59,7 +59,6 @@ let loading = false;
 let dirty = false;
 let saving = false;
 let pending = false;
-let saveTimer;
 let importMode = "";
 const styleBaseline = {};
 
@@ -81,6 +80,11 @@ async function init() {
 function bind() {
   document.addEventListener("input", onEdit);
   document.addEventListener("change", onEdit);
+  window.addEventListener("beforeunload", event => {
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
   document.addEventListener("click", event => {
     const toggle = event.target.closest(".section-toggle");
     if (toggle) {
@@ -714,8 +718,6 @@ function markDirty() {
   if (loading) return;
   dirty = true;
   setStatus("未保存", "unsaved");
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => saveAll(false), 1200);
 }
 
 function collectCharacter() {

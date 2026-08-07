@@ -204,7 +204,7 @@
         if(missing.length)throw new Error(`アウトフィット${missing.length}件を変換できませんでした：${missing.map(item=>item.name).join("、")}`);
         progress(100,"取込完了",`アウトフィット${items.length}件を現行形式へ変換しました`);
         const message=document.querySelector(MESSAGE);
-        if(message)message.textContent="取込が完了しました。画面へ反映し、自動保存を開始しました。";
+        if(message)message.textContent="取込が完了しました。画面へ反映しました。内容を確認し、保存ボタンでDBへ保存してください。";
         await sleep(250);
         if(dialog?.open)dialog.close();
       }catch(error){
