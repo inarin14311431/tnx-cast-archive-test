@@ -52,18 +52,8 @@
     if(control.title!==title)control.title=title;
   }
 
-  function syncCard(index){
-    const styleSelect=document.querySelector(`#style-${index}`);
-    const card=styleSelect?.closest(".style-card");
-    if(!card)return;
-    card.classList.toggle("is-style-selected",Boolean(styleSelect.value));
-  }
-
   function syncAll(){
-    for(let index=1;index<=3;index++){
-      syncButton(index);
-      syncCard(index);
-    }
+    for(let index=1;index<=3;index++)syncButton(index);
   }
 
   function setRaw(index,value){
@@ -181,13 +171,8 @@
         markSelect.dataset.markCycleBound="1";
         markSelect.addEventListener("change",queueSync);
       }
-      if(styleSelect.dataset.styleCardStateBound!=="1"){
-        styleSelect.dataset.styleCardStateBound="1";
-        styleSelect.addEventListener("change",queueSync);
-      }
 
       syncButton(index);
-      syncCard(index);
     }
 
     enhanced=ready;

@@ -137,16 +137,21 @@ body[data-page="sheet.html"] .form-grid { display: grid; grid-template-columns: 
 @keyframes sheet-image-scan { from { transform: translateY(0); } to { transform: translateY(770%); } }
 
 .style-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; min-width: 0; padding: 4px; }
-.style-card { display: grid; min-width: 0; align-content: start; padding: 0; background: transparent; }
+.style-card { position: relative; min-width: 0; padding: 16px 14px 0; overflow: hidden; border: 2px solid color-mix(in srgb, var(--color-accent) 42%, transparent); background: linear-gradient(145deg, color-mix(in srgb, var(--color-accent) 8%, transparent), color-mix(in srgb, var(--color-bg) 82%, #020a0f) 52%), rgb(0 0 0 / 28%); box-shadow: inset 0 0 24px color-mix(in srgb, var(--color-accent) 4.5%, transparent); transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease; }
+.style-card::before { position: absolute; top: 8px; right: 10px; color: color-mix(in srgb, var(--color-accent) 55%, var(--color-muted)); font: 800 .67rem/1 var(--font-data); letter-spacing: .14em; pointer-events: none; }
+.style-card:nth-child(1)::before { content: "STYLE 01"; }
+.style-card:nth-child(2)::before { content: "STYLE 02"; }
+.style-card:nth-child(3)::before { content: "STYLE 03"; }
 .style-card h3 { margin: 0 0 8px; color: var(--color-accent); }
 .style-card label { display: grid; gap: 3px; color: var(--color-muted); font-size: .76rem; }
-.style-card .style-fields { position: relative; z-index: 1; min-width: 0; padding: 12px; border: 2px solid color-mix(in srgb, var(--color-accent) 42%, transparent); background: linear-gradient(145deg, color-mix(in srgb, var(--color-accent) 8%, transparent), color-mix(in srgb, var(--color-bg) 82%, #020a0f) 52%), rgb(0 0 0 / 28%); box-shadow: inset 0 0 24px color-mix(in srgb, var(--color-accent) 4.5%, transparent); transition: border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+.style-card .style-fields { position: relative; z-index: 1; }
 .style-card .style-fields > label:first-child { gap: 8px; color: color-mix(in srgb, var(--color-accent) 42%, var(--color-text)); font-size: .82rem; font-weight: 800; letter-spacing: .08em; }
 .style-card .style-fields > label:first-child select { min-height: 56px; padding: 0 42px 0 14px; border: 2px solid color-mix(in srgb, var(--color-accent) 68%, transparent); color: var(--color-text); background: linear-gradient(90deg, color-mix(in srgb, var(--color-surface) 96%, var(--color-accent) 4%), color-mix(in srgb, var(--color-bg) 96%, transparent)); font-size: 1.18rem; font-weight: 900; line-height: normal; letter-spacing: .045em; text-shadow: var(--shadow-glow); box-shadow: inset 0 0 18px color-mix(in srgb, var(--color-accent) 6%, transparent); cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; }
 .style-card .style-fields > label:first-child select:hover { border-color: var(--color-accent-strong); background: linear-gradient(90deg, color-mix(in srgb, var(--color-surface) 88%, var(--color-accent) 12%), var(--color-surface)); }
 .style-card .style-fields > label:first-child select:focus { border-color: var(--color-text); outline: 0; box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 30%, transparent), var(--shadow-glow), inset 0 0 20px color-mix(in srgb, var(--color-accent) 10%, transparent); }
 .style-card .style-fields > label:first-child select option { color: var(--color-text); background: var(--color-surface); font-size: 1.08rem; font-weight: 700; }
-.style-card:is(.is-style-selected, :has(.style-fields > label:first-child select option:checked:not([value=""]))) .style-fields { border-color: var(--color-accent-strong); background: linear-gradient(145deg, color-mix(in srgb, var(--color-accent) 16%, transparent), color-mix(in srgb, var(--color-bg) 90%, transparent) 55%), rgb(0 0 0 / 30%); box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 19%, transparent), inset 0 0 28px color-mix(in srgb, var(--color-accent) 8%, transparent); }
+.style-card:is(.is-style-selected, :has(.style-fields > label:first-child select option:checked:not([value=""]))) { border-color: var(--color-accent-strong); background: linear-gradient(145deg, color-mix(in srgb, var(--color-accent) 16%, transparent), color-mix(in srgb, var(--color-bg) 90%, transparent) 55%), rgb(0 0 0 / 30%); box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent) 19%, transparent), inset 0 0 28px color-mix(in srgb, var(--color-accent) 8%, transparent); }
+.style-card:is(.is-style-selected, :has(.style-fields > label:first-child select option:checked:not([value=""])))::before { color: var(--color-accent-strong); text-shadow: var(--shadow-glow); }
 .style-card:is(.is-style-selected, :has(.style-fields > label:first-child select option:checked:not([value=""]))) .divine-field { background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 10%, transparent), color-mix(in srgb, var(--color-accent) 2.5%, transparent)); }
 .style-card:is(.is-style-selected, :has(.style-fields > label:first-child select option:checked:not([value=""]))) .divine-field ruby strong { color: var(--color-accent-strong); text-shadow: var(--shadow-glow); }
 .style-card .style-mark-source { display: none; }
@@ -167,7 +172,7 @@ body[data-page="sheet.html"] .form-grid { display: grid; grid-template-columns: 
 .style-card .style-mark-symbol--key { --style-mark-color: #c7a6ff; }
 .style-card .style-mark-symbol--key::before { background: var(--style-mark-color); }
 .style-card label[id$="-attribute-wrap"][hidden] { display: none; }
-.divine-field { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; align-items: end; min-height: 62px; margin-top: 8px; padding: 12px 10px 9px; border: 1px solid var(--color-border-muted); border-left: 2px solid color-mix(in srgb, var(--color-accent) 48%, transparent); background: var(--color-accent-soft); }
+.divine-field { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; align-items: end; min-height: 62px; margin-top: 10px; padding: 12px 10px 9px; border-top: 1px solid var(--color-border-muted); background: var(--color-accent-soft); }
 .divine-field > span { color: var(--color-accent); font-weight: 800; white-space: nowrap; }
 .divine-field ruby { line-height: 1.45; }
 .divine-field ruby strong { font-size: 1.1rem; }
@@ -217,8 +222,7 @@ body[data-page="sheet.html"] .exp-panel .sheet-import-control .floating-help-lin
   body[data-page="sheet.html"] .life-path-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   body[data-page="sheet.html"] .profile-media-grid { grid-template-columns: 1fr; }
   body[data-page="sheet.html"] .profile-text-field textarea { min-height: 280px; }
-  body[data-page="sheet.html"] .style-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  body[data-page="sheet.html"] .sheet-main .ability-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-page="sheet.html"] .style-grid, body[data-page="sheet.html"] .ability-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 767px) {
   body[data-page="sheet.html"] .form-grid, body[data-page="sheet.html"] .profile-top-grid, body[data-page="sheet.html"] .basic-profile-grid, body[data-page="sheet.html"] .personal-data-grid, body[data-page="sheet.html"] .life-path-grid, body[data-page="sheet.html"] .style-grid, body[data-page="sheet.html"] .ability-grid, body[data-page="sheet.html"] .skill-toolbar--three, body[data-page="sheet.html"] .skill-toolbar--two { grid-template-columns: 1fr; }
@@ -227,7 +231,7 @@ body[data-page="sheet.html"] .exp-panel .sheet-import-control .floating-help-lin
   body[data-page="sheet.html"] main.sheet-layout .sheet-section-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body[data-page="sheet.html"] .sheet-image-grid { grid-template-columns: 1fr; }
   body[data-page="sheet.html"] .sheet-image-editor .image-preview-panel { width: min(100%, 280px); margin-inline: auto; }
-  body[data-page="sheet.html"] #style-grid .style-card { padding: 0; }
+  body[data-page="sheet.html"] #style-grid .style-card { padding: 14px 10px 0; }
   body[data-page="sheet.html"] #style-grid .style-fields > label:first-child select { min-height: 52px; padding-left: 11px; font-size: 1.08rem; }
   body[data-page="sheet.html"] #style-grid .style-choice-row { grid-template-columns: minmax(0, 1fr) 70px; }
   body[data-page="sheet.html"] #style-grid .style-mark-cycle { min-width: 70px; }
