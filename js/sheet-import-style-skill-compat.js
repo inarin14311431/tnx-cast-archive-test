@@ -114,6 +114,24 @@
   const rowValue=row=>exactName(row?.querySelector('[data-f="name"]')?.value);
   const comparable=value=>matchName(value);
 
+  function alignImportedOrder(orderedKeys){
+    for(let targetIndex=0;targetIndex<orderedKeys.length;targetIndex++){
+      const key=orderedKeys[targetIndex];
+      let guard=rows().length+1;
+      while(guard-->0){
+        const currentRows=rows();
+        const currentIndex=currentRows.findIndex(row=>row.dataset.skillKey===key);
+        if(currentIndex===targetIndex)break;
+        if(currentIndex<targetIndex||currentIndex<0)return false;
+        const up=currentRows[currentIndex].querySelector('[data-skill-move="up"]');
+        if(!up||up.disabled)return false;
+        up.click();
+      }
+      if(rows()[targetIndex]?.dataset.skillKey!==key)return false;
+    }
+    return true;
+  }
+
   async function waitForNewRow(before,timeout=10000){
     const existing=rows().find(row=>!before.has(row.dataset.skillKey));
     if(existing)return existing;
@@ -189,20 +207,26 @@
     const expected=sourceSkills(data);
     await waitBaseImport(button);
     const used=new Set();
+    const orderedKeys=[];
     let repaired=0;
     for(const skill of expected){
       let row=rows().find(candidate=>!used.has(candidate.dataset.skillKey)&&comparable(rowValue(candidate))===comparable(skill.name));
       if(row){
         used.add(row.dataset.skillKey);
+        orderedKeys.push(row.dataset.skillKey);
         if(await applySkill(row,skill))repaired++;
       }else if(await addMissingSkill(skill)){
         row=rows().find(candidate=>!used.has(candidate.dataset.skillKey)&&rowValue(candidate)===skill.name);
-        if(row)used.add(row.dataset.skillKey);
+        if(row){
+          used.add(row.dataset.skillKey);
+          orderedKeys.push(row.dataset.skillKey);
+        }
         repaired++;
       }
     }
     const missing=expected.filter(skill=>!rows().some(row=>rowValue(row)===skill.name));
     if(missing.length)throw new Error(`スタイル技能${missing.length}件を取込できませんでした：${missing.map(item=>item.name).join("、")}`);
+    if(orderedKeys.length!==expected.length||!alignImportedOrder(orderedKeys))throw new Error("スタイル技能をJSONの並び順に復元できませんでした。");
     document.querySelector(ROOT)?.dispatchEvent(new Event("input",{bubbles:true}));
     window.TNXExperience?.queue?.();
     return {total:expected.length,repaired};

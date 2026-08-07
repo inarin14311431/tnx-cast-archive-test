@@ -572,7 +572,7 @@ function skillRow(skill, detail) {
     ? ` data-general-slot-column="${esc(skill._slotColumn || "right")}"`
     : "";
 
-  const ordered = skill.category === "social" || skill.category === "connection";
+  const ordered = skill.category === "social" || skill.category === "connection" || skill.category === "style";
   const categoryRows = ordered ? skills.filter(item => item.category === skill.category) : [];
   const categoryIndex = ordered ? categoryRows.findIndex(item => item._key === skill._key) : -1;
   const actions = `<div class="row-actions skill-row-actions">
