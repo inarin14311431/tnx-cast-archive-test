@@ -1,6 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_COLORS } from "./style-colors.js";
+import { getImageObjectPosition } from "./image-focus.js";
 
 const MAX_CASTS = 6;
 const FUNCTION_NAME = "publish-showcase";
@@ -200,7 +201,7 @@ function createLibraryCard(character, source) {
   return `
     <button class="cast-pick-card${source === "private" ? " private-history-card" : ""}${isSelected ? " is-selected" : ""}" type="button"
       data-${source}-character-id="${escapeAttribute(character.id)}" aria-pressed="${isSelected}"${isDisabled ? " disabled" : ""}>
-      <img src="${escapeAttribute(character.image_url || "./assets/placeholders/scan-failed.webp")}" alt="" loading="lazy">
+      <img src="${escapeAttribute(character.image_url || "./assets/placeholders/scan-failed.webp")}" alt="" loading="lazy" style="object-position:${escapeAttribute(getImageObjectPosition(character.image_url))}">
       <span class="cast-pick-card__body">
         ${privateLabel}
         <span class="cast-pick-card__handle">${escapeHtml(formatHandle(character.handle) || "NO HANDLE")}</span>
@@ -306,7 +307,7 @@ function createArchiveSelection(item, index) {
   return `
     <article class="selected-cast${isPrivate ? " selected-cast--private" : ""}" data-selected-index="${index}"
       data-character-id="${escapeAttribute(character.id)}" data-visibility="${isPrivate ? "private" : "public"}">
-      <img src="${escapeAttribute(character.image_url || "./assets/placeholders/scan-failed.webp")}" alt="">
+      <img src="${escapeAttribute(character.image_url || "./assets/placeholders/scan-failed.webp")}" alt="" style="object-position:${escapeAttribute(getImageObjectPosition(character.image_url))}">
       <div class="selected-cast__identity">
         <p class="selected-cast__slot">CAST ${String(index + 1).padStart(2, "0")}${isPrivate ? " // PRIVATE" : ""}</p>
         <h3>${escapeHtml(formatFullName(character))}</h3>
@@ -503,7 +504,7 @@ function createOutputCastCard(item, index) {
 
   return `
 <section class="cast-card" id="cast-${index + 1}">
-  <div class="cast-card__image"><img src="${escapeAttribute(character.image_url || "./assets/placeholders/scan-failed.webp")}" alt="${escapeAttribute(character.character_name || "")}"></div>
+  <div class="cast-card__image"><img src="${escapeAttribute(character.image_url || "./assets/placeholders/scan-failed.webp")}" alt="${escapeAttribute(character.character_name || "")}" style="object-position:${escapeAttribute(getImageObjectPosition(character.image_url))}"></div>
   <div class="cast-card__body">
     <p class="cast-card__slot">CAST ${String(index + 1).padStart(2, "0")}</p>
     ${reading ? `<p class="cast-card__reading">${escapeHtml(reading)}</p>` : ""}

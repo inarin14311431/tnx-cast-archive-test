@@ -1,5 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
+import { getImageFocusY, getImageObjectPosition, setImageFocusY } from "./image-focus.js";
 
 const BUCKET_NAME="character-images";
 const MAX_SOURCE_FILE_SIZE=20*1024*1024;
@@ -18,6 +19,8 @@ const fileInfo=document.querySelector("#image-file-info");
 const messageArea=document.querySelector("#image-message");
 const uploadButton=document.querySelector("#upload-button");
 const clearButton=document.querySelector("#clear-image-button");
+const focusInput=document.querySelector("#image-focus-y");
+const focusValue=document.querySelector("#image-focus-value");
 
 let currentUser=null;
 let character=null;
@@ -26,7 +29,7 @@ let uploadFile=null;
 let previewObjectUrl="";
 let processing=false;
 
-if(form&&fileInput&&preview&&fileInfo&&messageArea&&uploadButton&&clearButton)initialize();
+if(form&&fileInput&&preview&&fileInfo&&messageArea&&uploadButton&&clearButton&&focusInput&&focusValue)initialize();
 
 async function initialize(){
   currentUser=await requireAuth();
@@ -35,6 +38,14 @@ async function initialize(){
   fileInput.addEventListener("change",handleFileSelection);
   form.addEventListener("submit",uploadImage);
   clearButton.addEventListener("click",clearImageReference);
+  focusInput.addEventListener("input",event=>{
+    event.stopPropagation();
+    previewImageFocus();
+  });
+  focusInput.addEventListener("change",event=>{
+    event.stopPropagation();
+    void saveImageFocus();
+  });
   preview.addEventListener("error",()=>{
     if(!preview.src.endsWith("/assets/placeholders/scan-failed.webp"))preview.src=PLACEHOLDER;
   });
@@ -61,11 +72,14 @@ async function loadCharacter(publicId){
   if(!data)throw new Error("指定されたキャストを編集する権限がありません。");
 
   character=data;
+  setFocusControl(character.image_url);
   if(character.image_url){
     preview.src=character.image_url;
+    applyPreviewFocus();
     fileInfo.textContent="CURRENT IMAGE DATA";
   }else if(!sourceFile){
     preview.src=PLACEHOLDER;
+    applyPreviewFocus();
     fileInfo.textContent="NO IMAGE DATA";
   }
   return character;
@@ -80,6 +94,8 @@ async function handleFileSelection(){
 
   if(!sourceFile){
     preview.src=character?.image_url||PLACEHOLDER;
+    setFocusControl(character?.image_url||"");
+    applyPreviewFocus();
     fileInfo.textContent=character?.image_url?"CURRENT IMAGE DATA":"NO IMAGE SELECTED";
     setMessage("","");
     return;
@@ -102,6 +118,7 @@ async function handleFileSelection(){
     uploadFile=optimized.file;
     previewObjectUrl=URL.createObjectURL(uploadFile);
     preview.src=previewObjectUrl;
+    applyPreviewFocus();
 
     const reduction=Math.max(0,Math.round((1-uploadFile.size/sourceFile.size)*100));
     const sizeText=sourceFile===uploadFile
@@ -298,7 +315,11 @@ async function uploadImage(event){
   setControlsDisabled(true);
   let uploadedPath="";
   try{
+    const requestedFocus=focusInput.value;
     const target=await ensureCharacter();
+    focusInput.value=requestedFocus;
+    updateFocusValue(requestedFocus);
+    applyPreviewFocus();
     const previousImageUrl=target.image_url||"";
     setMessage("圧縮済み画像をアップロードしています…","loading");
 
@@ -310,8 +331,9 @@ async function uploadImage(event){
     if(uploadError)throw uploadError;
 
     const {data:publicUrlData}=supabase.storage.from(BUCKET_NAME).getPublicUrl(uploadedPath);
-    const imageUrl=publicUrlData.publicUrl;
-    if(!imageUrl)throw new Error("公開URLを取得できませんでした。");
+    const publicImageUrl=publicUrlData.publicUrl;
+    if(!publicImageUrl)throw new Error("公開URLを取得できませんでした。");
+    const imageUrl=setImageFocusY(publicImageUrl,requestedFocus);
 
     const {error:updateError}=await supabase
       .from("characters")
@@ -329,6 +351,8 @@ async function uploadImage(event){
     uploadFile=null;
     fileInput.value="";
     preview.src=imageUrl;
+    applyPreviewFocus();
+    setFocusControl(imageUrl);
     fileInfo.textContent=`CURRENT IMAGE DATA / ${formatBytes(uploadedSize)} / OPTIMIZED`;
     setMessage("キャスト画像を圧縮して登録しました。","success");
     document.dispatchEvent(new CustomEvent("tnx-image-updated",{detail:{imageUrl}}));
@@ -378,6 +402,7 @@ async function clearImageReference(){
     character.image_url="";
     await removeOwnedStorageObject(previousImageUrl);
     resetSelection();
+    setFocusControl("");
     setMessage("キャスト画像を解除しました。","success");
     document.dispatchEvent(new CustomEvent("tnx-image-updated",{detail:{imageUrl:""}}));
   }catch(error){
@@ -404,7 +429,7 @@ function getStorageObjectPath(imageUrl){
   const marker=`/storage/v1/object/public/${BUCKET_NAME}/`;
   const index=String(imageUrl||"").indexOf(marker);
   if(index<0)return"";
-  const encodedPath=String(imageUrl).slice(index+marker.length).split("?")[0];
+  const encodedPath=String(imageUrl).slice(index+marker.length).split(/[?#]/)[0];
   try{return decodeURIComponent(encodedPath);}catch{return encodedPath;}
 }
 
@@ -416,6 +441,7 @@ function setControlsDisabled(disabled){
   uploadButton.disabled=disabled;
   clearButton.disabled=disabled;
   fileInput.disabled=disabled;
+  focusInput.disabled=disabled||(!character?.image_url&&!uploadFile);
 }
 
 function resetSelection(){
@@ -424,7 +450,70 @@ function resetSelection(){
   fileInput.value="";
   releasePreviewUrl();
   preview.src=character?.image_url||PLACEHOLDER;
+  applyPreviewFocus();
   fileInfo.textContent=character?.image_url?"CURRENT IMAGE DATA":"NO IMAGE SELECTED";
+}
+
+function setFocusControl(imageUrl){
+  const focus=getImageFocusY(imageUrl);
+  focusInput.value=String(focus);
+  focusInput.disabled=!imageUrl||processing;
+  updateFocusValue(focus);
+  applyPreviewFocus();
+}
+
+function previewImageFocus(){
+  updateFocusValue(focusInput.value);
+  applyPreviewFocus();
+}
+
+function applyPreviewFocus(){
+  preview.style.objectPosition=`50% ${Number(focusInput.value||0)}%`;
+}
+
+function updateFocusValue(value){
+  const focus=Math.min(100,Math.max(0,Number(value)||0));
+  const label=focus===0?"上端":focus===100?"下端":focus<35?"上寄せ":focus>65?"下寄せ":"中央";
+  focusValue.textContent=`${label} / ${focus}%`;
+}
+
+async function saveImageFocus(){
+  if(processing)return;
+  if(sourceFile&&uploadFile){
+    setMessage("この表示位置は画像登録時に保存されます。","");
+    return;
+  }
+  if(!character?.image_url)return;
+  const nextUrl=setImageFocusY(character.image_url,focusInput.value);
+  if(nextUrl===character.image_url){
+    setMessage("画像表示位置は変更されていません。","");
+    return;
+  }
+
+  processing=true;
+  setControlsDisabled(true);
+  try{
+    const {error}=await supabase
+      .from("characters")
+      .update({image_url:nextUrl})
+      .eq("id",character.id)
+      .eq("owner_id",currentUser.id);
+    if(error)throw error;
+
+    character.image_url=nextUrl;
+    preview.src=nextUrl;
+    preview.style.objectPosition=getImageObjectPosition(nextUrl);
+    updateFocusValue(getImageFocusY(nextUrl));
+    setMessage("画像表示位置を保存しました。","success");
+    document.dispatchEvent(new CustomEvent("tnx-image-updated",{detail:{imageUrl:nextUrl}}));
+  }catch(error){
+    console.error(error);
+    setFocusControl(character.image_url);
+    setMessage("画像表示位置の保存に失敗しました。","error");
+  }finally{
+    processing=false;
+    setControlsDisabled(false);
+  }
 }
 
 function releasePreviewUrl(){

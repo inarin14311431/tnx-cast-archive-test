@@ -17,7 +17,7 @@
 @import url("./components/row-actions.css");
 @import url("./components/dialog.css");
 @import url("./components/status.css");
-@import url("./editor/editor.css?v=12");
+@import url("./editor/editor.css?v=13");
 @import url("./editor/skills.css?v=3");
 @import url("./editor/style-skills.css?v=2");
 @import url("./editor/outfits.css?v=7");
@@ -25,7 +25,7 @@
 @import url("./pages/archive.css?v=2");
 @import url("./pages/cast.css?v=22");
 @import url("./pages/auth.css");
-@import url("./pages/account.css?v=9");
+@import url("./pages/account.css?v=10");
 @import url("./pages/acts.css");
 @import url("./pages/showcase.css?v=2");
 @import url("./responsive.css?v=7");

@@ -1,4 +1,5 @@
 import { supabase } from "./supabase-client.js";
+import { getImageObjectPosition } from "./image-focus.js";
 
 const content = document.querySelector("#cast-content");
 const statusText = document.querySelector("#cast-status");
@@ -155,6 +156,7 @@ function renderImage(character) {
     "./assets/placeholders/scan-failed.webp";
 
   image.alt = character.character_name;
+  image.style.objectPosition = getImageObjectPosition(character.image_url);
 
   image.addEventListener(
     "error",

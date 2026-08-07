@@ -1,3 +1,5 @@
+import { getImageObjectPosition } from "./image-focus.js";
+
 const SUPABASE_URL = "https://koprmbkoftuuffslhsvt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi";
 
@@ -224,6 +226,7 @@ function createCastCard(item, index) {
   const image = document.createElement("img");
   image.src = safeImageUrl(item.imageUrl) || "./assets/placeholders/scan-failed.webp";
   image.alt = text(item.imageAlt) || text(item.fullName);
+  image.style.objectPosition = getImageObjectPosition(item.imageUrl);
   image.loading = index === 0 ? "eager" : "lazy";
   image.decoding = "async";
   imageWrap.append(image);
