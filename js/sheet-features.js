@@ -7,7 +7,6 @@ initialize();
 
 function initialize(){
   initializeSaveButtonState();
-  initializeOutfitDescriptions();
 }
 
 function initializeSaveButtonState(){
@@ -49,41 +48,4 @@ function initializeSaveButtonState(){
     characterData:true
   });
   sync();
-}
-
-function initializeOutfitDescriptions(){
-  const list=document.querySelector("#outfit-list");
-  if(!list)return;
-  let queued=false;
-  const refresh=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;fixOutfitDescriptions();});};
-  new MutationObserver(refresh).observe(list,{childList:true,subtree:true});
-  refresh();
-}
-
-function fixOutfitDescriptions(){
-  document.querySelectorAll('#outfit-list .outfit-form').forEach(card=>{
-    const fields=card.querySelector('.outfit-fields');
-    if(!fields)return;
-    const descriptions=[...fields.querySelectorAll('[data-o="description"]')];
-    if(!descriptions.length)return;
-    const first=descriptions[0];
-    for(const duplicate of descriptions.slice(1))duplicate.closest('label')?.remove();
-    if(first.tagName==='TEXTAREA'){
-      first.rows=3;
-      first.closest('label')?.classList.add('outfit-wide');
-      return;
-    }
-    const textarea=document.createElement('textarea');
-    textarea.dataset.o='description';
-    textarea.rows=3;
-    textarea.value=first.value;
-    textarea.addEventListener('input',()=>{
-      first.value=textarea.value;
-      first.dispatchEvent(new Event('input',{bubbles:true}));
-    });
-    first.hidden=true;
-    first.removeAttribute('data-o');
-    first.after(textarea);
-    first.closest('label')?.classList.add('outfit-wide');
-  });
 }

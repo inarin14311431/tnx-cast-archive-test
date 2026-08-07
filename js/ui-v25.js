@@ -15,7 +15,6 @@ function initializeSheetUi(){
   bindSheetActions();
   [generalArea,styleArea].filter(Boolean).forEach(container=>new MutationObserver(queueRefresh).observe(container,{childList:true,subtree:true}));
   arrangeSkillUi();
-  initializeOutfitEnhancer();
   updateViewLink();
   const status=document.querySelector("#save-status");
   if(status)new MutationObserver(updateViewLink).observe(status,{childList:true,subtree:true});
@@ -138,9 +137,6 @@ function moveSkill(button){
   requestAnimationFrame(()=>ensureSortButtons());
   document.querySelector("#save-status")?.classList.add("unsaved");
 }
-
-function initializeOutfitEnhancer(){const list=document.querySelector("#outfit-list");if(!list)return;let queued=false;const refresh=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;enhanceOutfits();});};new MutationObserver(refresh).observe(list,{childList:true,subtree:true});refresh();}
-function enhanceOutfits(){document.querySelectorAll("#outfit-list .outfit-form").forEach(card=>{if(card.dataset.v25Enhanced==="1")return;const fields=card.querySelector(".outfit-fields"),header=card.querySelector(":scope>header");if(!fields||!header)return;const category=header.querySelector("label"),remove=header.querySelector("[data-delete-outfit]");if(category)fields.prepend(category);[...fields.querySelectorAll("label")].forEach(label=>{const caption=[...label.childNodes].find(node=>node.nodeType===Node.TEXT_NODE)?.textContent.trim()||"";if(caption.startsWith("外界"))label.remove();});fields.querySelectorAll('input[data-o="purchase_value"],input[data-o="experience_cost"]').forEach(input=>{input.type="number";input.min="0";input.max="999";input.step="1";input.inputMode="numeric";});const original=fields.querySelector('input[data-o="description"]');if(original&&!fields.querySelector("textarea[data-description-proxy]")){const textarea=document.createElement("textarea");textarea.rows=3;textarea.value=original.value;textarea.dataset.descriptionProxy="1";textarea.setAttribute("aria-label","解説");textarea.addEventListener("input",()=>{original.value=textarea.value;original.dispatchEvent(new Event("input",{bubbles:true}));});original.hidden=true;original.after(textarea);original.closest("label")?.classList.add("outfit-description");}if(remove){const wrap=document.createElement("div");wrap.className="outfit-delete-cell";wrap.append(remove);fields.append(wrap);}card.dataset.v25Enhanced="1";});}
 
 function updateViewLink(){const link=document.querySelector("#cast-view-button");if(!link)return;const id=new URLSearchParams(location.search).get("id")?.trim();if(!id){link.classList.remove("is-visible");link.removeAttribute("href");return;}link.href=`./cast.html?id=${encodeURIComponent(id)}`;link.classList.add("is-visible");}
 
