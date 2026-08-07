@@ -5,7 +5,7 @@
   const MESSAGE="#legacy-import-message";
   const ROOT="#style-skills";
   const ADD="#add-style-skill";
-  const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  const BASE_IMPORT_EVENT="tnx:legacy-import-base-finished";
   const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
   const canonical=value=>String(value||"").trim()
     .replace(/\[\s*["']?([^\]"']+)["']?\s*\]/g,".$1")
@@ -193,19 +193,28 @@
     return applySkill(row,data);
   }
 
-  async function waitBaseImport(button){
-    for(let attempt=0;attempt<2400;attempt++){
-      const message=document.querySelector(MESSAGE)?.textContent||"";
-      if(/取込エラー/.test(message))throw new Error(message);
-      if(!button.disabled&&/反映しました/.test(message))return;
-      await sleep(25);
-    }
-    throw new Error("基本取込の完了を確認できませんでした。");
+  function waitBaseImport(){
+    return new Promise((resolve,reject)=>{
+      let settled=false,timer=0;
+      const finish=(callback,value)=>{
+        if(settled)return;
+        settled=true;
+        window.clearTimeout(timer);
+        document.removeEventListener(BASE_IMPORT_EVENT,onFinished);
+        callback(value);
+      };
+      const onFinished=event=>{
+        if(event.detail?.ok)finish(resolve,event.detail);
+        else finish(reject,new Error(event.detail?.error||"基本取込に失敗しました。"));
+      };
+      document.addEventListener(BASE_IMPORT_EVENT,onFinished,{once:true});
+      timer=window.setTimeout(()=>finish(reject,new Error("基本取込の完了を確認できませんでした。")),150000);
+    });
   }
 
-  async function repair(data,button){
+  async function repair(data){
     const expected=sourceSkills(data);
-    await waitBaseImport(button);
+    await waitBaseImport();
     const used=new Set();
     const orderedKeys=[];
     let repaired=0;
@@ -238,7 +247,7 @@
     let data;
     try{data=JSON.parse(document.querySelector(TEXT)?.value||"")}catch{return}
     window.TNXLegacyStyleSkillRepair=(async()=>{
-      try{return await repair(data,button)}
+      try{return await repair(data)}
       catch(error){
         console.error(error);
         const message=document.querySelector(MESSAGE);
