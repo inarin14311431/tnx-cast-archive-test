@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { getImageObjectPosition } from "./image-focus.js";
+import { getImageObjectPosition } from "./image-focus.js?v=2";
 
 const content = document.querySelector("#cast-content");
 const statusText = document.querySelector("#cast-status");

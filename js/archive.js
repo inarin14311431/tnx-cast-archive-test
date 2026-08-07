@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { renderAuthNavigation } from "./auth-state.js?v=4";
 import { getStyleColor } from "./style-colors.js";
-import { getImageObjectPosition } from "./image-focus.js";
+import { getImageObjectPosition } from "./image-focus.js?v=2";
 
 const ALLOWED_PAGE_SIZES = new Set([12, 25, 50, 100]);
 const ALLOWED_SORTS = new Set(["updated-desc", "updated-asc", "name-asc", "name-desc", "exp-desc", "exp-asc"]);

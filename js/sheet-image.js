@@ -1,6 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
-import { getImageFocusY, getImageObjectPosition, setImageFocusY } from "./image-focus.js";
+import { getImageFocusX, getImageFocusY, getImageObjectPosition, setImageFocusX, setImageFocusY } from "./image-focus.js?v=2";
 
 const BUCKET_NAME="character-images";
 const MAX_SOURCE_FILE_SIZE=20*1024*1024;
@@ -19,8 +19,10 @@ const fileInfo=document.querySelector("#image-file-info");
 const messageArea=document.querySelector("#image-message");
 const uploadButton=document.querySelector("#upload-button");
 const clearButton=document.querySelector("#clear-image-button");
-const focusInput=document.querySelector("#image-focus-y");
-const focusValue=document.querySelector("#image-focus-value");
+const focusXInput=document.querySelector("#image-focus-x");
+const focusYInput=document.querySelector("#image-focus-y");
+const focusXValue=document.querySelector("#image-focus-x-value");
+const focusYValue=document.querySelector("#image-focus-y-value");
 
 let currentUser=null;
 let character=null;
@@ -29,7 +31,7 @@ let uploadFile=null;
 let previewObjectUrl="";
 let processing=false;
 
-if(form&&fileInput&&preview&&fileInfo&&messageArea&&uploadButton&&clearButton&&focusInput&&focusValue)initialize();
+if(form&&fileInput&&preview&&fileInfo&&messageArea&&uploadButton&&clearButton&&focusXInput&&focusYInput&&focusXValue&&focusYValue)initialize();
 
 async function initialize(){
   currentUser=await requireAuth();
@@ -38,14 +40,16 @@ async function initialize(){
   fileInput.addEventListener("change",handleFileSelection);
   form.addEventListener("submit",uploadImage);
   clearButton.addEventListener("click",clearImageReference);
-  focusInput.addEventListener("input",event=>{
-    event.stopPropagation();
-    previewImageFocus();
-  });
-  focusInput.addEventListener("change",event=>{
-    event.stopPropagation();
-    void saveImageFocus();
-  });
+  for(const input of [focusXInput,focusYInput]){
+    input.addEventListener("input",event=>{
+      event.stopPropagation();
+      previewImageFocus();
+    });
+    input.addEventListener("change",event=>{
+      event.stopPropagation();
+      void saveImageFocus();
+    });
+  }
   preview.addEventListener("error",()=>{
     if(!preview.src.endsWith("/assets/placeholders/scan-failed.webp"))preview.src=PLACEHOLDER;
   });
@@ -315,10 +319,12 @@ async function uploadImage(event){
   setControlsDisabled(true);
   let uploadedPath="";
   try{
-    const requestedFocus=focusInput.value;
+    const requestedFocusX=focusXInput.value;
+    const requestedFocusY=focusYInput.value;
     const target=await ensureCharacter();
-    focusInput.value=requestedFocus;
-    updateFocusValue(requestedFocus);
+    focusXInput.value=requestedFocusX;
+    focusYInput.value=requestedFocusY;
+    updateFocusValues(requestedFocusX,requestedFocusY);
     applyPreviewFocus();
     const previousImageUrl=target.image_url||"";
     setMessage("圧縮済み画像をアップロードしています…","loading");
@@ -333,7 +339,10 @@ async function uploadImage(event){
     const {data:publicUrlData}=supabase.storage.from(BUCKET_NAME).getPublicUrl(uploadedPath);
     const publicImageUrl=publicUrlData.publicUrl;
     if(!publicImageUrl)throw new Error("公開URLを取得できませんでした。");
-    const imageUrl=setImageFocusY(publicImageUrl,requestedFocus);
+    const imageUrl=setImageFocusY(
+      setImageFocusX(publicImageUrl,requestedFocusX),
+      requestedFocusY
+    );
 
     const {error:updateError}=await supabase
       .from("characters")
@@ -441,7 +450,8 @@ function setControlsDisabled(disabled){
   uploadButton.disabled=disabled;
   clearButton.disabled=disabled;
   fileInput.disabled=disabled;
-  focusInput.disabled=disabled||(!character?.image_url&&!uploadFile);
+  focusXInput.disabled=disabled||(!character?.image_url&&!uploadFile);
+  focusYInput.disabled=disabled||(!character?.image_url&&!uploadFile);
 }
 
 function resetSelection(){
@@ -455,26 +465,32 @@ function resetSelection(){
 }
 
 function setFocusControl(imageUrl){
-  const focus=getImageFocusY(imageUrl);
-  focusInput.value=String(focus);
-  focusInput.disabled=!imageUrl||processing;
-  updateFocusValue(focus);
+  const focusX=getImageFocusX(imageUrl);
+  const focusY=getImageFocusY(imageUrl);
+  focusXInput.value=String(focusX);
+  focusYInput.value=String(focusY);
+  focusXInput.disabled=!imageUrl||processing;
+  focusYInput.disabled=!imageUrl||processing;
+  updateFocusValues(focusX,focusY);
   applyPreviewFocus();
 }
 
 function previewImageFocus(){
-  updateFocusValue(focusInput.value);
+  updateFocusValues(focusXInput.value,focusYInput.value);
   applyPreviewFocus();
 }
 
 function applyPreviewFocus(){
-  preview.style.objectPosition=`50% ${Number(focusInput.value||0)}%`;
+  preview.style.objectPosition=`${Number(focusXInput.value||50)}% ${Number(focusYInput.value||0)}%`;
 }
 
-function updateFocusValue(value){
-  const focus=Math.min(100,Math.max(0,Number(value)||0));
-  const label=focus===0?"上端":focus===100?"下端":focus<35?"上寄せ":focus>65?"下寄せ":"中央";
-  focusValue.textContent=`${label} / ${focus}%`;
+function updateFocusValues(xValue,yValue){
+  const focusX=Math.min(100,Math.max(0,Number(xValue)||0));
+  const focusY=Math.min(100,Math.max(0,Number(yValue)||0));
+  const xLabel=focusX===0?"左端":focusX===100?"右端":focusX<35?"左寄せ":focusX>65?"右寄せ":"中央";
+  const yLabel=focusY===0?"上端":focusY===100?"下端":focusY<35?"上寄せ":focusY>65?"下寄せ":"中央";
+  focusXValue.textContent=`${xLabel} / ${focusX}%`;
+  focusYValue.textContent=`${yLabel} / ${focusY}%`;
 }
 
 async function saveImageFocus(){
@@ -484,7 +500,10 @@ async function saveImageFocus(){
     return;
   }
   if(!character?.image_url)return;
-  const nextUrl=setImageFocusY(character.image_url,focusInput.value);
+  const nextUrl=setImageFocusY(
+    setImageFocusX(character.image_url,focusXInput.value),
+    focusYInput.value
+  );
   if(nextUrl===character.image_url){
     setMessage("画像表示位置は変更されていません。","");
     return;
@@ -503,7 +522,7 @@ async function saveImageFocus(){
     character.image_url=nextUrl;
     preview.src=nextUrl;
     preview.style.objectPosition=getImageObjectPosition(nextUrl);
-    updateFocusValue(getImageFocusY(nextUrl));
+    updateFocusValues(getImageFocusX(nextUrl),getImageFocusY(nextUrl));
     setMessage("画像表示位置を保存しました。","success");
     document.dispatchEvent(new CustomEvent("tnx-image-updated",{detail:{imageUrl:nextUrl}}));
   }catch(error){

@@ -1,4 +1,4 @@
-import { getImageObjectPosition } from "./image-focus.js";
+import { getImageObjectPosition } from "./image-focus.js?v=2";
 
 const SUPABASE_URL = "https://koprmbkoftuuffslhsvt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi";

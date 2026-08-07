@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_COLORS } from "./style-colors.js";
-import { getImageObjectPosition } from "./image-focus.js";
+import { getImageObjectPosition } from "./image-focus.js?v=2";
 
 const MAX_CASTS = 6;
 const FUNCTION_NAME = "publish-showcase";
