@@ -202,6 +202,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .style-description-toggle-all:is(:hover, :focus-visible) { filter: brightness(1.18); transform: translateY(-1px); }
 .style-description-toggle-all[aria-pressed="true"] { border-color: #ffb0d5; color: #fff7fb; background: #d63278; box-shadow: 0 0 10px rgb(255 70 151 / 62%); }
 .style-skill-public-separator td { padding: 7px 10px; color: var(--color-accent); background: var(--color-accent-soft); font-weight: 800; }
+.style-skill-public-separator__label { margin-right: .45rem; font-size: 1.15rem; line-height: 1.2; }
 
 .cast-outfit-container { display: grid; gap: 16px; min-width: 0; }
 .cast-outfit-section { min-width: 0; overflow: hidden; }

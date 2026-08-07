@@ -2,24 +2,11 @@
 <html lang="ja">
 <head>
   <script src="./js/css-next-theme.js"></script>
-  <link rel="stylesheet" href="./css-next/index.css?v=27" data-css-system="next">
+  <link rel="stylesheet" href="./css-next/index.css?v=29" data-css-system="next">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="index, follow">
   <title>キャストデータ // N◎VA ARCHIVE</title>
-  <script>
-    (() => {
-      const key = "tnx-cast-site-theme";
-      const themes = new Set(["nova", "moon", "star", "eden", "vlad", "lutetia", "buena", "canberra", "hongkong", "fesler", "intron", "axleraters", "inagaki", "astral", "orbital", "japanese-army"]);
-      let theme = "nova";
-      try {
-        const stored = localStorage.getItem(key);
-        if (themes.has(stored)) theme = stored;
-      } catch {}
-      document.documentElement.dataset.theme = theme;
-      document.documentElement.style.colorScheme = ["intron", "orbital"].includes(theme) ? "light" : "dark";
-    })();
-  </script>
 </head>
 <body data-page="cast.html">
   <div class="background-grid"></div><div class="scanlines"></div>
