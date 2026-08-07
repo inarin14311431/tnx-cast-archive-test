@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { renderAuthNavigation } from "./auth-state.js?v=4";
 import { getStyleColor } from "./style-colors.js";
-import { getImageObjectPosition } from "./image-focus.js?v=2";
+import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=3";
 
 const ALLOWED_PAGE_SIZES = new Set([12, 25, 50, 100]);
 const ALLOWED_SORTS = new Set(["updated-desc", "updated-asc", "name-asc", "name-desc", "exp-desc", "exp-asc"]);
@@ -223,6 +223,7 @@ function renderCharacters(characters) {
 
 function createCharacterCard(character) {
   const imageUrl = character.image_url || "./assets/placeholders/scan-failed.webp";
+  const imagePosition = getImageObjectPosition(character.image_url);
   const displayId = obfuscatePublicId(character.public_id);
   const archiveReturnUrl = `./index.html${window.location.search}`;
   const castUrl = `./cast.html?id=${encodeURIComponent(character.public_id)}&return=${encodeURIComponent(archiveReturnUrl)}`;
@@ -239,7 +240,7 @@ function createCharacterCard(character) {
     <article class="cast-card">
       <a href="${escapeAttribute(castUrl)}" data-archive-cast-link>
         <div class="cast-card__image">
-          <img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(character.character_name)}" loading="lazy" style="object-position:${escapeAttribute(getImageObjectPosition(imageUrl))}">
+          <img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(character.character_name)}" loading="lazy" style="object-position:${escapeAttribute(imagePosition)};--tnx-image-scale:${getImageScale(character.image_url)};--tnx-image-origin:${escapeAttribute(getImageTransformOrigin(character.image_url))}">
           <span class="cast-card__scanline"></span>
         </div>
         <div class="cast-card__body">
