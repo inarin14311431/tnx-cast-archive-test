@@ -7,7 +7,6 @@ initialize();
 
 function initialize(){
   initializeSaveButtonState();
-  initializeSkillDetails();
   initializeOutfitDescriptions();
 }
 
@@ -50,23 +49,6 @@ function initializeSaveButtonState(){
     characterData:true
   });
   sync();
-}
-
-function initializeSkillDetails(){
-  const area=document.querySelector("#style-skills");
-  if(!area)return;
-  let queued=false;
-  const refresh=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;fixStyleDetails();});};
-  new MutationObserver(refresh).observe(area,{childList:true,subtree:true});
-  refresh();
-}
-
-function fixStyleDetails(){
-  document.querySelectorAll('#style-skills tr[data-skill-key]').forEach(row=>{
-    const textarea=row.querySelector('textarea[data-f="description"]');
-    if(!textarea)return;
-    textarea.placeholder="タイミング、対象、射程、目標値、対決、解説など";
-  });
 }
 
 function initializeOutfitDescriptions(){
