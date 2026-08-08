@@ -264,14 +264,17 @@ body[data-page="cast.html"] .style-skill-view-table tbody td:last-child,
 body[data-page="cast.html"] .cast-outfit-table tbody td:last-child { border-right-color: var(--color-border-muted); }
 .combo-container { display: grid; gap: 8px; }
 .combo-card { border: 1px solid var(--color-border); background: var(--color-surface); }
-.combo-card__header { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 34px; padding: 5px 10px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-alt); }
-.combo-card__header > div { display: flex; align-items: baseline; min-width: 0; gap: 10px; }
+.combo-card__header { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; min-height: 34px; padding: 5px 10px; border-bottom: 1px solid var(--color-border); background: var(--color-surface-alt); }
+.combo-card__title { display: flex; align-items: baseline; min-width: 0; gap: 10px; }
 .combo-card__index { flex: 0 0 auto; color: var(--color-muted); font: 700 .62rem/1 var(--font-data); letter-spacing: .05em; }
 .combo-card__header h3 { min-width: 0; font-size: .94rem; line-height: 1.15; overflow-wrap: anywhere; }
-.combo-card__body { padding: 7px 10px; }
-.combo-card__meta { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(120px, .55fr) minmax(120px, .65fr); gap: 6px; }
-.combo-card__meta > div { min-width: 0; min-height: 32px; padding: 4px 7px; border: 1px solid var(--color-border-muted); }
-.combo-card__meta > div:not(.combo-card__skills-block) { display: flex; align-items: baseline; gap: 7px; }
+.combo-card__stats { display: grid; grid-template-columns: 90px 94px; gap: 4px; margin: 0; }
+.combo-card__stats > div { display: flex; align-items: baseline; justify-content: space-between; min-width: 0; gap: 4px; padding: 3px 5px; border: 1px solid var(--color-border-muted); }
+.combo-card__stats dt { flex: 0 0 auto; color: var(--color-muted); font-size: .56rem; white-space: nowrap; }
+.combo-card__stats dd { min-width: 0; margin: 0; font-size: .76rem; font-weight: 750; text-align: right; white-space: nowrap; }
+.combo-card__body { display: grid; grid-template-columns: minmax(360px, 1.15fr) minmax(0, .85fr) auto; align-items: center; gap: 6px; padding: 6px 10px; }
+.combo-card__meta { min-width: 0; margin: 0; }
+.combo-card__meta > div { min-width: 0; min-height: 30px; padding: 3px 6px; border: 1px solid var(--color-border-muted); }
 .combo-card__meta dt { flex: 0 0 auto; color: var(--color-muted); font-size: .62rem; white-space: nowrap; }
 .combo-card__meta dd { min-width: 0; margin: 0; }
 body[data-page="cast.html"] .combo-card__ability { align-self: center; min-width: 72px; padding: 3px 8px; border: 1px solid var(--color-border-muted); border-radius: 999px; color: var(--color-text); background: color-mix(in srgb, var(--color-surface) 78%, transparent); font-size: .84rem; font-weight: 750; text-align: center; }
@@ -288,10 +291,11 @@ body[data-page="cast.html"] .combo-card__ability--life { border-color: color-mix
 .combo-runtime-toolbar__label strong { color: var(--color-accent); font-size: .74rem; }
 .combo-runtime-toolbar__label small { color: var(--color-muted); font: 700 .54rem/1 var(--font-data); letter-spacing: .1em; }
 .combo-runtime-toolbar > button { min-height: 28px; padding: 3px 8px; font-size: .64rem; }
-.combo-card__runtime-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.combo-card__detail-copy { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
 .combo-card__outcome { min-width: 0; font-size: .76rem; line-height: 1.3; overflow-wrap: anywhere; }
-.combo-card__description { margin-top: 6px; font-size: .78rem; line-height: 1.4; }
-.combo-card__usage { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--color-accent) 54%, var(--color-border-muted)); background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface-alt)); }
+.combo-card__description { min-width: 0; font-size: .74rem; line-height: 1.3; overflow-wrap: anywhere; }
+.combo-card__outcome + .combo-card__description::before { margin-right: 8px; color: var(--color-border); content: "/"; }
+.combo-card__usage { display: flex; grid-column: 3; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--color-accent) 54%, var(--color-border-muted)); background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface-alt)); }
 .combo-card__usage-status { display: grid; grid-template-columns: auto auto auto; gap: 4px 8px; align-items: baseline; }
 .combo-card__usage-status > span { color: var(--color-muted); font-size: .62rem; }
 .combo-card__usage-status > span small { margin-left: 4px; color: inherit; font-size: .72em; }
@@ -378,7 +382,8 @@ body[data-page="cast.html"] .combo-card__ability--life { border-color: color-mix
   body[data-page="cast.html"] header.cast-header .cast-header__actions { grid-template-columns: 1fr; }
   body[data-page="cast.html"] .cast-header__export-panel { padding: 8px 0 0; border: 0; border-top: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent); background: transparent; box-shadow: none; }
   body[data-page="cast.html"] .cast-header__export-actions { flex-wrap: wrap; }
-  body[data-page="cast.html"] .combo-card__runtime-row { align-items: stretch; flex-direction: column; }
+  body[data-page="cast.html"] .combo-card__body { grid-template-columns: 1fr; }
+  body[data-page="cast.html"] .combo-card__detail-copy, body[data-page="cast.html"] .combo-card__usage { grid-column: 1; }
   body[data-page="cast.html"] .combo-card__usage { width: 100%; }
 }
 @media (max-width: 767px) {
@@ -394,8 +399,9 @@ body[data-page="cast.html"] .combo-card__ability--life { border-color: color-mix
   body[data-page="cast.html"] .cast-styles, body[data-page="cast.html"] .hero-divine-list, body[data-page="cast.html"] .ability-grid, body[data-page="cast.html"] .data-layout { grid-template-columns: 1fr; }
   body[data-page="cast.html"] .data-panel--wide { grid-column: auto; }
   body[data-page="cast.html"] .cast-tabs { top: 0; }
-  body[data-page="cast.html"] .combo-card__header > div { align-items: flex-start; flex-direction: column; gap: 2px; }
-  body[data-page="cast.html"] .combo-card__meta { grid-template-columns: 1fr; }
+  body[data-page="cast.html"] .combo-card__header { grid-template-columns: minmax(0, 1fr) auto; }
+  body[data-page="cast.html"] .combo-card__title { align-items: flex-start; flex-direction: column; gap: 2px; }
+  body[data-page="cast.html"] .combo-card__stats { grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body[data-page="cast.html"] .combo-card__skills-block { grid-template-columns: 1fr; gap: 3px; }
   body[data-page="cast.html"] .combo-card__skills-label { justify-content: space-between; }
   body[data-page="cast.html"] .combo-runtime-toolbar, body[data-page="cast.html"] .combo-card__usage { align-items: stretch; flex-direction: column; }

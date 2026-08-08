@@ -579,12 +579,22 @@ function renderCombos(combos, character) {
       return `
         <article class="combo-card">
           <header class="combo-card__header">
-            <div>
+            <div class="combo-card__title">
               <p class="combo-card__index">
                 COMBO ${String(sortOrder + 1).padStart(2, "0")}
               </p>
               <h3>${escapeHtml(combo.name || "UNNAMED COMBO")}</h3>
             </div>
+            <dl class="combo-card__stats">
+              <div>
+                <dt>判定値修正</dt>
+                <dd>${escapeHtml(modifier || "—")}</dd>
+              </div>
+              <div>
+                <dt>達成値目安</dt>
+                <dd>${escapeHtml(targetValue || "—")}</dd>
+              </div>
+            </dl>
             <span class="combo-card__ability${abilityClass}">
               ${escapeHtml(abilityLabel)}
             </span>
@@ -603,29 +613,19 @@ function renderCombos(combos, character) {
                 </dt>
                 <dd class="combo-card__skills-value">${escapeHtml(skills || "—")}</dd>
               </div>
-              <div>
-                <dt>判定修正</dt>
-                <dd>${escapeHtml(modifier || "—")}</dd>
-              </div>
-              <div>
-                <dt>達成値目安</dt>
-                <dd>${escapeHtml(targetValue || "—")}</dd>
-              </div>
             </dl>
 
-            ${outcome || actUseLimit
+            ${outcome || description
               ? `
-                <div class="combo-card__runtime-row">
+                <div class="combo-card__detail-copy">
                   ${outcome ? `<p class="combo-card__outcome">${escapeHtml(outcome)}</p>` : ""}
-                  ${actUseLimit
-                    ? createComboUsageTracker(comboId, usedCount, actUseLimit)
-                    : ""}
+                  ${description ? `<p class="combo-card__description">${escapeHtml(description)}</p>` : ""}
                 </div>
               `
               : ""}
 
-            ${description
-              ? `<p class="combo-card__description">${escapeHtml(description)}</p>`
+            ${actUseLimit
+              ? createComboUsageTracker(comboId, usedCount, actUseLimit)
               : ""}
           </div>
         </article>
