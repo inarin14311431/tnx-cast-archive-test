@@ -53,6 +53,13 @@
 .combo-list { display: grid; gap: 12px; padding: 16px; }
 .combo-list > article,
 .combo-list > button { border: 1px solid var(--color-border); background: var(--color-surface-alt); }
+.combo-list > .combo-card:is(:hover, :focus-visible) {
+  color: var(--color-text);
+  border-color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface-alt));
+  box-shadow: var(--shadow-glow);
+}
+.combo-list > .combo-card:is(:hover, :focus-visible) small { color: var(--color-muted); }
 .combo-message { min-height: 1.4em; padding-inline: 16px; color: var(--color-accent); }
 .combo-dialog { width: min(760px, calc(100% - 24px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-glow); }
 .combo-dialog::backdrop { background: rgb(0 4 8 / 78%); backdrop-filter: blur(3px); }

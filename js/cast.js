@@ -540,28 +540,35 @@ function renderCombos(combos) {
   container.innerHTML = combos
     .map(combo => {
       const abilityKey =
-        String(combo.ability_key ?? "reason").toLowerCase();
+        getComboValue(combo.ability, combo.ability_key).toLowerCase();
 
       const abilityLabel =
-        COMBO_ABILITY_LABELS[abilityKey] ?? abilityKey;
+        (COMBO_ABILITY_LABELS[abilityKey] ?? abilityKey) || "—";
 
-      const skillNames = Array.isArray(combo.skill_names)
-        ? combo.skill_names
-        : [];
+      const skills = getComboSkills(combo);
+      const modifier = getComboValue(combo.modifier);
+      const targetValue = getComboValue(combo.target_value, combo.achievement);
 
       const outcome = [
+        combo.timing ? `タイミング ${combo.timing}` : "",
         combo.difficulty ? `目標値 ${combo.difficulty}` : "",
         combo.confrontation ? `対決 ${combo.confrontation}` : "",
         combo.target ? `対象 ${combo.target}` : "",
-        combo.range ? `射程 ${combo.range}` : ""
+        combo.range ? `射程 ${combo.range}` : "",
+        combo.cost ? `コスト ${combo.cost}` : ""
       ].filter(Boolean).join(" / ");
+
+      const description = getComboValue(combo.description, combo.effect);
+      const sortOrder = Number.isFinite(Number(combo.sort_order))
+        ? Number(combo.sort_order)
+        : 0;
 
       return `
         <article class="combo-card">
           <header class="combo-card__header">
             <div>
               <p class="combo-card__index">
-                COMBO ${String(combo.sort_order + 1).padStart(2, "0")}
+                COMBO ${String(sortOrder + 1).padStart(2, "0")}
               </p>
               <h3>${escapeHtml(combo.name || "UNNAMED COMBO")}</h3>
             </div>
@@ -573,29 +580,62 @@ function renderCombos(combos) {
           <div class="combo-card__body">
             <dl class="combo-card__meta">
               <div>
-                <dt>技能</dt>
-                <dd>${escapeHtml(skillNames.join("＋") || "—")}</dd>
+                <dt>組み合わせ技能</dt>
+                <dd>${escapeHtml(skills || "—")}</dd>
               </div>
               <div>
-                <dt>達成値</dt>
-                <dd>${escapeHtml(combo.achievement || "—")}</dd>
+                <dt>判定修正</dt>
+                <dd>${escapeHtml(modifier || "—")}</dd>
               </div>
               <div>
-                <dt>効果</dt>
-                <dd>${escapeHtml(combo.effect || "—")}</dd>
+                <dt>達成値目安</dt>
+                <dd>${escapeHtml(targetValue || "—")}</dd>
               </div>
             </dl>
 
             ${outcome ? `<p class="combo-card__outcome">${escapeHtml(outcome)}</p>` : ""}
 
-            ${combo.description
-              ? `<p class="combo-card__description">${escapeHtml(combo.description)}</p>`
+            ${description
+              ? `<p class="combo-card__description">${escapeHtml(description)}</p>`
               : ""}
           </div>
         </article>
       `;
     })
     .join("");
+}
+
+function getComboSkills(combo) {
+  const currentSkills = getComboValue(combo.skills);
+
+  if (currentSkills) {
+    return currentSkills;
+  }
+
+  if (Array.isArray(combo.skill_names)) {
+    return combo.skill_names
+      .map(value => String(value ?? "").trim())
+      .filter(Boolean)
+      .join("＋");
+  }
+
+  return getComboValue(combo.skill_names);
+}
+
+function getComboValue(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    const text = String(value).trim();
+
+    if (text) {
+      return text;
+    }
+  }
+
+  return "";
 }
 
 function createOutfitRow(outfit) {
