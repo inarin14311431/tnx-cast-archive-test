@@ -425,7 +425,10 @@ function createQuickOutfitTable(outfits) {
   if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
   const armor = outfits.filter(outfit => outfit.category === "armor");
   const totals = quickArmorTotals(armor);
-  return `<div class="quick-sheet__table-scroll"><table class="quick-sheet__detail-table quick-sheet__outfit-table"><thead><tr><th>分類</th><th>名称</th><th>常備</th><th>性能</th><th>解説</th></tr></thead><tbody>${outfits.map(outfit => `<tr><td>${escapeHtml(QUICK_OUTFIT_CATEGORY_LABELS[outfit.category] || QUICK_OUTFIT_CATEGORY_LABELS.other)}</td><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(displayValue(outfit.experience_cost))}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td>${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody>${armor.length ? `<tfoot><tr><th colspan="3">防具・防御値合計</th><td colspan="2">S ${totals.s} / I ${totals.i} / P ${totals.p}</td></tr></tfoot>` : ""}</table></div>`;
+  const splitAt = outfits.length > 12 ? Math.ceil(outfits.length / 2) : outfits.length;
+  const groups = [outfits.slice(0, splitAt), outfits.slice(splitAt)].filter(group => group.length);
+  const tables = groups.map(group => `<table class="quick-sheet__detail-table quick-sheet__outfit-table"><thead><tr><th>分類</th><th>名称</th><th>常備</th><th>性能</th><th>解説</th></tr></thead><tbody>${group.map(outfit => `<tr><td>${escapeHtml(QUICK_OUTFIT_CATEGORY_LABELS[outfit.category] || QUICK_OUTFIT_CATEGORY_LABELS.other)}</td><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(displayValue(outfit.experience_cost))}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td>${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody></table>`).join("");
+  return `${armor.length ? `<p class="quick-sheet__armor-total">防具・防御値合計 <strong>S ${totals.s} / I ${totals.i} / P ${totals.p}</strong></p>` : ""}<div class="quick-sheet__outfit-table-grid${groups.length > 1 ? " is-split" : ""}">${tables}</div>`;
 }
 
 function createQuickOutfitPerformance(outfit) {
