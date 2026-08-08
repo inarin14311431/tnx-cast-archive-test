@@ -228,6 +228,8 @@ body[data-page="sheet.html"] .exp-panel .sheet-import-control .floating-help-lin
 .sheet-combo-entry__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .sheet-combo-entry__actions button { min-height: 50px; text-align: left; }
 .sheet-combo-entry__actions button > span { display: block; font-weight: 800; }
+.sheet-combo-entry__actions .sheet-combo-entry__primary-action { border-color: var(--color-accent); color: var(--color-bg); background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent)); box-shadow: var(--shadow-glow); }
+.sheet-combo-entry__actions .sheet-combo-entry__primary-action small { color: color-mix(in srgb, var(--color-bg) 76%, transparent); }
 .sheet-combo-entry__actions #sheet-counter-bottom-add { border-color: color-mix(in srgb, var(--color-success) 58%, var(--color-border)); color: var(--color-success); background: linear-gradient(135deg, color-mix(in srgb, var(--color-success) 10%, transparent), var(--color-surface)); }
 .sheet-combo-entry__actions #sheet-combo-bottom-open { grid-column: 1 / -1; border-color: color-mix(in srgb, var(--color-accent) 48%, var(--color-border)); background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 13%, var(--color-surface)), var(--color-surface)); text-align: center; }
 
