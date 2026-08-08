@@ -85,6 +85,12 @@ function setupEvents() {
     if (combo) openEditor(isCounterEntry(combo) ? "counter" : "combo", combo, target);
   });
 
+  entryList?.addEventListener("click", event => {
+    const target = event.target.closest("[data-sheet-combo-id]");
+    if (!target) return;
+    openExistingFromEntry(target);
+  });
+
   skillOptions?.addEventListener("change", event => {
     const checkbox = event.target.closest("input[type='checkbox'][data-skill-name]");
     if (!checkbox) return;
@@ -167,6 +173,33 @@ async function openFromEntry(origin, mode = null) {
 
   const modalOrigin = document.querySelector(mode === "counter" ? "#sheet-counter-add" : "#sheet-combo-add");
   await openEditor(mode, null, modalOrigin);
+}
+
+async function openExistingFromEntry(origin) {
+  if (!character || saving) return;
+  const comboId = String(origin?.dataset.sheetComboId || "");
+  if (!comboId) return;
+
+  managerReturnFocus = origin;
+  await openManager();
+
+  const combo = combos.find(item => String(item.id) === comboId);
+  if (!combo) {
+    setMessage("選択したデータが見つかりませんでした。", "error");
+    return;
+  }
+
+  const refreshedEntryOrigin = findComboButton(entryList, comboId);
+  if (refreshedEntryOrigin) managerReturnFocus = refreshedEntryOrigin;
+
+  const modalOrigin = findComboButton(list, comboId);
+  await openEditor(isCounterEntry(combo) ? "counter" : "combo", combo, modalOrigin);
+}
+
+function findComboButton(container, comboId) {
+  if (!container) return null;
+  return [...container.querySelectorAll("[data-sheet-combo-id]")]
+    .find(button => button.dataset.sheetComboId === String(comboId)) || null;
 }
 
 async function openManager(options = {}) {
@@ -260,13 +293,16 @@ function renderEntryList() {
       ? [limit ? `1アクト ${limit}回` : "", "使用回数カウンター"].filter(Boolean)
       : [ability, combo.modifier ? `修正 ${combo.modifier}` : "", combo.target_value ? `目安 ${combo.target_value}` : "", limit ? `${limit}回/ACT` : ""].filter(Boolean);
 
+    const kindLabel = counter ? "技能カウンター" : "コンボ";
+    const name = combo.name || "名称未登録";
+
     return `
-      <article class="sheet-combo-entry-card${counter ? " is-counter" : ""}">
+      <button class="sheet-combo-entry-card${counter ? " is-counter" : ""}" type="button" data-sheet-combo-id="${escapeAttribute(combo.id)}" aria-label="${escapeAttribute(`${kindLabel}「${name}」を編集`)}">
         <span class="sheet-combo-entry-card__kind">${counter ? "COUNTER" : "COMBO"}</span>
-        <strong>${escapeHtml(combo.name || "名称未登録")}</strong>
+        <strong>${escapeHtml(name)}</strong>
         <span class="sheet-combo-entry-card__skills">${escapeHtml(counter ? (details.join(" / ") || "詳細未登録") : (combo.skills || "組み合わせ技能なし"))}</span>
         ${counter ? "" : `<small>${escapeHtml(details.join(" / ") || "詳細未登録")}</small>`}
-      </article>`;
+      </button>`;
   }).join("");
 }
 
