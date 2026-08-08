@@ -613,10 +613,15 @@ function renderCombos(combos, character) {
               </div>
             </dl>
 
-            ${outcome ? `<p class="combo-card__outcome">${escapeHtml(outcome)}</p>` : ""}
-
-            ${actUseLimit
-              ? createComboUsageTracker(comboId, usedCount, actUseLimit)
+            ${outcome || actUseLimit
+              ? `
+                <div class="combo-card__runtime-row">
+                  ${outcome ? `<p class="combo-card__outcome">${escapeHtml(outcome)}</p>` : ""}
+                  ${actUseLimit
+                    ? createComboUsageTracker(comboId, usedCount, actUseLimit)
+                    : ""}
+                </div>
+              `
               : ""}
 
             ${description
