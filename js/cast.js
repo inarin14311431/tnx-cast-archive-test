@@ -204,7 +204,9 @@ function openQuickSheet() {
   requestAnimationFrame(() => {
     fitQuickSheetPages();
     quickSheetClose?.focus({ preventScroll: true });
+    window.setTimeout(fitQuickSheetPages, 160);
   });
+  document.fonts?.ready.then(() => fitQuickSheetPages());
 }
 
 function closeQuickSheetView() {

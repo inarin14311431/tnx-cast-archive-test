@@ -404,6 +404,7 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__table-scroll { overflow: hidden; }
 .quick-sheet__detail-table { font-size: .49rem; }
 .quick-sheet__detail-table :is(th, td) { height: 18px; padding: 2px 3px; }
+.quick-sheet__page--two .quick-sheet__detail-table :is(th, td) { height: 16px; padding-block: 1px; }
 .quick-sheet__style-table th:nth-child(1) { width: 13%; }
 .quick-sheet__style-table th:nth-child(2) { width: 4%; }
 .quick-sheet__style-table th:nth-child(3) { width: 3%; }
