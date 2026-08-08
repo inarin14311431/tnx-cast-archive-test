@@ -15,6 +15,8 @@ const entrySummary = document.querySelector("#sheet-combo-summary");
 const bottomOpenButton = document.querySelector("#sheet-combo-bottom-open");
 const bottomComboButton = document.querySelector("#sheet-combo-bottom-add");
 const bottomCounterButton = document.querySelector("#sheet-counter-bottom-add");
+const entryList = document.querySelector("#sheet-combo-entry-list");
+const entryCount = document.querySelector("#sheet-combo-entry-count");
 
 const ABILITY_LABELS = {
   reason: "♠ 理性",
@@ -151,6 +153,12 @@ function setOpenAvailability(enabled, title = "") {
     entrySummary.textContent = enabled ? "登録状況を確認中…" : (title || "キャストを保存すると利用できます。");
     entrySummary.dataset.state = enabled ? "loading" : "disabled";
   }
+  if (entryCount) entryCount.textContent = "—";
+  if (entryList) {
+    entryList.innerHTML = enabled
+      ? `<p class="sheet-combo-entry__empty">登録データを読み込み中… <small>SCANNING RUNTIME DATA...</small></p>`
+      : `<p class="sheet-combo-entry__empty">キャストを保存すると登録データを表示できます。<small>SAVE CAST TO ENABLE RUNTIME DATA</small></p>`;
+  }
 }
 
 async function openFromEntry(origin, mode = null) {
@@ -212,6 +220,7 @@ async function loadCombos() {
 function renderList() {
   count.textContent = String(combos.length);
   renderEntrySummary();
+  renderEntryList();
 
   if (!combos.length) {
     list.innerHTML = `<p class="sheet-combo-empty">コンボ／技能カウンターは未登録です。<small>NO RUNTIME DATA</small></p>`;
@@ -233,6 +242,33 @@ function renderList() {
         <span class="sheet-combo-list-card__skills">${escapeHtml(combo.skills || "組み合わせ技能なし")}</span>
         <small>${escapeHtml(details.join(" / ") || "詳細未登録")}</small>
       </button>`;
+  }).join("");
+}
+
+function renderEntryList() {
+  if (!entryList) return;
+  if (entryCount) entryCount.textContent = String(combos.length);
+
+  if (!combos.length) {
+    entryList.innerHTML = `<p class="sheet-combo-entry__empty">登録済みコンボ／技能カウンターはありません。<small>NO RUNTIME DATA</small></p>`;
+    return;
+  }
+
+  entryList.innerHTML = combos.map(combo => {
+    const counter = isCounterEntry(combo);
+    const limit = positiveInteger(combo.act_use_limit);
+    const ability = ABILITY_LABELS[String(combo.ability || "").toLowerCase()] || "";
+    const details = counter
+      ? [limit ? `1アクト ${limit}回` : "", "使用回数カウンター"].filter(Boolean)
+      : [ability, combo.modifier ? `修正 ${combo.modifier}` : "", combo.target_value ? `目安 ${combo.target_value}` : "", limit ? `${limit}回/ACT` : ""].filter(Boolean);
+
+    return `
+      <article class="sheet-combo-entry-card${counter ? " is-counter" : ""}">
+        <span class="sheet-combo-entry-card__kind">${counter ? "COUNTER" : "COMBO"}</span>
+        <strong>${escapeHtml(combo.name || "名称未登録")}</strong>
+        <span class="sheet-combo-entry-card__skills">${escapeHtml(counter ? (details.join(" / ") || "詳細未登録") : (combo.skills || "組み合わせ技能なし"))}</span>
+        ${counter ? "" : `<small>${escapeHtml(details.join(" / ") || "詳細未登録")}</small>`}
+      </article>`;
   }).join("");
 }
 
