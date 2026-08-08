@@ -11,6 +11,10 @@ const form = document.querySelector("#sheet-combo-form");
 const deleteButton = document.querySelector("#sheet-combo-delete");
 const skillOptions = document.querySelector("#sheet-combo-skill-options");
 const counterSkill = document.querySelector("#sheet-counter-skill");
+const entrySummary = document.querySelector("#sheet-combo-summary");
+const bottomOpenButton = document.querySelector("#sheet-combo-bottom-open");
+const bottomComboButton = document.querySelector("#sheet-combo-bottom-add");
+const bottomCounterButton = document.querySelector("#sheet-counter-bottom-add");
 
 const ABILITY_LABELS = {
   reason: "♠ 理性",
@@ -53,6 +57,8 @@ async function initialize() {
 
   if (character && location.hash === "#combos") {
     await openManager({ updateHash: false });
+  } else if (character) {
+    await loadCombos();
   }
 }
 
@@ -61,6 +67,9 @@ function setupEvents() {
     managerReturnFocus = openButton;
     openManager();
   });
+  bottomOpenButton?.addEventListener("click", event => openFromEntry(event.currentTarget));
+  bottomComboButton?.addEventListener("click", event => openFromEntry(event.currentTarget, "combo"));
+  bottomCounterButton?.addEventListener("click", event => openFromEntry(event.currentTarget, "counter"));
   document.querySelector("#sheet-combo-close")?.addEventListener("click", () => dialog.close());
   document.querySelector("#sheet-combo-add")?.addEventListener("click", event => openEditor("combo", null, event.currentTarget));
   document.querySelector("#sheet-counter-add")?.addEventListener("click", event => openEditor("counter", null, event.currentTarget));
@@ -100,7 +109,7 @@ function setupEvents() {
     if (saving) event.preventDefault();
   });
 
-  window.addEventListener("tnx:character-saved", event => {
+  window.addEventListener("tnx:character-saved", async event => {
     const saved = event.detail;
     if (!saved?.id || !saved?.publicId) return;
     character = {
@@ -109,6 +118,7 @@ function setupEvents() {
       character_name: document.querySelector("#character-name")?.value?.trim() || ""
     };
     setOpenAvailability(true);
+    await loadCombos();
   });
 }
 
@@ -131,10 +141,26 @@ async function loadCharacter(publicId) {
 }
 
 function setOpenAvailability(enabled, title = "") {
-  openButton.disabled = !enabled;
-  openButton.title = title;
-  openButton.setAttribute("aria-disabled", String(!enabled));
+  [openButton, bottomOpenButton, bottomComboButton, bottomCounterButton].filter(Boolean).forEach(button => {
+    button.disabled = !enabled;
+    button.title = title;
+    button.setAttribute("aria-disabled", String(!enabled));
+  });
   openButton.setAttribute("aria-pressed", "false");
+  if (entrySummary) {
+    entrySummary.textContent = enabled ? "登録状況を確認中…" : (title || "キャストを保存すると利用できます。");
+    entrySummary.dataset.state = enabled ? "loading" : "disabled";
+  }
+}
+
+async function openFromEntry(origin, mode = null) {
+  if (!character || saving) return;
+  managerReturnFocus = origin;
+  await openManager();
+  if (!mode) return;
+
+  const modalOrigin = document.querySelector(mode === "counter" ? "#sheet-counter-add" : "#sheet-combo-add");
+  await openEditor(mode, null, modalOrigin);
 }
 
 async function openManager(options = {}) {
@@ -170,6 +196,10 @@ async function loadCombos() {
     console.error(error);
     combos = [];
     renderList();
+    if (entrySummary) {
+      entrySummary.textContent = "登録状況を取得できませんでした。";
+      entrySummary.dataset.state = "error";
+    }
     setMessage("コンボ情報を取得できませんでした。", "error");
     return;
   }
@@ -181,6 +211,7 @@ async function loadCombos() {
 
 function renderList() {
   count.textContent = String(combos.length);
+  renderEntrySummary();
 
   if (!combos.length) {
     list.innerHTML = `<p class="sheet-combo-empty">コンボ／技能カウンターは未登録です。<small>NO RUNTIME DATA</small></p>`;
@@ -203,6 +234,14 @@ function renderList() {
         <small>${escapeHtml(details.join(" / ") || "詳細未登録")}</small>
       </button>`;
   }).join("");
+}
+
+function renderEntrySummary() {
+  if (!entrySummary) return;
+  const counterCount = combos.filter(isCounterEntry).length;
+  const comboCount = combos.length - counterCount;
+  entrySummary.innerHTML = `登録済み：コンボ <strong>${comboCount}</strong>件 <span aria-hidden="true">｜</span> 技能カウンター <strong>${counterCount}</strong>件`;
+  entrySummary.dataset.state = "ready";
 }
 
 async function refreshSkillCatalog() {
