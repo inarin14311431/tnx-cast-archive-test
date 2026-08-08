@@ -578,6 +578,23 @@ function renderCombos(combos, character) {
         ? Number(combo.sort_order)
         : 0;
 
+      if (isSkillCounterCombo(combo)) {
+        return `
+          <article class="combo-card combo-card--counter">
+            <header class="combo-card__header">
+              <div class="combo-card__title">
+                <p class="combo-card__index">SKILL COUNTER</p>
+                <h3>${escapeHtml(combo.name || skills || "UNNAMED SKILL")}</h3>
+              </div>
+              <span class="combo-card__counter-tag">STYLE SKILL</span>
+            </header>
+            <div class="combo-card__body">
+              ${createComboUsageTracker(comboId, usedCount, actUseLimit)}
+            </div>
+          </article>
+        `;
+      }
+
       return `
         <article class="combo-card">
           <header class="combo-card__header">
@@ -755,6 +772,21 @@ function updateComboUsageElement(usageElement, usedCount, limit) {
 function getComboActUseLimit(combo) {
   const limit = Number.parseInt(String(combo.act_use_limit ?? ""), 10);
   return Number.isFinite(limit) && limit > 0 ? limit : null;
+}
+
+function isSkillCounterCombo(combo) {
+  const name = getComboValue(combo.name);
+  const skills = getComboSkills(combo);
+
+  if (!name || name !== skills || !getComboActUseLimit(combo)) {
+    return false;
+  }
+
+  return [
+    combo.ability, combo.ability_key, combo.modifier, combo.target_value, combo.achievement,
+    combo.timing, combo.target, combo.range, combo.difficulty, combo.confrontation,
+    combo.description, combo.effect
+  ].every(value => !getComboValue(value));
 }
 
 function getComboUsageStorageKey(character) {
