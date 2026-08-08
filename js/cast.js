@@ -580,17 +580,12 @@ function renderCombos(combos, character) {
 
       if (isSkillCounterCombo(combo)) {
         return `
-          <article class="combo-card combo-card--counter">
-            <header class="combo-card__header">
-              <div class="combo-card__title">
-                <p class="combo-card__index">SKILL COUNTER</p>
-                <h3>${escapeHtml(combo.name || skills || "UNNAMED SKILL")}</h3>
-              </div>
-              <span class="combo-card__counter-tag">STYLE SKILL</span>
-            </header>
-            <div class="combo-card__body">
-              ${createComboUsageTracker(comboId, usedCount, actUseLimit)}
+          <article class="combo-skill-counter">
+            <div class="combo-skill-counter__identity">
+              <p class="combo-skill-counter__kind">SKILL COUNTER</p>
+              <h3>${escapeHtml(combo.name || skills || "UNNAMED SKILL")}</h3>
             </div>
+            ${createComboUsageTracker(comboId, usedCount, actUseLimit, true)}
           </article>
         `;
       }
@@ -671,12 +666,12 @@ function renderCombos(combos, character) {
   setupComboInteractions(container, usageLimits, usageState, usageStorageKey);
 }
 
-function createComboUsageTracker(comboId, usedCount, limit) {
+function createComboUsageTracker(comboId, usedCount, limit, compact = false) {
   const remaining = Math.max(0, limit - usedCount);
   const reached = usedCount >= limit;
 
   return `
-    <div class="combo-card__usage${reached ? " is-limit-reached" : ""}"
+    <div class="combo-card__usage${compact ? " combo-card__usage--counter" : ""}${reached ? " is-limit-reached" : ""}"
       data-combo-usage data-combo-id="${escapeHtml(comboId)}">
       <div class="combo-card__usage-status">
         <span>1アクト使用回数 <small>ACT USES</small></span>
