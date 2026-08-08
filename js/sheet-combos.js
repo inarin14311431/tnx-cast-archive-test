@@ -12,7 +12,6 @@ const deleteButton = document.querySelector("#sheet-combo-delete");
 const skillOptions = document.querySelector("#sheet-combo-skill-options");
 const counterSkill = document.querySelector("#sheet-counter-skill");
 const entrySummary = document.querySelector("#sheet-combo-summary");
-const bottomOpenButton = document.querySelector("#sheet-combo-bottom-open");
 const bottomComboButton = document.querySelector("#sheet-combo-bottom-add");
 const bottomCounterButton = document.querySelector("#sheet-counter-bottom-add");
 const entryList = document.querySelector("#sheet-combo-entry-list");
@@ -69,7 +68,6 @@ function setupEvents() {
     managerReturnFocus = openButton;
     openManager();
   });
-  bottomOpenButton?.addEventListener("click", event => openFromEntry(event.currentTarget));
   bottomComboButton?.addEventListener("click", event => openFromEntry(event.currentTarget, "combo"));
   bottomCounterButton?.addEventListener("click", event => openFromEntry(event.currentTarget, "counter"));
   document.querySelector("#sheet-combo-close")?.addEventListener("click", () => dialog.close());
@@ -143,7 +141,7 @@ async function loadCharacter(publicId) {
 }
 
 function setOpenAvailability(enabled, title = "") {
-  [openButton, bottomOpenButton, bottomComboButton, bottomCounterButton].filter(Boolean).forEach(button => {
+  [openButton, bottomComboButton, bottomCounterButton].filter(Boolean).forEach(button => {
     button.disabled = !enabled;
     button.title = title;
     button.setAttribute("aria-disabled", String(!enabled));
