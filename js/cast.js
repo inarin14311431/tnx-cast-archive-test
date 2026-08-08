@@ -145,7 +145,7 @@ function renderCharacter(
   renderProfile(character);
   renderSkills(skills);
   renderOutfits(outfits);
-  renderCombos(combos);
+  renderCombos(combos, character);
 }
 
 function renderImage(character) {
@@ -523,7 +523,7 @@ const COMBO_ABILITY_LABELS = {
   mundane: "♦ 外界"
 };
 
-function renderCombos(combos) {
+function renderCombos(combos, character) {
   const container =
     document.querySelector("#combo-container");
 
@@ -537,25 +537,38 @@ function renderCombos(combos) {
     return;
   }
 
-  container.innerHTML = combos
+  const usageLimits = new Map(
+    combos
+      .map(combo => [String(combo.id), getComboActUseLimit(combo)])
+      .filter(([, limit]) => limit !== null)
+  );
+  const usageStorageKey = getComboUsageStorageKey(character);
+  const usageState = loadComboUsageState(usageStorageKey, usageLimits);
+
+  const cards = combos
     .map(combo => {
       const abilityKey =
         getComboValue(combo.ability, combo.ability_key).toLowerCase();
 
       const abilityLabel =
         (COMBO_ABILITY_LABELS[abilityKey] ?? abilityKey) || "—";
+      const abilityClass = Object.prototype.hasOwnProperty.call(COMBO_ABILITY_LABELS, abilityKey)
+        ? ` combo-card__ability--${abilityKey}`
+        : "";
 
       const skills = getComboSkills(combo);
       const modifier = getComboValue(combo.modifier);
       const targetValue = getComboValue(combo.target_value, combo.achievement);
+      const comboId = String(combo.id ?? "");
+      const actUseLimit = usageLimits.get(comboId) ?? null;
+      const usedCount = actUseLimit ? (usageState.get(comboId) ?? 0) : 0;
 
       const outcome = [
         combo.timing ? `タイミング ${combo.timing}` : "",
         combo.difficulty ? `目標値 ${combo.difficulty}` : "",
         combo.confrontation ? `対決 ${combo.confrontation}` : "",
         combo.target ? `対象 ${combo.target}` : "",
-        combo.range ? `射程 ${combo.range}` : "",
-        combo.cost ? `コスト ${combo.cost}` : ""
+        combo.range ? `射程 ${combo.range}` : ""
       ].filter(Boolean).join(" / ");
 
       const description = getComboValue(combo.description, combo.effect);
@@ -572,16 +585,23 @@ function renderCombos(combos) {
               </p>
               <h3>${escapeHtml(combo.name || "UNNAMED COMBO")}</h3>
             </div>
-            <span class="combo-card__ability">
+            <span class="combo-card__ability${abilityClass}">
               ${escapeHtml(abilityLabel)}
             </span>
           </header>
 
           <div class="combo-card__body">
             <dl class="combo-card__meta">
-              <div>
-                <dt>組み合わせ技能</dt>
-                <dd>${escapeHtml(skills || "—")}</dd>
+              <div class="combo-card__skills-block">
+                <dt class="combo-card__skills-label">
+                  <span>組み合わせ技能</span>
+                  ${skills ? `
+                    <button class="combo-card__copy" type="button" data-combo-copy>
+                      <span>コピー</span><small>COPY</small>
+                    </button>
+                  ` : ""}
+                </dt>
+                <dd class="combo-card__skills-value">${escapeHtml(skills || "—")}</dd>
               </div>
               <div>
                 <dt>判定修正</dt>
@@ -595,6 +615,10 @@ function renderCombos(combos) {
 
             ${outcome ? `<p class="combo-card__outcome">${escapeHtml(outcome)}</p>` : ""}
 
+            ${actUseLimit
+              ? createComboUsageTracker(comboId, usedCount, actUseLimit)
+              : ""}
+
             ${description
               ? `<p class="combo-card__description">${escapeHtml(description)}</p>`
               : ""}
@@ -603,6 +627,208 @@ function renderCombos(combos) {
       `;
     })
     .join("");
+
+  const usageToolbar = usageLimits.size
+    ? `
+      <div class="combo-runtime-toolbar">
+        <div class="combo-runtime-toolbar__label">
+          <strong>使用回数トラッカー</strong>
+          <small>ACT USE TRACKER</small>
+        </div>
+        <button type="button" data-combo-reset-all>
+          <span>全カウンターをリセット</span>
+          <small>NEW ACT / RESET ALL</small>
+        </button>
+      </div>
+    `
+    : "";
+
+  container.innerHTML = usageToolbar + cards;
+  setupComboInteractions(container, usageLimits, usageState, usageStorageKey);
+}
+
+function createComboUsageTracker(comboId, usedCount, limit) {
+  const remaining = Math.max(0, limit - usedCount);
+  const reached = usedCount >= limit;
+
+  return `
+    <div class="combo-card__usage${reached ? " is-limit-reached" : ""}"
+      data-combo-usage data-combo-id="${escapeHtml(comboId)}">
+      <div class="combo-card__usage-status">
+        <span>1アクト使用回数 <small>ACT USES</small></span>
+        <strong>使用 <b data-combo-used>${usedCount}</b> / ${limit}</strong>
+        <em data-combo-remaining>${reached ? "上限到達" : `残り ${remaining}回`}</em>
+      </div>
+      <div class="combo-card__usage-actions">
+        <button type="button" data-combo-use ${reached ? "disabled" : ""}>使用 +1</button>
+        <button type="button" data-combo-undo ${usedCount === 0 ? "disabled" : ""}>戻す -1</button>
+        <button type="button" data-combo-reset ${usedCount === 0 ? "disabled" : ""}>リセット</button>
+      </div>
+    </div>
+  `;
+}
+
+function setupComboInteractions(container, usageLimits, usageState, usageStorageKey) {
+  container.addEventListener("click", async event => {
+    const copyButton = event.target.closest("[data-combo-copy]");
+
+    if (copyButton) {
+      const skills = copyButton
+        .closest(".combo-card__skills-block")
+        ?.querySelector(".combo-card__skills-value")
+        ?.textContent
+        ?.trim();
+
+      if (skills) {
+        await copyComboSkills(copyButton, skills);
+      }
+      return;
+    }
+
+    const resetAllButton = event.target.closest("[data-combo-reset-all]");
+
+    if (resetAllButton) {
+      for (const comboId of usageLimits.keys()) {
+        usageState.set(comboId, 0);
+      }
+      persistComboUsageState(usageStorageKey, usageState);
+      container.querySelectorAll("[data-combo-usage]")
+        .forEach(usageElement => {
+          const comboId = usageElement.dataset.comboId ?? "";
+          const limit = usageLimits.get(comboId);
+          if (limit) updateComboUsageElement(usageElement, 0, limit);
+        });
+      return;
+    }
+
+    const usageButton = event.target.closest("[data-combo-use], [data-combo-undo], [data-combo-reset]");
+
+    if (!usageButton) {
+      return;
+    }
+
+    const usageElement = usageButton.closest("[data-combo-usage]");
+    const comboId = usageElement?.dataset.comboId ?? "";
+    const limit = usageLimits.get(comboId);
+
+    if (!usageElement || !limit) {
+      return;
+    }
+
+    const current = usageState.get(comboId) ?? 0;
+    let next = current;
+
+    if (usageButton.hasAttribute("data-combo-use")) {
+      next = Math.min(limit, current + 1);
+    } else if (usageButton.hasAttribute("data-combo-undo")) {
+      next = Math.max(0, current - 1);
+    } else if (usageButton.hasAttribute("data-combo-reset")) {
+      next = 0;
+    }
+
+    usageState.set(comboId, next);
+    persistComboUsageState(usageStorageKey, usageState);
+    updateComboUsageElement(usageElement, next, limit);
+  });
+}
+
+function updateComboUsageElement(usageElement, usedCount, limit) {
+  const remaining = Math.max(0, limit - usedCount);
+  const reached = usedCount >= limit;
+
+  usageElement.classList.toggle("is-limit-reached", reached);
+  usageElement.querySelector("[data-combo-used]").textContent = String(usedCount);
+  usageElement.querySelector("[data-combo-remaining]").textContent =
+    reached ? "上限到達" : `残り ${remaining}回`;
+  usageElement.querySelector("[data-combo-use]").disabled = reached;
+  usageElement.querySelector("[data-combo-undo]").disabled = usedCount === 0;
+  usageElement.querySelector("[data-combo-reset]").disabled = usedCount === 0;
+}
+
+function getComboActUseLimit(combo) {
+  const limit = Number.parseInt(String(combo.act_use_limit ?? ""), 10);
+  return Number.isFinite(limit) && limit > 0 ? limit : null;
+}
+
+function getComboUsageStorageKey(character) {
+  const appPath = new URL("./", window.location.href).pathname.replace(/\/$/, "");
+  const publicId = String(character.public_id ?? character.id ?? "unknown");
+  return `tnx-combo-usage:v1:${appPath}:${publicId}`;
+}
+
+function loadComboUsageState(storageKey, usageLimits) {
+  let stored = {};
+
+  try {
+    stored = JSON.parse(window.localStorage.getItem(storageKey) || "{}") ?? {};
+  } catch (error) {
+    console.warn("Combo usage state could not be loaded.", error);
+  }
+
+  return new Map(
+    [...usageLimits].map(([comboId, limit]) => {
+      const value = Number.parseInt(String(stored[comboId] ?? 0), 10);
+      const used = Number.isFinite(value) ? Math.min(limit, Math.max(0, value)) : 0;
+      return [comboId, used];
+    })
+  );
+}
+
+function persistComboUsageState(storageKey, usageState) {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(usageState)));
+  } catch (error) {
+    console.warn("Combo usage state could not be saved.", error);
+  }
+}
+
+async function copyComboSkills(button, skills) {
+  try {
+    await writeClipboardText(skills);
+    setComboCopyButtonState(button, "success", "コピー済み", "COPIED");
+  } catch (error) {
+    console.error(error);
+    setComboCopyButtonState(button, "error", "コピー失敗", "COPY FAILED");
+  }
+
+  window.setTimeout(() => {
+    if (button.isConnected) {
+      setComboCopyButtonState(button, "", "コピー", "COPY");
+    }
+  }, 1600);
+}
+
+function setComboCopyButtonState(button, state, label, english) {
+  button.dataset.copyState = state;
+  const labelElement = button.querySelector("span");
+  const englishElement = button.querySelector("small");
+  if (labelElement) labelElement.textContent = label;
+  if (englishElement) englishElement.textContent = english;
+}
+
+async function writeClipboardText(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // Fall through to the legacy copy path when clipboard permission is unavailable.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+
+  if (!copied) {
+    throw new Error("Clipboard copy failed.");
+  }
 }
 
 function getComboSkills(combo) {
