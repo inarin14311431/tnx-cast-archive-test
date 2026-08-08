@@ -241,14 +241,6 @@ body[data-page="sheet.html"] .exp-panel .sheet-import-control .floating-help-lin
 .sheet-combo-entry-card > small { grid-column: 1 / -1; margin-top: 3px; color: var(--color-muted); font-size: .56rem; }
 .sheet-combo-entry__empty { grid-column: 1 / -1; margin: 0; padding: 16px; color: var(--color-muted); text-align: center; }
 .sheet-combo-entry__empty small { display: block; margin-top: 4px; font-size: .52rem; letter-spacing: .08em; }
-.sheet-combo-entry__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.sheet-combo-entry__actions button { min-height: 50px; text-align: left; }
-.sheet-combo-entry__actions button > span { display: block; font-weight: 800; }
-.sheet-combo-entry__actions .sheet-combo-entry__primary-action { border-color: var(--color-accent); color: var(--color-bg); background: linear-gradient(135deg, var(--color-accent-strong), var(--color-accent)); box-shadow: var(--shadow-glow); }
-.sheet-combo-entry__actions .sheet-combo-entry__primary-action small { color: color-mix(in srgb, var(--color-bg) 76%, transparent); }
-.sheet-combo-entry__actions #sheet-counter-bottom-add { border-color: color-mix(in srgb, var(--color-success) 58%, var(--color-border)); color: var(--color-success); background: linear-gradient(135deg, color-mix(in srgb, var(--color-success) 10%, transparent), var(--color-surface)); }
-.sheet-combo-entry__actions #sheet-counter-bottom-add:is(:hover, :focus-visible):not(:disabled) { border-color: var(--color-success); color: var(--color-bg); background: var(--color-success); box-shadow: 0 0 18px color-mix(in srgb, var(--color-success) 28%, transparent); }
-.sheet-combo-entry__actions #sheet-counter-bottom-add:is(:hover, :focus-visible):not(:disabled) small { color: color-mix(in srgb, var(--color-bg) 70%, transparent); }
 
 .sheet-combo-dialog { width: min(1180px, calc(100% - 28px)); height: min(820px, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); padding: 0; overflow: hidden; border: 1px solid var(--color-border); color: var(--color-text); background: var(--color-surface); box-shadow: 0 0 42px color-mix(in srgb, var(--color-accent) 24%, transparent); }
 .sheet-combo-shell { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr); height: 100%; min-height: 0; }
@@ -351,7 +343,7 @@ body[data-page="sheet.html"] .exp-panel .sheet-import-control .floating-help-lin
   body[data-page="sheet.html"] .sheet-combo-header h2 small { display: block; margin: 3px 0 0; }
   body[data-page="sheet.html"] .sheet-combo-entry__header { flex-wrap: wrap; align-items: flex-start; }
   body[data-page="sheet.html"] .sheet-combo-entry__header > div { display: grid; gap: 3px; }
-  body[data-page="sheet.html"] .sheet-combo-entry__body, body[data-page="sheet.html"] .sheet-combo-entry__actions, body[data-page="sheet.html"] .sheet-combo-entry__list { grid-template-columns: 1fr; }
+  body[data-page="sheet.html"] .sheet-combo-entry__body, body[data-page="sheet.html"] .sheet-combo-entry__list { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
