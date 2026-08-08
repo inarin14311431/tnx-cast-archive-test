@@ -5,6 +5,14 @@ const content = document.querySelector("#cast-content");
 const statusText = document.querySelector("#cast-status");
 const errorPanel = document.querySelector("#cast-error");
 const errorMessage = document.querySelector("#cast-error-message");
+const quickSheet = document.querySelector("#quick-sheet");
+const quickSheetPages = document.querySelector("#quick-sheet-pages");
+const quickSheetButton = document.querySelector("#cast-quick-sheet-button");
+const quickSheetClose = document.querySelector("#quick-sheet-close");
+const quickSheetPrint = document.querySelector("#quick-sheet-print");
+
+let quickSheetContext = null;
+let quickSheetScrollY = 0;
 
 const OUTFIT_LABELS = {
   weapon: "WEAPON",
@@ -21,6 +29,17 @@ const SKILL_LABELS = {
   social: "SOCIAL",
   connection: "CONNECTIONS",
   style: "STYLE SKILLS"
+};
+
+const QUICK_GENERAL_ORDER = [
+  "医療", "射撃", "知覚", "電脳", "製作：", "心理", "自我", "交渉",
+  "芸術：", "運動", "回避", "白兵", "操縦：", "信用", "圧力", "隠密"
+];
+
+const QUICK_STYLE_DETAIL_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
+const QUICK_OUTFIT_CATEGORY_LABELS = {
+  weapon: "武器", armor: "防具", cyberware: "サイバー", tron: "トロン",
+  vehicle: "ヴィークル", residence: "住居", other: "その他"
 };
 
 async function loadCharacter() {
@@ -146,6 +165,340 @@ function renderCharacter(
   renderSkills(skills);
   renderOutfits(outfits);
   renderCombos(combos, character);
+  prepareQuickSheet(character, skills, outfits, combos);
+}
+
+function prepareQuickSheet(character, skills, outfits, combos) {
+  quickSheetContext = { character, skills, outfits, combos };
+  if (quickSheetButton) quickSheetButton.hidden = false;
+}
+
+function setupQuickSheetControls() {
+  quickSheetButton?.addEventListener("click", openQuickSheet);
+  quickSheetClose?.addEventListener("click", closeQuickSheetView);
+  quickSheetPrint?.addEventListener("click", () => {
+    fitQuickSheetPages();
+    window.print();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && document.body.classList.contains("is-quick-sheet-open")) {
+      closeQuickSheetView();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (document.body.classList.contains("is-quick-sheet-open")) fitQuickSheetPages();
+  });
+}
+
+function openQuickSheet() {
+  if (!quickSheetContext || !quickSheet || !quickSheetPages) return;
+
+  quickSheetScrollY = window.scrollY;
+  renderQuickSheet(quickSheetContext);
+  quickSheet.hidden = false;
+  document.body.classList.add("is-quick-sheet-open");
+  quickSheetButton?.setAttribute("aria-expanded", "true");
+  window.scrollTo(0, 0);
+  requestAnimationFrame(() => {
+    fitQuickSheetPages();
+    quickSheetClose?.focus({ preventScroll: true });
+  });
+}
+
+function closeQuickSheetView() {
+  if (!quickSheet || quickSheet.hidden) return;
+  document.body.classList.remove("is-quick-sheet-open");
+  quickSheet.hidden = true;
+  quickSheetButton?.setAttribute("aria-expanded", "false");
+  window.scrollTo(0, quickSheetScrollY);
+  quickSheetButton?.focus({ preventScroll: true });
+}
+
+function renderQuickSheet({ character, skills, outfits, combos }) {
+  const general = createQuickGeneralSkills(skills);
+  const splitAt = Math.ceil(general.length / 2);
+  const social = skills.filter(skill => skill.category === "social");
+  const connections = skills.filter(skill => skill.category === "connection");
+  const styleSkills = skills.filter(skill => skill.category === "style");
+  const styles = [1, 2, 3]
+    .map(index => ({ name: character[`style_${index}`], mark: character[`style_${index}_mark`] }))
+    .filter(style => style.name);
+  const divines = [1, 2, 3]
+    .map(index => ({ style: character[`style_${index}`], name: character[`divine_${index}`] }))
+    .filter(item => item.style || item.name);
+
+  quickSheetPages.innerHTML = `
+    <article class="quick-sheet__page quick-sheet__page--one">
+      ${createQuickPageHeader(character, 1)}
+      <section class="quick-sheet__identity">
+        <div class="quick-sheet__identity-name">
+          <span>${escapeHtml(formatHandle(character.handle))}</span>
+          <h1>${escapeHtml(character.character_name || "NO NAME")}</h1>
+          <small>${escapeHtml(character.character_kana || "")}</small>
+        </div>
+        <div class="quick-sheet__style-list">
+          ${styles.map((style, index) => `<span><b>0${index + 1}</b>${escapeHtml(style.name)} <em>${escapeHtml(style.mark || "")}</em></span>`).join("")}
+        </div>
+        <dl class="quick-sheet__identity-meta">
+          <div><dt>PLAYER</dt><dd>${escapeHtml(displayValue(character.player_name))}</dd></div>
+          <div><dt>AFFILIATION</dt><dd>${escapeHtml(displayValue(character.affiliation))}</dd></div>
+          <div><dt>RANK</dt><dd>${escapeHtml(displayValue(character.citizen_rank))}</dd></div>
+          <div><dt>EXP</dt><dd>${escapeHtml(character.experience_points ?? 0)}</dd></div>
+        </dl>
+      </section>
+      <div class="quick-sheet__core-row">
+        <section class="quick-sheet__block quick-sheet__abilities">
+          ${createQuickBlockTitle("能力値／制御値", "ABILITY / CONTROL")}
+          ${createQuickAbilityGrid(character)}
+        </section>
+        <section class="quick-sheet__block quick-sheet__divines">
+          ${createQuickBlockTitle("神業", "DIVINE WORK")}
+          <div class="quick-sheet__divine-list">${divines.map((item, index) => `<div><b>0${index + 1}</b><span>${escapeHtml(item.style || "—")}</span><strong>${escapeHtml(item.name || "—")}</strong></div>`).join("") || `<p class="quick-sheet__empty">—</p>`}</div>
+        </section>
+      </div>
+      <div class="quick-sheet__skill-grid">
+        <section class="quick-sheet__block quick-sheet__general-skills">
+          ${createQuickBlockTitle("一般技能", "GENERAL SKILLS")}
+          <div class="quick-sheet__general-columns">
+            ${createQuickSkillTable(general.slice(0, splitAt))}
+            ${createQuickSkillTable(general.slice(splitAt))}
+          </div>
+        </section>
+        <div class="quick-sheet__skill-side">
+          <section class="quick-sheet__block">
+            ${createQuickBlockTitle("社会", "SOCIAL")}
+            ${createQuickSkillTable(social)}
+          </section>
+          <section class="quick-sheet__block">
+            ${createQuickBlockTitle("コネ", "CONNECTIONS")}
+            ${createQuickSkillTable(connections)}
+          </section>
+        </div>
+      </div>
+      ${createQuickPageFooter(1)}
+    </article>
+    <article class="quick-sheet__page quick-sheet__page--two">
+      ${createQuickPageHeader(character, 2)}
+      <section class="quick-sheet__block quick-sheet__combos">
+        ${createQuickBlockTitle("コンボ／技能カウンター", "COMBOS / COUNTERS")}
+        ${createQuickComboGrid(combos, character)}
+      </section>
+      <section class="quick-sheet__block quick-sheet__style-skills">
+        ${createQuickBlockTitle("スタイル技能", "STYLE SKILLS")}
+        ${createQuickStyleSkillTable(styleSkills)}
+      </section>
+      <section class="quick-sheet__block quick-sheet__outfits">
+        ${createQuickBlockTitle("アウトフィット", "OUTFITS")}
+        ${createQuickOutfitTable(outfits)}
+      </section>
+      ${createQuickPageFooter(2)}
+    </article>
+  `;
+}
+
+function createQuickPageHeader(character, page) {
+  return `
+    <header class="quick-sheet__page-header">
+      <div><strong>N◎VA ARCHIVE // QUICK SHEET</strong><span>${escapeHtml(character.public_id || "NO ID")}</span></div>
+      <p>${escapeHtml(formatHandle(character.handle))} ${escapeHtml(character.character_name || "NO NAME")}</p>
+      <b>${page} / 2</b>
+    </header>`;
+}
+
+function createQuickPageFooter(page) {
+  return `<footer class="quick-sheet__page-footer"><span>TNX CAST ARCHIVE // ACT REFERENCE</span><b>PAGE ${page} / 2</b></footer>`;
+}
+
+function createQuickBlockTitle(japanese, english) {
+  return `<h2 class="quick-sheet__block-title"><span>${japanese}</span><small>${english}</small></h2>`;
+}
+
+function createQuickAbilityGrid(character) {
+  const abilities = [
+    ["♠", "理性", character.reason_value, character.reason_control],
+    ["♣", "感情", character.passion_value, character.passion_control],
+    ["♥", "生命", character.life_value, character.life_control],
+    ["♦", "外界", character.mundane_value, character.mundane_control]
+  ];
+  return `<div class="quick-sheet__ability-grid">
+    ${abilities.map(([suit, name, value, control]) => `<div><strong>${suit} ${name}</strong><span>能力 <b>${escapeHtml(displayValue(value))}</b></span><span>制御 <b>${escapeHtml(displayValue(control))}</b></span></div>`).join("")}
+    <div class="is-cs"><strong>CS</strong><span><b>${escapeHtml(displayValue(character.cs))}</b></span></div>
+  </div>`;
+}
+
+function createQuickGeneralSkills(skills) {
+  const registered = skills.filter(skill => skill.category === "general");
+  const output = [];
+  const used = new Set();
+
+  for (const baseName of QUICK_GENERAL_ORDER) {
+    const matches = registered.filter((skill, index) => {
+      if (used.has(index)) return false;
+      return quickGeneralFamily(skill.name) === baseName;
+    });
+    if (matches.length) {
+      matches.forEach(skill => {
+        used.add(registered.indexOf(skill));
+        output.push(skill);
+      });
+    } else {
+      output.push({ name: baseName, level: 0 });
+    }
+  }
+
+  registered.forEach((skill, index) => {
+    if (!used.has(index)) output.push(skill);
+  });
+  return output;
+}
+
+function quickGeneralFamily(value) {
+  const name = String(value || "").trim().replace(/[;；]/g, "：");
+  return ["製作：", "芸術：", "操縦："].find(prefix => name.startsWith(prefix)) || name;
+}
+
+function createQuickSkillTable(items) {
+  return `<table class="quick-sheet__skill-table">
+    <thead><tr><th>名称</th><th>LV</th><th>♠</th><th>♣</th><th>♥</th><th>♦</th></tr></thead>
+    <tbody>${items.length ? items.map(skill => `<tr><td>${escapeHtml(skill.name || "—")}</td><td>${escapeHtml(skill.level ?? 0)}</td>${["reason", "passion", "life", "mundane"].map(key => `<td class="quick-sheet__suit${skill[key] ? " is-active" : ""}">${skill[key] ? "●" : ""}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="6" class="quick-sheet__empty">—</td></tr>`}</tbody>
+  </table>`;
+}
+
+function createQuickComboGrid(combos, character) {
+  if (!combos.length) return `<p class="quick-sheet__empty">登録なし</p>`;
+  const usageLimits = new Map(combos.map(combo => [String(combo.id), getComboActUseLimit(combo)]).filter(([, limit]) => limit !== null));
+  const usageState = loadComboUsageState(getComboUsageStorageKey(character), usageLimits);
+
+  return `<div class="quick-sheet__combo-grid">${combos.map(combo => {
+    const comboId = String(combo.id ?? "");
+    const limit = usageLimits.get(comboId) ?? null;
+    const used = limit ? (usageState.get(comboId) ?? 0) : 0;
+    const skills = getComboSkills(combo);
+    if (isSkillCounterCombo(combo)) {
+      return `<article class="quick-sheet__combo-card is-counter"><header><small>COUNTER</small><strong>${escapeHtml(combo.name || skills || "—")}</strong><b>${limit ? `${used} / ${limit}` : "—"}</b></header></article>`;
+    }
+    const abilityKey = getComboValue(combo.ability, combo.ability_key).toLowerCase();
+    const ability = COMBO_ABILITY_LABELS[abilityKey] || abilityKey || "—";
+    const headline = [ability, combo.modifier ? `修正 ${combo.modifier}` : "", getComboValue(combo.target_value, combo.achievement) ? `達成 ${getComboValue(combo.target_value, combo.achievement)}` : "", limit ? `使用 ${used}/${limit}` : ""].filter(Boolean).join(" / ");
+    const detail = [combo.timing ? `時:${combo.timing}` : "", combo.target ? `対:${combo.target}` : "", combo.range ? `射:${combo.range}` : "", combo.difficulty ? `難:${combo.difficulty}` : "", combo.confrontation ? `対決:${combo.confrontation}` : ""].filter(Boolean).join(" / ");
+    return `<article class="quick-sheet__combo-card"><header><small>COMBO</small><strong>${escapeHtml(combo.name || "UNNAMED")}</strong><b>${escapeHtml(headline)}</b></header><p><span>技能</span>${escapeHtml(skills || "—")}</p><p class="quick-sheet__combo-detail">${escapeHtml([detail, getComboValue(combo.description, combo.effect)].filter(Boolean).join(" / ") || "—")}</p></article>`;
+  }).join("")}</div>`;
+}
+
+function createQuickStyleSkillTable(skills) {
+  if (!skills.length) return `<p class="quick-sheet__empty">登録なし</p>`;
+  const kindLabels = { none: "—", normal: "通常", secret: "秘技", ultimate: "奥義", direction: "演出" };
+  return `<div class="quick-sheet__table-scroll"><table class="quick-sheet__detail-table quick-sheet__style-table"><thead><tr><th>名称</th><th>種</th><th>LV</th><th>♠</th><th>♣</th><th>♥</th><th>♦</th><th>技能</th><th>上限</th><th>時</th><th>対象</th><th>射程</th><th>難</th><th>対決</th><th>解説</th></tr></thead><tbody>${skills.map(skill => {
+    const detail = parseQuickStyleDetail(skill.description);
+    return `<tr><td>${escapeHtml(skill.name || "—")}</td><td>${escapeHtml(kindLabels[skill.skill_kind] || skill.skill_kind || "—")}</td><td>${escapeHtml(skill.level ?? "—")}</td>${["reason", "passion", "life", "mundane"].map(key => `<td class="quick-sheet__suit${skill[key] ? " is-active" : ""}">${skill[key] ? "●" : ""}</td>`).join("")}<td>${escapeHtml(detail.skill || "—")}</td><td>${escapeHtml(detail.limit || "—")}</td><td>${escapeHtml(detail.timing || "—")}</td><td>${escapeHtml(detail.target || "—")}</td><td>${escapeHtml(detail.range || "—")}</td><td>${escapeHtml(detail.difficulty || "—")}</td><td>${escapeHtml(detail.confrontation || "—")}</td><td>${escapeHtml(detail.description || "—")}</td></tr>`;
+  }).join("")}</tbody></table></div>`;
+}
+
+function parseQuickStyleDetail(value) {
+  const empty = { skill: "", limit: "", timing: "", target: "", range: "", difficulty: "", confrontation: "", description: "", page: "" };
+  const text = String(value || "");
+  if (text.startsWith(QUICK_STYLE_DETAIL_PREFIX)) {
+    try {
+      return { ...empty, ...JSON.parse(text.slice(QUICK_STYLE_DETAIL_PREFIX.length).trim()) };
+    } catch {
+      return { ...empty, description: text };
+    }
+  }
+  const labels = { "技能": "skill", "上限": "limit", "タイミング": "timing", "対象": "target", "射程": "range", "目標値": "difficulty", "対決": "confrontation", "解説": "description", "参照": "page", "参照P": "page" };
+  const remain = [];
+  const data = { ...empty };
+  for (const line of text.split(/\r?\n/)) {
+    const match = line.match(/^([^：:]+)[：:]\s*(.*)$/);
+    const key = match && labels[match[1].trim()];
+    if (key) data[key] = match[2];
+    else if (line.trim()) remain.push(line);
+  }
+  if (!data.description) data.description = remain.join(" ");
+  return data;
+}
+
+function createQuickOutfitTable(outfits) {
+  if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
+  const armor = outfits.filter(outfit => outfit.category === "armor");
+  const totals = quickArmorTotals(armor);
+  return `<div class="quick-sheet__table-scroll"><table class="quick-sheet__detail-table quick-sheet__outfit-table"><thead><tr><th>分類</th><th>名称</th><th>常備</th><th>性能</th><th>解説</th></tr></thead><tbody>${outfits.map(outfit => `<tr><td>${escapeHtml(QUICK_OUTFIT_CATEGORY_LABELS[outfit.category] || QUICK_OUTFIT_CATEGORY_LABELS.other)}</td><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(displayValue(outfit.experience_cost))}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td>${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody>${armor.length ? `<tfoot><tr><th colspan="3">防具・防御値合計</th><td colspan="2">S ${totals.s} / I ${totals.i} / P ${totals.p}</td></tr></tfoot>` : ""}</table></div>`;
+}
+
+function createQuickOutfitPerformance(outfit) {
+  const details = outfit.ofc_details && typeof outfit.ofc_details === "object" && !Array.isArray(outfit.ofc_details) ? outfit.ofc_details : {};
+  const defense = parseQuickArmorDefense(outfit.defense);
+  const value = key => String(details[key] ?? outfit[key] ?? "").trim();
+  const add = (parts, label, item) => { if (item) parts.push(`${label}:${item}`); };
+  const parts = [];
+  add(parts, "隠", value("concealment"));
+  if (["weapon", "vehicle"].includes(outfit.category)) add(parts, "攻", value("attack"));
+  if (outfit.category === "weapon") add(parts, "受", value("parry"));
+  if (outfit.category === "armor" || outfit.category === "vehicle") {
+    const s = value("defense_s") || defense.s;
+    const i = value("defense_i") || defense.i;
+    const p = value("defense_p") || defense.p;
+    if (s || i || p) parts.push(`防:S${s || 0}/I${i || 0}/P${p || 0}`);
+  }
+  if (outfit.category === "weapon") add(parts, "射", value("range"));
+  add(parts, "電制", value("electronic_control"));
+  add(parts, "制御", value("control_modifier") || value("control_value"));
+  add(parts, "スロ", value("speed"));
+  if (outfit.category === "tron") {
+    const capacities = [value("tron_software"), value("tron_support"), value("tron_hardware")];
+    if (capacities.some(Boolean)) parts.push(`ソ/サ/ハ:${capacities.map(item => item || 0).join("/")}`);
+    add(parts, "CS", value("cs_value"));
+  }
+  if (outfit.category === "vehicle") {
+    add(parts, "乗員", value("crew"));
+    add(parts, "SF", value("sf"));
+  }
+  if (outfit.category === "residence") {
+    add(parts, "登場", value("residence_entry"));
+    const electric = value("residence_electric") || value("residence_electric_area");
+    const area = value("residence_area");
+    if (electric || area) parts.push(`電/ア:${[electric, area].filter(Boolean).join("/")}`);
+  }
+  add(parts, "部位", value("slot"));
+  return parts.join(" / ") || "—";
+}
+
+function parseQuickArmorDefense(value) {
+  const result = { s: "", i: "", p: "" };
+  const text = String(value ?? "").trim();
+  if (!text) return result;
+  const labeled = [...text.matchAll(/(?:^|[\s,，/／])([SPI])\s*[:：]?\s*([+-]?\d+)/gi)];
+  if (labeled.length) {
+    labeled.forEach(match => { result[match[1].toLowerCase()] = match[2]; });
+    return result;
+  }
+  const parts = text.split(/[\/／,，\s]+/).filter(Boolean);
+  [result.s, result.i, result.p] = [parts[0] || "", parts[1] || "", parts[2] || ""];
+  return result;
+}
+
+function quickArmorTotals(items) {
+  const totals = { s: 0, i: 0, p: 0 };
+  for (const item of items) {
+    const details = item.ofc_details && typeof item.ofc_details === "object" && !Array.isArray(item.ofc_details) ? item.ofc_details : {};
+    const defense = parseQuickArmorDefense(item.defense);
+    for (const key of Object.keys(totals)) {
+      const raw = details[`defense_${key}`] || defense[key] || 0;
+      const match = String(raw).match(/[+-]?\d+(?:\.\d+)?/);
+      totals[key] += match ? Number(match[0]) : 0;
+    }
+  }
+  return totals;
+}
+
+function fitQuickSheetPages() {
+  if (!quickSheetPages) return;
+  quickSheetPages.querySelectorAll(".quick-sheet__page").forEach(page => {
+    page.classList.remove("is-tight", "is-tighter");
+    if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-tight");
+    if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-tighter");
+  });
 }
 
 function renderImage(character) {
@@ -986,4 +1339,5 @@ function showError(message) {
   errorPanel.hidden = false;
 }
 
+setupQuickSheetControls();
 loadCharacter();
