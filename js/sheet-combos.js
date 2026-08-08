@@ -31,6 +31,8 @@ let character = null;
 let combos = [];
 let skillCatalog = [];
 let saving = false;
+let managerReturnFocus = null;
+let editorReturnFocus = null;
 
 if (openButton && dialog && list && form) {
   setupEvents();
@@ -55,12 +57,15 @@ async function initialize() {
 }
 
 function setupEvents() {
-  openButton.addEventListener("click", () => openManager());
+  openButton.addEventListener("click", () => {
+    managerReturnFocus = openButton;
+    openManager();
+  });
   document.querySelector("#sheet-combo-close")?.addEventListener("click", () => dialog.close());
-  document.querySelector("#sheet-combo-add")?.addEventListener("click", () => openEditor("combo"));
-  document.querySelector("#sheet-counter-add")?.addEventListener("click", () => openEditor("counter"));
-  document.querySelector("#sheet-combo-editor-close")?.addEventListener("click", closeEditor);
-  document.querySelector("#sheet-combo-cancel")?.addEventListener("click", closeEditor);
+  document.querySelector("#sheet-combo-add")?.addEventListener("click", event => openEditor("combo", null, event.currentTarget));
+  document.querySelector("#sheet-counter-add")?.addEventListener("click", event => openEditor("counter", null, event.currentTarget));
+  document.querySelector("#sheet-combo-editor-close")?.addEventListener("click", () => closeEditor({ restoreFocus: true }));
+  document.querySelector("#sheet-combo-cancel")?.addEventListener("click", () => closeEditor({ restoreFocus: true }));
   deleteButton?.addEventListener("click", deleteCurrentEntry);
   form.addEventListener("submit", saveEntry);
 
@@ -68,7 +73,7 @@ function setupEvents() {
     const target = event.target.closest("[data-sheet-combo-id]");
     if (!target) return;
     const combo = combos.find(item => String(item.id) === target.dataset.sheetComboId);
-    if (combo) openEditor(isCounterEntry(combo) ? "counter" : "combo", combo);
+    if (combo) openEditor(isCounterEntry(combo) ? "counter" : "combo", combo, target);
   });
 
   skillOptions?.addEventListener("change", event => {
@@ -78,6 +83,7 @@ function setupEvents() {
   });
 
   document.querySelector("#sheet-combo-skills")?.addEventListener("input", syncSkillPicker);
+  dialog.addEventListener("keydown", trapDialogFocus);
 
   dialog.addEventListener("close", () => {
     openButton.classList.remove("is-active");
@@ -86,6 +92,9 @@ function setupEvents() {
     if (location.hash === "#combos") {
       history.replaceState(null, "", `${location.pathname}${location.search}`);
     }
+    const returnTarget = managerReturnFocus?.isConnected ? managerReturnFocus : openButton;
+    managerReturnFocus = null;
+    requestAnimationFrame(() => returnTarget?.focus());
   });
   dialog.addEventListener("cancel", event => {
     if (saving) event.preventDefault();
@@ -139,6 +148,7 @@ async function openManager(options = {}) {
   }
 
   if (!dialog.open) dialog.showModal();
+  requestAnimationFrame(() => document.querySelector("#sheet-combo-add")?.focus());
   list.innerHTML = `<p class="sheet-combo-empty">読み込み中… <small>SCANNING COMBO DATA...</small></p>`;
   count.textContent = "—";
   setMessage("コンボデータへアクセス中…", "loading");
@@ -273,7 +283,8 @@ function renderSkillSelectors() {
   }
 }
 
-async function openEditor(mode, combo = null) {
+async function openEditor(mode, combo = null, returnTarget = null) {
+  editorReturnFocus = returnTarget?.isConnected ? returnTarget : document.activeElement;
   await refreshSkillCatalog();
   form.reset();
   setValue("sheet-combo-id", combo?.id || "");
@@ -326,12 +337,45 @@ function applyEditorMode(mode, editing) {
   editor.classList.toggle("is-counter-mode", counterMode);
 }
 
-function closeEditor() {
+function closeEditor(options = {}) {
   if (saving || !editor) return;
+  const returnTarget = editorReturnFocus;
+  editorReturnFocus = null;
   editor.hidden = true;
   document.querySelector(".sheet-combo-workspace")?.classList.remove("has-editor");
   form.reset();
   deleteButton.hidden = true;
+  if (options.restoreFocus) {
+    const fallback = document.querySelector("#sheet-combo-add");
+    requestAnimationFrame(() => {
+      const target = returnTarget?.isConnected && !returnTarget.closest("[hidden]") ? returnTarget : fallback;
+      target?.focus();
+    });
+  }
+}
+
+function trapDialogFocus(event) {
+  if (event.key !== "Tab" || !dialog.open) return;
+
+  const focusable = [...dialog.querySelectorAll(
+    "a[href], button:not([disabled]), input:not([disabled]):not([type='hidden']), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+  )].filter(element => !element.closest("[hidden]") && element.getClientRects().length > 0);
+
+  if (!focusable.length) {
+    event.preventDefault();
+    dialog.focus();
+    return;
+  }
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function nextSortOrder() {

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <script src="./js/css-next-theme.js"></script>
-  <link rel="stylesheet" href="./css-next/index.css?v=33" data-css-system="next">
+  <link rel="stylesheet" href="./css-next/index.css?v=34" data-css-system="next">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>キャストシート編集 // N◎VA ARCHIVE</title>
@@ -24,7 +24,7 @@
   </main>
   <dialog id="tsv-dialog"><form method="dialog"><h2 id="tsv-title">TSV取込 <small>TSV IMPORT</small></h2><textarea id="tsv-text" rows="16"></textarea><div class="dialog-actions"><button value="cancel">キャンセル</button><button id="tsv-apply" value="default">取り込む</button></div></form></dialog>
   <dialog id="legacy-import-dialog"><form method="dialog"><h2>キャラシ倉庫JSON取込</h2><p>キャラシ倉庫で取得したJSONを貼り付けてください。反映後に内容を確認し、画面左の保存ボタンを押すまでDBには保存されません。</p><button id="legacy-bookmarklet-copy" type="button">ブックマークレットをコピー</button><textarea id="legacy-import-json" rows="14" placeholder="キャラシ倉庫JSONを貼り付け"></textarea><p id="legacy-import-message" aria-live="polite"></p><div class="dialog-actions"><button value="cancel">閉じる</button><button id="legacy-import-apply" type="button">編集画面へ反映</button></div></form></dialog>
-  <dialog id="sheet-combo-dialog" class="sheet-combo-dialog" aria-labelledby="sheet-combo-title">
+  <dialog id="sheet-combo-dialog" class="sheet-combo-dialog" aria-labelledby="sheet-combo-title" aria-modal="true" tabindex="-1">
     <div class="sheet-combo-shell">
       <header class="sheet-combo-header">
         <div>
@@ -115,6 +115,6 @@
   <script src="./js/sheet-import-outfit-compat.js?v=8"></script>
   <script type="module" src="./js/sheet-master-autofill.js?v=8"></script>
   <script src="./js/sheet-section-nav.js?v=2"></script>
-  <script type="module" src="./js/sheet-combos.js?v=1"></script>
+  <script type="module" src="./js/sheet-combos.js?v=2"></script>
 </body>
 </html>

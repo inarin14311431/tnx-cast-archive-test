@@ -1,5 +1,10 @@
 /* Network scan sequence and ambient data stream for the public cast view. */
 (function(){
+  const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true;
+  if(reducedMotion){
+    document.body.classList.add('cast-reduced-motion');
+    return;
+  }
   document.body.classList.add('cast-scan-mode');
   const publicId=new URLSearchParams(location.search).get('id')?.trim()||'UNKNOWN';
   const scanSessionKey='tnx-cast-scan-complete-v1';

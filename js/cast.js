@@ -579,13 +579,14 @@ function renderCombos(combos, character) {
         : 0;
 
       if (isSkillCounterCombo(combo)) {
+        const counterName = combo.name || skills || "UNNAMED SKILL";
         return `
-          <article class="combo-skill-counter">
+          <article class="combo-skill-counter" aria-label="技能カウンター ${escapeHtml(counterName)}">
             <div class="combo-skill-counter__identity">
               <p class="combo-skill-counter__kind">SKILL COUNTER</p>
-              <h3>${escapeHtml(combo.name || skills || "UNNAMED SKILL")}</h3>
+              <h3>${escapeHtml(counterName)}</h3>
             </div>
-            ${createComboUsageTracker(comboId, usedCount, actUseLimit, true)}
+            ${createComboUsageTracker(comboId, usedCount, actUseLimit, true, counterName)}
           </article>
         `;
       }
@@ -639,7 +640,7 @@ function renderCombos(combos, character) {
               : ""}
 
             ${actUseLimit
-              ? createComboUsageTracker(comboId, usedCount, actUseLimit)
+              ? createComboUsageTracker(comboId, usedCount, actUseLimit, false, combo.name || "コンボ")
               : ""}
           </div>
         </article>
@@ -658,6 +659,7 @@ function renderCombos(combos, character) {
           <span>全カウンターをリセット</span>
           <small>NEW ACT / RESET ALL</small>
         </button>
+        <span class="visually-hidden" data-combo-announcer-all aria-live="polite" aria-atomic="true"></span>
       </div>
     `
     : "";
@@ -666,23 +668,25 @@ function renderCombos(combos, character) {
   setupComboInteractions(container, usageLimits, usageState, usageStorageKey);
 }
 
-function createComboUsageTracker(comboId, usedCount, limit, compact = false) {
+function createComboUsageTracker(comboId, usedCount, limit, compact = false, itemName = "コンボ") {
   const remaining = Math.max(0, limit - usedCount);
   const reached = usedCount >= limit;
+  const accessibleName = String(itemName || "コンボ").trim();
 
   return `
     <div class="combo-card__usage${compact ? " combo-card__usage--counter" : ""}${reached ? " is-limit-reached" : ""}"
-      data-combo-usage data-combo-id="${escapeHtml(comboId)}">
+      data-combo-usage data-combo-id="${escapeHtml(comboId)}" data-combo-label="${escapeHtml(accessibleName)}">
       <div class="combo-card__usage-status">
         <span>1アクト使用回数 <small>ACT USES</small></span>
         <strong>使用 <b data-combo-used>${usedCount}</b> / ${limit}</strong>
         <em data-combo-remaining>${reached ? "上限到達" : `残り ${remaining}回`}</em>
       </div>
       <div class="combo-card__usage-actions">
-        <button type="button" data-combo-use ${reached ? "disabled" : ""}>使用 +1</button>
-        <button type="button" data-combo-undo ${usedCount === 0 ? "disabled" : ""}>戻す -1</button>
-        <button type="button" data-combo-reset ${usedCount === 0 ? "disabled" : ""}>リセット</button>
+        <button type="button" data-combo-use aria-label="${escapeHtml(accessibleName)}の使用回数を1増やす" ${reached ? "disabled" : ""}>使用 +1</button>
+        <button type="button" data-combo-undo aria-label="${escapeHtml(accessibleName)}の使用回数を1戻す" ${usedCount === 0 ? "disabled" : ""}>戻す -1</button>
+        <button type="button" data-combo-reset aria-label="${escapeHtml(accessibleName)}の使用回数をリセット" ${usedCount === 0 ? "disabled" : ""}>リセット</button>
       </div>
+      <span class="visually-hidden" data-combo-announcer aria-live="polite" aria-atomic="true"></span>
     </div>
   `;
 }
@@ -715,8 +719,10 @@ function setupComboInteractions(container, usageLimits, usageState, usageStorage
         .forEach(usageElement => {
           const comboId = usageElement.dataset.comboId ?? "";
           const limit = usageLimits.get(comboId);
-          if (limit) updateComboUsageElement(usageElement, 0, limit);
+          if (limit) updateComboUsageElement(usageElement, 0, limit, false);
         });
+      const announcer = container.querySelector("[data-combo-announcer-all]");
+      if (announcer) announcer.textContent = "すべての使用回数カウンターを0にリセットしました。";
       return;
     }
 
@@ -751,7 +757,7 @@ function setupComboInteractions(container, usageLimits, usageState, usageStorage
   });
 }
 
-function updateComboUsageElement(usageElement, usedCount, limit) {
+function updateComboUsageElement(usageElement, usedCount, limit, announce = true) {
   const remaining = Math.max(0, limit - usedCount);
   const reached = usedCount >= limit;
 
@@ -762,6 +768,11 @@ function updateComboUsageElement(usageElement, usedCount, limit) {
   usageElement.querySelector("[data-combo-use]").disabled = reached;
   usageElement.querySelector("[data-combo-undo]").disabled = usedCount === 0;
   usageElement.querySelector("[data-combo-reset]").disabled = usedCount === 0;
+  if (announce) {
+    const announcer = usageElement.querySelector("[data-combo-announcer]");
+    const label = usageElement.dataset.comboLabel || "使用回数";
+    if (announcer) announcer.textContent = `${label}、使用 ${usedCount} / ${limit}、${reached ? "上限到達" : `残り ${remaining}回`}`;
+  }
 }
 
 function getComboActUseLimit(combo) {
