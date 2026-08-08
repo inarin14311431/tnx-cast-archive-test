@@ -307,6 +307,25 @@ body[data-page="cast.html"] .combo-card__ability--life { border-color: color-mix
 .combo-card__usage.is-limit-reached { border-color: color-mix(in srgb, var(--color-danger) 72%, var(--color-border)); background: color-mix(in srgb, var(--color-danger) 7%, var(--color-surface-alt)); }
 .combo-card__usage.is-limit-reached .combo-card__usage-status strong, .combo-card__usage.is-limit-reached .combo-card__usage-status em { color: var(--color-danger); }
 
+@media (min-width: 1200px) {
+  .combo-container--dense { gap: 5px; }
+  .combo-container--dense .combo-runtime-toolbar { min-height: 32px; padding: 4px 7px; }
+  .combo-container--dense .combo-runtime-toolbar > button { min-height: 24px; padding-block: 2px; }
+  .combo-container--dense .combo-card__header { min-height: 30px; gap: 6px; padding: 3px 8px; }
+  .combo-container--dense .combo-card__title { gap: 8px; }
+  .combo-container--dense .combo-card__header h3 { font-size: .9rem; }
+  .combo-container--dense .combo-card__stats > div { padding: 2px 4px; }
+  .combo-container--dense .combo-card__body { gap: 5px; padding: 3px 8px; }
+  .combo-container--dense .combo-card__meta > div { min-height: 26px; padding: 2px 5px; }
+  .combo-container--dense .combo-card__skills-value { font-size: .86rem; }
+  .combo-container--dense .combo-card__detail-copy { gap: 1px 6px; color: var(--color-muted); }
+  .combo-container--dense :is(.combo-card__outcome, .combo-card__description) { line-height: 1.2; }
+  .combo-container--dense .combo-card__usage { gap: 6px; padding: 2px 5px; }
+  .combo-container--dense .combo-card__usage-status { gap: 3px 6px; }
+  .combo-container--dense .combo-card__usage-actions { gap: 3px; }
+  .combo-container--dense .combo-card__usage-actions button { min-height: 24px; padding: 1px 6px; }
+}
+
 .cast-error { width: min(760px, calc(100% - 32px)); margin: 48px auto 0; padding: 28px; border: 1px solid var(--color-danger); background: var(--color-surface); text-align: center; }
 .cast-error__code { color: var(--color-danger); font-size: 1.15rem; }
 .cast-data-rain { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; color: var(--color-accent); opacity: .22; font: 10px/1.55 var(--font-data); }

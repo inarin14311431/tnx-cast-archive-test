@@ -531,6 +531,8 @@ function renderCombos(combos, character) {
     return;
   }
 
+  container.classList.toggle("combo-container--dense", combos.length >= 5);
+
   if (!combos.length) {
     container.innerHTML =
       `<p class="empty-data">NO COMBO DATA</p>`;
