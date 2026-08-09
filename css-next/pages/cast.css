@@ -433,8 +433,14 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__outfit-stat { color: var(--quick-accent); font-weight: 800; text-align: center; }
 .quick-sheet__outfit-stat.is-attack { color: var(--quick-danger); font-size: .62rem; }
 .quick-sheet__outfit-stat.is-electronic { border-inline: 1px solid color-mix(in srgb, var(--quick-accent) 38%, var(--quick-line)); }
-.quick-sheet__armor-total { padding: 3px 6px; border-bottom: 1px solid var(--quick-line); color: var(--quick-muted); background: var(--quick-accent-soft); font-size: .5rem; text-align: right; }
-.quick-sheet__armor-total strong { margin-left: 8px; color: var(--quick-accent); }
+.quick-sheet__armor-table .quick-sheet__armor-total-row > * { height: 31px; border-top: 2px solid var(--quick-accent); background: color-mix(in srgb, var(--quick-accent) 12%, var(--quick-surface)); }
+.quick-sheet__armor-table .quick-sheet__armor-total-label { padding-inline: 8px; color: var(--quick-text); text-align: right; }
+.quick-sheet__armor-table .quick-sheet__armor-total-label span { display: block; font-size: .58rem; font-weight: 900; letter-spacing: .05em; }
+.quick-sheet__armor-table .quick-sheet__armor-total-label small { display: block; color: var(--quick-muted); font: 800 .37rem/1 var(--font-data); letter-spacing: .12em; }
+.quick-sheet__armor-table .quick-sheet__armor-total-value { padding: 2px; color: var(--quick-danger); text-align: center; }
+.quick-sheet__armor-table .quick-sheet__armor-total-value span { display: block; color: var(--quick-muted); font: 800 .36rem/1 var(--font-data); }
+.quick-sheet__armor-table .quick-sheet__armor-total-value strong { display: block; font: 900 .74rem/.95 var(--font-data); }
+.quick-sheet__armor-table .quick-sheet__armor-total-spacer { border-left-color: color-mix(in srgb, var(--quick-accent) 34%, var(--quick-line)); }
 .quick-sheet__outfit-table-wrap { overflow: hidden; }
 .quick-sheet__page-footer { display: flex; min-height: 17px; align-items: end; justify-content: space-between; margin-top: auto; padding-top: 4px; border-top: 1px solid var(--quick-line); color: var(--quick-muted); font: 700 .46rem/1 var(--font-data); letter-spacing: .08em; }
 .quick-sheet__page-footer b { color: var(--quick-accent); }

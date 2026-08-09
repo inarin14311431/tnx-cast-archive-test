@@ -466,7 +466,11 @@ function createQuickArmorTable(outfits) {
     const defense = getQuickOutfitDefense(outfit);
     return `<tr><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.s || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.p || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.i || "—")}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td class="quick-sheet__outfit-detail">${escapeHtml(displayValue(outfit.description))}</td></tr>`;
   }).join("");
-  return `<p class="quick-sheet__armor-total">防具・防御値合計 <strong>S ${totals.s} / P ${totals.p} / I ${totals.i}</strong></p><div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__armor-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-performance">性能</th><th>S</th><th>P</th><th>I</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  const totalCells = [["S", totals.s], ["P", totals.p], ["I", totals.i]]
+    .map(([label, value]) => `<td class="quick-sheet__armor-total-value" aria-label="防御値合計 ${label} ${value}"><span>${label}</span><strong>${value}</strong></td>`)
+    .join("");
+  const totalRow = `<tfoot><tr class="quick-sheet__armor-total-row"><th class="quick-sheet__armor-total-label" colspan="2" scope="row"><span>防御値合計</span><small>TOTAL DEFENSE</small></th>${totalCells}<td class="quick-sheet__armor-total-spacer" aria-hidden="true"></td><td class="quick-sheet__armor-total-spacer quick-sheet__outfit-detail" aria-hidden="true"></td></tr></tfoot>`;
+  return `<div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__armor-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-performance">性能</th><th>S</th><th>P</th><th>I</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${rows}</tbody>${totalRow}</table></div>`;
 }
 
 function createQuickOtherOutfitTable(outfits) {
