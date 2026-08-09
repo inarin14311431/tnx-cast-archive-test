@@ -416,6 +416,7 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__style-table th:nth-child(10) { width: 7%; }
 .quick-sheet__style-table th:nth-child(11) { width: 5%; }
 .quick-sheet__style-table th:nth-child(12) { width: 6%; }
+.quick-sheet__style-table .quick-sheet__style-description { width: 25%; }
 .quick-sheet__weapon-table .quick-sheet__outfit-name { width: 20%; }
 .quick-sheet__weapon-table .quick-sheet__outfit-concealment { width: 9%; }
 .quick-sheet__weapon-table .quick-sheet__outfit-attack { width: 11%; }
@@ -437,9 +438,8 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__other-outfit-table :is(.quick-sheet__outfit-speed, .quick-sheet__outfit-attack, .quick-sheet__outfit-parry, .quick-sheet__outfit-defense-s, .quick-sheet__outfit-defense-p, .quick-sheet__outfit-defense-i, .quick-sheet__outfit-tron-software, .quick-sheet__outfit-tron-support, .quick-sheet__outfit-tron-hardware, .quick-sheet__outfit-cs-value, .quick-sheet__outfit-crew, .quick-sheet__outfit-sf, .quick-sheet__outfit-residence-entry, .quick-sheet__outfit-residence-electric, .quick-sheet__outfit-residence-area) { width: 5%; }
 .quick-sheet__other-outfit-table .quick-sheet__outfit-electronic-control { width: 7%; }
 .quick-sheet__other-outfit-table .quick-sheet__outfit-detail { width: 31%; }
-.quick-sheet:not(.is-outfit-details-visible) .quick-sheet__outfit-detail { display: none; }
-.quick-sheet.is-outfit-details-visible .quick-sheet__outfit-table tbody tr { height: auto; }
-.quick-sheet.is-outfit-details-visible .quick-sheet__outfit-table tbody td.quick-sheet__outfit-detail { height: auto; min-height: 20px; padding: 4px 5px; overflow: visible; vertical-align: top; line-height: 1.28; text-overflow: clip; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.quick-sheet__style-table tbody td.quick-sheet__style-description,
+.quick-sheet__outfit-table tbody td.quick-sheet__outfit-detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .quick-sheet__outfit-stat { color: var(--quick-accent); font-weight: 800; text-align: center; }
 .quick-sheet__outfit-stat.is-attack { color: var(--quick-danger); font-size: .62rem; }
 .quick-sheet__outfit-stat.is-electronic { border-inline: 1px solid color-mix(in srgb, var(--quick-accent) 38%, var(--quick-line)); }
@@ -471,7 +471,11 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__page.is-densest .quick-sheet__detail-table :is(th, td) { height: 16px; padding: 1px 2px; }
 .quick-sheet__page.is-densest .quick-sheet__outfit-groups { gap: 3px; padding: 3px; }
 .quick-sheet__page.is-densest .quick-sheet__outfit-group h3 { min-height: 17px; padding-block: 2px; }
-.quick-sheet.is-outfit-details-visible .quick-sheet__page.is-densest .quick-sheet__outfit-table tbody td.quick-sheet__outfit-detail { height: auto; padding: 2px 3px; line-height: 1.16; }
+.quick-sheet.is-notes-expanded :is(.quick-sheet__style-table, .quick-sheet__outfit-table) tbody tr { height: auto; }
+.quick-sheet.is-notes-expanded .quick-sheet__style-table tbody td.quick-sheet__style-description,
+.quick-sheet.is-notes-expanded .quick-sheet__outfit-table tbody td.quick-sheet__outfit-detail { height: auto; min-height: 20px; padding: 4px 5px; overflow: visible; vertical-align: top; line-height: 1.28; text-overflow: clip; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.quick-sheet.is-notes-expanded .quick-sheet__page.is-densest .quick-sheet__style-table tbody td.quick-sheet__style-description,
+.quick-sheet.is-notes-expanded .quick-sheet__page.is-densest .quick-sheet__outfit-table tbody td.quick-sheet__outfit-detail { height: auto; padding: 2px 3px; line-height: 1.16; }
 
 /* Portrait quick sheet: readability and section integrity take priority over a fixed two-page limit. */
 .quick-sheet__portrait { min-width: 0; overflow: hidden; border: 1px solid var(--quick-line); background: var(--quick-surface); }
@@ -485,8 +489,12 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__style-divine-list strong { overflow: hidden; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
 .quick-sheet__style-divine-list em { color: var(--quick-accent); font-style: normal; }
 .quick-sheet__style-divine-list .is-divine strong { color: var(--quick-danger); }
-.quick-sheet__page--three .quick-sheet__detail-table { font-size: .58rem; }
-.quick-sheet__page--three .quick-sheet__detail-table :is(th, td) { height: 24px; padding: 3px 4px; }
+.quick-sheet__page--three .quick-sheet__detail-table,
+.quick-sheet__page--continuation .quick-sheet__detail-table { font-size: .58rem; }
+.quick-sheet__page--three .quick-sheet__detail-table :is(th, td),
+.quick-sheet__page--continuation .quick-sheet__detail-table :is(th, td) { height: 24px; padding: 3px 4px; }
+.quick-sheet__page--three.has-core-outfits .quick-sheet__detail-table { font-size: .52rem; }
+.quick-sheet__page--three.has-core-outfits .quick-sheet__detail-table :is(th, td) { height: 20px; padding: 2px 3px; }
 .quick-sheet__page.is-tighter .quick-sheet__portrait img { height: 46mm; }
 
 @page { size: A4 portrait; margin: 0; }

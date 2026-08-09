@@ -14,7 +14,7 @@ const quickSheetPrint = document.querySelector("#quick-sheet-print");
 
 let quickSheetContext = null;
 let quickSheetScrollY = 0;
-let quickSheetOutfitDetailsVisible = false;
+let quickSheetNotesExpanded = false;
 
 const OUTFIT_LABELS = {
   weapon: "WEAPON",
@@ -228,8 +228,8 @@ function setupQuickSheetControls() {
   quickSheetButton?.addEventListener("click", openQuickSheet);
   quickSheetClose?.addEventListener("click", closeQuickSheetView);
   quickSheetDetailToggle?.addEventListener("click", () => {
-    quickSheetOutfitDetailsVisible = !quickSheetOutfitDetailsVisible;
-    updateQuickSheetDetailVisibility();
+    quickSheetNotesExpanded = !quickSheetNotesExpanded;
+    updateQuickSheetNotesMode();
     requestAnimationFrame(fitQuickSheetPages);
   });
   quickSheetPrint?.addEventListener("click", () => {
@@ -253,7 +253,7 @@ function openQuickSheet() {
 
   quickSheetScrollY = window.scrollY;
   renderQuickSheet(quickSheetContext);
-  updateQuickSheetDetailVisibility();
+  updateQuickSheetNotesMode();
   quickSheet.hidden = false;
   document.body.classList.add("is-quick-sheet-open");
   quickSheetButton?.setAttribute("aria-expanded", "true");
@@ -275,14 +275,14 @@ function closeQuickSheetView() {
   quickSheetButton?.focus({ preventScroll: true });
 }
 
-function updateQuickSheetDetailVisibility() {
+function updateQuickSheetNotesMode() {
   if (!quickSheet || !quickSheetDetailToggle) return;
-  quickSheet.classList.toggle("is-outfit-details-visible", quickSheetOutfitDetailsVisible);
-  quickSheetDetailToggle.setAttribute("aria-pressed", String(quickSheetOutfitDetailsVisible));
+  quickSheet.classList.toggle("is-notes-expanded", quickSheetNotesExpanded);
+  quickSheetDetailToggle.setAttribute("aria-pressed", String(quickSheetNotesExpanded));
   const label = quickSheetDetailToggle.querySelector("span");
   const sublabel = quickSheetDetailToggle.querySelector("small");
-  if (label) label.textContent = quickSheetOutfitDetailsVisible ? "解説を非表示" : "解説を表示";
-  if (sublabel) sublabel.textContent = quickSheetOutfitDetailsVisible ? "HIDE NOTES" : "SHOW NOTES";
+  if (label) label.textContent = quickSheetNotesExpanded ? "解説を省略表示" : "解説を全文表示";
+  if (sublabel) sublabel.textContent = quickSheetNotesExpanded ? "COLLAPSE NOTES" : "EXPAND NOTES";
 }
 
 function renderQuickSheet({ character, skills, outfits, combos }) {
@@ -363,11 +363,11 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
         ${createQuickBlockTitle("スタイル技能", "STYLE SKILLS")}
         ${createQuickStyleSkillTable(styleSkills)}
       </section>
-      <section class="quick-sheet__block quick-sheet__outfits quick-sheet__weapons">
+      <section class="quick-sheet__block quick-sheet__outfits quick-sheet__weapons" data-quick-sheet-section="weapons">
         ${createQuickBlockTitle("ウェポン", "WEAPON")}
         ${createQuickWeaponTable(weaponOutfits)}
       </section>
-      <section class="quick-sheet__block quick-sheet__outfits quick-sheet__armor">
+      <section class="quick-sheet__block quick-sheet__outfits quick-sheet__armor" data-quick-sheet-section="armor">
         ${createQuickBlockTitle("防具", "ARMOR")}
         ${createQuickArmorTable(armorOutfits)}
       </section>
@@ -375,7 +375,7 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
     </article>
     <article class="quick-sheet__page quick-sheet__page--three">
       ${createQuickPageHeader(character, 3)}
-      <section class="quick-sheet__block quick-sheet__outfits">
+      <section class="quick-sheet__block quick-sheet__outfits" data-quick-sheet-section="other-outfits">
         ${createQuickBlockTitle("その他のアウトフィット", "OTHER OUTFITS")}
         ${createQuickOtherOutfitTable(otherOutfits)}
       </section>
@@ -479,9 +479,9 @@ function createQuickComboGrid(combos, character) {
 
 function createQuickStyleSkillTable(skills) {
   if (!skills.length) return `<p class="quick-sheet__empty">登録なし</p>`;
-  return `<div class="quick-sheet__table-scroll"><table class="quick-sheet__detail-table quick-sheet__style-table"><thead><tr><th>名称</th><th>LV</th><th>♠</th><th>♣</th><th>♥</th><th>♦</th><th>技能</th><th>時</th><th>対象</th><th>射程</th><th>難</th><th>対決</th><th>解説</th></tr></thead><tbody>${skills.map(skill => {
+  return `<div class="quick-sheet__table-scroll"><table class="quick-sheet__detail-table quick-sheet__style-table"><thead><tr><th>名称</th><th>LV</th><th>♠</th><th>♣</th><th>♥</th><th>♦</th><th>技能</th><th>時</th><th>対象</th><th>射程</th><th>難</th><th>対決</th><th class="quick-sheet__style-description">解説</th></tr></thead><tbody>${skills.map(skill => {
     const detail = parseQuickStyleDetail(skill.description);
-    return `<tr><td>${escapeHtml(skill.name || "—")}</td><td>${escapeHtml(skill.level ?? "—")}</td>${["reason", "passion", "life", "mundane"].map(key => `<td class="quick-sheet__suit${skill[key] ? " is-active" : ""}">${skill[key] ? "●" : ""}</td>`).join("")}<td>${escapeHtml(detail.skill || "—")}</td><td>${escapeHtml(detail.timing || "—")}</td><td>${escapeHtml(detail.target || "—")}</td><td>${escapeHtml(detail.range || "—")}</td><td>${escapeHtml(detail.difficulty || "—")}</td><td>${escapeHtml(detail.confrontation || "—")}</td><td>${escapeHtml(detail.description || "—")}</td></tr>`;
+    return `<tr><td>${escapeHtml(skill.name || "—")}</td><td>${escapeHtml(skill.level ?? "—")}</td>${["reason", "passion", "life", "mundane"].map(key => `<td class="quick-sheet__suit${skill[key] ? " is-active" : ""}">${skill[key] ? "●" : ""}</td>`).join("")}<td>${escapeHtml(detail.skill || "—")}</td><td>${escapeHtml(detail.timing || "—")}</td><td>${escapeHtml(detail.target || "—")}</td><td>${escapeHtml(detail.range || "—")}</td><td>${escapeHtml(detail.difficulty || "—")}</td><td>${escapeHtml(detail.confrontation || "—")}</td><td class="quick-sheet__style-description">${escapeHtml(detail.description || "—")}</td></tr>`;
   }).join("")}</tbody></table></div>`;
 }
 
@@ -607,12 +607,109 @@ function quickArmorTotals(items) {
 
 function fitQuickSheetPages() {
   if (!quickSheetPages) return;
+
+  restoreQuickSheetSectionLayout();
+  resetQuickSheetDensity();
+
+  if (quickSheetNotesExpanded) {
+    reflowQuickSheetExpandedNotes();
+  }
+
+  applyQuickSheetDensity();
+
+  if (quickSheetNotesExpanded && quickSheetPageOverflows(quickSheetPages.querySelector(".quick-sheet__page--three"))) {
+    moveOtherOutfitsToContinuationPage();
+    resetQuickSheetDensity();
+    applyQuickSheetDensity();
+  }
+
+  updateQuickSheetPageLabels();
+}
+
+function restoreQuickSheetSectionLayout() {
+  const pageTwo = quickSheetPages.querySelector(".quick-sheet__page--two");
+  const pageThree = quickSheetPages.querySelector(".quick-sheet__page--three");
+  const weapons = quickSheetPages.querySelector('[data-quick-sheet-section="weapons"]');
+  const armor = quickSheetPages.querySelector('[data-quick-sheet-section="armor"]');
+  const otherOutfits = quickSheetPages.querySelector('[data-quick-sheet-section="other-outfits"]');
+  const pageTwoFooter = pageTwo?.querySelector(".quick-sheet__page-footer");
+  const pageThreeFooter = pageThree?.querySelector(".quick-sheet__page-footer");
+
+  if (pageTwo && pageTwoFooter) {
+    if (weapons) pageTwo.insertBefore(weapons, pageTwoFooter);
+    if (armor) pageTwo.insertBefore(armor, pageTwoFooter);
+  }
+  if (pageThree && pageThreeFooter && otherOutfits) {
+    pageThree.insertBefore(otherOutfits, pageThreeFooter);
+  }
+
+  pageThree?.classList.remove("has-core-outfits");
+  quickSheetPages.querySelectorAll(".quick-sheet__page--continuation").forEach(page => page.remove());
+}
+
+function reflowQuickSheetExpandedNotes() {
+  const pageTwo = quickSheetPages.querySelector(".quick-sheet__page--two");
+  const pageThree = quickSheetPages.querySelector(".quick-sheet__page--three");
+  const weapons = quickSheetPages.querySelector('[data-quick-sheet-section="weapons"]');
+  const armor = quickSheetPages.querySelector('[data-quick-sheet-section="armor"]');
+  const otherOutfits = quickSheetPages.querySelector('[data-quick-sheet-section="other-outfits"]');
+
+  if (!pageTwo || !pageThree || !quickSheetPageOverflows(pageTwo)) return;
+
+  if (armor) pageThree.insertBefore(armor, otherOutfits || pageThree.querySelector(".quick-sheet__page-footer"));
+  pageThree.classList.add("has-core-outfits");
+
+  if (quickSheetPageOverflows(pageTwo) && weapons) {
+    pageThree.insertBefore(weapons, armor || otherOutfits || pageThree.querySelector(".quick-sheet__page-footer"));
+  }
+}
+
+function moveOtherOutfitsToContinuationPage() {
+  const otherOutfits = quickSheetPages.querySelector('[data-quick-sheet-section="other-outfits"]');
+  const character = quickSheetContext?.character;
+  if (!otherOutfits || !character) return;
+
+  const page = document.createElement("article");
+  page.className = "quick-sheet__page quick-sheet__page--continuation";
+  page.innerHTML = `${createQuickPageHeader(character, 4)}${createQuickPageFooter(4)}`;
+  page.insertBefore(otherOutfits, page.querySelector(".quick-sheet__page-footer"));
+  quickSheetPages.append(page);
+}
+
+function resetQuickSheetDensity() {
   quickSheetPages.querySelectorAll(".quick-sheet__page").forEach(page => {
     page.classList.remove("is-tight", "is-tighter", "is-densest");
+  });
+}
+
+function applyQuickSheetDensity() {
+  quickSheetPages.querySelectorAll(".quick-sheet__page").forEach(page => {
     if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-tight");
     if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-tighter");
     if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-densest");
   });
+}
+
+function quickSheetPageOverflows(page) {
+  return Boolean(page && page.scrollHeight > page.clientHeight + 1);
+}
+
+function updateQuickSheetPageLabels() {
+  const pages = [...quickSheetPages.querySelectorAll(".quick-sheet__page")];
+  const total = pages.length;
+
+  pages.forEach((page, index) => {
+    const pageNumber = index + 1;
+    const headerCount = page.querySelector(".quick-sheet__page-header > b");
+    const footerCount = page.querySelector(".quick-sheet__page-footer > b");
+    if (headerCount) headerCount.textContent = `${pageNumber} / ${total}`;
+    if (footerCount) footerCount.textContent = `PAGE ${pageNumber} / ${total}`;
+  });
+
+  const toolbarNote = quickSheet?.querySelector(".quick-sheet__toolbar-note");
+  const printLabel = quickSheetPrint?.querySelector("small");
+  if (toolbarNote) toolbarNote.textContent = `A4 PORTRAIT × ${total}`;
+  if (printLabel) printLabel.textContent = `PRINT A4 × ${total}`;
 }
 
 function renderImage(character) {
