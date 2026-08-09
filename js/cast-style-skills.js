@@ -48,6 +48,9 @@ function parseDetail(value) {
 }
 
 function findSection() {
+  const movedSection = document.querySelector("#style-skill-panel .skill-section");
+  if (movedSection) return movedSection;
+
   const container = document.querySelector("#skills-container");
   if (!container) return null;
   return [...container.querySelectorAll("section")].find(section => {
