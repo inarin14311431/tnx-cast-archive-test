@@ -224,42 +224,44 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
   const social = skills.filter(skill => skill.category === "social");
   const connections = skills.filter(skill => skill.category === "connection");
   const styleSkills = skills.filter(skill => skill.category === "style");
-  const styles = [1, 2, 3]
-    .map(index => ({ name: character[`style_${index}`], mark: character[`style_${index}_mark`] }))
-    .filter(style => style.name);
-  const divines = [1, 2, 3]
-    .map(index => ({ style: character[`style_${index}`], name: character[`divine_${index}`] }))
-    .filter(item => item.style || item.name);
+  const styleDivines = [1, 2, 3]
+    .map(index => ({
+      name: character[`style_${index}`],
+      mark: character[`style_${index}_mark`],
+      divine: character[`divine_${index}`]
+    }))
+    .filter(item => item.name || item.divine);
+  const portrait = character.image_url || "./assets/placeholders/scan-failed.webp";
 
   quickSheetPages.innerHTML = `
     <article class="quick-sheet__page quick-sheet__page--one">
       ${createQuickPageHeader(character, 1)}
       <section class="quick-sheet__identity">
-        <div class="quick-sheet__identity-name">
-          <span>${escapeHtml(formatHandle(character.handle))}</span>
-          <h1>${escapeHtml(character.character_name || "NO NAME")}</h1>
-          <small>${escapeHtml(character.character_kana || "")}</small>
+        <div class="quick-sheet__portrait">
+          <img src="${escapeHtml(portrait)}" alt="${escapeHtml(character.character_name || "キャスト画像")}">
         </div>
-        <div class="quick-sheet__style-list">
-          ${styles.map((style, index) => `<span><b>0${index + 1}</b>${escapeHtml(style.name)} <em>${escapeHtml(style.mark || "")}</em></span>`).join("")}
+        <div class="quick-sheet__identity-main">
+          <div class="quick-sheet__identity-name">
+            <span>${escapeHtml(formatHandle(character.handle))}</span>
+            <h1>${escapeHtml(character.character_name || "NO NAME")}</h1>
+            <small>${escapeHtml(character.character_kana || "")}</small>
+          </div>
+          <dl class="quick-sheet__identity-meta">
+            <div><dt>PLAYER</dt><dd>${escapeHtml(displayValue(character.player_name))}</dd></div>
+            <div><dt>AFFILIATION</dt><dd>${escapeHtml(displayValue(character.affiliation))}</dd></div>
+            <div><dt>RANK</dt><dd>${escapeHtml(displayValue(character.citizen_rank))}</dd></div>
+            <div><dt>EXP</dt><dd>${escapeHtml(character.experience_points ?? 0)}</dd></div>
+          </dl>
         </div>
-        <dl class="quick-sheet__identity-meta">
-          <div><dt>PLAYER</dt><dd>${escapeHtml(displayValue(character.player_name))}</dd></div>
-          <div><dt>AFFILIATION</dt><dd>${escapeHtml(displayValue(character.affiliation))}</dd></div>
-          <div><dt>RANK</dt><dd>${escapeHtml(displayValue(character.citizen_rank))}</dd></div>
-          <div><dt>EXP</dt><dd>${escapeHtml(character.experience_points ?? 0)}</dd></div>
-        </dl>
       </section>
-      <div class="quick-sheet__core-row">
-        <section class="quick-sheet__block quick-sheet__abilities">
-          ${createQuickBlockTitle("能力値／制御値", "ABILITY / CONTROL")}
-          ${createQuickAbilityGrid(character)}
-        </section>
-        <section class="quick-sheet__block quick-sheet__divines">
-          ${createQuickBlockTitle("神業", "DIVINE WORK")}
-          <div class="quick-sheet__divine-list">${divines.map((item, index) => `<div><b>0${index + 1}</b><span>${escapeHtml(item.style || "—")}</span><strong>${escapeHtml(item.name || "—")}</strong></div>`).join("") || `<p class="quick-sheet__empty">—</p>`}</div>
-        </section>
-      </div>
+      <section class="quick-sheet__block quick-sheet__style-divines">
+        ${createQuickBlockTitle("スタイル／神業", "STYLE / DIVINE WORK")}
+        <div class="quick-sheet__style-divine-list">${styleDivines.map((item, index) => `<article><b>0${index + 1}</b><div><span>STYLE</span><strong>${escapeHtml(item.name || "—")} <em>${escapeHtml(item.mark || "")}</em></strong></div><div class="is-divine"><span>神業</span><strong>${escapeHtml(item.divine || "—")}</strong></div></article>`).join("") || `<p class="quick-sheet__empty">—</p>`}</div>
+      </section>
+      <section class="quick-sheet__block quick-sheet__abilities">
+        ${createQuickBlockTitle("能力値／制御値", "ABILITY / CONTROL")}
+        ${createQuickAbilityGrid(character)}
+      </section>
       <div class="quick-sheet__skill-grid">
         <section class="quick-sheet__block quick-sheet__general-skills">
           ${createQuickBlockTitle("一般技能", "GENERAL SKILLS")}
@@ -291,13 +293,21 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
         ${createQuickBlockTitle("スタイル技能", "STYLE SKILLS")}
         ${createQuickStyleSkillTable(styleSkills)}
       </section>
+      ${createQuickPageFooter(2)}
+    </article>
+    <article class="quick-sheet__page quick-sheet__page--three">
+      ${createQuickPageHeader(character, 3)}
       <section class="quick-sheet__block quick-sheet__outfits">
         ${createQuickBlockTitle("アウトフィット", "OUTFITS")}
         ${createQuickOutfitTable(outfits)}
       </section>
-      ${createQuickPageFooter(2)}
+      ${createQuickPageFooter(3)}
     </article>
   `;
+
+  quickSheetPages.querySelectorAll(".quick-sheet__portrait img").forEach(image => {
+    image.addEventListener("error", () => { image.src = "./assets/placeholders/scan-failed.webp"; }, { once: true });
+  });
 }
 
 function createQuickPageHeader(character, page) {
@@ -305,12 +315,12 @@ function createQuickPageHeader(character, page) {
     <header class="quick-sheet__page-header">
       <div><strong>N◎VA ARCHIVE // QUICK SHEET</strong><span>${escapeHtml(character.public_id || "NO ID")}</span></div>
       <p>${escapeHtml(formatHandle(character.handle))} ${escapeHtml(character.character_name || "NO NAME")}</p>
-      <b>${page} / 2</b>
+      <b>${page} / 3</b>
     </header>`;
 }
 
 function createQuickPageFooter(page) {
-  return `<footer class="quick-sheet__page-footer"><span>TNX CAST ARCHIVE // ACT REFERENCE</span><b>PAGE ${page} / 2</b></footer>`;
+  return `<footer class="quick-sheet__page-footer"><span>TNX CAST ARCHIVE // ACT REFERENCE</span><b>PAGE ${page} / 3</b></footer>`;
 }
 
 function createQuickBlockTitle(japanese, english) {
@@ -425,8 +435,7 @@ function createQuickOutfitTable(outfits) {
   if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
   const armor = outfits.filter(outfit => outfit.category === "armor");
   const totals = quickArmorTotals(armor);
-  const splitAt = outfits.length > 12 ? Math.ceil(outfits.length / 2) : outfits.length;
-  const groups = [outfits.slice(0, splitAt), outfits.slice(splitAt)].filter(group => group.length);
+  const groups = [outfits];
   const tables = groups.map(group => `<table class="quick-sheet__detail-table quick-sheet__outfit-table"><thead><tr><th>分類</th><th>名称</th><th>常備</th><th>性能</th><th>解説</th></tr></thead><tbody>${group.map(outfit => `<tr><td>${escapeHtml(QUICK_OUTFIT_CATEGORY_LABELS[outfit.category] || QUICK_OUTFIT_CATEGORY_LABELS.other)}</td><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(displayValue(outfit.experience_cost))}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td>${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody></table>`).join("");
   return `${armor.length ? `<p class="quick-sheet__armor-total">防具・防御値合計 <strong>S ${totals.s} / I ${totals.i} / P ${totals.p}</strong></p>` : ""}<div class="quick-sheet__outfit-table-grid${groups.length > 1 ? " is-split" : ""}">${tables}</div>`;
 }
