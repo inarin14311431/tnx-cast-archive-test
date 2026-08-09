@@ -676,7 +676,11 @@ function reflowQuickSheetExpandedNotes() {
   }
 
   if (quickSheetPageOverflows(pageTwo) && styleSkills) {
-    moveOverflowingStyleRows(pageTwo, pageThree, styleSkills, weapons || armor || otherOutfits);
+    pageTwo.classList.add("is-tight", "is-tighter", "is-densest");
+    if (quickSheetPageOverflows(pageTwo)) {
+      moveOverflowingStyleRows(pageTwo, pageThree, styleSkills, weapons || armor || otherOutfits);
+    }
+    pageTwo.classList.remove("is-tight", "is-tighter", "is-densest");
   }
 }
 
