@@ -249,10 +249,8 @@ function setupQuickSheetControls() {
 }
 
 function scheduleQuickSheetFit() {
-  requestAnimationFrame(() => {
-    fitQuickSheetPages();
-    requestAnimationFrame(fitQuickSheetPages);
-  });
+  window.setTimeout(fitQuickSheetPages, 0);
+  window.setTimeout(fitQuickSheetPages, 120);
 }
 
 function openQuickSheet() {
@@ -265,11 +263,8 @@ function openQuickSheet() {
   document.body.classList.add("is-quick-sheet-open");
   quickSheetButton?.setAttribute("aria-expanded", "true");
   window.scrollTo(0, 0);
-  requestAnimationFrame(() => {
-    fitQuickSheetPages();
-    quickSheetClose?.focus({ preventScroll: true });
-    window.setTimeout(fitQuickSheetPages, 160);
-  });
+  scheduleQuickSheetFit();
+  window.setTimeout(() => quickSheetClose?.focus({ preventScroll: true }), 0);
   document.fonts?.ready.then(() => fitQuickSheetPages());
 }
 
