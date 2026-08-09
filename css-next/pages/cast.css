@@ -323,15 +323,16 @@ body[data-page="cast.html"] .combo-card__ability--life { border-color: color-mix
 .combo-card__usage--counter .combo-card__usage-status { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
 .combo-card__usage--counter .combo-card__usage-actions { flex-wrap: nowrap; }
 
-/* Two-page A4 landscape act reference. It reuses cast data and adds no separate data model. */
+/* Three-page A4 portrait act reference. It reuses cast data and adds no separate data model. */
 body[data-page="cast.html"].is-quick-sheet-open { overflow-x: hidden; }
 body[data-page="cast.html"].is-quick-sheet-open :is(.background-grid, .scanlines, .cast-data-rain, .cast-access-overlay) { display: none; }
 body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-content, .cast-error) { display: none; }
 .quick-sheet[hidden] { display: none; }
 .quick-sheet { min-height: 100vh; padding: 14px 0 48px; background: color-mix(in srgb, var(--color-bg) 94%, #000); }
-.quick-sheet__toolbar { position: sticky; top: 0; z-index: 60; display: grid; grid-template-columns: 1fr auto 1fr; width: min(210mm, calc(100% - 32px)); min-height: 50px; align-items: center; gap: 12px; margin: 0 auto 14px; padding: 7px 10px; border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-bg) 90%, transparent); box-shadow: 0 10px 24px rgb(0 0 0 / 34%); backdrop-filter: blur(12px); }
+.quick-sheet__toolbar { position: sticky; top: 0; z-index: 60; display: grid; grid-template-columns: 1fr auto auto auto; width: min(210mm, calc(100% - 32px)); min-height: 50px; align-items: center; gap: 12px; margin: 0 auto 14px; padding: 7px 10px; border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-bg) 90%, transparent); box-shadow: 0 10px 24px rgb(0 0 0 / 34%); backdrop-filter: blur(12px); }
 .quick-sheet__toolbar button { display: grid; min-width: 164px; min-height: 34px; gap: 2px; padding: 5px 10px; justify-self: start; color: var(--color-accent); text-align: left; }
 .quick-sheet__toolbar button:last-child { justify-self: end; text-align: right; }
+.quick-sheet__toolbar #quick-sheet-detail-toggle { min-width: 132px; justify-self: end; text-align: right; }
 .quick-sheet__toolbar button small { color: var(--color-muted); font: .55rem/1 var(--font-data); letter-spacing: .1em; }
 .quick-sheet__toolbar-note { color: var(--color-muted); font: 800 .62rem/1 var(--font-data); letter-spacing: .16em; white-space: nowrap; }
 .quick-sheet__pages { display: grid; gap: 18px; justify-items: center; max-width: 100%; padding: 0 16px; overflow-x: auto; }
@@ -415,15 +416,26 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__style-table th:nth-child(10) { width: 7%; }
 .quick-sheet__style-table th:nth-child(11) { width: 5%; }
 .quick-sheet__style-table th:nth-child(12) { width: 6%; }
-.quick-sheet__outfit-table th:nth-child(1) { width: 20%; }
-.quick-sheet__outfit-table th:nth-child(2) { width: 30%; }
-.quick-sheet__outfit-table th:nth-child(n+3):nth-child(-n+6) { width: 6%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-name { width: 30%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-attack { width: 12%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-electronic { width: 10%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-detail { width: 48%; }
+.quick-sheet__armor-table .quick-sheet__outfit-name { width: 18%; }
+.quick-sheet__armor-table .quick-sheet__outfit-performance { width: 22%; }
+.quick-sheet__armor-table th:nth-child(n+3):nth-child(-n+5) { width: 6%; }
+.quick-sheet__armor-table .quick-sheet__outfit-electronic { width: 8%; }
+.quick-sheet__armor-table .quick-sheet__outfit-detail { width: 34%; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-name { width: 22%; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-performance { width: 28%; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-electronic { width: 10%; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-detail { width: 40%; }
+.quick-sheet:not(.is-outfit-details-visible) .quick-sheet__outfit-detail { display: none; }
 .quick-sheet__outfit-stat { color: var(--quick-accent); font-weight: 800; text-align: center; }
+.quick-sheet__outfit-stat.is-attack { color: var(--quick-danger); font-size: .62rem; }
 .quick-sheet__outfit-stat.is-electronic { border-inline: 1px solid color-mix(in srgb, var(--quick-accent) 38%, var(--quick-line)); }
 .quick-sheet__armor-total { padding: 3px 6px; border-bottom: 1px solid var(--quick-line); color: var(--quick-muted); background: var(--quick-accent-soft); font-size: .5rem; text-align: right; }
 .quick-sheet__armor-total strong { margin-left: 8px; color: var(--quick-accent); }
-.quick-sheet__outfit-table-grid { display: grid; grid-template-columns: 1fr; gap: 4px; }
-.quick-sheet__outfit-table-grid.is-split { grid-template-columns: 1fr; }
+.quick-sheet__outfit-table-wrap { overflow: hidden; }
 .quick-sheet__page-footer { display: flex; min-height: 17px; align-items: end; justify-content: space-between; margin-top: auto; padding-top: 4px; border-top: 1px solid var(--quick-line); color: var(--quick-muted); font: 700 .46rem/1 var(--font-data); letter-spacing: .08em; }
 .quick-sheet__page-footer b { color: var(--quick-accent); }
 .quick-sheet__page.is-tight { gap: 6px; padding-block: 7mm 6mm; }
@@ -452,9 +464,6 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__style-divine-list .is-divine strong { color: var(--quick-danger); }
 .quick-sheet__page--three .quick-sheet__detail-table { font-size: .58rem; }
 .quick-sheet__page--three .quick-sheet__detail-table :is(th, td) { height: 24px; padding: 3px 4px; }
-.quick-sheet__page--three .quick-sheet__outfit-table th:nth-child(1) { width: 20%; }
-.quick-sheet__page--three .quick-sheet__outfit-table th:nth-child(2) { width: 30%; }
-.quick-sheet__page--three .quick-sheet__outfit-table th:nth-child(n+3):nth-child(-n+6) { width: 6%; }
 .quick-sheet__page.is-tighter .quick-sheet__portrait img { height: 46mm; }
 
 @page { size: A4 portrait; margin: 0; }

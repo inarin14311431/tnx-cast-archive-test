@@ -9,10 +9,12 @@ const quickSheet = document.querySelector("#quick-sheet");
 const quickSheetPages = document.querySelector("#quick-sheet-pages");
 const quickSheetButton = document.querySelector("#cast-quick-sheet-button");
 const quickSheetClose = document.querySelector("#quick-sheet-close");
+const quickSheetDetailToggle = document.querySelector("#quick-sheet-detail-toggle");
 const quickSheetPrint = document.querySelector("#quick-sheet-print");
 
 let quickSheetContext = null;
 let quickSheetScrollY = 0;
+let quickSheetOutfitDetailsVisible = false;
 
 const OUTFIT_LABELS = {
   weapon: "WEAPON",
@@ -171,6 +173,11 @@ function prepareQuickSheet(character, skills, outfits, combos) {
 function setupQuickSheetControls() {
   quickSheetButton?.addEventListener("click", openQuickSheet);
   quickSheetClose?.addEventListener("click", closeQuickSheetView);
+  quickSheetDetailToggle?.addEventListener("click", () => {
+    quickSheetOutfitDetailsVisible = !quickSheetOutfitDetailsVisible;
+    updateQuickSheetDetailVisibility();
+    requestAnimationFrame(fitQuickSheetPages);
+  });
   quickSheetPrint?.addEventListener("click", () => {
     fitQuickSheetPages();
     window.print();
@@ -192,6 +199,7 @@ function openQuickSheet() {
 
   quickSheetScrollY = window.scrollY;
   renderQuickSheet(quickSheetContext);
+  updateQuickSheetDetailVisibility();
   quickSheet.hidden = false;
   document.body.classList.add("is-quick-sheet-open");
   quickSheetButton?.setAttribute("aria-expanded", "true");
@@ -213,6 +221,16 @@ function closeQuickSheetView() {
   quickSheetButton?.focus({ preventScroll: true });
 }
 
+function updateQuickSheetDetailVisibility() {
+  if (!quickSheet || !quickSheetDetailToggle) return;
+  quickSheet.classList.toggle("is-outfit-details-visible", quickSheetOutfitDetailsVisible);
+  quickSheetDetailToggle.setAttribute("aria-pressed", String(quickSheetOutfitDetailsVisible));
+  const label = quickSheetDetailToggle.querySelector("span");
+  const sublabel = quickSheetDetailToggle.querySelector("small");
+  if (label) label.textContent = quickSheetOutfitDetailsVisible ? "詳細を非表示" : "詳細を表示";
+  if (sublabel) sublabel.textContent = quickSheetOutfitDetailsVisible ? "HIDE DETAILS" : "SHOW DETAILS";
+}
+
 function renderQuickSheet({ character, skills, outfits, combos }) {
   const general = createQuickGeneralSkills(skills);
   const splitAt = Math.ceil(general.length / 2);
@@ -227,8 +245,9 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
     }))
     .filter(item => item.name || item.divine);
   const portrait = character.image_url || "./assets/placeholders/scan-failed.webp";
+  const weaponOutfits = outfits.filter(outfit => outfit.category === "weapon");
   const armorOutfits = outfits.filter(outfit => outfit.category === "armor");
-  const otherOutfits = outfits.filter(outfit => outfit.category !== "armor");
+  const otherOutfits = outfits.filter(outfit => !["weapon", "armor"].includes(outfit.category));
 
   quickSheetPages.innerHTML = `
     <article class="quick-sheet__page quick-sheet__page--one">
@@ -290,9 +309,13 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
         ${createQuickBlockTitle("スタイル技能", "STYLE SKILLS")}
         ${createQuickStyleSkillTable(styleSkills)}
       </section>
+      <section class="quick-sheet__block quick-sheet__outfits quick-sheet__weapons">
+        ${createQuickBlockTitle("ウェポン", "WEAPON")}
+        ${createQuickWeaponTable(weaponOutfits)}
+      </section>
       <section class="quick-sheet__block quick-sheet__outfits quick-sheet__armor">
         ${createQuickBlockTitle("防具", "ARMOR")}
-        ${createQuickOutfitTable(armorOutfits)}
+        ${createQuickArmorTable(armorOutfits)}
       </section>
       ${createQuickPageFooter(2)}
     </article>
@@ -300,7 +323,7 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
       ${createQuickPageHeader(character, 3)}
       <section class="quick-sheet__block quick-sheet__outfits">
         ${createQuickBlockTitle("その他のアウトフィット", "OTHER OUTFITS")}
-        ${createQuickOutfitTable(otherOutfits)}
+        ${createQuickOtherOutfitTable(otherOutfits)}
       </section>
       ${createQuickPageFooter(3)}
     </article>
@@ -431,16 +454,24 @@ function parseQuickStyleDetail(value) {
   return data;
 }
 
-function createQuickOutfitTable(outfits) {
+function createQuickWeaponTable(outfits) {
   if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
-  const armor = outfits.filter(outfit => outfit.category === "armor");
-  const totals = quickArmorTotals(armor);
-  const groups = [outfits];
-  const tables = groups.map(group => `<table class="quick-sheet__detail-table quick-sheet__outfit-table"><thead><tr><th>名称</th><th>性能</th><th>S</th><th>P</th><th>I</th><th>電制</th><th>解説</th></tr></thead><tbody>${group.map(outfit => {
+  return `<div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__weapon-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-attack">攻撃力</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${outfits.map(outfit => `<tr><td>${escapeHtml(outfit.name || "—")}</td><td class="quick-sheet__outfit-stat is-attack">${escapeHtml(getQuickOutfitValue(outfit, "attack") || "—")}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td class="quick-sheet__outfit-detail">${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function createQuickArmorTable(outfits) {
+  if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
+  const totals = quickArmorTotals(outfits);
+  const rows = outfits.map(outfit => {
     const defense = getQuickOutfitDefense(outfit);
-    return `<tr><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.s || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.p || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.i || "—")}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td>${escapeHtml(displayValue(outfit.description))}</td></tr>`;
-  }).join("")}</tbody></table>`).join("");
-  return `${armor.length ? `<p class="quick-sheet__armor-total">防具・防御値合計 <strong>S ${totals.s} / P ${totals.p} / I ${totals.i}</strong></p>` : ""}<div class="quick-sheet__outfit-table-grid${groups.length > 1 ? " is-split" : ""}">${tables}</div>`;
+    return `<tr><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.s || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.p || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.i || "—")}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td class="quick-sheet__outfit-detail">${escapeHtml(displayValue(outfit.description))}</td></tr>`;
+  }).join("");
+  return `<p class="quick-sheet__armor-total">防具・防御値合計 <strong>S ${totals.s} / P ${totals.p} / I ${totals.i}</strong></p><div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__armor-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-performance">性能</th><th>S</th><th>P</th><th>I</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function createQuickOtherOutfitTable(outfits) {
+  if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
+  return `<div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__other-outfit-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-performance">性能</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${outfits.map(outfit => `<tr><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td class="quick-sheet__outfit-detail">${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function getQuickOutfitValue(outfit, key) {
@@ -481,7 +512,6 @@ function createQuickOutfitPerformance(outfit) {
     const area = value("residence_area");
     if (electric || area) parts.push(`電/ア:${[electric, area].filter(Boolean).join("/")}`);
   }
-  add(parts, "部位", value("slot"));
   return parts.join(" / ") || "—";
 }
 
