@@ -227,6 +227,8 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
     }))
     .filter(item => item.name || item.divine);
   const portrait = character.image_url || "./assets/placeholders/scan-failed.webp";
+  const armorOutfits = outfits.filter(outfit => outfit.category === "armor");
+  const otherOutfits = outfits.filter(outfit => outfit.category !== "armor");
 
   quickSheetPages.innerHTML = `
     <article class="quick-sheet__page quick-sheet__page--one">
@@ -288,13 +290,17 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
         ${createQuickBlockTitle("スタイル技能", "STYLE SKILLS")}
         ${createQuickStyleSkillTable(styleSkills)}
       </section>
+      <section class="quick-sheet__block quick-sheet__outfits quick-sheet__armor">
+        ${createQuickBlockTitle("防具", "ARMOR")}
+        ${createQuickOutfitTable(armorOutfits)}
+      </section>
       ${createQuickPageFooter(2)}
     </article>
     <article class="quick-sheet__page quick-sheet__page--three">
       ${createQuickPageHeader(character, 3)}
       <section class="quick-sheet__block quick-sheet__outfits">
-        ${createQuickBlockTitle("アウトフィット", "OUTFITS")}
-        ${createQuickOutfitTable(outfits)}
+        ${createQuickBlockTitle("その他のアウトフィット", "OTHER OUTFITS")}
+        ${createQuickOutfitTable(otherOutfits)}
       </section>
       ${createQuickPageFooter(3)}
     </article>
