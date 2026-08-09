@@ -230,7 +230,7 @@ function setupQuickSheetControls() {
   quickSheetDetailToggle?.addEventListener("click", () => {
     quickSheetNotesExpanded = !quickSheetNotesExpanded;
     updateQuickSheetNotesMode();
-    requestAnimationFrame(fitQuickSheetPages);
+    scheduleQuickSheetFit();
   });
   quickSheetPrint?.addEventListener("click", () => {
     fitQuickSheetPages();
@@ -244,7 +244,14 @@ function setupQuickSheetControls() {
   });
 
   window.addEventListener("resize", () => {
-    if (document.body.classList.contains("is-quick-sheet-open")) fitQuickSheetPages();
+    if (document.body.classList.contains("is-quick-sheet-open")) scheduleQuickSheetFit();
+  });
+}
+
+function scheduleQuickSheetFit() {
+  requestAnimationFrame(() => {
+    fitQuickSheetPages();
+    requestAnimationFrame(fitQuickSheetPages);
   });
 }
 
@@ -359,7 +366,7 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
         ${createQuickBlockTitle("コンボ／技能カウンター", "COMBOS / COUNTERS")}
         ${createQuickComboGrid(combos, character)}
       </section>
-      <section class="quick-sheet__block quick-sheet__style-skills">
+      <section class="quick-sheet__block quick-sheet__style-skills" data-quick-sheet-section="style-skills">
         ${createQuickBlockTitle("スタイル技能", "STYLE SKILLS")}
         ${createQuickStyleSkillTable(styleSkills)}
       </section>
@@ -629,11 +636,20 @@ function fitQuickSheetPages() {
 function restoreQuickSheetSectionLayout() {
   const pageTwo = quickSheetPages.querySelector(".quick-sheet__page--two");
   const pageThree = quickSheetPages.querySelector(".quick-sheet__page--three");
+  const styleSkills = quickSheetPages.querySelector('[data-quick-sheet-section="style-skills"]');
+  const styleContinuation = quickSheetPages.querySelector('[data-quick-sheet-section="style-skills-continuation"]');
   const weapons = quickSheetPages.querySelector('[data-quick-sheet-section="weapons"]');
   const armor = quickSheetPages.querySelector('[data-quick-sheet-section="armor"]');
   const otherOutfits = quickSheetPages.querySelector('[data-quick-sheet-section="other-outfits"]');
   const pageTwoFooter = pageTwo?.querySelector(".quick-sheet__page-footer");
   const pageThreeFooter = pageThree?.querySelector(".quick-sheet__page-footer");
+
+  const styleBody = styleSkills?.querySelector("tbody");
+  if (styleBody && styleContinuation) {
+    styleContinuation.querySelectorAll("tbody tr").forEach(row => styleBody.append(row));
+  }
+  if (styleSkills) styleSkills.hidden = false;
+  styleContinuation?.remove();
 
   if (pageTwo && pageTwoFooter) {
     if (weapons) pageTwo.insertBefore(weapons, pageTwoFooter);
@@ -650,6 +666,7 @@ function restoreQuickSheetSectionLayout() {
 function reflowQuickSheetExpandedNotes() {
   const pageTwo = quickSheetPages.querySelector(".quick-sheet__page--two");
   const pageThree = quickSheetPages.querySelector(".quick-sheet__page--three");
+  const styleSkills = quickSheetPages.querySelector('[data-quick-sheet-section="style-skills"]');
   const weapons = quickSheetPages.querySelector('[data-quick-sheet-section="weapons"]');
   const armor = quickSheetPages.querySelector('[data-quick-sheet-section="armor"]');
   const otherOutfits = quickSheetPages.querySelector('[data-quick-sheet-section="other-outfits"]');
@@ -662,6 +679,31 @@ function reflowQuickSheetExpandedNotes() {
   if (quickSheetPageOverflows(pageTwo) && weapons) {
     pageThree.insertBefore(weapons, armor || otherOutfits || pageThree.querySelector(".quick-sheet__page-footer"));
   }
+
+  if (quickSheetPageOverflows(pageTwo) && styleSkills) {
+    moveOverflowingStyleRows(pageTwo, pageThree, styleSkills, weapons || armor || otherOutfits);
+  }
+}
+
+function moveOverflowingStyleRows(pageTwo, pageThree, styleSkills, beforeSection) {
+  const sourceBody = styleSkills.querySelector("tbody");
+  if (!sourceBody?.lastElementChild) return;
+
+  const continuation = styleSkills.cloneNode(true);
+  continuation.dataset.quickSheetSection = "style-skills-continuation";
+  continuation.classList.add("quick-sheet__style-skills--continuation");
+  const title = continuation.querySelector(".quick-sheet__block-title");
+  const continuationBody = continuation.querySelector("tbody");
+  if (title?.querySelector("span")) title.querySelector("span").textContent = "スタイル技能（続き）";
+  if (title?.querySelector("small")) title.querySelector("small").textContent = "STYLE SKILLS CONT.";
+  continuationBody?.replaceChildren();
+  pageThree.insertBefore(continuation, beforeSection || pageThree.querySelector(".quick-sheet__page-footer"));
+
+  while (quickSheetPageOverflows(pageTwo) && sourceBody.lastElementChild) {
+    continuationBody.prepend(sourceBody.lastElementChild);
+  }
+
+  if (!sourceBody.children.length) styleSkills.hidden = true;
 }
 
 function moveOtherOutfitsToContinuationPage() {
