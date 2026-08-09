@@ -37,11 +37,6 @@ const QUICK_GENERAL_ORDER = [
 ];
 
 const QUICK_STYLE_DETAIL_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
-const QUICK_OUTFIT_CATEGORY_LABELS = {
-  weapon: "武器", armor: "防具", cyberware: "サイバー", tron: "トロン",
-  vehicle: "ヴィークル", residence: "住居", other: "その他"
-};
-
 async function loadCharacter() {
   try {
     const publicId = getPublicId();
@@ -401,10 +396,9 @@ function createQuickComboGrid(combos, character) {
 
 function createQuickStyleSkillTable(skills) {
   if (!skills.length) return `<p class="quick-sheet__empty">登録なし</p>`;
-  const kindLabels = { none: "—", normal: "通常", secret: "秘技", ultimate: "奥義", direction: "演出" };
-  return `<div class="quick-sheet__table-scroll"><table class="quick-sheet__detail-table quick-sheet__style-table"><thead><tr><th>名称</th><th>種</th><th>LV</th><th>♠</th><th>♣</th><th>♥</th><th>♦</th><th>技能</th><th>上限</th><th>時</th><th>対象</th><th>射程</th><th>難</th><th>対決</th><th>解説</th></tr></thead><tbody>${skills.map(skill => {
+  return `<div class="quick-sheet__table-scroll"><table class="quick-sheet__detail-table quick-sheet__style-table"><thead><tr><th>名称</th><th>LV</th><th>♠</th><th>♣</th><th>♥</th><th>♦</th><th>技能</th><th>時</th><th>対象</th><th>射程</th><th>難</th><th>対決</th><th>解説</th></tr></thead><tbody>${skills.map(skill => {
     const detail = parseQuickStyleDetail(skill.description);
-    return `<tr><td>${escapeHtml(skill.name || "—")}</td><td>${escapeHtml(kindLabels[skill.skill_kind] || skill.skill_kind || "—")}</td><td>${escapeHtml(skill.level ?? "—")}</td>${["reason", "passion", "life", "mundane"].map(key => `<td class="quick-sheet__suit${skill[key] ? " is-active" : ""}">${skill[key] ? "●" : ""}</td>`).join("")}<td>${escapeHtml(detail.skill || "—")}</td><td>${escapeHtml(detail.limit || "—")}</td><td>${escapeHtml(detail.timing || "—")}</td><td>${escapeHtml(detail.target || "—")}</td><td>${escapeHtml(detail.range || "—")}</td><td>${escapeHtml(detail.difficulty || "—")}</td><td>${escapeHtml(detail.confrontation || "—")}</td><td>${escapeHtml(detail.description || "—")}</td></tr>`;
+    return `<tr><td>${escapeHtml(skill.name || "—")}</td><td>${escapeHtml(skill.level ?? "—")}</td>${["reason", "passion", "life", "mundane"].map(key => `<td class="quick-sheet__suit${skill[key] ? " is-active" : ""}">${skill[key] ? "●" : ""}</td>`).join("")}<td>${escapeHtml(detail.skill || "—")}</td><td>${escapeHtml(detail.timing || "—")}</td><td>${escapeHtml(detail.target || "—")}</td><td>${escapeHtml(detail.range || "—")}</td><td>${escapeHtml(detail.difficulty || "—")}</td><td>${escapeHtml(detail.confrontation || "—")}</td><td>${escapeHtml(detail.description || "—")}</td></tr>`;
   }).join("")}</tbody></table></div>`;
 }
 
@@ -436,28 +430,35 @@ function createQuickOutfitTable(outfits) {
   const armor = outfits.filter(outfit => outfit.category === "armor");
   const totals = quickArmorTotals(armor);
   const groups = [outfits];
-  const tables = groups.map(group => `<table class="quick-sheet__detail-table quick-sheet__outfit-table"><thead><tr><th>分類</th><th>名称</th><th>常備</th><th>性能</th><th>解説</th></tr></thead><tbody>${group.map(outfit => `<tr><td>${escapeHtml(QUICK_OUTFIT_CATEGORY_LABELS[outfit.category] || QUICK_OUTFIT_CATEGORY_LABELS.other)}</td><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(displayValue(outfit.experience_cost))}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td>${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody></table>`).join("");
-  return `${armor.length ? `<p class="quick-sheet__armor-total">防具・防御値合計 <strong>S ${totals.s} / I ${totals.i} / P ${totals.p}</strong></p>` : ""}<div class="quick-sheet__outfit-table-grid${groups.length > 1 ? " is-split" : ""}">${tables}</div>`;
+  const tables = groups.map(group => `<table class="quick-sheet__detail-table quick-sheet__outfit-table"><thead><tr><th>名称</th><th>性能</th><th>S</th><th>P</th><th>I</th><th>電制</th><th>解説</th></tr></thead><tbody>${group.map(outfit => {
+    const defense = getQuickOutfitDefense(outfit);
+    return `<tr><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.s || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.p || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.i || "—")}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td>${escapeHtml(displayValue(outfit.description))}</td></tr>`;
+  }).join("")}</tbody></table>`).join("");
+  return `${armor.length ? `<p class="quick-sheet__armor-total">防具・防御値合計 <strong>S ${totals.s} / P ${totals.p} / I ${totals.i}</strong></p>` : ""}<div class="quick-sheet__outfit-table-grid${groups.length > 1 ? " is-split" : ""}">${tables}</div>`;
+}
+
+function getQuickOutfitValue(outfit, key) {
+  const details = outfit.ofc_details && typeof outfit.ofc_details === "object" && !Array.isArray(outfit.ofc_details) ? outfit.ofc_details : {};
+  return String(details[key] ?? outfit[key] ?? "").trim();
+}
+
+function getQuickOutfitDefense(outfit) {
+  const parsed = parseQuickArmorDefense(outfit.defense);
+  return {
+    s: getQuickOutfitValue(outfit, "defense_s") || parsed.s,
+    p: getQuickOutfitValue(outfit, "defense_p") || parsed.p,
+    i: getQuickOutfitValue(outfit, "defense_i") || parsed.i
+  };
 }
 
 function createQuickOutfitPerformance(outfit) {
-  const details = outfit.ofc_details && typeof outfit.ofc_details === "object" && !Array.isArray(outfit.ofc_details) ? outfit.ofc_details : {};
-  const defense = parseQuickArmorDefense(outfit.defense);
-  const value = key => String(details[key] ?? outfit[key] ?? "").trim();
+  const value = key => getQuickOutfitValue(outfit, key);
   const add = (parts, label, item) => { if (item) parts.push(`${label}:${item}`); };
   const parts = [];
   add(parts, "隠", value("concealment"));
   if (["weapon", "vehicle"].includes(outfit.category)) add(parts, "攻", value("attack"));
   if (outfit.category === "weapon") add(parts, "受", value("parry"));
-  if (outfit.category === "armor" || outfit.category === "vehicle") {
-    const s = value("defense_s") || defense.s;
-    const i = value("defense_i") || defense.i;
-    const p = value("defense_p") || defense.p;
-    if (s || i || p) parts.push(`防:S${s || 0}/I${i || 0}/P${p || 0}`);
-  }
   if (outfit.category === "weapon") add(parts, "射", value("range"));
-  add(parts, "電制", value("electronic_control"));
-  add(parts, "制御", value("control_modifier") || value("control_value"));
   add(parts, "スロ", value("speed"));
   if (outfit.category === "tron") {
     const capacities = [value("tron_software"), value("tron_support"), value("tron_hardware")];
