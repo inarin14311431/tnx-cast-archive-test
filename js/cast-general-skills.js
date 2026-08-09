@@ -19,8 +19,12 @@
     return REQUIRED_FAMILIES.find(prefix => name.startsWith(prefix)) || name;
   };
 
+  function createSuitBox(mark, active = false) {
+    return `<span class="cast-suit-box${active ? " is-active" : ""}" aria-label="${mark} ${active ? "取得済み" : "未取得"}">${mark}</span>`;
+  }
+
   function createSuitCell(mark) {
-    return `<td><span class="cast-suit-box" aria-label="${mark} 未取得">${mark}</span></td>`;
+    return `<td>${createSuitBox(mark)}</td>`;
   }
 
   function createZeroLevelRow(name) {
@@ -58,6 +62,22 @@
     for (const prefix of REQUIRED_FAMILIES) {
       if (!presentFamilies.has(prefix)) tbody.append(createZeroLevelRow(prefix));
     }
+  }
+
+  function normalizeSuitCells(tbody) {
+    tbody.querySelectorAll(":scope > tr").forEach(row => {
+      SUITS.forEach((mark, index) => {
+        const cell = row.cells?.[index + 2];
+        if (!cell) return;
+        const existing = cell.querySelector(".cast-suit-box");
+        if (existing) {
+          existing.textContent = mark;
+          return;
+        }
+        const active = cell.textContent.trim() !== "";
+        cell.innerHTML = createSuitBox(mark, active);
+      });
+    });
   }
 
   function sortRows(tbody) {
@@ -126,6 +146,7 @@
     if (!tbody) return;
 
     ensureRequiredFamilies(tbody);
+    normalizeSuitCells(tbody);
     sortRows(tbody);
     splitGeneralColumns(section);
   }
