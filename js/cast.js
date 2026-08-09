@@ -39,6 +39,60 @@ const QUICK_GENERAL_ORDER = [
 ];
 
 const QUICK_STYLE_DETAIL_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
+const QUICK_OTHER_OUTFIT_GROUPS = [
+  {
+    category: "cyberware",
+    japanese: "サイバーウェア",
+    english: "CYBERWARE",
+    columns: ["name", "concealment", "electronic_control", "description"]
+  },
+  {
+    category: "tron",
+    japanese: "トロン",
+    english: "TRON",
+    columns: ["name", "concealment", "speed", "tron_software", "tron_support", "tron_hardware", "cs_value", "electronic_control", "description"]
+  },
+  {
+    category: "vehicle",
+    japanese: "ヴィークル",
+    english: "VEHICLE",
+    columns: ["name", "concealment", "attack", "parry", "speed", "defense_s", "defense_p", "defense_i", "cs_value", "crew", "sf", "electronic_control", "description"]
+  },
+  {
+    category: "residence",
+    japanese: "住居",
+    english: "RESIDENCE",
+    columns: ["name", "speed", "residence_entry", "residence_electric", "residence_area", "electronic_control", "description"]
+  },
+  {
+    category: "other",
+    japanese: "その他",
+    english: "OTHER",
+    columns: ["name", "concealment", "cs_value", "electronic_control", "description"]
+  }
+];
+const QUICK_OUTFIT_COLUMN_LABELS = {
+  name: "名称",
+  concealment: "隠匿",
+  attack: "攻撃",
+  parry: "受け",
+  range: "射程",
+  speed: "スロ",
+  defense_s: "S",
+  defense_p: "P",
+  defense_i: "I",
+  tron_software: "ソ",
+  tron_support: "サ",
+  tron_hardware: "ハ",
+  cs_value: "CS",
+  crew: "乗員",
+  sf: "SF",
+  residence_entry: "登場",
+  residence_electric: "電",
+  residence_area: "ア",
+  electronic_control: "電制",
+  description: "解説"
+};
 async function loadCharacter() {
   try {
     const publicId = getPublicId();
@@ -227,8 +281,8 @@ function updateQuickSheetDetailVisibility() {
   quickSheetDetailToggle.setAttribute("aria-pressed", String(quickSheetOutfitDetailsVisible));
   const label = quickSheetDetailToggle.querySelector("span");
   const sublabel = quickSheetDetailToggle.querySelector("small");
-  if (label) label.textContent = quickSheetOutfitDetailsVisible ? "詳細を非表示" : "詳細を表示";
-  if (sublabel) sublabel.textContent = quickSheetOutfitDetailsVisible ? "HIDE DETAILS" : "SHOW DETAILS";
+  if (label) label.textContent = quickSheetOutfitDetailsVisible ? "解説を非表示" : "解説を表示";
+  if (sublabel) sublabel.textContent = quickSheetOutfitDetailsVisible ? "HIDE NOTES" : "SHOW NOTES";
 }
 
 function renderQuickSheet({ character, skills, outfits, combos }) {
@@ -456,26 +510,57 @@ function parseQuickStyleDetail(value) {
 
 function createQuickWeaponTable(outfits) {
   if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
-  return `<div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__weapon-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-attack">攻撃力</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${outfits.map(outfit => `<tr><td>${escapeHtml(outfit.name || "—")}</td><td class="quick-sheet__outfit-stat is-attack">${escapeHtml(getQuickOutfitValue(outfit, "attack") || "—")}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td class="quick-sheet__outfit-detail">${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody></table></div>`;
+  const columns = ["name", "concealment", "attack", "parry", "range", "speed", "electronic_control", "description"];
+  return createQuickOutfitTable(outfits, columns, "quick-sheet__weapon-table");
 }
 
 function createQuickArmorTable(outfits) {
   if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
   const totals = quickArmorTotals(outfits);
-  const rows = outfits.map(outfit => {
-    const defense = getQuickOutfitDefense(outfit);
-    return `<tr><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.s || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.p || "—")}</td><td class="quick-sheet__outfit-stat">${escapeHtml(defense.i || "—")}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td class="quick-sheet__outfit-detail">${escapeHtml(displayValue(outfit.description))}</td></tr>`;
-  }).join("");
+  const columns = ["name", "concealment", "defense_s", "defense_p", "defense_i", "electronic_control", "description"];
   const totalCells = [["S", totals.s], ["P", totals.p], ["I", totals.i]]
     .map(([label, value]) => `<td class="quick-sheet__armor-total-value" aria-label="防御値合計 ${label} ${value}"><span>${label}</span><strong>${value}</strong></td>`)
     .join("");
   const totalRow = `<tfoot><tr class="quick-sheet__armor-total-row"><th class="quick-sheet__armor-total-label" colspan="2" scope="row"><span>防御値合計</span><small>TOTAL DEFENSE</small></th>${totalCells}<td class="quick-sheet__armor-total-spacer" aria-hidden="true"></td><td class="quick-sheet__armor-total-spacer quick-sheet__outfit-detail" aria-hidden="true"></td></tr></tfoot>`;
-  return `<div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__armor-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-performance">性能</th><th>S</th><th>P</th><th>I</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${rows}</tbody>${totalRow}</table></div>`;
+  return createQuickOutfitTable(outfits, columns, "quick-sheet__armor-table", totalRow);
 }
 
 function createQuickOtherOutfitTable(outfits) {
   if (!outfits.length) return `<p class="quick-sheet__empty">登録なし</p>`;
-  return `<div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table quick-sheet__other-outfit-table"><thead><tr><th class="quick-sheet__outfit-name">名称</th><th class="quick-sheet__outfit-performance">性能</th><th class="quick-sheet__outfit-electronic">電制</th><th class="quick-sheet__outfit-detail">解説</th></tr></thead><tbody>${outfits.map(outfit => `<tr><td>${escapeHtml(outfit.name || "—")}</td><td>${escapeHtml(createQuickOutfitPerformance(outfit))}</td><td class="quick-sheet__outfit-stat is-electronic">${escapeHtml(getQuickOutfitValue(outfit, "electronic_control") || "—")}</td><td class="quick-sheet__outfit-detail">${escapeHtml(displayValue(outfit.description))}</td></tr>`).join("")}</tbody></table></div>`;
+  const groups = new Map(QUICK_OTHER_OUTFIT_GROUPS.map(group => [group.category, []]));
+  outfits.forEach(outfit => {
+    const category = groups.has(outfit.category) ? outfit.category : "other";
+    groups.get(category).push(outfit);
+  });
+  return `<div class="quick-sheet__outfit-groups">${QUICK_OTHER_OUTFIT_GROUPS.map(group => {
+    const items = groups.get(group.category);
+    if (!items.length) return "";
+    return `<section class="quick-sheet__outfit-group" data-quick-outfit-category="${group.category}"><h3><span>${group.japanese}</span><small>${group.english}</small></h3>${createQuickOutfitTable(items, group.columns, "quick-sheet__other-outfit-table")}</section>`;
+  }).join("")}</div>`;
+}
+
+function createQuickOutfitTable(outfits, columns, tableClass, footer = "") {
+  const header = columns.map(key => `<th class="${quickOutfitColumnClass(key)}">${QUICK_OUTFIT_COLUMN_LABELS[key] || key}</th>`).join("");
+  const rows = outfits.map(outfit => `<tr>${columns.map(key => `<td class="${quickOutfitColumnClass(key)}">${escapeHtml(getQuickOutfitDisplayValue(outfit, key))}</td>`).join("")}</tr>`).join("");
+  return `<div class="quick-sheet__outfit-table-wrap"><table class="quick-sheet__detail-table quick-sheet__outfit-table ${tableClass}"><thead><tr>${header}</tr></thead><tbody>${rows}</tbody>${footer}</table></div>`;
+}
+
+function quickOutfitColumnClass(key) {
+  const classes = [`quick-sheet__outfit-${key.replaceAll("_", "-")}`];
+  if (!["name", "description"].includes(key)) classes.push("quick-sheet__outfit-stat");
+  if (key === "attack") classes.push("is-attack");
+  if (key === "electronic_control") classes.push("is-electronic");
+  if (key === "description") classes.push("quick-sheet__outfit-detail");
+  return classes.join(" ");
+}
+
+function getQuickOutfitDisplayValue(outfit, key) {
+  if (key === "name") return displayValue(outfit.name);
+  if (key === "description") return displayValue(outfit.description);
+  if (["defense_s", "defense_p", "defense_i"].includes(key)) {
+    return displayValue(getQuickOutfitDefense(outfit)[key.slice(-1)]);
+  }
+  return displayValue(getQuickOutfitValue(outfit, key));
 }
 
 function getQuickOutfitValue(outfit, key) {
@@ -490,33 +575,6 @@ function getQuickOutfitDefense(outfit) {
     p: getQuickOutfitValue(outfit, "defense_p") || parsed.p,
     i: getQuickOutfitValue(outfit, "defense_i") || parsed.i
   };
-}
-
-function createQuickOutfitPerformance(outfit) {
-  const value = key => getQuickOutfitValue(outfit, key);
-  const add = (parts, label, item) => { if (item) parts.push(`${label}:${item}`); };
-  const parts = [];
-  add(parts, "隠", value("concealment"));
-  if (["weapon", "vehicle"].includes(outfit.category)) add(parts, "攻", value("attack"));
-  if (outfit.category === "weapon") add(parts, "受", value("parry"));
-  if (outfit.category === "weapon") add(parts, "射", value("range"));
-  add(parts, "スロ", value("speed"));
-  if (outfit.category === "tron") {
-    const capacities = [value("tron_software"), value("tron_support"), value("tron_hardware")];
-    if (capacities.some(Boolean)) parts.push(`ソ/サ/ハ:${capacities.map(item => item || 0).join("/")}`);
-    add(parts, "CS", value("cs_value"));
-  }
-  if (outfit.category === "vehicle") {
-    add(parts, "乗員", value("crew"));
-    add(parts, "SF", value("sf"));
-  }
-  if (outfit.category === "residence") {
-    add(parts, "登場", value("residence_entry"));
-    const electric = value("residence_electric") || value("residence_electric_area");
-    const area = value("residence_area");
-    if (electric || area) parts.push(`電/ア:${[electric, area].filter(Boolean).join("/")}`);
-  }
-  return parts.join(" / ") || "—";
 }
 
 function parseQuickArmorDefense(value) {
@@ -550,9 +608,10 @@ function quickArmorTotals(items) {
 function fitQuickSheetPages() {
   if (!quickSheetPages) return;
   quickSheetPages.querySelectorAll(".quick-sheet__page").forEach(page => {
-    page.classList.remove("is-tight", "is-tighter");
+    page.classList.remove("is-tight", "is-tighter", "is-densest");
     if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-tight");
     if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-tighter");
+    if (page.scrollHeight > page.clientHeight + 1) page.classList.add("is-densest");
   });
 }
 

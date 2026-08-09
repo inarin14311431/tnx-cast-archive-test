@@ -416,20 +416,30 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__style-table th:nth-child(10) { width: 7%; }
 .quick-sheet__style-table th:nth-child(11) { width: 5%; }
 .quick-sheet__style-table th:nth-child(12) { width: 6%; }
-.quick-sheet__weapon-table .quick-sheet__outfit-name { width: 30%; }
-.quick-sheet__weapon-table .quick-sheet__outfit-attack { width: 12%; }
-.quick-sheet__weapon-table .quick-sheet__outfit-electronic { width: 10%; }
-.quick-sheet__weapon-table .quick-sheet__outfit-detail { width: 48%; }
-.quick-sheet__armor-table .quick-sheet__outfit-name { width: 18%; }
-.quick-sheet__armor-table .quick-sheet__outfit-performance { width: 22%; }
-.quick-sheet__armor-table th:nth-child(n+3):nth-child(-n+5) { width: 6%; }
-.quick-sheet__armor-table .quick-sheet__outfit-electronic { width: 8%; }
-.quick-sheet__armor-table .quick-sheet__outfit-detail { width: 34%; }
-.quick-sheet__other-outfit-table .quick-sheet__outfit-name { width: 22%; }
-.quick-sheet__other-outfit-table .quick-sheet__outfit-performance { width: 28%; }
-.quick-sheet__other-outfit-table .quick-sheet__outfit-electronic { width: 10%; }
-.quick-sheet__other-outfit-table .quick-sheet__outfit-detail { width: 40%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-name { width: 20%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-concealment { width: 9%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-attack { width: 11%; }
+.quick-sheet__weapon-table :is(.quick-sheet__outfit-parry, .quick-sheet__outfit-speed) { width: 7%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-range { width: 9%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-electronic-control { width: 8%; }
+.quick-sheet__weapon-table .quick-sheet__outfit-detail { width: 29%; }
+.quick-sheet__armor-table .quick-sheet__outfit-name { width: 22%; }
+.quick-sheet__armor-table .quick-sheet__outfit-concealment { width: 12%; }
+.quick-sheet__armor-table :is(.quick-sheet__outfit-defense-s, .quick-sheet__outfit-defense-p, .quick-sheet__outfit-defense-i) { width: 7%; }
+.quick-sheet__armor-table .quick-sheet__outfit-electronic-control { width: 9%; }
+.quick-sheet__armor-table .quick-sheet__outfit-detail { width: 36%; }
+.quick-sheet__outfit-groups { display: grid; gap: 5px; padding: 5px; }
+.quick-sheet__outfit-group { min-width: 0; overflow: hidden; border: 1px solid var(--quick-line); background: var(--quick-surface-alt); }
+.quick-sheet__outfit-group h3 { display: flex; min-height: 20px; align-items: baseline; gap: 6px; margin: 0; padding: 3px 5px; border-bottom: 1px solid var(--quick-line); color: var(--quick-accent); background: var(--quick-accent-soft); font-size: .55rem; }
+.quick-sheet__outfit-group h3 small { color: var(--quick-muted); font: 700 .4rem/1 var(--font-data); letter-spacing: .08em; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-name { width: 20%; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-concealment { width: 10%; }
+.quick-sheet__other-outfit-table :is(.quick-sheet__outfit-speed, .quick-sheet__outfit-attack, .quick-sheet__outfit-parry, .quick-sheet__outfit-defense-s, .quick-sheet__outfit-defense-p, .quick-sheet__outfit-defense-i, .quick-sheet__outfit-tron-software, .quick-sheet__outfit-tron-support, .quick-sheet__outfit-tron-hardware, .quick-sheet__outfit-cs-value, .quick-sheet__outfit-crew, .quick-sheet__outfit-sf, .quick-sheet__outfit-residence-entry, .quick-sheet__outfit-residence-electric, .quick-sheet__outfit-residence-area) { width: 5%; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-electronic-control { width: 7%; }
+.quick-sheet__other-outfit-table .quick-sheet__outfit-detail { width: 31%; }
 .quick-sheet:not(.is-outfit-details-visible) .quick-sheet__outfit-detail { display: none; }
+.quick-sheet.is-outfit-details-visible .quick-sheet__outfit-table tbody tr { height: auto; }
+.quick-sheet.is-outfit-details-visible .quick-sheet__outfit-table tbody td.quick-sheet__outfit-detail { height: auto; min-height: 20px; padding: 4px 5px; overflow: visible; vertical-align: top; line-height: 1.28; text-overflow: clip; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 .quick-sheet__outfit-stat { color: var(--quick-accent); font-weight: 800; text-align: center; }
 .quick-sheet__outfit-stat.is-attack { color: var(--quick-danger); font-size: .62rem; }
 .quick-sheet__outfit-stat.is-electronic { border-inline: 1px solid color-mix(in srgb, var(--quick-accent) 38%, var(--quick-line)); }
@@ -455,6 +465,13 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 .quick-sheet__page.is-tighter .quick-sheet__skill-table :is(th, td), .quick-sheet__page.is-tighter .quick-sheet__detail-table :is(th, td) { height: 18px; }
 .quick-sheet__page.is-tighter .quick-sheet__combo-grid { gap: 2px; padding-block: 2px; }
 .quick-sheet__page.is-tighter .quick-sheet__combo-card p { margin-top: 1px; font-size: .49rem; }
+.quick-sheet__page.is-densest { gap: 4px; padding-block: 5mm 4mm; }
+.quick-sheet__page.is-densest .quick-sheet__block-title { min-height: 20px; padding-block: 2px; }
+.quick-sheet__page.is-densest .quick-sheet__detail-table { font-size: .46rem; }
+.quick-sheet__page.is-densest .quick-sheet__detail-table :is(th, td) { height: 16px; padding: 1px 2px; }
+.quick-sheet__page.is-densest .quick-sheet__outfit-groups { gap: 3px; padding: 3px; }
+.quick-sheet__page.is-densest .quick-sheet__outfit-group h3 { min-height: 17px; padding-block: 2px; }
+.quick-sheet.is-outfit-details-visible .quick-sheet__page.is-densest .quick-sheet__outfit-table tbody td.quick-sheet__outfit-detail { height: auto; padding: 2px 3px; line-height: 1.16; }
 
 /* Portrait quick sheet: readability and section integrity take priority over a fixed two-page limit. */
 .quick-sheet__portrait { min-width: 0; overflow: hidden; border: 1px solid var(--quick-line); background: var(--quick-surface); }
