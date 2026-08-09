@@ -8,6 +8,7 @@
     "芸術：", "運動", "回避", "白兵", "操縦：", "信用", "圧力", "隠密"
   ];
   const REQUIRED_FAMILIES = ["製作：", "芸術：", "操縦："];
+  const SUITS = ["♠", "♣", "♥", "♦"];
 
   const normalizeName = value => String(value || "")
     .trim()
@@ -18,10 +19,14 @@
     return REQUIRED_FAMILIES.find(prefix => name.startsWith(prefix)) || name;
   };
 
+  function createSuitCell(mark) {
+    return `<td><span class="cast-suit-box" aria-label="${mark} 未取得">${mark}</span></td>`;
+  }
+
   function createZeroLevelRow(name) {
     const row = document.createElement("tr");
     row.dataset.fixedGeneralSkill = name;
-    row.innerHTML = `<td>${name}</td><td>0</td><td></td><td></td><td></td><td></td><td></td>`;
+    row.innerHTML = `<td>${name}</td><td>0</td>${SUITS.map(createSuitCell).join("")}<td></td>`;
     return row;
   }
 
@@ -29,7 +34,7 @@
     const section = document.createElement("section");
     section.className = "skill-section skill-section--general";
     section.innerHTML = `
-      <h3>GENERAL SKILLS</h3>
+      <h3>一般技能 <small>GENERAL SKILLS</small></h3>
       <div class="data-table-wrapper">
         <table class="data-table skill-data-table skill-data-table--general">
           <colgroup>
@@ -38,7 +43,7 @@
             <col class="skill-col-suit"><col class="skill-col-suit">
             <col class="skill-col-detail">
           </colgroup>
-          <thead><tr><th>NAME</th><th>LV</th><th>♠</th><th>♣</th><th>♥</th><th>♦</th><th>DETAIL</th></tr></thead>
+          <thead><tr><th>名称</th><th>LV</th><th>理性</th><th>感情</th><th>生命</th><th>外界</th><th>詳細</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>`;
