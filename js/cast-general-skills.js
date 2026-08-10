@@ -1,5 +1,5 @@
-/* Public General-skill finalizer.
- * Owns the final General-skill DOM for the public cast view.
+/* Public compact-skill finalizer.
+ * Owns the final General / Social / Connection skill DOM for the public cast view.
  */
 (() => {
   const DEFAULT_ORDER = [
@@ -8,6 +8,7 @@
   ];
   const REQUIRED_FAMILIES = ["製作：", "芸術：", "操縦："];
   const SUITS = ["♠", "♣", "♥", "♦"];
+  const HEADERS = ["名称", "LV", "理性", "感情", "生命", "外界"];
 
   const normalizeName = value => String(value || "").trim().replace(/[;；]/g, "：");
   const familyName = value => {
@@ -24,27 +25,6 @@
     row.dataset.fixedGeneralSkill = name;
     row.innerHTML = `<td>${name}</td><td>0</td>${SUITS.map(mark => `<td class="style-suit-cell">${createSuitMarkup(mark, false)}</td>`).join("")}`;
     return row;
-  }
-
-  function createGeneralSection(container) {
-    const section = document.createElement("section");
-    section.className = "skill-section skill-section--general is-general";
-    section.innerHTML = `
-      <h3>一般技能 <small>GENERAL SKILLS</small></h3>
-      <div class="data-table-wrapper">
-        <table class="data-table skill-data-table skill-data-table--general">
-          <colgroup>
-            <col class="skill-col-name"><col class="skill-col-level">
-            <col class="skill-col-suit"><col class="skill-col-suit">
-            <col class="skill-col-suit"><col class="skill-col-suit">
-          </colgroup>
-          <thead><tr><th>名称</th><th>LV</th><th>理性</th><th>感情</th><th>生命</th><th>外界</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>`;
-    container.querySelector(".empty-data")?.remove();
-    container.prepend(section);
-    return section;
   }
 
   function ensureRequiredFamilies(tbody) {
@@ -71,12 +51,11 @@
     });
   }
 
-  function normalizeTable(section) {
-    section.classList.add("is-general");
+  function normalizeCompactTable(section, category) {
     const table = section.querySelector(":scope > .data-table-wrapper > table");
     if (!table) return null;
 
-    table.classList.add("skill-data-table--general");
+    table.classList.add(`skill-data-table--${category}`);
 
     const colgroup = table.querySelector(":scope > colgroup");
     while (colgroup && colgroup.children.length > 6) colgroup.lastElementChild.remove();
@@ -84,7 +63,7 @@
     const header = table.tHead?.rows?.[0];
     if (header) {
       while (header.cells.length > 6) header.deleteCell(header.cells.length - 1);
-      ["名称", "LV", "理性", "感情", "生命", "外界"].forEach((label, index) => {
+      HEADERS.forEach((label, index) => {
         if (header.cells[index]) header.cells[index].textContent = label;
       });
     }
@@ -156,29 +135,49 @@
     section.querySelector(":scope > h3")?.insertAdjacentElement("afterend", columns);
   }
 
-  function finalizeGeneralSkills() {
-    const container = document.querySelector("#skills-container");
-    if (!container || container.dataset.generalFinalized === "1") return false;
+  function finalizeGeneral(section) {
+    if (!section || section.dataset.compactFinalized === "1") return false;
+    section.classList.add("is-general");
 
-    let section = container.querySelector(".skill-section--general");
-    if (!section) return false;
-
-    const tbody = normalizeTable(section);
+    const tbody = normalizeCompactTable(section, "general");
     if (!tbody) return false;
 
     ensureRequiredFamilies(tbody);
     [...tbody.rows].forEach(normalizeRow);
     sortRows(tbody);
     splitGeneralColumns(section);
-
-    container.dataset.generalFinalized = "1";
+    section.dataset.compactFinalized = "1";
     return true;
+  }
+
+  function finalizeSideSection(section, category, stateClass) {
+    if (!section || section.dataset.compactFinalized === "1") return false;
+    section.classList.add(stateClass);
+    const tbody = normalizeCompactTable(section, category);
+    if (!tbody) return false;
+    section.dataset.compactFinalized = "1";
+    return true;
+  }
+
+  function finalizeCompactSkills() {
+    const container = document.querySelector("#skills-container");
+    if (!container) return false;
+
+    const general = container.querySelector(".skill-section--general");
+    const social = container.querySelector(".skill-section--social");
+    const connection = container.querySelector(".skill-section--connection");
+
+    const generalDone = general ? finalizeGeneral(general) || general.dataset.compactFinalized === "1" : true;
+    const socialDone = social ? finalizeSideSection(social, "social", "is-social") || social.dataset.compactFinalized === "1" : true;
+    const connectionDone = connection ? finalizeSideSection(connection, "connection", "is-connection") || connection.dataset.compactFinalized === "1" : true;
+
+    return generalDone && socialDone && connectionDone;
   }
 
   let attempts = 0;
   const timer = window.setInterval(() => {
-    if (finalizeGeneralSkills() || ++attempts >= 80) window.clearInterval(timer);
+    if (finalizeCompactSkills() || ++attempts >= 80) window.clearInterval(timer);
   }, 50);
 
-  finalizeGeneralSkills();
+  finalizeCompactSkills();
 })();
