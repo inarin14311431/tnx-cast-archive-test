@@ -126,6 +126,62 @@
 })();
 
 (() => {
+  function setDescriptionFields(scope, selector, expanded) {
+    const fields = [...scope.querySelectorAll(selector)];
+    fields.forEach(field => {
+      field.classList.toggle("is-expanded", expanded);
+      field.closest("tr")?.classList.toggle("is-description-expanded", expanded);
+      field.scrollTop = 0;
+      field.scrollLeft = 0;
+      if (expanded) field.style.setProperty("height", "auto", "important");
+      else field.style.removeProperty("height");
+    });
+
+    if (expanded) {
+      requestAnimationFrame(() => {
+        fields.forEach(field => {
+          field.style.setProperty("height", `${Math.max(35, field.scrollHeight + 2)}px`, "important");
+        });
+      });
+    }
+  }
+
+  function updateButton(button, expanded) {
+    button.textContent = expanded ? "縮小" : "全表示";
+    button.setAttribute("aria-pressed", String(expanded));
+    button.setAttribute("aria-label", expanded ? "すべての解説を縮小" : "すべての解説を表示");
+  }
+
+  document.addEventListener("click", event => {
+    const button = event.target.closest(".style-description-toggle-all");
+    if (!button) return;
+
+    const outfitSection = button.closest(".cast-outfit-section");
+    const styleSection = button.closest(".style-skill-view-editorlike, .style-skill-section-v47, .skill-section");
+    const scope = outfitSection || styleSection;
+    if (!scope) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    const expanded = !scope.classList.contains("is-description-all-expanded");
+    scope.classList.toggle("is-description-all-expanded", expanded);
+
+    if (outfitSection) {
+      setDescriptionFields(scope, ".outfit-description-expandable", expanded);
+    } else {
+      setDescriptionFields(scope, ".style-description-expandable", expanded);
+      const table = scope.querySelector(".style-skill-view-table");
+      table?.style.removeProperty("min-width");
+      table?.querySelector("col.style-col-description")?.style.removeProperty("width");
+    }
+
+    updateButton(button, expanded);
+  }, true);
+})();
+
+(() => {
   const root = document.querySelector("#cast-content");
   if (!root) return;
 
