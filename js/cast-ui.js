@@ -118,9 +118,35 @@ function initializeEditLinkAndLabels() {
       const hit = profileLabels[element.textContent.trim().toUpperCase()];
       if (hit) setJapanese(element, hit);
     });
+
+    ensurePersonalDataRows();
   };
 
   apply();
+}
+
+function ensurePersonalDataRows() {
+  const list = document.querySelector("#personal-data");
+  if (!list) return;
+
+  const required = ["年齢", "性別", "身長", "体重", "瞳", "髪", "肌"];
+  const values = new Map();
+
+  [...list.children].forEach(row => {
+    const label = row.querySelector("dt")?.textContent.trim() || "";
+    const value = row.querySelector("dd")?.textContent.trim() || "";
+    if (label) values.set(label, value || "—");
+  });
+
+  list.replaceChildren(...required.map(label => {
+    const row = document.createElement("div");
+    const dt = document.createElement("dt");
+    const dd = document.createElement("dd");
+    dt.textContent = label;
+    dd.textContent = values.get(label) || "—";
+    row.append(dt, dd);
+    return row;
+  }));
 }
 
 async function initializeHandleKana() {
