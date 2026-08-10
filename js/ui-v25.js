@@ -12,6 +12,7 @@ function initialize(){
 
 function initializeSheetUi(){
   bindSheetActions();
+  initializeComboSectionLink();
   [generalArea,styleArea].filter(Boolean).forEach(container=>new MutationObserver(queueRefresh).observe(container,{childList:true,subtree:true}));
   arrangeSkillUi();
   updateViewLink();
@@ -21,6 +22,18 @@ function initializeSheetUi(){
 
 function bindSheetActions(){
   document.addEventListener("click",event=>{
+    const comboNav=event.target.closest("#sheet-combo-open");
+    if(comboNav){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const target=document.querySelector("#sheet-combo-entry");
+      if(target){
+        history.replaceState(null,"",`${location.pathname}${location.search}#sheet-combo-entry`);
+        target.scrollIntoView({behavior:"smooth",block:"start"});
+      }
+      return;
+    }
+
     const actionButton=event.target.closest("[data-skill-ui-action]");
     if(actionButton){
       event.preventDefault();
@@ -30,6 +43,28 @@ function bindSheetActions(){
       return;
     }
   },true);
+}
+
+function initializeComboSectionLink(){
+  const current=document.querySelector("#sheet-combo-open");
+  if(!current)return;
+
+  if(current.tagName==="A"){
+    current.href="#sheet-combo-entry";
+    current.removeAttribute("aria-haspopup");
+    current.removeAttribute("aria-controls");
+    current.removeAttribute("disabled");
+    current.classList.remove("is-disabled");
+    return;
+  }
+
+  const link=document.createElement("a");
+  link.id=current.id;
+  link.className=current.className;
+  link.href="#sheet-combo-entry";
+  link.dataset.sheetSection="sheet-combo-entry";
+  link.innerHTML=current.innerHTML;
+  current.replaceWith(link);
 }
 
 function queueRefresh(){
