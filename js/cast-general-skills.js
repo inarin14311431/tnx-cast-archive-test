@@ -1,5 +1,5 @@
 /* Public General-skill finalizer.
- * Runs after the legacy cast-ui suit pass, then owns the final General-skill DOM.
+ * Owns the final General-skill DOM for the public cast view.
  */
 (() => {
   const DEFAULT_ORDER = [
@@ -56,13 +56,16 @@
 
   function normalizeRow(row) {
     while (row.cells.length > 6) row.deleteCell(row.cells.length - 1);
+
     SUITS.forEach((mark, index) => {
       const cell = row.cells[index + 2];
       if (!cell) return;
+
       const existing = cell.querySelector(".style-suit-mark, .cast-suit-box");
       const active = existing
         ? existing.classList.contains("is-active") || /●/.test(existing.textContent)
         : /●/.test(cell.textContent);
+
       cell.className = "style-suit-cell";
       cell.innerHTML = createSuitMarkup(mark, active);
     });
@@ -72,6 +75,8 @@
     section.classList.add("is-general");
     const table = section.querySelector(":scope > .data-table-wrapper > table");
     if (!table) return null;
+
+    table.classList.add("skill-data-table--general");
 
     const colgroup = table.querySelector(":scope > colgroup");
     while (colgroup && colgroup.children.length > 6) colgroup.lastElementChild.remove();
@@ -99,6 +104,7 @@
         const bi = orderIndex.has(b.family) ? orderIndex.get(b.family) : Number.MAX_SAFE_INTEGER;
         return ai - bi || a.index - b.index;
       });
+
     rows.forEach(({ row }, index) => {
       if (tbody.rows[index] !== row) tbody.insertBefore(row, tbody.rows[index] || null);
     });
@@ -106,6 +112,7 @@
 
   function splitGeneralColumns(section) {
     if (section.querySelector(".cast-general-columns")) return;
+
     const wrapper = section.querySelector(":scope > .data-table-wrapper");
     const table = wrapper?.querySelector(":scope > table");
     const tbody = table?.tBodies?.[0];
@@ -118,6 +125,7 @@
 
     const columns = document.createElement("div");
     columns.className = "cast-general-columns";
+
     const left = document.createElement("div");
     left.className = "cast-general-column cast-general-column--left";
     const right = document.createElement("div");
@@ -128,14 +136,18 @@
 
     const rightWrapper = wrapper.cloneNode(false);
     rightWrapper.classList.add("cast-general-table-wrapper");
+
     const rightTable = table.cloneNode(false);
     rightTable.classList.add("skill-data-table--general-secondary");
+
     const colgroup = table.querySelector(":scope > colgroup")?.cloneNode(true);
     const thead = table.tHead?.cloneNode(true);
     const rightBody = document.createElement("tbody");
+
     if (colgroup) rightTable.append(colgroup);
     if (thead) rightTable.append(thead);
     rightTable.append(rightBody);
+
     rows.slice(splitAt).forEach(row => rightBody.append(row));
     rightWrapper.append(rightTable);
     right.append(rightWrapper);
@@ -149,27 +161,16 @@
     if (!container || container.dataset.generalFinalized === "1") return false;
 
     let section = container.querySelector(".skill-section--general");
-    if (!section) {
-      if (!container.classList.contains("cast-skill-layout")) return false;
-      section = createGeneralSection(container);
-    }
+    if (!section) return false;
 
-    const baseRows = [...section.querySelectorAll(":scope > .data-table-wrapper > table > tbody > tr")];
-    if (baseRows.length) {
-      const legacySuitPassComplete = baseRows.every(row =>
-        [2, 3, 4, 5].every(index => row.cells?.[index]?.querySelector(".cast-suit-box"))
-      );
-      if (!legacySuitPassComplete) return false;
-    } else if (!container.classList.contains("cast-skill-layout")) {
-      return false;
-    }
-
-    let tbody = normalizeTable(section);
+    const tbody = normalizeTable(section);
     if (!tbody) return false;
+
     ensureRequiredFamilies(tbody);
     [...tbody.rows].forEach(normalizeRow);
     sortRows(tbody);
     splitGeneralColumns(section);
+
     container.dataset.generalFinalized = "1";
     return true;
   }
@@ -178,5 +179,6 @@
   const timer = window.setInterval(() => {
     if (finalizeGeneralSkills() || ++attempts >= 80) window.clearInterval(timer);
   }, 50);
+
   finalizeGeneralSkills();
 })();
