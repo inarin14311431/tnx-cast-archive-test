@@ -1,4 +1,4 @@
-import { supabase } from "./supabase-client.js";
+import { getOutfits } from "./cast-data-store.js";
 
 const container = document.querySelector("#outfit-container");
 const content = document.querySelector("#cast-content");
@@ -36,28 +36,9 @@ if (container) initialize();
 
 async function initialize() {
   try {
-    const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
-    if (!publicId) return;
-
-    const { data: character, error: characterError } = await supabase
-      .from("characters")
-      .select("id")
-      .eq("public_id", publicId)
-      .maybeSingle();
-    if (characterError) throw characterError;
-    if (!character) return;
-
-    const { data: outfits, error: outfitError } = await supabase
-      .from("character_outfits")
-      .select("*")
-      .eq("character_id", character.id)
-      .order("category")
-      .order("sort_order")
-      .order("name");
-    if (outfitError) throw outfitError;
-
+    const outfits = await getOutfits();
     await waitForCastReady();
-    render(outfits || []);
+    render(outfits);
   } catch (error) {
     console.error("Outfit view rebuild failed", error);
   }
