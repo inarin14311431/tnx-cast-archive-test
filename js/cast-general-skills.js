@@ -167,17 +167,27 @@
     const social = container.querySelector(".skill-section--social");
     const connection = container.querySelector(".skill-section--connection");
 
-    const generalDone = general ? finalizeGeneral(general) || general.dataset.compactFinalized === "1" : true;
-    const socialDone = social ? finalizeSideSection(social, "social", "is-social") || social.dataset.compactFinalized === "1" : true;
-    const connectionDone = connection ? finalizeSideSection(connection, "connection", "is-connection") || connection.dataset.compactFinalized === "1" : true;
+    // Do not treat the pre-render state as complete. cast.js fills these sections asynchronously.
+    if (!general && !social && !connection) return false;
 
-    return generalDone && socialDone && connectionDone;
+    if (general && general.dataset.compactFinalized !== "1") finalizeGeneral(general);
+    if (social && social.dataset.compactFinalized !== "1") finalizeSideSection(social, "social", "is-social");
+    if (connection && connection.dataset.compactFinalized !== "1") finalizeSideSection(connection, "connection", "is-connection");
+
+    const currentGeneral = container.querySelector(".skill-section--general");
+    const currentSocial = container.querySelector(".skill-section--social");
+    const currentConnection = container.querySelector(".skill-section--connection");
+
+    return [currentGeneral, currentSocial, currentConnection]
+      .filter(Boolean)
+      .every(section => section.dataset.compactFinalized === "1");
   }
 
   let attempts = 0;
   const timer = window.setInterval(() => {
-    if (finalizeCompactSkills() || ++attempts >= 80) window.clearInterval(timer);
+    if (finalizeCompactSkills() || ++attempts >= 160) window.clearInterval(timer);
   }, 50);
 
+  // Run once immediately, then the timer handles the asynchronous cast.js render.
   finalizeCompactSkills();
 })();
