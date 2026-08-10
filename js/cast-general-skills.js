@@ -1,6 +1,5 @@
-/* Deterministic General-skill finalizer for the public cast view.
- * Phase 2 refactor: replaces the former MutationObserver-based post-processor.
- * Runs once after all parser-inserted module scripts have completed.
+/* Public General-skill finalizer.
+ * Keeps the public view deterministic and aligned with the style-skill suit UI.
  */
 (() => {
   const DEFAULT_ORDER = [
@@ -10,33 +9,26 @@
   const REQUIRED_FAMILIES = ["製作：", "芸術：", "操縦："];
   const SUITS = ["♠", "♣", "♥", "♦"];
 
-  const normalizeName = value => String(value || "")
-    .trim()
-    .replace(/[;；]/g, "：");
-
+  const normalizeName = value => String(value || "").trim().replace(/[;；]/g, "：");
   const familyName = value => {
     const name = normalizeName(value);
     return REQUIRED_FAMILIES.find(prefix => name.startsWith(prefix)) || name;
   };
 
-  function createSuitBox(mark, active = false) {
-    return `<span class="cast-suit-box${active ? " is-active" : ""}" aria-label="${mark} ${active ? "取得済み" : "未取得"}">${mark}</span>`;
-  }
-
-  function createSuitCell(mark) {
-    return `<td>${createSuitBox(mark)}</td>`;
+  function createSuitMarkup(mark, active) {
+    return `<span class="style-suit-mark${active ? " is-active" : ""}" aria-label="${mark} ${active ? "取得済み" : "未取得"}">${mark}</span>`;
   }
 
   function createZeroLevelRow(name) {
     const row = document.createElement("tr");
     row.dataset.fixedGeneralSkill = name;
-    row.innerHTML = `<td>${name}</td><td>0</td>${SUITS.map(createSuitCell).join("")}<td></td>`;
+    row.innerHTML = `<td>${name}</td><td>0</td>${SUITS.map(mark => `<td class="style-suit-cell">${createSuitMarkup(mark, false)}</td>`).join("")}`;
     return row;
   }
 
   function createGeneralSection(container) {
     const section = document.createElement("section");
-    section.className = "skill-section skill-section--general";
+    section.className = "skill-section skill-section--general is-general";
     section.innerHTML = `
       <h3>一般技能 <small>GENERAL SKILLS</small></h3>
       <div class="data-table-wrapper">
@@ -45,9 +37,8 @@
             <col class="skill-col-name"><col class="skill-col-level">
             <col class="skill-col-suit"><col class="skill-col-suit">
             <col class="skill-col-suit"><col class="skill-col-suit">
-            <col class="skill-col-detail">
           </colgroup>
-          <thead><tr><th>名称</th><th>LV</th><th>理性</th><th>感情</th><th>生命</th><th>外界</th><th>詳細</th></tr></thead>
+          <thead><tr><th>名称</th><th>LV</th><th>理性</th><th>感情</th><th>生命</th><th>外界</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>`;
@@ -57,41 +48,58 @@
   }
 
   function ensureRequiredFamilies(tbody) {
-    const rows = [...tbody.querySelectorAll(":scope > tr")];
-    const presentFamilies = new Set(rows.map(row => familyName(row.cells?.[0]?.textContent)).filter(Boolean));
+    const present = new Set([...tbody.rows].map(row => familyName(row.cells?.[0]?.textContent)).filter(Boolean));
     for (const prefix of REQUIRED_FAMILIES) {
-      if (!presentFamilies.has(prefix)) tbody.append(createZeroLevelRow(prefix));
+      if (!present.has(prefix)) tbody.append(createZeroLevelRow(prefix));
     }
   }
 
-  function normalizeSuitCells(tbody) {
-    tbody.querySelectorAll(":scope > tr").forEach(row => {
-      SUITS.forEach((mark, index) => {
-        const cell = row.cells?.[index + 2];
-        if (!cell) return;
-        const existing = cell.querySelector(".cast-suit-box");
-        if (existing) {
-          existing.textContent = mark;
-          return;
-        }
-        const active = cell.textContent.trim() !== "";
-        cell.innerHTML = createSuitBox(mark, active);
-      });
+  function normalizeRow(row) {
+    while (row.cells.length > 6) row.deleteCell(row.cells.length - 1);
+    SUITS.forEach((mark, index) => {
+      const cell = row.cells[index + 2];
+      if (!cell) return;
+      const existing = cell.querySelector(".style-suit-mark, .cast-suit-box");
+      const active = existing
+        ? existing.classList.contains("is-active") || /●/.test(existing.textContent)
+        : cell.textContent.trim() !== "";
+      cell.className = "style-suit-cell";
+      cell.innerHTML = createSuitMarkup(mark, active);
     });
+  }
+
+  function normalizeTable(section) {
+    section.classList.add("is-general");
+    const table = section.querySelector(":scope > .data-table-wrapper > table");
+    if (!table) return null;
+
+    const colgroup = table.querySelector(":scope > colgroup");
+    while (colgroup && colgroup.children.length > 6) colgroup.lastElementChild.remove();
+
+    const header = table.tHead?.rows?.[0];
+    if (header) {
+      while (header.cells.length > 6) header.deleteCell(header.cells.length - 1);
+      ["名称", "LV", "理性", "感情", "生命", "外界"].forEach((label, index) => {
+        if (header.cells[index]) header.cells[index].textContent = label;
+      });
+    }
+
+    const tbody = table.tBodies?.[0];
+    if (!tbody) return null;
+    [...tbody.rows].forEach(normalizeRow);
+    return tbody;
   }
 
   function sortRows(tbody) {
     const orderIndex = new Map(DEFAULT_ORDER.map((name, index) => [name, index]));
-    const sorted = [...tbody.querySelectorAll(":scope > tr")]
+    const rows = [...tbody.rows]
       .map((row, index) => ({ row, index, family: familyName(row.cells?.[0]?.textContent) }))
       .sort((a, b) => {
         const ai = orderIndex.has(a.family) ? orderIndex.get(a.family) : Number.MAX_SAFE_INTEGER;
         const bi = orderIndex.has(b.family) ? orderIndex.get(b.family) : Number.MAX_SAFE_INTEGER;
         return ai - bi || a.index - b.index;
-      })
-      .map(item => item.row);
-
-    sorted.forEach((row, index) => {
+      });
+    rows.forEach(({ row }, index) => {
       if (tbody.rows[index] !== row) tbody.insertBefore(row, tbody.rows[index] || null);
     });
   }
@@ -119,6 +127,7 @@
     left.append(wrapper);
 
     const rightWrapper = wrapper.cloneNode(false);
+    rightWrapper.classList.add("cast-general-table-wrapper");
     const rightTable = table.cloneNode(false);
     rightTable.classList.add("skill-data-table--general-secondary");
     const colgroup = table.querySelector(":scope > colgroup")?.cloneNode(true);
@@ -142,11 +151,10 @@
     let section = container.querySelector(".skill-section--general");
     if (!section) section = createGeneralSection(container);
 
-    const tbody = section.querySelector("tbody");
+    let tbody = normalizeTable(section);
     if (!tbody) return;
-
     ensureRequiredFamilies(tbody);
-    normalizeSuitCells(tbody);
+    [...tbody.rows].forEach(normalizeRow);
     sortRows(tbody);
     splitGeneralColumns(section);
   }
