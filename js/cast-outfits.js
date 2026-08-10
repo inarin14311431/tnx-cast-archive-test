@@ -73,8 +73,6 @@ function render(outfits) {
     .filter(([category]) => grouped[category].length)
     .map(([category, jp, en]) => createSection(category, jp, en, grouped[category]))
     .join("");
-
-  initializeDescriptionToggles();
 }
 
 function createSection(category, jp, en, items) {
@@ -111,48 +109,6 @@ function createCell(field, item) {
     return `<td class="cast-outfit-col--description style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable outfit-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${escapeHtml(value)}</textarea></td>`;
   }
   return `<td class="cast-outfit-col--${field}"><span class="cast-outfit-value" title="${escapeAttribute(text)}">${escapeHtml(text)}</span></td>`;
-}
-
-function initializeDescriptionToggles() {
-  container.querySelectorAll(".outfit-description-toggle-all").forEach(button => {
-    button.addEventListener("click", () => {
-      const section = button.closest(".cast-outfit-section");
-      if (!section) return;
-      const expanded = section.classList.contains("is-description-all-expanded");
-      setDescriptionsExpanded(section, !expanded);
-    });
-  });
-}
-
-function setDescriptionsExpanded(section, expanded) {
-  section.classList.toggle("is-description-all-expanded", expanded);
-  const fields = [...section.querySelectorAll(".outfit-description-expandable")];
-  fields.forEach(field => {
-    field.classList.toggle("is-expanded", expanded);
-    field.closest("tr")?.classList.toggle("is-description-expanded", expanded);
-    field.scrollTop = 0;
-    field.scrollLeft = 0;
-    if (expanded) {
-      field.style.setProperty("height", "auto", "important");
-    } else {
-      field.style.removeProperty("height");
-    }
-  });
-
-  if (expanded) {
-    requestAnimationFrame(() => {
-      fields.forEach(field => {
-        field.style.setProperty("height", `${Math.max(35, field.scrollHeight + 2)}px`, "important");
-      });
-    });
-  }
-
-  const button = section.querySelector(".outfit-description-toggle-all");
-  if (button) {
-    button.textContent = expanded ? "縮小" : "全表示";
-    button.setAttribute("aria-pressed", String(expanded));
-    button.setAttribute("aria-label", expanded ? "すべての解説を縮小" : "すべての解説を表示");
-  }
 }
 
 function normalizedItem(category, item) {
