@@ -1,0 +1,29 @@
+/* Sidebar action hover states for the cast-sheet editor. */
+body[data-page="sheet.html"] .exp-panel #save-button.is-saved,
+body[data-page="sheet.html"] .exp-panel .sheet-view-link:not(.is-disabled) {
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+body[data-page="sheet.html"] .exp-panel #save-button.is-saved:is(:hover, :focus-visible) {
+  border-color: var(--color-success);
+  color: color-mix(in srgb, var(--color-success) 72%, white);
+  background: color-mix(in srgb, var(--color-success) 18%, var(--color-surface));
+  box-shadow: inset 3px 0 0 var(--color-success), 0 0 18px color-mix(in srgb, var(--color-success) 28%, transparent);
+}
+
+body[data-page="sheet.html"] .exp-panel #save-button.is-saved:is(:hover, :focus-visible) small {
+  color: color-mix(in srgb, var(--color-success) 62%, var(--color-text));
+  opacity: .9;
+}
+
+body[data-page="sheet.html"] .exp-panel .sheet-view-link:not(.is-disabled):is(:hover, :focus-visible) {
+  border-color: var(--color-accent);
+  color: color-mix(in srgb, var(--color-accent) 72%, white);
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface));
+  box-shadow: inset 3px 0 0 var(--color-accent), 0 0 18px color-mix(in srgb, var(--color-accent) 28%, transparent);
+}
+
+body[data-page="sheet.html"] .exp-panel .sheet-view-link:not(.is-disabled):is(:hover, :focus-visible) small {
+  color: color-mix(in srgb, var(--color-accent) 58%, var(--color-text));
+  opacity: .9;
+}
