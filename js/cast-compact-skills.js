@@ -38,19 +38,14 @@
     const wrapper = section.querySelector(":scope > .data-table-wrapper");
     const table = wrapper?.querySelector(":scope > table");
     if (!table) return null;
-
     table.classList.add(`skill-data-table--${category}`);
     const colgroup = table.querySelector(":scope > colgroup");
     while (colgroup && colgroup.children.length > 6) colgroup.lastElementChild.remove();
-
     const header = table.tHead?.rows?.[0];
     if (header) {
       while (header.cells.length > 6) header.deleteCell(header.cells.length - 1);
-      HEADERS.forEach((label, index) => {
-        if (header.cells[index]) header.cells[index].textContent = label;
-      });
+      HEADERS.forEach((label, index) => { if (header.cells[index]) header.cells[index].textContent = label; });
     }
-
     const tbody = table.tBodies?.[0];
     if (!tbody) return null;
     [...tbody.rows].forEach(normalizeRow);
@@ -66,9 +61,7 @@
 
   function ensureRequiredFamilies(tbody) {
     const present = new Set([...tbody.rows].map(row => familyName(row.cells?.[0]?.textContent)).filter(Boolean));
-    REQUIRED_FAMILIES.forEach(prefix => {
-      if (!present.has(prefix)) tbody.append(createZeroLevelRow(prefix));
-    });
+    REQUIRED_FAMILIES.forEach(prefix => { if (!present.has(prefix)) tbody.append(createZeroLevelRow(prefix)); });
   }
 
   function sortGeneralRows(tbody) {
@@ -80,9 +73,7 @@
         const bi = order.has(b.family) ? order.get(b.family) : Number.MAX_SAFE_INTEGER;
         return ai - bi || a.index - b.index;
       });
-    rows.forEach(({ row }, index) => {
-      if (tbody.rows[index] !== row) tbody.insertBefore(row, tbody.rows[index] || null);
-    });
+    rows.forEach(({ row }, index) => { if (tbody.rows[index] !== row) tbody.insertBefore(row, tbody.rows[index] || null); });
   }
 
   function splitGeneralColumns(section) {
@@ -91,22 +82,18 @@
     const table = wrapper?.querySelector(":scope > table");
     const tbody = table?.tBodies?.[0];
     if (!wrapper || !table || !tbody) return;
-
     const rows = [...tbody.rows];
     const splitIndex = rows.findIndex(row => familyName(row.cells?.[0]?.textContent) === "交渉");
     const splitAt = splitIndex >= 0 ? splitIndex + 1 : Math.ceil(rows.length / 2);
     if (splitAt <= 0 || splitAt >= rows.length) return;
-
     const columns = document.createElement("div");
     columns.className = "cast-general-columns";
     const left = document.createElement("div");
     left.className = "cast-general-column cast-general-column--left";
     const right = document.createElement("div");
     right.className = "cast-general-column cast-general-column--right";
-
     wrapper.classList.add("cast-general-table-wrapper");
     left.append(wrapper);
-
     const rightWrapper = wrapper.cloneNode(false);
     rightWrapper.classList.add("cast-general-table-wrapper");
     const rightTable = table.cloneNode(false);
@@ -120,7 +107,6 @@
     rows.slice(splitAt).forEach(row => rightBody.append(row));
     rightWrapper.append(rightTable);
     right.append(rightWrapper);
-
     columns.append(left, right);
     section.querySelector(":scope > h3")?.insertAdjacentElement("afterend", columns);
   }
@@ -146,14 +132,9 @@
 
   function placeSections(container, general, social, connection) {
     container.classList.add("cast-skill-layout");
-    const hostPanel = container.closest(".data-panel");
-    hostPanel?.classList.add("panel-skills");
-
+    container.closest(".data-panel")?.classList.add("panel-skills");
     let side = container.querySelector(":scope > .cast-skill-side");
-    if (!side) {
-      side = document.createElement("div");
-      side.className = "cast-skill-side";
-    }
+    if (!side) { side = document.createElement("div"); side.className = "cast-skill-side"; }
     if (social && social.parentElement !== side) side.append(social);
     if (connection && connection.parentElement !== side) side.append(connection);
     if (side.children.length && !side.parentElement) {
@@ -164,26 +145,26 @@
 
   function finalize() {
     const container = document.querySelector("#skills-container");
-    if (!container) return false;
-
+    if (!container) return;
     const general = container.querySelector(".skill-section--general");
     const social = container.querySelector(".skill-section--social");
     const connection = container.querySelector(".skill-section--connection");
-    if (!general && !social && !connection) return false;
-
     finalizeGeneral(general);
     finalizeSide(social, "social", "is-social");
     finalizeSide(connection, "connection", "is-connection");
     placeSections(container, general, social, connection);
-
-    return [general, social, connection]
-      .filter(Boolean)
-      .every(section => section.dataset.compactFinalized === "1");
   }
 
-  let attempts = 0;
-  const timer = window.setInterval(() => {
-    if (finalize() || ++attempts >= 160) window.clearInterval(timer);
-  }, 50);
-  finalize();
+  const content = document.querySelector("#cast-content");
+  if (!content) return;
+  if (!content.hidden) {
+    finalize();
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    if (content.hidden) return;
+    observer.disconnect();
+    finalize();
+  });
+  observer.observe(content, { attributes: true, attributeFilter: ["hidden"] });
 })();
