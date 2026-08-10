@@ -1,5 +1,5 @@
 /* Public General-skill finalizer.
- * Keeps the public view deterministic and aligned with the style-skill suit UI.
+ * Runs after the legacy cast-ui suit pass, then owns the final General-skill DOM.
  */
 (() => {
   const DEFAULT_ORDER = [
@@ -62,7 +62,7 @@
       const existing = cell.querySelector(".style-suit-mark, .cast-suit-box");
       const active = existing
         ? existing.classList.contains("is-active") || /●/.test(existing.textContent)
-        : cell.textContent.trim() !== "";
+        : /●/.test(cell.textContent);
       cell.className = "style-suit-cell";
       cell.innerHTML = createSuitMarkup(mark, active);
     });
@@ -146,18 +146,37 @@
 
   function finalizeGeneralSkills() {
     const container = document.querySelector("#skills-container");
-    if (!container) return;
+    if (!container || container.dataset.generalFinalized === "1") return false;
 
     let section = container.querySelector(".skill-section--general");
-    if (!section) section = createGeneralSection(container);
+    if (!section) {
+      if (!container.classList.contains("cast-skill-layout")) return false;
+      section = createGeneralSection(container);
+    }
+
+    const baseRows = [...section.querySelectorAll(":scope > .data-table-wrapper > table > tbody > tr")];
+    if (baseRows.length) {
+      const legacySuitPassComplete = baseRows.every(row =>
+        [2, 3, 4, 5].every(index => row.cells?.[index]?.querySelector(".cast-suit-box"))
+      );
+      if (!legacySuitPassComplete) return false;
+    } else if (!container.classList.contains("cast-skill-layout")) {
+      return false;
+    }
 
     let tbody = normalizeTable(section);
-    if (!tbody) return;
+    if (!tbody) return false;
     ensureRequiredFamilies(tbody);
     [...tbody.rows].forEach(normalizeRow);
     sortRows(tbody);
     splitGeneralColumns(section);
+    container.dataset.generalFinalized = "1";
+    return true;
   }
 
-  window.addEventListener("load", finalizeGeneralSkills, { once: true });
+  let attempts = 0;
+  const timer = window.setInterval(() => {
+    if (finalizeGeneralSkills() || ++attempts >= 80) window.clearInterval(timer);
+  }, 50);
+  finalizeGeneralSkills();
 })();
