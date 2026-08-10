@@ -4,33 +4,29 @@
 (async function () {
   const scriptUrl = document.currentScript?.src || location.href;
   const styleDataUrl = new URL("./style-data.js", scriptUrl).href;
-  const divineYomiByName = new Map([
-    ["死の舞踏", "ダンスマカブル"],
-    ["天変地異", "カタストロフ"],
-    ["突然変異", "ミューテーション"]
-  ]);
+  const divineYomiByName = new Map([["死の舞踏", "ダンスマカブル"], ["天変地異", "カタストロフ"], ["突然変異", "ミューテーション"]]);
   const divineYomiByStyle = new Map();
-
   try {
     const module = await import(styleDataUrl);
     for (const item of module.STYLE_DATA || []) {
       const yomi = divineYomiByName.get(item.divine) || item.divineYomi || "";
       divineYomiByStyle.set(item.name, yomi);
-      if (item.divine && !divineYomiByName.has(item.divine)) {
-        divineYomiByName.set(item.divine, yomi);
-      }
+      if (item.divine && !divineYomiByName.has(item.divine)) divineYomiByName.set(item.divine, yomi);
     }
-  } catch (error) {
-    console.warn("Divine work readings could not be loaded.", error);
-  }
+  } catch (error) { console.warn("Divine work readings could not be loaded.", error); }
 
-  // Each presentation block is independent. A cast with no style skills must
-  // still receive style/divine presentation enhancements.
-  await Promise.all([
-    waitForAndEnhance(enhanceStyles),
-    waitForAndEnhance(enhanceDivines),
-    waitForAndEnhance(enhanceStyleSkillPanel)
-  ]);
+  const content = document.querySelector("#cast-content");
+  const enhanceBase = () => { enhanceStyles(); enhanceDivines(); enhanceStyleSkillPanel(); };
+  if (!content || !content.hidden) enhanceBase();
+  else {
+    const observer = new MutationObserver(() => {
+      if (content.hidden) return;
+      observer.disconnect();
+      enhanceBase();
+    });
+    observer.observe(content, { attributes: true, attributeFilter: ["hidden"] });
+  }
+  document.addEventListener("tnx:style-skills-rendered", enhanceStyleSkillPanel);
 
   function stateFor(mark) {
     const value = String(mark || "").trim();
@@ -39,7 +35,6 @@
     if (value.includes("●")) return "is-key";
     return "is-standard";
   }
-
   function roleFor(mark) {
     const value = String(mark || "").trim();
     if (value.includes("◎") && value.includes("●")) return "PERSONA=KEY";
@@ -47,15 +42,12 @@
     if (value.includes("●")) return "KEY";
     return "SHADOW";
   }
-
   function enhanceStyles() {
     const styles = document.querySelector("#cast-styles");
     const chips = [...document.querySelectorAll("#cast-styles .style-chip")];
-    if (!styles || !chips.length) return false;
-
+    if (!styles || !chips.length) return;
     styles.classList.remove("cast-archetype-grid");
     styles.classList.add("cast-style-grid-simple");
-
     let heading = styles.previousElementSibling;
     if (!heading?.classList.contains("cast-style-heading-simple")) {
       if (heading?.classList.contains("cast-archetype-heading")) heading.remove();
@@ -65,12 +57,9 @@
       styles.before(heading);
     }
     heading.classList.add("cast-unified-heading");
-
     chips.forEach((chip, index) => {
-      chip.querySelectorAll(".cast-archetype-card__scan,.cast-archetype-card__role")
-        .forEach(element => element.remove());
+      chip.querySelectorAll(".cast-archetype-card__scan,.cast-archetype-card__role").forEach(element => element.remove());
       chip.classList.remove("cast-archetype-card", "is-persona", "is-key", "is-dual", "is-standard");
-
       const markElement = chip.querySelector(".style-chip__mark");
       const mark = markElement?.getAttribute("aria-label") || markElement?.textContent || "";
       chip.classList.add("cast-style-card-simple", stateFor(mark));
@@ -79,80 +68,42 @@
       delete chip.dataset.archetypeCode;
       delete chip.dataset.archetypeEnhanced;
     });
-    return true;
   }
-
   function enhanceDivines() {
     const panel = document.querySelector(".hero-divine-panel");
     const cards = [...document.querySelectorAll("#divine-list .divine-card")];
-    if (!panel || !cards.length) return false;
-
+    if (!panel || !cards.length) return;
     panel.classList.add("cast-divine-authority");
     const panelHeader = panel.querySelector(":scope > header");
     panelHeader?.classList.add("cast-unified-heading");
-
     const heading = panel.querySelector("header h2");
     if (heading) heading.innerHTML = '神業 <small>DIVINE WORK</small>';
-
     let status = panelHeader?.querySelector(".cast-divine-authority__status");
-    if (!status && panelHeader) {
-      status = document.createElement("span");
-      status.className = "cast-divine-authority__status";
-      panelHeader.append(status);
-    }
+    if (!status && panelHeader) { status = document.createElement("span"); status.className = "cast-divine-authority__status"; panelHeader.append(status); }
     if (status) status.textContent = "AUTHORITY CHANNEL // ONLINE";
-
     cards.forEach((card, index) => {
       card.dataset.divineEnhanced = "true";
       card.dataset.divineCode = `MIRACLE-${String(index + 1).padStart(2, "0")}`;
       card.classList.add("cast-divine-card", `cast-divine-card--${index + 1}`);
-      card.querySelectorAll(".cast-divine-card__seal,.cast-divine-card__channel")
-        .forEach(element => element.remove());
-
+      card.querySelectorAll(".cast-divine-card__seal,.cast-divine-card__channel").forEach(element => element.remove());
       let code = card.querySelector(".cast-divine-card__code");
-      if (!code) {
-        code = document.createElement("span");
-        code.className = "cast-divine-card__code";
-        card.prepend(code);
-      }
+      if (!code) { code = document.createElement("span"); code.className = "cast-divine-card__code"; card.prepend(code); }
       code.textContent = card.dataset.divineCode;
-
       const styleName = card.querySelector(".divine-card__style")?.textContent.trim() || "";
       const name = card.querySelector(".divine-card__name");
       const divineName = name?.textContent.trim() || "";
       let yomi = card.querySelector(".divine-card__yomi");
-      if (!yomi) {
-        yomi = document.createElement("span");
-        yomi.className = "divine-card__yomi";
-        name?.insertAdjacentElement("afterend", yomi);
-      }
+      if (!yomi) { yomi = document.createElement("span"); yomi.className = "divine-card__yomi"; name?.insertAdjacentElement("afterend", yomi); }
       yomi.textContent = divineYomiByName.get(divineName) || divineYomiByStyle.get(styleName) || "";
       yomi.hidden = !yomi.textContent;
     });
-    return true;
   }
-
   function enhanceStyleSkillPanel() {
     const panel = document.querySelector("#style-skill-panel");
     const table = panel?.querySelector(".style-skill-view-table");
-    if (!panel || !table) return false;
-
+    if (!panel || !table) return;
     panel.classList.add("cast-style-skill-analysis");
     const heading = panel.querySelector(".data-panel__header h2");
     if (heading) heading.innerHTML = 'スタイル技能 <small>STYLE SKILLS</small>';
-    return true;
-  }
-
-  async function waitForAndEnhance(enhancer) {
-    const deadline = performance.now() + 8000;
-    while (performance.now() < deadline) {
-      if (enhancer()) return true;
-      await nextFrame();
-    }
-    return false;
-  }
-
-  function nextFrame() {
-    return new Promise(resolve => requestAnimationFrame(resolve));
   }
 })();
