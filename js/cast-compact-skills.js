@@ -1,19 +1,18 @@
+import {
+  GENERAL_SKILL_ORDER,
+  GENERAL_SKILL_REQUIRED_FAMILIES,
+  SKILL_SUITS,
+  COMPACT_SKILL_HEADERS
+} from "./cast-view-definitions.js";
+
 /* Public compact skill renderer/layout.
  * Owns General / Social / Connection tables and their final placement.
  */
 (() => {
-  const DEFAULT_ORDER = [
-    "医療", "射撃", "知覚", "電脳", "製作：", "心理", "自我", "交渉",
-    "芸術：", "運動", "回避", "白兵", "操縦：", "信用", "圧力", "隠密"
-  ];
-  const REQUIRED_FAMILIES = ["製作：", "芸術：", "操縦："];
-  const SUITS = ["♠", "♣", "♥", "♦"];
-  const HEADERS = ["名称", "LV", "理性", "感情", "生命", "外界"];
-
   const normalizeName = value => String(value || "").trim().replace(/[;；]/g, "：");
   const familyName = value => {
     const name = normalizeName(value);
-    return REQUIRED_FAMILIES.find(prefix => name.startsWith(prefix)) || name;
+    return GENERAL_SKILL_REQUIRED_FAMILIES.find(prefix => name.startsWith(prefix)) || name;
   };
 
   function createSuitMarkup(mark, active) {
@@ -22,7 +21,7 @@
 
   function normalizeRow(row) {
     while (row.cells.length > 6) row.deleteCell(row.cells.length - 1);
-    SUITS.forEach((mark, index) => {
+    SKILL_SUITS.forEach((mark, index) => {
       const cell = row.cells[index + 2];
       if (!cell) return;
       const existing = cell.querySelector(".style-suit-mark, .cast-suit-box");
@@ -44,7 +43,7 @@
     const header = table.tHead?.rows?.[0];
     if (header) {
       while (header.cells.length > 6) header.deleteCell(header.cells.length - 1);
-      HEADERS.forEach((label, index) => { if (header.cells[index]) header.cells[index].textContent = label; });
+      COMPACT_SKILL_HEADERS.forEach((label, index) => { if (header.cells[index]) header.cells[index].textContent = label; });
     }
     const tbody = table.tBodies?.[0];
     if (!tbody) return null;
@@ -55,17 +54,17 @@
   function createZeroLevelRow(name) {
     const row = document.createElement("tr");
     row.dataset.fixedGeneralSkill = name;
-    row.innerHTML = `<td>${name}</td><td>0</td>${SUITS.map(mark => `<td class="style-suit-cell">${createSuitMarkup(mark, false)}</td>`).join("")}`;
+    row.innerHTML = `<td>${name}</td><td>0</td>${SKILL_SUITS.map(mark => `<td class="style-suit-cell">${createSuitMarkup(mark, false)}</td>`).join("")}`;
     return row;
   }
 
   function ensureRequiredFamilies(tbody) {
     const present = new Set([...tbody.rows].map(row => familyName(row.cells?.[0]?.textContent)).filter(Boolean));
-    REQUIRED_FAMILIES.forEach(prefix => { if (!present.has(prefix)) tbody.append(createZeroLevelRow(prefix)); });
+    GENERAL_SKILL_REQUIRED_FAMILIES.forEach(prefix => { if (!present.has(prefix)) tbody.append(createZeroLevelRow(prefix)); });
   }
 
   function sortGeneralRows(tbody) {
-    const order = new Map(DEFAULT_ORDER.map((name, index) => [name, index]));
+    const order = new Map(GENERAL_SKILL_ORDER.map((name, index) => [name, index]));
     const rows = [...tbody.rows]
       .map((row, index) => ({ row, index, family: familyName(row.cells?.[0]?.textContent) }))
       .sort((a, b) => {
