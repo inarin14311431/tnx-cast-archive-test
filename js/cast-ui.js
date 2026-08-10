@@ -1,4 +1,4 @@
-import { supabase } from "./supabase-client.js";
+import { getCharacter } from "./cast-data-store.js";
 
 /* Public cast-view shared UI only.
  * Skill table rendering/layout belongs to cast-compact-skills.js and cast-style-skills.js.
@@ -142,13 +142,13 @@ async function initializeHandleKana() {
   if (handle?.textContent.trim() === "NO HANDLE") handle.textContent = "";
   if (!publicId || !handleKana) return;
 
-  const { data, error } = await supabase.from("characters").select("handle_kana").eq("public_id", publicId).maybeSingle();
-  if (error) {
+  try {
+    const character = await getCharacter();
+    const value = String(character?.handle_kana || "").trim();
+    handleKana.textContent = value ? `“${value}”` : "";
+  } catch (error) {
     console.warn("handle kana could not be loaded", error);
-    return;
   }
-  const value = String(data?.handle_kana || "").trim();
-  handleKana.textContent = value ? `“${value}”` : "";
 }
 
 function initializePanelClasses() {
