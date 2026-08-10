@@ -1,4 +1,4 @@
-import { supabase } from "./supabase-client.js";
+import { getStyleSkills } from "./cast-data-store.js";
 
 const PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const SEPARATOR_MARKER = "[[STYLE_SEPARATOR]]";
@@ -137,18 +137,16 @@ function renderTable(section, skills) {
   document.fonts?.ready.then(() => fitNameFields(section));
 }
 
-async function loadStyleSkills() {
-  const publicId = new URLSearchParams(location.search).get("id")?.trim();
-  if (!publicId) return [];
-  const { data: character, error: characterError } = await supabase.from("characters").select("id").eq("public_id", publicId).maybeSingle();
-  if (characterError || !character) return [];
-  const { data, error } = await supabase.from("character_skills").select("*").eq("character_id", character.id).eq("category", "style").order("sort_order");
-  return error ? [] : (data || []);
-}
-
 async function initialize() {
-  const skills = await loadStyleSkills();
+  let skills = [];
+  try {
+    skills = await getStyleSkills();
+  } catch (error) {
+    console.error("Style skill view data load failed", error);
+    return;
+  }
   if (!skills.length) return;
+
   let tries = 0;
   const timer = window.setInterval(() => {
     const section = findSection();
