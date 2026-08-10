@@ -24,9 +24,7 @@ function parseDetail(value) {
   const text = String(value || "");
   const empty = Object.fromEntries(FIELDS.map(([key]) => [key, ""]));
   if (text.startsWith(PREFIX)) {
-    try {
-      return { ...empty, ...JSON.parse(text.slice(PREFIX.length).trim()) };
-    } catch {}
+    try { return { ...empty, ...JSON.parse(text.slice(PREFIX.length).trim()) }; } catch {}
   }
 
   const labels = {
@@ -36,7 +34,6 @@ function parseDetail(value) {
   };
   const data = { ...empty };
   const remain = [];
-
   for (const line of text.split(/\r?\n/)) {
     const match = line.match(/^([^：:]+)[：:]\s*(.*)$/);
     const key = match && labels[match[1].trim()];
@@ -48,25 +45,38 @@ function parseDetail(value) {
 }
 
 function findSection() {
-  const movedSection = document.querySelector("#style-skill-panel .skill-section");
-  if (movedSection) return movedSection;
+  const moved = document.querySelector("#style-skill-panel .skill-section--style, #style-skill-panel .skill-section");
+  if (moved) return moved;
+  return document.querySelector("#skills-container .skill-section--style");
+}
 
-  const container = document.querySelector("#skills-container");
-  if (!container) return null;
-  return [...container.querySelectorAll("section")].find(section => {
-    const title = section.querySelector("h3")?.textContent || "";
-    return /STYLE\s*SKILLS|スタイル技能/i.test(title);
-  }) || null;
+function ensureDedicatedPanel(section) {
+  if (!section) return null;
+  const existing = document.querySelector("#style-skill-panel");
+  if (existing) {
+    const body = existing.querySelector(".style-skill-panel__body");
+    if (body && section.parentElement !== body) body.append(section);
+    section.querySelector(":scope > h3")?.setAttribute("hidden", "");
+    return existing;
+  }
+
+  const sourcePanel = document.querySelector("#skills-container")?.closest(".data-panel");
+  if (!sourcePanel) return null;
+
+  const panel = document.createElement("section");
+  panel.id = "style-skill-panel";
+  panel.className = "data-panel data-panel--wide panel-style-skills";
+  panel.innerHTML = '<header class="data-panel__header"><h2>スタイル技能 <small>STYLE SKILLS</small></h2></header><div class="style-skill-panel__body"></div>';
+  panel.querySelector(".style-skill-panel__body").append(section);
+  sourcePanel.insertAdjacentElement("afterend", panel);
+  section.querySelector(":scope > h3")?.setAttribute("hidden", "");
+  return panel;
 }
 
 function fieldCell(value, key) {
   const text = normalizeNewlines(value);
-  if (key === "name") {
-    return `<td class="style-view-cell style-view-cell--name"><textarea class="style-field-scroll style-skill-name-view" rows="1" wrap="soft" readonly aria-label="名称">${esc(text)}</textarea></td>`;
-  }
-  if (key === "description") {
-    return `<td class="style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${esc(text)}</textarea></td>`;
-  }
+  if (key === "name") return `<td class="style-view-cell style-view-cell--name"><textarea class="style-field-scroll style-skill-name-view" rows="1" wrap="soft" readonly aria-label="名称">${esc(text)}</textarea></td>`;
+  if (key === "description") return `<td class="style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${esc(text)}</textarea></td>`;
   const oneLine = text.replace(/\r?\n/g, " ");
   return `<td class="style-view-cell style-view-cell--${key}"><input class="style-field-scroll" type="text" readonly value="${esc(oneLine)}" title="${esc(text)}" aria-label="${esc(key)}"></td>`;
 }
@@ -82,13 +92,8 @@ function createSeparatorRow(skill) {
 
 function createSkillRow(skill) {
   const detail = parseDetail(skill.description);
-  if (String(detail.description || "").startsWith(SEPARATOR_MARKER)) {
-    return createSeparatorRow(skill);
-  }
-  const kind = {
-    none: "なし", normal: "通常", secret: "秘技", ultimate: "奥義", direction: "演出"
-  }[skill.skill_kind] || skill.skill_kind || "";
-
+  if (String(detail.description || "").startsWith(SEPARATOR_MARKER)) return createSeparatorRow(skill);
+  const kind = { none: "なし", normal: "通常", secret: "秘技", ultimate: "奥義", direction: "演出" }[skill.skill_kind] || skill.skill_kind || "";
   return `<tr>
     ${fieldCell(skill.name, "name")}${fieldCell(kind, "kind")}${fieldCell(skill.level, "level")}
     ${SUITS.map(([key,,mark]) => `<td class="style-suit-cell"><span class="style-suit-mark ${skill[key] ? "is-active" : ""}">${mark}</span></td>`).join("")}
@@ -100,68 +105,6 @@ function fitNameFields(section) {
   section.querySelectorAll("textarea.style-skill-name-view").forEach(field => {
     field.style.height = "auto";
     field.style.height = `${Math.max(35, field.scrollHeight + 2)}px`;
-  });
-}
-
-function collapseAllDescriptions(section) {
-  const table = section.querySelector(".style-skill-view-table");
-  const descriptionColumn = table?.querySelector("col.style-col-description");
-  const button = section.querySelector(".style-description-toggle-all");
-  if (!table) return;
-
-  section.querySelectorAll(".style-description-expandable").forEach(field => {
-    field.classList.remove("is-expanded");
-    field.style.removeProperty("height");
-    field.scrollTop = 0;
-    field.scrollLeft = 0;
-    field.closest("tr")?.classList.remove("is-description-expanded");
-  });
-
-  descriptionColumn?.style.removeProperty("width");
-  table.style.removeProperty("min-width");
-  section.classList.remove("is-description-all-expanded");
-
-  if (button) {
-    button.textContent = "全表示";
-    button.setAttribute("aria-pressed", "false");
-    button.setAttribute("aria-label", "すべての解説を表示");
-  }
-}
-
-function expandAllDescriptions(section) {
-  const table = section.querySelector(".style-skill-view-table");
-  const fields = [...section.querySelectorAll(".style-description-expandable")];
-  const button = section.querySelector(".style-description-toggle-all");
-  if (!table || !fields.length) return;
-
-  table.style.removeProperty("min-width");
-  table.querySelector("col.style-col-description")?.style.removeProperty("width");
-  section.classList.add("is-description-all-expanded");
-
-  fields.forEach(field => {
-    field.classList.add("is-expanded");
-    field.style.setProperty("height", "auto", "important");
-    field.closest("tr")?.classList.add("is-description-expanded");
-  });
-  requestAnimationFrame(() => {
-    fields.forEach(field => {
-      field.style.setProperty("height", `${Math.max(35, field.scrollHeight + 2)}px`, "important");
-    });
-  });
-
-  if (button) {
-    button.textContent = "縮小";
-    button.setAttribute("aria-pressed", "true");
-    button.setAttribute("aria-label", "すべての解説を縮小");
-  }
-}
-
-function initializeDescriptionToggle(section) {
-  const button = section.querySelector(".style-description-toggle-all");
-  if (!button) return;
-  button.addEventListener("click", () => {
-    if (section.classList.contains("is-description-all-expanded")) collapseAllDescriptions(section);
-    else expandAllDescriptions(section);
   });
 }
 
@@ -186,8 +129,10 @@ function renderTable(section, skills) {
         <tbody>${skills.map(createSkillRow).join("")}</tbody>
       </table>
     </div>`;
-  if (heading) section.prepend(heading);
-  initializeDescriptionToggle(section);
+  if (heading) {
+    heading.hidden = true;
+    section.prepend(heading);
+  }
   requestAnimationFrame(() => fitNameFields(section));
   document.fonts?.ready.then(() => fitNameFields(section));
 }
@@ -195,37 +140,26 @@ function renderTable(section, skills) {
 async function loadStyleSkills() {
   const publicId = new URLSearchParams(location.search).get("id")?.trim();
   if (!publicId) return [];
-
-  const { data: character, error: characterError } = await supabase
-    .from("characters")
-    .select("id")
-    .eq("public_id", publicId)
-    .maybeSingle();
+  const { data: character, error: characterError } = await supabase.from("characters").select("id").eq("public_id", publicId).maybeSingle();
   if (characterError || !character) return [];
-
-  const { data, error } = await supabase
-    .from("character_skills")
-    .select("*")
-    .eq("character_id", character.id)
-    .eq("category", "style")
-    .order("sort_order");
+  const { data, error } = await supabase.from("character_skills").select("*").eq("character_id", character.id).eq("category", "style").order("sort_order");
   return error ? [] : (data || []);
 }
 
 async function initialize() {
   const skills = await loadStyleSkills();
   if (!skills.length) return;
-
   let tries = 0;
   const timer = window.setInterval(() => {
     const section = findSection();
     if (section) {
       window.clearInterval(timer);
+      ensureDedicatedPanel(section);
       renderTable(section, skills);
       return;
     }
-    if (++tries >= 40) window.clearInterval(timer);
-  }, 100);
+    if (++tries >= 80) window.clearInterval(timer);
+  }, 50);
 }
 
 initialize();
