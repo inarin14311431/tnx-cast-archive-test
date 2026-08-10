@@ -24,12 +24,13 @@
     console.warn("Divine work readings could not be loaded.", error);
   }
 
-  const ready = await waitForRenderedView();
-  if (!ready) return;
-
-  enhanceStyles();
-  enhanceDivines();
-  enhanceStyleSkillPanel();
+  // Each presentation block is independent. A cast with no style skills must
+  // still receive style/divine presentation enhancements.
+  await Promise.all([
+    waitForAndEnhance(enhanceStyles),
+    waitForAndEnhance(enhanceDivines),
+    waitForAndEnhance(enhanceStyleSkillPanel)
+  ]);
 
   function stateFor(mark) {
     const value = String(mark || "").trim();
@@ -50,7 +51,7 @@
   function enhanceStyles() {
     const styles = document.querySelector("#cast-styles");
     const chips = [...document.querySelectorAll("#cast-styles .style-chip")];
-    if (!styles || !chips.length) return;
+    if (!styles || !chips.length) return false;
 
     styles.classList.remove("cast-archetype-grid");
     styles.classList.add("cast-style-grid-simple");
@@ -78,12 +79,13 @@
       delete chip.dataset.archetypeCode;
       delete chip.dataset.archetypeEnhanced;
     });
+    return true;
   }
 
   function enhanceDivines() {
     const panel = document.querySelector(".hero-divine-panel");
     const cards = [...document.querySelectorAll("#divine-list .divine-card")];
-    if (!panel || !cards.length) return;
+    if (!panel || !cards.length) return false;
 
     panel.classList.add("cast-divine-authority");
     const panelHeader = panel.querySelector(":scope > header");
@@ -127,25 +129,24 @@
       yomi.textContent = divineYomiByName.get(divineName) || divineYomiByStyle.get(styleName) || "";
       yomi.hidden = !yomi.textContent;
     });
+    return true;
   }
 
   function enhanceStyleSkillPanel() {
     const panel = document.querySelector("#style-skill-panel");
     const table = panel?.querySelector(".style-skill-view-table");
-    if (!panel || !table) return;
+    if (!panel || !table) return false;
 
     panel.classList.add("cast-style-skill-analysis");
     const heading = panel.querySelector(".data-panel__header h2");
     if (heading) heading.innerHTML = 'スタイル技能 <small>STYLE SKILLS</small>';
+    return true;
   }
 
-  async function waitForRenderedView() {
+  async function waitForAndEnhance(enhancer) {
     const deadline = performance.now() + 8000;
     while (performance.now() < deadline) {
-      const stylesReady = document.querySelectorAll("#cast-styles .style-chip").length > 0;
-      const divinesReady = document.querySelectorAll("#divine-list .divine-card").length > 0;
-      const styleSkillsReady = Boolean(document.querySelector("#style-skill-panel .style-skill-view-table"));
-      if (stylesReady && divinesReady && styleSkillsReady) return true;
+      if (enhancer()) return true;
       await nextFrame();
     }
     return false;
