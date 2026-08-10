@@ -8,7 +8,6 @@ initialize();
 
 function initialize(){
   if(generalArea||styleArea) initializeSheetUi();
-  if(document.querySelector(".cast-content")) initializeCastPanels();
 }
 
 function initializeSheetUi(){
@@ -88,5 +87,3 @@ function updateViewLink(){
   link.removeAttribute("aria-disabled");
   link.removeAttribute("tabindex");
 }
-
-function initializeCastPanels(){const root=document.querySelector("#cast-content");const setup=()=>{document.querySelectorAll("#tab-session .data-panel,#tab-outfits .data-panel,#tab-profile .data-panel").forEach(panel=>{if(panel.dataset.collapseReady)return;const header=panel.querySelector(":scope>.data-panel__header");if(!header)return;header.setAttribute("role","button");header.tabIndex=0;header.setAttribute("aria-expanded","true");const toggle=()=>{const collapsed=panel.classList.toggle("is-collapsed");header.setAttribute("aria-expanded",String(!collapsed));};header.addEventListener("click",toggle);header.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle();}});panel.dataset.collapseReady="1";});};new MutationObserver(setup).observe(root,{childList:true,subtree:true});setup();}
