@@ -1,0 +1,31 @@
+/* Shared armor defense-total emphasis for editor and public cast view. */
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot :is(th, td),
+body[data-page="cast.html"] .cast-armor-total-row > :is(th, td) {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot :is(th, td):first-child,
+body[data-page="cast.html"] .cast-armor-total-row > th:first-child {
+  font-weight: 900 !important;
+  letter-spacing: .04em;
+}
+
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot td:nth-child(2),
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot td:nth-child(3),
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot td:nth-child(4),
+body[data-page="cast.html"] .cast-armor-total-row > .cast-armor-total {
+  color: var(--color-accent) !important;
+  font-family: var(--font-data) !important;
+  font-size: clamp(1.2rem, 1.25vw, 1.55rem) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 38%, transparent);
+}
+
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot td:nth-child(2),
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot td:nth-child(3),
+body[data-page="sheet.html"] .outfit-table-group--armor tfoot td:nth-child(4) {
+  padding-inline: 0 !important;
+}
