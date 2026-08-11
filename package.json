@@ -1,0 +1,9 @@
+{
+  "name": "tnx-cast-archive-test",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check:js": "node --check js/sheet-sidebar-actions.js && node --check js/sheet-import-style-skill-compat.js && node --check js/style-skill-import-integrity-fix.js && node --check js/help-ui.js",
+    "verify": "npm run check:js && npm test"
+  }
+}
