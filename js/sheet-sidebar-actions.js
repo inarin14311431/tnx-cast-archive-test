@@ -2,45 +2,82 @@
   const panel = document.querySelector('.exp-panel');
   if (!panel) return;
 
-  // Export / transfer helpers are available from the cast viewer.
-  // Keep the editor sidebar focused on editing and navigation.
-  const EDITOR_HIDDEN_ACTION = /ココフォリア|ユドナリウム|転記TSV|転記BM/;
+  // Export / transfer helpers belong to the public cast viewer.
+  const VIEWER_ONLY_ACTION = /ココフォリア|ユドナリウム|転記TSV|転記BM/;
+  const LABELS = {
+    view: /キャストを閲覧/,
+    import: /データ取込/,
+    autofill: /SKD・OFC補完|補完/
+  };
+  let arranging = false;
 
-  const removeViewerActions = () => {
+  const labelOf = element => String(element?.textContent || '').replace(/\s+/g, ' ').trim();
+
+  const topLevelChild = element => {
+    let current = element;
+    while (current && current.parentElement && current.parentElement !== panel) current = current.parentElement;
+    return current?.parentElement === panel ? current : null;
+  };
+
+  const findByLabel = pattern => {
+    const candidates = panel.querySelectorAll(':scope > button, :scope > a, :scope > label, :scope > div > button, :scope > div > a');
+    return [...candidates].find(element => pattern.test(labelOf(element))) || null;
+  };
+
+  const removeViewerOnlyActions = () => {
     panel.querySelectorAll(':scope > button, :scope > a, :scope > div > button, :scope > div > a').forEach(element => {
       if (element.matches('#cast-view-button,[data-sheet-help],.sheet-help-trigger')) return;
-      const label = String(element.textContent || '').replace(/\s+/g, ' ').trim();
-      if (EDITOR_HIDDEN_ACTION.test(label)) element.remove();
+      if (VIEWER_ONLY_ACTION.test(labelOf(element))) topLevelChild(element)?.remove();
+    });
+  };
+
+  const reorderActions = () => {
+    const visibility = topLevelChild(document.querySelector('#visibility'));
+    const save = topLevelChild(document.querySelector('#save-button'));
+    const view = topLevelChild(document.querySelector('#cast-view-button') || findByLabel(LABELS.view));
+    const importAction = topLevelChild(document.querySelector('#legacy-import-open') || findByLabel(LABELS.import));
+    const autofill = topLevelChild(findByLabel(LABELS.autofill));
+
+    // Experience summary and section navigation already occupy the top of the rail.
+    // Re-appending only action controls gives the requested stable order below them.
+    const ordered = [visibility, save, view, importAction, autofill].filter(Boolean);
+    const seen = new Set();
+    ordered.forEach(element => {
+      if (seen.has(element)) return;
+      seen.add(element);
+      panel.append(element);
     });
   };
 
   const GROUP_COLORS = {
-    a: '#70efa9',
-    b: '#35d7ff'
+    save: '#70efa9',
+    action: '#35d7ff'
   };
 
   const classify = () => {
-    removeViewerActions();
-    panel.querySelectorAll(':scope > button, :scope > a.sheet-view-link, :scope > .sheet-import-control > button').forEach(element => {
-      const label = String(element.textContent || '').replace(/\s+/g, ' ').trim();
-      let group = '';
+    if (arranging) return;
+    arranging = true;
+    try {
+      removeViewerOnlyActions();
+      reorderActions();
+      panel.querySelectorAll(':scope > button, :scope > a.sheet-view-link, :scope > .sheet-import-control > button').forEach(element => {
+        const label = labelOf(element);
+        let group = '';
+        if (element.id === 'save-button' || /保存済み|未保存|保存中|保存失敗/.test(label)) group = 'save';
+        else if (/キャストを閲覧|データ取込|SKD・OFC補完/.test(label)) group = 'action';
 
-      if (element.id === 'save-button' || /保存済み|未保存|保存中|保存失敗/.test(label)) {
-        group = 'a';
-      } else if (/キャストを閲覧|データ取込|SKD・OFC補完/.test(label)) {
-        group = 'b';
-      }
-
-      if (!group) {
-        delete element.dataset.actionGroup;
-        element.style.removeProperty('--action-rail');
-        element.style.removeProperty('border-left-color');
-        return;
-      }
-
-      element.dataset.actionGroup = group;
-      element.style.setProperty('--action-rail', GROUP_COLORS[group]);
-    });
+        if (!group) {
+          delete element.dataset.actionGroup;
+          element.style.removeProperty('--action-rail');
+          element.style.removeProperty('border-left-color');
+          return;
+        }
+        element.dataset.actionGroup = group;
+        element.style.setProperty('--action-rail', GROUP_COLORS[group]);
+      });
+    } finally {
+      arranging = false;
+    }
   };
 
   classify();
