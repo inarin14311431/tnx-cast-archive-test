@@ -10,7 +10,7 @@
 @import url("./foundation/typography.css");
 @import url("./layout/app-shell.css");
 @import url("./layout/page.css");
-@import url("./components/buttons.css?v=4");
+@import url("./components/buttons.css?v=5");
 @import url("./components/forms.css?v=2");
 @import url("./components/panel.css");
 @import url("./components/table.css");
