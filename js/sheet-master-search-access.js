@@ -1,4 +1,5 @@
 import { supabase } from "./supabase-client.js";
+import "./outfit-ofc-save.js";
 
 const selectors = ["#search-skd-master", "#search-ofc-master"];
 const buttons = selectors.map(selector => document.querySelector(selector)).filter(Boolean);
