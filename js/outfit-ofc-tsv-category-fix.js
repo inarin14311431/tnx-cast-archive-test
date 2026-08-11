@@ -1,2 +1,2 @@
-/* Compatibility bridge. OFC TSV category normalization now lives in a named module. */
-import("./outfit-ofc-tsv-category-normalize.js");
+/* Retired compatibility placeholder.
+ * OFC TSV category normalization is loaded directly by sheet-master-search-access.js. */
