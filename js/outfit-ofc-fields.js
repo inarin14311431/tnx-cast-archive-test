@@ -2,15 +2,6 @@ import { supabase } from "./supabase-client.js";
 
 const MASTER_TABLE = "ofc_master";
 const ROOT_SELECTOR = "#outfit-list";
-const TSV_EXTRA_HEADERS = [
-  "page_number", "major_category", "minor_category", "manufacturer",
-  "parry", "speed", "control_value", "electronic_control",
-  "defense_s", "defense_p", "defense_i",
-  "ianus_surface", "ianus_deep", "ianus_none",
-  "tron_software", "tron_support", "tron_hardware",
-  "cs_value", "crew", "sf",
-  "residence_entry", "residence_electric", "residence_area"
-];
 
 const FIELD_DEFINITIONS = {
   page_number: ["参照P", "SOURCE PAGE"],
@@ -69,8 +60,6 @@ async function initialize() {
   document.addEventListener("input", handleDetailInput, true);
   document.addEventListener("change", handleDetailInput, true);
   document.addEventListener("click", handlePreAction, true);
-  document.addEventListener("click", handleMasterCopy, true);
-  document.addEventListener("click", handleTsvImport, true);
 
   try {
     await loadStoredDetails();
@@ -268,52 +257,6 @@ async function applyMasterRowsAfterBaseAdd(ids, before) {
   }
 }
 
-async function handleMasterCopy(event) {
-  const button = event.target.closest?.("#master-search-copy");
-  if (!button || !isOfcMasterDialog()) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-
-  const ids = selectedMasterIds();
-  if (!ids.length) return;
-  button.disabled = true;
-  setMasterStatus("OFC全項目TSVを生成しています…", "loading");
-  try {
-    const rows = await fetchMasterRows(ids);
-    const ordered = ids.map(id => rows.find(row => String(row.id) === id)).filter(Boolean);
-    await navigator.clipboard.writeText(createFullOfcTsv(ordered));
-    setMasterStatus(`${ordered.length}件のOFC全項目TSVをコピーしました。`, "success");
-  } catch (error) {
-    console.error(error);
-    setMasterStatus("OFC全項目TSVのコピーに失敗しました。", "error");
-  } finally {
-    button.disabled = false;
-  }
-}
-
-function handleTsvImport(event) {
-  const button = event.target.closest?.("#tsv-apply");
-  if (!button) return;
-  const title = document.querySelector("#tsv-title")?.textContent || "";
-  if (!/OFC/i.test(title)) return;
-  const rows = parseTsv(document.querySelector("#tsv-text")?.value || "");
-  if (!rows.length || !rows.some(row => TSV_EXTRA_HEADERS.some(header => row[header]))) return;
-
-  const before = new Set(getOutfitRows().map(row => row.dataset.outfitKey));
-  window.setTimeout(async () => {
-    const newRows = await waitForNewOutfitRows(before, rows.length, 4000);
-    queueEnhance();
-    await wait(60);
-    const available = [...newRows];
-    for (const source of rows) {
-      const category = targetToCategory(source.target);
-      const index = available.findIndex(row => rowSignature(row) === outfitSignature(category, source.name));
-      const row = index >= 0 ? available.splice(index, 1)[0] : available.shift();
-      if (row) setDetailsOnRow(row, tsvRowDetails(source));
-    }
-  }, 0);
-}
-
 function setDetailsOnRow(row, source) {
   const key = row.dataset.outfitKey || "";
   const details = normalizeDetails(source);
@@ -441,79 +384,6 @@ function masterRowDetails(row) {
   });
 }
 
-function createFullOfcTsv(rows) {
-  const headers = [
-    "target", "name", "purchase", "permanent", "concealA", "concealB",
-    "attack", "defense", "range", "part", "notes", ...TSV_EXTRA_HEADERS
-  ];
-  const values = rows.map(row => {
-    const detail = masterRowDetails(row);
-    return [
-      categoryToTarget(row.site_category),
-      row.name,
-      detail.purchase_target,
-      detail.permanent_cost,
-      detail.concealment,
-      detail.concealment_penalty,
-      detail.attack,
-      defenseText(detail),
-      detail.range_text,
-      detail.slot,
-      detail.description,
-      ...TSV_EXTRA_HEADERS.map(header => detail[header] || "")
-    ];
-  });
-  return toTsv(headers, values);
-}
-
-function tsvRowDetails(row) {
-  const details = {};
-  for (const header of TSV_EXTRA_HEADERS) details[header] = row[header] || "";
-  return compactDetails({
-    ...details,
-    purchase_target: row.purchase,
-    permanent_cost: row.permanent,
-    concealment: row.concealA,
-    concealment_penalty: row.concealment_penalty || row.concealB,
-    attack: row.attack,
-    range_text: row.range,
-    slot: row.part,
-    description: row.notes,
-    ...parseDefense(row.defense)
-  });
-}
-
-function parseTsv(text) {
-  const lines = String(text || "").replace(/\r/g, "").trim().split("\n").filter(Boolean);
-  if (!lines.length) return [];
-  const headers = lines.shift().split("\t").map(value => value.trim());
-  return lines.map(line => {
-    const cells = line.split("\t");
-    return Object.fromEntries(headers.map((header, index) => [header, String(cells[index] || "").replace(/\\n/g, "\n")]));
-  });
-}
-
-function toTsv(headers, rows) {
-  const clean = value => String(value ?? "").replace(/\r\n?/g, "\n").replace(/\n/g, "\\n").replace(/\t/g, " ");
-  return [headers, ...rows].map(row => row.map(clean).join("\t")).join("\n");
-}
-
-function categoryToTarget(category) {
-  return ({ weapon: "weapons", armor: "armours", vehicle: "vehicles", residence: "residences" })[category] || "outfits";
-}
-
-function targetToCategory(target) {
-  const key = String(target || "").trim().toLowerCase();
-  return ({
-    weapons: "weapon", weapon: "weapon", "武器": "weapon",
-    armours: "armor", armors: "armor", armor: "armor", "防具": "armor",
-    vehicles: "vehicle", vehicle: "vehicle", "ヴィークル": "vehicle",
-    residences: "residence", residence: "residence", "住居": "residence", "住宅": "residence",
-    cyberware: "cyberware", cyberwares: "cyberware", "サイバーウェア": "cyberware",
-    tron: "tron", trons: "tron", "トロン": "tron"
-  })[key] || "other";
-}
-
 function parseDefense(value) {
   const text = String(value || "").trim();
   const output = { defense_s: "", defense_p: "", defense_i: "" };
@@ -526,14 +396,6 @@ function parseDefense(value) {
   if (parts.length > 1) output.defense_i = parts[1] || "";
   if (parts.length > 2) output.defense_p = parts[2] || "";
   return output;
-}
-
-function defenseText(details) {
-  return [
-    details.defense_s !== "" && details.defense_s != null ? `S${details.defense_s}` : "",
-    details.defense_p !== "" && details.defense_p != null ? `P${details.defense_p}` : "",
-    details.defense_i !== "" && details.defense_i != null ? `I${details.defense_i}` : ""
-  ].filter(Boolean).join("/");
 }
 
 function parseLegacyDescription(text) {
@@ -565,13 +427,6 @@ function normalizeDetails(value) {
 function compactDetails(value) {
   const normalized = normalizeDetails(value);
   return Object.fromEntries(Object.entries(normalized).filter(([, item]) => item !== ""));
-}
-
-function setMasterStatus(message, state = "") {
-  const element = document.querySelector("#master-search-status");
-  if (!element) return;
-  element.textContent = message;
-  element.className = state ? `is-${state}` : "";
 }
 
 async function waitForNewOutfitRows(before, expected, timeout) {
