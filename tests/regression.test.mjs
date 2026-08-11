@@ -24,9 +24,12 @@ test('editor help is exposed through one global trigger', async () => {
   assert.doesNotMatch(source, /installSidebarHelp|installSectionHelp|installImageHelp|installComboHelp/);
 });
 
-test('retired JSON repair shim is no longer loaded', async () => {
+test('retired compatibility scripts are no longer loaded', async () => {
   const html = await read('sheet.html');
   assert.doesNotMatch(html, /sheet-json-import-repair\.js/);
+  assert.doesNotMatch(html, /style-skill-recovery\.js/);
+  assert.doesNotMatch(html, /style-skill-import-integrity-fix\.js/);
+  assert.match(html, /style-skill-detail-integrity\.js/);
 });
 
 test('style import compatibility owns JSON repair and preserves symbols', async () => {
@@ -38,10 +41,6 @@ test('style import compatibility owns JSON repair and preserves symbols', async 
 });
 
 test('style detail integrity is separated from import compatibility', async () => {
-  const bridge = await read('js/style-skill-import-integrity-fix.js');
-  assert.match(bridge, /style-skill-detail-integrity\.js/);
-  assert.doesNotMatch(bridge, /decodeDetail|repairRow|MutationObserver/);
-
   const source = await read('js/style-skill-detail-integrity.js');
   assert.match(source, /structured style-skill detail payloads canonical/);
   assert.match(source, /function decodeDetail/);
@@ -49,10 +48,9 @@ test('style detail integrity is separated from import compatibility', async () =
   assert.doesNotMatch(source, /legacy-import-message|removeUnexpectedRows|TNXLegacyStyleSkillRepair/);
 });
 
-test('zero style skills remain a valid editor state', async () => {
-  const source = await read('js/style-skill-recovery.js');
-  assert.doesNotMatch(source, /MutationObserver|setTimeout|requestAnimationFrame|\.click\(/);
-  assert.match(source, /zero style skills is a valid/);
+test('zero style skills remain a valid editor state without recovery shim', async () => {
+  const html = await read('sheet.html');
+  assert.doesNotMatch(html, /style-skill-recovery\.js/);
 
   const sheet = await read('js/sheet.js');
   assert.match(sheet, /#add-style-skill/);
