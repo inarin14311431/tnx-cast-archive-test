@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client.js";
+import { cssEscape, getOutfitRows, outfitSignature, rowSignature } from "./outfit-ofc-utils.js";
 
 const MASTER_TABLE = "ofc_master";
-const ROOT_SELECTOR = "#outfit-list";
 
 document.addEventListener("click", handleMasterAdd, true);
 
@@ -106,23 +106,6 @@ function masterRowDetails(row) {
   });
 }
 
-function getOutfitRows() {
-  return [...document.querySelectorAll(`${ROOT_SELECTOR} .outfit-table-row[data-outfit-key],${ROOT_SELECTOR} .outfit-card[data-outfit-key]`)]
-    .filter((row, index, array) => array.findIndex(other => other.dataset.outfitKey === row.dataset.outfitKey) === index);
-}
-
-function rowSignature(row) {
-  return outfitSignature(valueOf(row, "category") || row.closest("table")?.dataset.outfitSchema || "other", valueOf(row, "name"));
-}
-
-function outfitSignature(category, name) {
-  return `${String(category || "other").trim()}\u0000${String(name || "").trim()}`;
-}
-
-function valueOf(row, field) {
-  return row?.querySelector(`[data-o="${cssEscape(field)}"]`)?.value ?? "";
-}
-
 function compactDetails(value) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   return Object.fromEntries(Object.entries(source)
@@ -151,8 +134,4 @@ async function waitForOfcFields(row, timeout) {
 
 function wait(milliseconds) {
   return new Promise(resolve => window.setTimeout(resolve, milliseconds));
-}
-
-function cssEscape(value) {
-  return window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/(["\\])/g, "\\$1");
 }
