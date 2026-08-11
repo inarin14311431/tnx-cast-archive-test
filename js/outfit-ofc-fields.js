@@ -1,4 +1,12 @@
 import { supabase } from "./supabase-client.js";
+import {
+  cssEscape,
+  getOutfitRows,
+  outfitSignature,
+  parseDefense,
+  rowSignature,
+  valueOf
+} from "./outfit-ofc-utils.js";
 
 const ROOT_SELECTOR = "#outfit-list";
 
@@ -261,37 +269,6 @@ function snapshotDetailQueues() {
   return queues;
 }
 
-function getOutfitRows() {
-  return [...document.querySelectorAll(`${ROOT_SELECTOR} .outfit-table-row[data-outfit-key],${ROOT_SELECTOR} .outfit-card[data-outfit-key]`)]
-    .filter((row, index, array) => array.findIndex(other => other.dataset.outfitKey === row.dataset.outfitKey) === index);
-}
-
-function rowSignature(row) {
-  return outfitSignature(valueOf(row, "category") || row.closest("table")?.dataset.outfitSchema || "other", valueOf(row, "name"));
-}
-
-function outfitSignature(category, name) {
-  return `${String(category || "other").trim()}\u0000${String(name || "").trim()}`;
-}
-
-function valueOf(row, field) {
-  return row?.querySelector(`[data-o="${cssEscape(field)}"]`)?.value ?? "";
-}
-
-function parseDefense(value) {
-  const text = String(value || "").trim();
-  const output = { defense_s: "", defense_p: "", defense_i: "" };
-  for (const match of text.matchAll(/\b([SPI])\s*[:：]?\s*([^/／,，\s]+)/gi)) {
-    output[`defense_${match[1].toLowerCase()}`] = match[2];
-  }
-  if (Object.values(output).some(Boolean)) return output;
-  const parts = text.split(/[\/／,，\s]+/).filter(Boolean);
-  if (parts.length) output.defense_s = parts[0] || "";
-  if (parts.length > 1) output.defense_i = parts[1] || "";
-  if (parts.length > 2) output.defense_p = parts[2] || "";
-  return output;
-}
-
 function parseLegacyDescription(text) {
   const map = {
     "メーカー": "manufacturer", "大分類": "major_category", "小分類": "minor_category",
@@ -321,8 +298,4 @@ function normalizeDetails(value) {
 function compactDetails(value) {
   const normalized = normalizeDetails(value);
   return Object.fromEntries(Object.entries(normalized).filter(([, item]) => item !== ""));
-}
-
-function cssEscape(value) {
-  return window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/(["\\])/g, "\\$1");
 }
