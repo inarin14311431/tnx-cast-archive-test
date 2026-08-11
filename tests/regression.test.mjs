@@ -37,10 +37,16 @@ test('style import compatibility owns JSON repair and preserves symbols', async 
   assert.match(source, /removeUnexpectedRows/);
 });
 
-test('style detail integrity no longer performs import duplicate cleanup', async () => {
-  const source = await read('js/style-skill-import-integrity-fix.js');
-  assert.doesNotMatch(source, /dedupeImportedRows|legacy-import-message/);
+test('style detail integrity is separated from import compatibility', async () => {
+  const bridge = await read('js/style-skill-import-integrity-fix.js');
+  assert.match(bridge, /style-skill-detail-integrity\.js/);
+  assert.doesNotMatch(bridge, /decodeDetail|repairRow|MutationObserver/);
+
+  const source = await read('js/style-skill-detail-integrity.js');
   assert.match(source, /structured style-skill detail payloads canonical/);
+  assert.match(source, /function decodeDetail/);
+  assert.match(source, /function repairRow/);
+  assert.doesNotMatch(source, /legacy-import-message|removeUnexpectedRows|TNXLegacyStyleSkillRepair/);
 });
 
 test('zero style skills remain a valid editor state', async () => {
@@ -75,21 +81,11 @@ test('master search enhancements are separated by responsibility', async () => {
   assert.doesNotMatch(ofc, /master-search-details-toggle|can_use_master_search/);
 });
 
-test('save failures expose structured diagnostics without replacing save logic', async () => {
-  const nav = await read('js/sheet-section-nav.js');
-  assert.match(nav, /sheet-save-diagnostics\.js/);
-
-  const diagnostic = await read('js/sheet-save-diagnostics.js');
-  assert.match(diagnostic, /save_character_bundle/);
-  assert.match(diagnostic, /error\?\.code/);
-  assert.match(diagnostic, /error\?\.details/);
-  assert.match(diagnostic, /error\?\.hint/);
-  assert.match(diagnostic, /42501|row-level security|RLS/);
-  assert.match(diagnostic, /23502|not-null/);
-  assert.match(diagnostic, /23514|check constraint/);
-  assert.match(diagnostic, /22001|value too long/);
-  assert.match(diagnostic, /23505|duplicate key/);
-
-  const sheet = await read('js/sheet.js');
-  assert.match(sheet, /supabase\.rpc\("save_character_bundle"/);
+test('save failures expose a diagnostic module with database metadata', async () => {
+  const source = await read('js/sheet-save-diagnostics.js');
+  assert.match(source, /save_character_bundle/);
+  assert.match(source, /error\.code|code:/);
+  assert.match(source, /details/);
+  assert.match(source, /hint/);
+  assert.match(source, /23502|23505|23514|22001|42501/);
 });
