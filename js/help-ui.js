@@ -9,9 +9,11 @@ function initializeSheetHelp() {
   document.body.append(dialog);
 
   installSidebarHelp();
+  installSectionHelp("sheet-skills", "editing");
   installSectionHelp("sheet-style-skills", "styleSkills");
   installSectionHelp("sheet-outfits", "outfits");
-  installImportHelp();
+  installImageHelp();
+  installComboHelp();
 
   document.addEventListener("click", event => {
     const trigger = event.target.closest("[data-sheet-help]");
@@ -64,7 +66,7 @@ function ensureHelpStyles() {
   if (document.querySelector('link[data-sheet-help-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/components/help.css?v=1";
+  link.href = "./css-next/components/help.css?v=2";
   link.dataset.sheetHelpStyle = "1";
   document.head.append(link);
 }
@@ -77,7 +79,7 @@ function createDialog() {
   dialog.innerHTML = `
     <div class="sheet-help-dialog__shell">
       <header class="sheet-help-dialog__header">
-        <div><span>EDITOR HELP</span><strong id="sheet-help-title">ヘルプ</strong></div>
+        <div><span>WEB APP GUIDE</span><strong id="sheet-help-title">ヘルプ</strong></div>
         <button type="button" class="sheet-help-dialog__close" data-help-close aria-label="ヘルプを閉じる">×</button>
       </header>
       <div class="sheet-help-dialog__layout">
@@ -96,22 +98,28 @@ function createDialog() {
 function installSidebarHelp() {
   const visibility = document.querySelector("#visibility")?.closest("label");
   const save = document.querySelector("#save-button");
-  if (!visibility || !save || document.querySelector('[data-help-placement="save"]')) return;
-  const button = helpButton("save", "公開・保存のHELP");
-  button.dataset.helpPlacement = "save";
+  if (!visibility || !save || document.querySelector('[data-help-placement="sidebar"]')) return;
   const wrap = document.createElement("div");
   wrap.className = "sheet-sidebar-help-row";
-  wrap.append(button);
+  wrap.dataset.helpPlacement = "sidebar";
+  wrap.append(
+    helpButton("save", "保存と閲覧のHELP"),
+    helpButton("viewing", "閲覧画面のHELP")
+  );
   visibility.before(wrap);
 }
 
-function installImportHelp() {
-  const target = document.querySelector("#legacy-import-open");
-  if (!target || target.parentElement?.querySelector('[data-help-placement="import"]')) return;
-  target.classList.add("has-inline-help");
-  const button = helpButton("import", "データ取込のHELP");
-  button.dataset.helpPlacement = "import";
-  target.insertAdjacentElement("afterend", button);
+function installImageHelp() {
+  const header = document.querySelector(".sheet-image-editor__header");
+  if (!header || header.querySelector('[data-sheet-help="image"]')) return;
+  header.append(helpButton("image", "キャスト画像のHELP"));
+}
+
+function installComboHelp() {
+  const toolbar = document.querySelector("#sheet-combo-entry .toolbar");
+  if (!toolbar || toolbar.querySelector('[data-sheet-help="combos"]')) return;
+  toolbar.append(helpButton("combos", "コンボ／技能カウンターのHELP"));
+  toolbar.classList.add("toolbar--with-help");
 }
 
 function installSectionHelp(sectionId, key) {
