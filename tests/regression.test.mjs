@@ -42,3 +42,13 @@ test('style detail integrity no longer performs import duplicate cleanup', async
   assert.doesNotMatch(source, /dedupeImportedRows|legacy-import-message/);
   assert.match(source, /structured style-skill detail payloads canonical/);
 });
+
+test('zero style skills remain a valid editor state', async () => {
+  const source = await read('js/style-skill-recovery.js');
+  assert.doesNotMatch(source, /MutationObserver|setTimeout|requestAnimationFrame|\.click\(/);
+  assert.match(source, /zero style skills is a valid/);
+
+  const sheet = await read('js/sheet.js');
+  assert.match(sheet, /#add-style-skill/);
+  assert.match(sheet, /addSkill\("style", "normal", ""\)/);
+});
