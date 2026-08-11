@@ -1,7 +1,5 @@
 import { supabase } from "./supabase-client.js";
 
-const BASE_SAVE_RPC = "save_character_bundle";
-const OFC_SAVE_RPC = "save_character_bundle_with_ofc";
 const MASTER_TABLE = "ofc_master";
 const ROOT_SELECTOR = "#outfit-list";
 const TSV_EXTRA_HEADERS = [
@@ -64,7 +62,6 @@ let detailsReady = false;
 initialize();
 
 async function initialize() {
-  wrapSaveRpc();
   const root = document.querySelector(ROOT_SELECTOR);
   if (!root) return;
 
@@ -81,40 +78,6 @@ async function initialize() {
     detailsReady = true;
     queueEnhance();
   }
-}
-
-function wrapSaveRpc() {
-  if (supabase.__tnxOfcSaveWrapped) return;
-  const originalRpc = supabase.rpc.bind(supabase);
-  Object.defineProperty(supabase, "__tnxOfcSaveWrapped", { value: true });
-  supabase.rpc = (functionName, args = {}, options) => {
-    if (functionName !== BASE_SAVE_RPC) return originalRpc(functionName, args, options);
-    const enriched = {
-      ...args,
-      p_outfits: enrichOutfitPayload(Array.isArray(args?.p_outfits) ? args.p_outfits : [])
-    };
-    return originalRpc(OFC_SAVE_RPC, enriched, options);
-  };
-}
-
-function enrichOutfitPayload(items) {
-  const rows = getOutfitRows();
-  const queues = rowsBySignature(rows);
-  const used = new Set();
-
-  return items.map((item, index) => {
-    const signature = outfitSignature(item.category, item.name);
-    const queue = queues.get(signature) || [];
-    let row = queue.find(candidate => !used.has(candidate));
-    if (!row) row = rows.find(candidate => !used.has(candidate));
-    if (row) used.add(row);
-
-    return {
-      ...item,
-      sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
-      ofc_details: row ? collectDetails(row) : normalizeDetails(item.ofc_details || {})
-    };
-  });
 }
 
 async function loadStoredDetails() {
@@ -408,16 +371,6 @@ function snapshotDetailQueues() {
 function getOutfitRows() {
   return [...document.querySelectorAll(`${ROOT_SELECTOR} .outfit-table-row[data-outfit-key],${ROOT_SELECTOR} .outfit-card[data-outfit-key]`)]
     .filter((row, index, array) => array.findIndex(other => other.dataset.outfitKey === row.dataset.outfitKey) === index);
-}
-
-function rowsBySignature(rows) {
-  const queues = new Map();
-  for (const row of rows) {
-    const signature = rowSignature(row);
-    if (!queues.has(signature)) queues.set(signature, []);
-    queues.get(signature).push(row);
-  }
-  return queues;
 }
 
 function rowSignature(row) {
