@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check:js": "node --check js/sheet-sidebar-actions.js && node --check js/sheet-import-style-skill-compat.js && node --check js/style-skill-detail-integrity.js && node --check js/help-ui.js && node --check js/outfit-ofc-utils.js && node --check js/outfit-ofc-save.js && node --check js/outfit-ofc-fields.js && node --check js/outfit-ofc-tsv.js && node --check js/outfit-ofc-master-apply.js && node --check js/outfit-ofc-tsv-category-normalize.js && node --check js/sheet-master-search-auto-run.js",
+    "check:js": "node --check js/sheet-sidebar-actions.js && node --check js/sheet-import-style-skill-compat.js && node --check js/style-skill-detail-integrity.js && node --check js/help-ui.js && node --check js/sheet-save-diagnostics.js && node --check js/sheet-master-search.js && node --check js/sheet-master-search-access.js && node --check js/sheet-master-search-enhancements.js && node --check js/sheet-master-search-result-ui.js && node --check js/sheet-master-search-ofc-normalize.js && node --check js/sheet-master-search-bs-tooltips.js && node --check js/sheet-master-search-auto-run.js && node --check js/sheet-master-search-filters.js && node --check js/sheet-master-autofill.js && node --check js/outfit-ofc-utils.js && node --check js/outfit-ofc-save.js && node --check js/outfit-ofc-fields.js && node --check js/outfit-ofc-tsv.js && node --check js/outfit-ofc-master-apply.js && node --check js/outfit-ofc-tsv-category-normalize.js",
     "verify": "npm run check:js && npm test"
   }
 }
