@@ -1,3 +1,5 @@
+import { cssEscape, targetToCategory, valueOf } from "./outfit-ofc-utils.js";
+
 const ROOT_SELECTOR = "#outfit-list";
 
 initialize();
@@ -13,7 +15,7 @@ function handleImport(event) {
   const sources = parseTsv(document.querySelector("#tsv-text")?.value || "")
     .map(row => ({
       name: String(row.name || "").trim(),
-      category: targetToCategory(row.target, row.major_category)
+      category: resolveCategory(row.target, row.major_category)
     }))
     .filter(row => row.name && ["cyberware", "tron"].includes(row.category));
   if (!sources.length) return;
@@ -57,10 +59,6 @@ async function waitForRows(before, expected, timeout) {
   return currentRows().filter(row => !before.has(row.dataset.outfitKey));
 }
 
-function valueOf(row, field) {
-  return row?.querySelector(`[data-o="${cssEscape(field)}"]`)?.value || "";
-}
-
 function parseTsv(text) {
   const lines = String(text || "").replace(/\r/g, "").trim().split("\n").filter(Boolean);
   if (!lines.length) return [];
@@ -71,13 +69,9 @@ function parseTsv(text) {
   });
 }
 
-function targetToCategory(target, majorCategory) {
-  const key = String(target || "").trim().toLowerCase();
-  const explicit = ({
-    cyberware: "cyberware", cyberwares: "cyberware", "サイバーウェア": "cyberware",
-    tron: "tron", trons: "tron", "トロン": "tron"
-  })[key];
-  if (explicit) return explicit;
+function resolveCategory(target, majorCategory) {
+  const explicit = targetToCategory(target);
+  if (explicit !== "other") return explicit;
 
   const major = String(majorCategory || "").normalize("NFKC");
   if (/サイバーウェア|サイバー|IANUS|義体|義肢/i.test(major)) return "cyberware";
@@ -87,8 +81,4 @@ function targetToCategory(target, majorCategory) {
 
 function wait(milliseconds) {
   return new Promise(resolve => window.setTimeout(resolve, milliseconds));
-}
-
-function cssEscape(value) {
-  return window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/(["\\])/g, "\\$1");
 }
