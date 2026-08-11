@@ -38,4 +38,5 @@
   setActive(sectionIds.includes(location.hash.slice(1)) ? location.hash.slice(1) : sectionIds[0]);
 
   import("./help-ui.js?v=3").catch(error => console.warn("Editor help could not be initialized.", error));
+  import("./sheet-save-diagnostics.js?v=1").catch(error => console.warn("Save diagnostics could not be initialized.", error));
 })();
