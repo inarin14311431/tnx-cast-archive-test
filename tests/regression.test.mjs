@@ -10,6 +10,14 @@ test('editor sidebar removes viewer-only transfer actions', async () => {
   assert.match(source, /const ordered = \[visibility, save, view, importAction, autofill\]/);
 });
 
+test('editor sidebar reorder is idempotent and does not observe its own attributes', async () => {
+  const source = await read('js/sheet-sidebar-actions.js');
+  assert.match(source, /current\.length === ordered\.length/);
+  assert.match(source, /current\.every\(\(child, index\) => child === ordered\[index\]\)/);
+  assert.doesNotMatch(source, /attributeFilter:\s*\['hidden', 'class', 'id'\]/);
+  assert.match(source, /new MutationObserver\(queueArrange\)\.observe\(panel, \{\s*childList: true,\s*subtree: true\s*\}\)/s);
+});
+
 test('editor help is exposed through one global trigger', async () => {
   const source = await read('js/help-ui.js');
   assert.match(source, /sheet-global-help/);
