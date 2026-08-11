@@ -1,7 +1,16 @@
 import { supabase } from "./supabase-client.js";
+import {
+  categoryToTarget,
+  cssEscape,
+  defenseText,
+  getOutfitRows,
+  outfitSignature,
+  parseDefense,
+  rowSignature,
+  targetToCategory
+} from "./outfit-ofc-utils.js";
 
 const MASTER_TABLE = "ofc_master";
-const ROOT_SELECTOR = "#outfit-list";
 const TSV_EXTRA_HEADERS = [
   "page_number", "major_category", "minor_category", "manufacturer",
   "parry", "speed", "control_value", "electronic_control",
@@ -70,26 +79,6 @@ function applyDetailsToRow(row, details) {
       input.dispatchEvent(new Event("change", { bubbles: true }));
     }
   });
-}
-
-function getOutfitRows() {
-  return [...document.querySelectorAll(`${ROOT_SELECTOR} .outfit-table-row[data-outfit-key],${ROOT_SELECTOR} .outfit-card[data-outfit-key]`)]
-    .filter((row, index, array) => array.findIndex(other => other.dataset.outfitKey === row.dataset.outfitKey) === index);
-}
-
-function rowSignature(row) {
-  return outfitSignature(
-    valueOf(row, "category") || row.closest("table")?.dataset.outfitSchema || "other",
-    valueOf(row, "name")
-  );
-}
-
-function outfitSignature(category, name) {
-  return `${String(category || "other").trim()}\u0000${String(name || "").trim()}`;
-}
-
-function valueOf(row, field) {
-  return row?.querySelector(`[data-o="${cssEscape(field)}"]`)?.value ?? "";
 }
 
 function selectedMasterIds() {
@@ -197,44 +186,6 @@ function toTsv(headers, rows) {
   return [headers, ...rows].map(row => row.map(clean).join("\t")).join("\n");
 }
 
-function categoryToTarget(category) {
-  return ({ weapon: "weapons", armor: "armours", vehicle: "vehicles", residence: "residences" })[category] || "outfits";
-}
-
-function targetToCategory(target) {
-  const key = String(target || "").trim().toLowerCase();
-  return ({
-    weapons: "weapon", weapon: "weapon", "武器": "weapon",
-    armours: "armor", armors: "armor", armor: "armor", "防具": "armor",
-    vehicles: "vehicle", vehicle: "vehicle", "ヴィークル": "vehicle",
-    residences: "residence", residence: "residence", "住居": "residence", "住宅": "residence",
-    cyberware: "cyberware", cyberwares: "cyberware", "サイバーウェア": "cyberware",
-    tron: "tron", trons: "tron", "トロン": "tron"
-  })[key] || "other";
-}
-
-function parseDefense(value) {
-  const text = String(value || "").trim();
-  const output = { defense_s: "", defense_p: "", defense_i: "" };
-  for (const match of text.matchAll(/\b([SPI])\s*[:：]?\s*([^/／,，\s]+)/gi)) {
-    output[`defense_${match[1].toLowerCase()}`] = match[2];
-  }
-  if (Object.values(output).some(Boolean)) return output;
-  const parts = text.split(/[\/／,，\s]+/).filter(Boolean);
-  if (parts.length) output.defense_s = parts[0] || "";
-  if (parts.length > 1) output.defense_i = parts[1] || "";
-  if (parts.length > 2) output.defense_p = parts[2] || "";
-  return output;
-}
-
-function defenseText(details) {
-  return [
-    details.defense_s !== "" && details.defense_s != null ? `S${details.defense_s}` : "",
-    details.defense_p !== "" && details.defense_p != null ? `P${details.defense_p}` : "",
-    details.defense_i !== "" && details.defense_i != null ? `I${details.defense_i}` : ""
-  ].filter(Boolean).join("/");
-}
-
 function compactDetails(value) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   return Object.fromEntries(Object.entries(source).map(([key, item]) => [key, String(item ?? "")]).filter(([, item]) => item !== ""));
@@ -259,8 +210,4 @@ async function waitForNewOutfitRows(before, expected, timeout) {
 
 function wait(milliseconds) {
   return new Promise(resolve => window.setTimeout(resolve, milliseconds));
-}
-
-function cssEscape(value) {
-  return window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/(["\\])/g, "\\$1");
 }
