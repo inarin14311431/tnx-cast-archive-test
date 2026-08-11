@@ -5,22 +5,13 @@ if (page === "sheet.html") initializeSheetHelp();
 
 function initializeSheetHelp() {
   ensureHelpStyles();
+  removeLegacyHelpTriggers();
+
   const dialog = createDialog();
-  document.body.append(dialog);
+  const trigger = createGlobalHelpButton();
+  document.body.append(dialog, trigger);
 
-  installSidebarHelp();
-  installSectionHelp("sheet-skills", "editing");
-  installSectionHelp("sheet-style-skills", "styleSkills");
-  installSectionHelp("sheet-outfits", "outfits");
-  installImageHelp();
-  installComboHelp();
-
-  document.addEventListener("click", event => {
-    const trigger = event.target.closest("[data-sheet-help]");
-    if (!trigger) return;
-    event.preventDefault();
-    openHelp(trigger.dataset.sheetHelp || "save");
-  });
+  trigger.addEventListener("click", () => openHelp("save"));
 
   dialog.addEventListener("click", event => {
     const topicButton = event.target.closest("[data-help-topic]");
@@ -29,10 +20,7 @@ function initializeSheetHelp() {
       return;
     }
     if (event.target.matches("[data-help-close]")) dialog.close();
-  });
-
-  dialog.addEventListener("click", event => {
-    if (event.target === dialog) dialog.close();
+    else if (event.target === dialog) dialog.close();
   });
 
   function openHelp(key) {
@@ -50,6 +38,7 @@ function initializeSheetHelp() {
       if (active) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");
     });
+
     const title = dialog.querySelector("#sheet-help-title");
     const body = dialog.querySelector(".sheet-help-dialog__content");
     title.innerHTML = `${escapeHtml(topic.title)} <small>${escapeHtml(topic.en)}</small>`;
@@ -62,13 +51,29 @@ function initializeSheetHelp() {
   }
 }
 
+function removeLegacyHelpTriggers() {
+  document.querySelectorAll(".sheet-help-trigger, .floating-help-link, [data-sheet-help-link], .sheet-sidebar-help-row").forEach(element => element.remove());
+  document.querySelectorAll(".toolbar--with-help").forEach(element => element.classList.remove("toolbar--with-help"));
+}
+
 function ensureHelpStyles() {
   if (document.querySelector('link[data-sheet-help-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/components/help.css?v=2";
+  link.href = "./css-next/components/help.css?v=3";
   link.dataset.sheetHelpStyle = "1";
   document.head.append(link);
+}
+
+function createGlobalHelpButton() {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = "sheet-global-help";
+  button.className = "sheet-global-help";
+  button.setAttribute("aria-label", "WEBアプリ操作ガイドを開く");
+  button.title = "WEBアプリ操作ガイド";
+  button.innerHTML = '<span>HELP</span><small>GUIDE</small>';
+  return button;
 }
 
 function createDialog() {
@@ -93,51 +98,6 @@ function createDialog() {
       </div>
     </div>`;
   return dialog;
-}
-
-function installSidebarHelp() {
-  const visibility = document.querySelector("#visibility")?.closest("label");
-  const save = document.querySelector("#save-button");
-  if (!visibility || !save || document.querySelector('[data-help-placement="sidebar"]')) return;
-  const wrap = document.createElement("div");
-  wrap.className = "sheet-sidebar-help-row";
-  wrap.dataset.helpPlacement = "sidebar";
-  wrap.append(
-    helpButton("save", "保存と閲覧のHELP"),
-    helpButton("viewing", "閲覧画面のHELP")
-  );
-  visibility.before(wrap);
-}
-
-function installImageHelp() {
-  const header = document.querySelector(".sheet-image-editor__header");
-  if (!header || header.querySelector('[data-sheet-help="image"]')) return;
-  header.append(helpButton("image", "キャスト画像のHELP"));
-}
-
-function installComboHelp() {
-  const toolbar = document.querySelector("#sheet-combo-entry .toolbar");
-  if (!toolbar || toolbar.querySelector('[data-sheet-help="combos"]')) return;
-  toolbar.append(helpButton("combos", "コンボ／技能カウンターのHELP"));
-  toolbar.classList.add("toolbar--with-help");
-}
-
-function installSectionHelp(sectionId, key) {
-  const section = document.getElementById(sectionId);
-  const toolbar = section?.querySelector(".toolbar");
-  if (!toolbar || toolbar.querySelector(`[data-sheet-help="${key}"]`)) return;
-  toolbar.append(helpButton(key, `${SHEET_HELP_TOPICS[key].title}のHELP`));
-  toolbar.classList.add("toolbar--with-help");
-}
-
-function helpButton(key, label) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "sheet-help-trigger";
-  button.dataset.sheetHelp = key;
-  button.setAttribute("aria-label", label);
-  button.innerHTML = '<span>HELP</span><small>GUIDE</small>';
-  return button;
 }
 
 function escapeHtml(value) {
