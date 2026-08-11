@@ -64,10 +64,11 @@ function applyDetailsToRow(row, details) {
   requestAnimationFrame(() => {
     for (const [field, value] of Object.entries(details)) {
       const input = row.querySelector(`[data-ofc="${cssEscape(field)}"]`);
-      if (input) input.value = String(value || "");
+      if (!input) continue;
+      input.value = String(value || "");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
     }
-    row.dispatchEvent(new Event("input", { bubbles: true }));
-    row.dispatchEvent(new Event("change", { bubbles: true }));
   });
 }
 
