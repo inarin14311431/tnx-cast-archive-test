@@ -82,10 +82,14 @@ test('master search enhancements are separated by responsibility', async () => {
 test('save failures expose a diagnostic module with database metadata', async () => {
   const source = await read('js/sheet-save-diagnostics.js');
   assert.match(source, /save_character_bundle/);
-  assert.match(source, /error\.code|code:/);
-  assert.match(source, /details/);
-  assert.match(source, /hint/);
-  assert.match(source, /23502|23505|23514|22001|42501/);
+  assert.match(source, /error\?\.code|freshRpcError\?\.code/);
+  assert.match(source, /error\?\.details|freshRpcError\?\.details/);
+  assert.match(source, /error\?\.hint|freshRpcError\?\.hint/);
+  assert.match(source, /23502/);
+  assert.match(source, /23505/);
+  assert.match(source, /23514/);
+  assert.match(source, /22001/);
+  assert.match(source, /42501/);
 });
 
 test('OFC responsibilities keep import compatibility, TSV normalization and display separate', async () => {
