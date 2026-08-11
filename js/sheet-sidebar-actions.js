@@ -2,37 +2,25 @@
   const panel = document.querySelector('.exp-panel');
   if (!panel) return;
 
-  const ensureHelpLink = () => {
-    if (document.querySelector('[data-sheet-help-link]')) return;
-    const importButton = panel.querySelector('#legacy-import-open');
-    if (!importButton) return;
-    let control = importButton.closest('.sheet-import-control');
-    if (!control) {
-      control = document.createElement('div');
-      control.className = 'sheet-import-control';
-      importButton.before(control);
-      control.append(importButton);
-    }
-    const link = document.createElement('a');
-    link.href = './manual-data-import.html';
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.className = 'floating-help-link';
-    link.setAttribute('data-sheet-help-link', '1');
-    link.setAttribute('aria-label', 'データ取込マニュアルを開く');
-    link.title = 'データ取込マニュアル';
-    link.innerHTML = '<span class="floating-help-link__label">HELP</span>';
-    control.append(link);
+  // Export / transfer helpers are available from the cast viewer.
+  // Keep the editor sidebar focused on editing and navigation.
+  const EDITOR_HIDDEN_ACTION = /ココフォリア|ユドナリウム|転記TSV|転記BM/;
+
+  const removeViewerActions = () => {
+    panel.querySelectorAll(':scope > button, :scope > a, :scope > div > button, :scope > div > a').forEach(element => {
+      if (element.matches('#cast-view-button,[data-sheet-help],.sheet-help-trigger')) return;
+      const label = String(element.textContent || '').replace(/\s+/g, ' ').trim();
+      if (EDITOR_HIDDEN_ACTION.test(label)) element.remove();
+    });
   };
 
   const GROUP_COLORS = {
     a: '#70efa9',
-    b: '#35d7ff',
-    c: '#ff1493',
-    d: '#ffd000'
+    b: '#35d7ff'
   };
 
   const classify = () => {
+    removeViewerActions();
     panel.querySelectorAll(':scope > button, :scope > a.sheet-view-link, :scope > .sheet-import-control > button').forEach(element => {
       const label = String(element.textContent || '').replace(/\s+/g, ' ').trim();
       let group = '';
@@ -41,10 +29,6 @@
         group = 'a';
       } else if (/キャストを閲覧|データ取込|SKD・OFC補完/.test(label)) {
         group = 'b';
-      } else if (/ココフォリア|ユドナリウム/.test(label)) {
-        group = 'c';
-      } else if (/転記TSV|転記BM/.test(label)) {
-        group = 'd';
       }
 
       if (!group) {
@@ -54,13 +38,11 @@
         return;
       }
 
-      const color = GROUP_COLORS[group];
       element.dataset.actionGroup = group;
-      element.style.setProperty('--action-rail', color);
+      element.style.setProperty('--action-rail', GROUP_COLORS[group]);
     });
   };
 
-  ensureHelpLink();
   classify();
   requestAnimationFrame(classify);
   window.addEventListener('load', classify, { once: true });
