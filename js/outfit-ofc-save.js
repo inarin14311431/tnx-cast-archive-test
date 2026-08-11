@@ -1,8 +1,14 @@
 import { supabase } from "./supabase-client.js";
+import {
+  getOutfitRows,
+  outfitSignature,
+  parseDefense,
+  rowSignature,
+  valueOf
+} from "./outfit-ofc-utils.js";
 
 const BASE_SAVE_RPC = "save_character_bundle";
 const OFC_SAVE_RPC = "save_character_bundle_with_ofc";
-const ROOT_SELECTOR = "#outfit-list";
 
 install();
 
@@ -71,11 +77,6 @@ function collectDetails(row) {
   });
 }
 
-function getOutfitRows() {
-  return [...document.querySelectorAll(`${ROOT_SELECTOR} .outfit-table-row[data-outfit-key],${ROOT_SELECTOR} .outfit-card[data-outfit-key]`)]
-    .filter((row, index, array) => array.findIndex(other => other.dataset.outfitKey === row.dataset.outfitKey) === index);
-}
-
 function rowsBySignature(rows) {
   const queues = new Map();
   for (const row of rows) {
@@ -86,35 +87,6 @@ function rowsBySignature(rows) {
   return queues;
 }
 
-function rowSignature(row) {
-  return outfitSignature(
-    valueOf(row, "category") || row.closest("table")?.dataset.outfitSchema || "other",
-    valueOf(row, "name")
-  );
-}
-
-function outfitSignature(category, name) {
-  return `${String(category || "other").trim()}\u0000${String(name || "").trim()}`;
-}
-
-function valueOf(row, field) {
-  return row?.querySelector(`[data-o="${cssEscape(field)}"]`)?.value ?? "";
-}
-
-function parseDefense(value) {
-  const text = String(value || "").trim();
-  const output = { defense_s: "", defense_p: "", defense_i: "" };
-  for (const match of text.matchAll(/\b([SPI])\s*[:：]?\s*([^/／,，\s]+)/gi)) {
-    output[`defense_${match[1].toLowerCase()}`] = match[2];
-  }
-  if (Object.values(output).some(Boolean)) return output;
-  const parts = text.split(/[\/／,，\s]+/).filter(Boolean);
-  output.defense_s = parts[0] || "";
-  output.defense_i = parts[1] || "";
-  output.defense_p = parts[2] || "";
-  return output;
-}
-
 function compactDetails(value) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   return Object.fromEntries(
@@ -122,8 +94,4 @@ function compactDetails(value) {
       .map(([key, item]) => [key, String(item ?? "")])
       .filter(([, item]) => item !== "")
   );
-}
-
-function cssEscape(value) {
-  return window.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/(["\\])/g, "\\$1");
 }
