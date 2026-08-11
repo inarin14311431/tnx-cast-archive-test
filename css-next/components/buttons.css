@@ -13,7 +13,12 @@ button:hover, .account-actions a:hover, .owned-cast__links a:hover { color: var(
 button:active, .account-actions a:active, .owned-cast__links a:active { transform: translateY(1px); }
 button:disabled { opacity: .38; cursor: not-allowed; }
 button small, .account-actions small, .owned-cast__links small { display: block; margin-top: 2px; color: var(--color-muted); font-size: .54rem; }
-button:hover small, .account-actions a:hover small, .owned-cast__links a:hover small { color: color-mix(in srgb, var(--color-bg) 68%, transparent); }
+button:is(:hover, :focus-visible) small,
+.account-actions a:is(:hover, :focus-visible) small,
+.owned-cast__links a:is(:hover, :focus-visible) small {
+  color: color-mix(in srgb, var(--color-bg) 88%, #000 12%);
+  opacity: .92;
+}
 
 .cocofolia-copy-button,
 .udonarium-export-button,
