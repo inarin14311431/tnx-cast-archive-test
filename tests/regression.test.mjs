@@ -74,3 +74,22 @@ test('master search enhancements are separated by responsibility', async () => {
   assert.match(ofc, /restoreDash/);
   assert.doesNotMatch(ofc, /master-search-details-toggle|can_use_master_search/);
 });
+
+test('save failures expose structured diagnostics without replacing save logic', async () => {
+  const nav = await read('js/sheet-section-nav.js');
+  assert.match(nav, /sheet-save-diagnostics\.js/);
+
+  const diagnostic = await read('js/sheet-save-diagnostics.js');
+  assert.match(diagnostic, /save_character_bundle/);
+  assert.match(diagnostic, /error\?\.code/);
+  assert.match(diagnostic, /error\?\.details/);
+  assert.match(diagnostic, /error\?\.hint/);
+  assert.match(diagnostic, /42501|row-level security|RLS/);
+  assert.match(diagnostic, /23502|not-null/);
+  assert.match(diagnostic, /23514|check constraint/);
+  assert.match(diagnostic, /22001|value too long/);
+  assert.match(diagnostic, /23505|duplicate key/);
+
+  const sheet = await read('js/sheet.js');
+  assert.match(sheet, /supabase\.rpc\("save_character_bundle"/);
+});
