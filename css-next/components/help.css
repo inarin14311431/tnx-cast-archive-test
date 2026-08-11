@@ -1,39 +1,39 @@
-/* Cast-sheet contextual help. */
-.sheet-help-trigger {
-  display: inline-grid;
+/* Cast-sheet global help. */
+.sheet-global-help {
+  position: fixed;
+  top: 76px;
+  right: 18px;
+  z-index: 140;
+  display: grid;
   place-items: center;
-  min-width: 58px;
-  min-height: 34px;
+  min-width: 48px;
+  min-height: 28px;
   padding: 4px 8px;
-  border: 1px solid var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 75%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   color: var(--color-accent);
-  font: 800 .72rem/1 var(--font-data);
-  letter-spacing: .05em;
+  box-shadow: 0 0 10px rgba(0,0,0,.28);
+  font: 800 .64rem/1 var(--font-data);
+  letter-spacing: .08em;
   cursor: pointer;
+  opacity: .82;
 }
-.sheet-help-trigger small { display: block; margin-top: 3px; color: var(--color-muted); font-size: .52rem; letter-spacing: .1em; }
-.sheet-help-trigger:hover,
-.sheet-help-trigger:focus-visible {
+.sheet-global-help small {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-muted);
+  font-size: .44rem;
+  letter-spacing: .11em;
+}
+.sheet-global-help:hover,
+.sheet-global-help:focus-visible {
+  opacity: 1;
   background: var(--color-accent);
   color: var(--color-bg);
   box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
-.sheet-help-trigger:hover small,
-.sheet-help-trigger:focus-visible small { color: color-mix(in srgb, var(--color-bg) 80%, transparent); }
-
-.sheet-sidebar-help-row { display: flex; justify-content: flex-end; margin: 10px 0 4px; }
-.exp-panel > #legacy-import-open + .sheet-help-trigger {
-  width: 100%;
-  margin-top: -1px;
-  min-height: 28px;
-  border-top-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
-  font-size: .62rem;
-}
-.exp-panel > #legacy-import-open + .sheet-help-trigger small { display: none; }
-
-.sheet-section .toolbar--with-help { align-items: stretch; }
-.sheet-section .toolbar--with-help > .sheet-help-trigger { margin-left: auto; }
+.sheet-global-help:hover small,
+.sheet-global-help:focus-visible small { color: color-mix(in srgb, var(--color-bg) 78%, transparent); }
 
 .sheet-help-dialog {
   width: min(980px, calc(100vw - 32px));
@@ -100,9 +100,10 @@
 .sheet-help-block p::before { content: "›"; margin-right: .55em; color: var(--color-accent); font-weight: 900; }
 
 @media (max-width: 760px) {
+  .sheet-global-help { top: 66px; right: 8px; min-width: 42px; min-height: 25px; padding: 3px 6px; }
+  .sheet-global-help small { display: none; }
   .sheet-help-dialog { width: calc(100vw - 16px); height: calc(100vh - 20px); }
   .sheet-help-dialog__layout { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
   .sheet-help-dialog__nav { grid-template-columns: repeat(2, minmax(0, 1fr)); border-right: 0; border-bottom: 1px solid var(--color-border); }
   .sheet-help-dialog__content { padding: 16px; }
-  .sheet-section .toolbar--with-help > .sheet-help-trigger { margin-left: 0; }
 }
