@@ -68,6 +68,7 @@ test('master search enhancements are separated by responsibility', async () => {
   assert.match(entry, /sheet-master-search-result-ui\.js/);
   assert.match(entry, /sheet-master-search-ofc-normalize\.js/);
   assert.match(entry, /sheet-master-search-bs-tooltips\.js/);
+  assert.match(entry, /sheet-master-search-auto-run\.js/);
 
   const resultUi = await read('js/sheet-master-search-result-ui.js');
   assert.match(resultUi, /master-search-details-toggle/);
@@ -77,6 +78,16 @@ test('master search enhancements are separated by responsibility', async () => {
   assert.match(ofc, /purchase_value/);
   assert.match(ofc, /restoreDash/);
   assert.doesNotMatch(ofc, /master-search-details-toggle|can_use_master_search/);
+});
+
+test('master search automatically reruns when classification filters change', async () => {
+  const source = await read('js/sheet-master-search-auto-run.js');
+  assert.match(source, /master-search-filter-primary/);
+  assert.match(source, /master-search-filter-secondary/);
+  assert.match(source, /addEventListener\("change"/);
+  assert.match(source, /master-search-run/);
+  assert.match(source, /runButton\.click\(\)/);
+  assert.doesNotMatch(source, /supabase|skd_master|ofc_master/);
 });
 
 test('save failures expose a diagnostic module with database metadata', async () => {
