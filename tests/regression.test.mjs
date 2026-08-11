@@ -57,10 +57,13 @@ test('zero style skills remain a valid editor state without recovery shim', asyn
   assert.match(sheet, /addSkill\("style", "normal", ""\)/);
 });
 
-test('master search legacy bridge contains no feature implementation', async () => {
+test('master search legacy placeholder contains no feature implementation', async () => {
   const bridge = await read('js/sheet-master-search-dash-fix.js');
-  assert.match(bridge, /sheet-master-search-enhancements\.js/);
-  assert.doesNotMatch(bridge, /restoreDash|master-search-details-toggle|createElement\("script"\)|MutationObserver/);
+  assert.match(bridge, /Retired compatibility placeholder/);
+  assert.doesNotMatch(bridge, /import\(|restoreDash|master-search-details-toggle|MutationObserver/);
+
+  const access = await read('js/sheet-master-search-access.js');
+  assert.match(access, /import "\.\/sheet-master-search-enhancements\.js"/);
 });
 
 test('master search enhancements are separated by responsibility', async () => {
@@ -105,12 +108,15 @@ test('OFC responsibilities keep import compatibility, TSV normalization and disp
   assert.match(compat, /sourceOutfits/);
 
   const categoryBridge = await read('js/outfit-ofc-tsv-category-fix.js');
-  assert.match(categoryBridge, /outfit-ofc-tsv-category-normalize\.js/);
-  assert.doesNotMatch(categoryBridge, /restoreCategories|targetToCategory|waitForRows/);
+  assert.match(categoryBridge, /Retired compatibility placeholder/);
+  assert.doesNotMatch(categoryBridge, /import\(|restoreCategories|waitForRows/);
+
+  const access = await read('js/sheet-master-search-access.js');
+  assert.match(access, /import "\.\/outfit-ofc-tsv-category-normalize\.js"/);
 
   const category = await read('js/outfit-ofc-tsv-category-normalize.js');
   assert.match(category, /function restoreCategories/);
-  assert.match(category, /function targetToCategory/);
+  assert.match(category, /targetToCategory/);
   assert.doesNotMatch(category, /legacy-import-apply|save_character_bundle/);
 
   const display = await read('js/outfit-display-rules-v5.js');
@@ -124,6 +130,7 @@ test('OFC save enhancement is isolated from field rendering', async () => {
   assert.match(save, /save_character_bundle_with_ofc/);
   assert.match(save, /function enrichOutfitPayload/);
   assert.match(save, /ofc_details/);
+  assert.match(save, /outfit-ofc-utils\.js/);
   assert.doesNotMatch(save, /MutationObserver|master-search-copy|tsv-apply/);
 
   const access = await read('js/sheet-master-search-access.js');
@@ -139,6 +146,7 @@ test('OFC TSV transfer is isolated from field rendering', async () => {
   assert.match(tsv, /function handleTsvImport/);
   assert.match(tsv, /function createFullOfcTsv/);
   assert.match(tsv, /function parseTsv/);
+  assert.match(tsv, /outfit-ofc-utils\.js/);
   assert.doesNotMatch(tsv, /save_character_bundle_with_ofc|CATEGORY_FIELDS|enhanceTable/);
 
   const access = await read('js/sheet-master-search-access.js');
@@ -146,4 +154,33 @@ test('OFC TSV transfer is isolated from field rendering', async () => {
 
   const fields = await read('js/outfit-ofc-fields.js');
   assert.doesNotMatch(fields, /handleMasterCopy|handleTsvImport|createFullOfcTsv|parseTsv|toTsv|TSV_EXTRA_HEADERS/);
+});
+
+test('OFC master application is isolated from field rendering', async () => {
+  const apply = await read('js/outfit-ofc-master-apply.js');
+  assert.match(apply, /function handleMasterAdd/);
+  assert.match(apply, /function applyMasterRowsAfterBaseAdd/);
+  assert.match(apply, /function masterRowDetails/);
+  assert.match(apply, /outfit-ofc-utils\.js/);
+  assert.doesNotMatch(apply, /save_character_bundle_with_ofc|handleTsvImport|CATEGORY_FIELDS|enhanceTable/);
+
+  const access = await read('js/sheet-master-search-access.js');
+  assert.match(access, /import "\.\/outfit-ofc-master-apply\.js"/);
+
+  const fields = await read('js/outfit-ofc-fields.js');
+  assert.doesNotMatch(fields, /handleMasterAdd|applyMasterRowsAfterBaseAdd|fetchMasterRows|masterRowDetails/);
+});
+
+test('OFC shared utilities own category, defense and signature rules', async () => {
+  const utils = await read('js/outfit-ofc-utils.js');
+  assert.match(utils, /export function targetToCategory/);
+  assert.match(utils, /export function categoryToTarget/);
+  assert.match(utils, /export function parseDefense/);
+  assert.match(utils, /export function defenseText/);
+  assert.match(utils, /export function outfitSignature/);
+
+  for (const modulePath of ['js/outfit-ofc-save.js', 'js/outfit-ofc-fields.js', 'js/outfit-ofc-tsv.js', 'js/outfit-ofc-master-apply.js']) {
+    const source = await read(modulePath);
+    assert.match(source, /outfit-ofc-utils\.js/);
+  }
 });
