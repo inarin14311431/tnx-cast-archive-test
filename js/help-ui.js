@@ -4,6 +4,7 @@ const page = document.body?.dataset.page;
 if (page === "sheet.html") initializeSheetHelp();
 
 function initializeSheetHelp() {
+  ensureHelpStyles();
   const dialog = createDialog();
   document.body.append(dialog);
 
@@ -57,6 +58,15 @@ function initializeSheetHelp() {
       </section>`).join("")}`;
     body.scrollTop = 0;
   }
+}
+
+function ensureHelpStyles() {
+  if (document.querySelector('link[data-sheet-help-style]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "./css-next/components/help.css?v=1";
+  link.dataset.sheetHelpStyle = "1";
+  document.head.append(link);
 }
 
 function createDialog() {
