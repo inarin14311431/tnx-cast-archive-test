@@ -29,7 +29,10 @@ test('retired compatibility scripts are no longer loaded', async () => {
   assert.doesNotMatch(html, /sheet-json-import-repair\.js/);
   assert.doesNotMatch(html, /style-skill-recovery\.js/);
   assert.doesNotMatch(html, /style-skill-import-integrity-fix\.js/);
+  assert.doesNotMatch(html, /sheet-master-search-dash-fix\.js/);
+  assert.doesNotMatch(html, /outfit-ofc-tsv-category-fix\.js/);
   assert.match(html, /style-skill-detail-integrity\.js/);
+  assert.match(html, /sheet-master-search-access\.js/);
 });
 
 test('style import compatibility owns JSON repair and preserves symbols', async () => {
@@ -57,16 +60,10 @@ test('zero style skills remain a valid editor state without recovery shim', asyn
   assert.match(sheet, /addSkill\("style", "normal", ""\)/);
 });
 
-test('master search legacy placeholder contains no feature implementation', async () => {
-  const bridge = await read('js/sheet-master-search-dash-fix.js');
-  assert.match(bridge, /Retired compatibility placeholder/);
-  assert.doesNotMatch(bridge, /import\(|restoreDash|master-search-details-toggle|MutationObserver/);
-
+test('master search enhancements are loaded directly and separated by responsibility', async () => {
   const access = await read('js/sheet-master-search-access.js');
   assert.match(access, /import "\.\/sheet-master-search-enhancements\.js"/);
-});
 
-test('master search enhancements are separated by responsibility', async () => {
   const entry = await read('js/sheet-master-search-enhancements.js');
   assert.match(entry, /sheet-master-search-result-ui\.js/);
   assert.match(entry, /sheet-master-search-ofc-normalize\.js/);
@@ -106,10 +103,6 @@ test('OFC responsibilities keep import compatibility, TSV normalization and disp
   const compat = await read('js/sheet-import-outfit-compat.js');
   assert.match(compat, /legacy-import-apply/);
   assert.match(compat, /sourceOutfits/);
-
-  const categoryBridge = await read('js/outfit-ofc-tsv-category-fix.js');
-  assert.match(categoryBridge, /Retired compatibility placeholder/);
-  assert.doesNotMatch(categoryBridge, /import\(|restoreCategories|waitForRows/);
 
   const access = await read('js/sheet-master-search-access.js');
   assert.match(access, /import "\.\/outfit-ofc-tsv-category-normalize\.js"/);
