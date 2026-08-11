@@ -79,31 +79,6 @@ test('master search enhancements are separated by responsibility', async () => {
   assert.doesNotMatch(ofc, /master-search-details-toggle|can_use_master_search/);
 });
 
-test('OFC TSV category normalization is separated from its legacy fix bridge', async () => {
-  const bridge = await read('js/outfit-ofc-tsv-category-fix.js');
-  assert.match(bridge, /outfit-ofc-tsv-category-normalize\.js/);
-  assert.doesNotMatch(bridge, /restoreCategories|MutationObserver|targetToCategory/);
-
-  const source = await read('js/outfit-ofc-tsv-category-normalize.js');
-  assert.match(source, /function restoreCategories/);
-  assert.match(source, /function targetToCategory/);
-  assert.match(source, /サイバーウェア|IANUS/);
-  assert.match(source, /トロン|ソフトウェア/);
-});
-
-test('outfit responsibilities remain separated', async () => {
-  const ofcFields = await read('js/outfit-ofc-fields.js');
-  const displayRules = await read('js/outfit-display-rules-v5.js');
-  const legacyImport = await read('js/sheet-import-outfit-compat.js');
-
-  assert.match(ofcFields, /save_character_bundle_with_ofc/);
-  assert.match(ofcFields, /data-ofc/);
-  assert.doesNotMatch(displayRules, /save_character_bundle_with_ofc|legacy-import-apply/);
-  assert.match(displayRules, /const LAYOUTS/);
-  assert.match(legacyImport, /legacy-import-apply/);
-  assert.doesNotMatch(legacyImport, /save_character_bundle_with_ofc/);
-});
-
 test('save failures expose a diagnostic module with database metadata', async () => {
   const source = await read('js/sheet-save-diagnostics.js');
   assert.match(source, /save_character_bundle/);
@@ -111,4 +86,38 @@ test('save failures expose a diagnostic module with database metadata', async ()
   assert.match(source, /details/);
   assert.match(source, /hint/);
   assert.match(source, /23502|23505|23514|22001|42501/);
+});
+
+test('OFC responsibilities keep import compatibility, TSV normalization and display separate', async () => {
+  const compat = await read('js/sheet-import-outfit-compat.js');
+  assert.match(compat, /legacy-import-apply/);
+  assert.match(compat, /sourceOutfits/);
+
+  const categoryBridge = await read('js/outfit-ofc-tsv-category-fix.js');
+  assert.match(categoryBridge, /outfit-ofc-tsv-category-normalize\.js/);
+  assert.doesNotMatch(categoryBridge, /restoreCategories|targetToCategory|waitForRows/);
+
+  const category = await read('js/outfit-ofc-tsv-category-normalize.js');
+  assert.match(category, /function restoreCategories/);
+  assert.match(category, /function targetToCategory/);
+  assert.doesNotMatch(category, /legacy-import-apply|save_character_bundle/);
+
+  const display = await read('js/outfit-display-rules-v5.js');
+  assert.match(display, /const LAYOUTS/);
+  assert.match(display, /applySheetLayouts/);
+  assert.doesNotMatch(display, /save_character_bundle|legacy-import-apply/);
+});
+
+test('OFC save enhancement is isolated from field rendering', async () => {
+  const save = await read('js/outfit-ofc-save.js');
+  assert.match(save, /save_character_bundle_with_ofc/);
+  assert.match(save, /function enrichOutfitPayload/);
+  assert.match(save, /ofc_details/);
+  assert.doesNotMatch(save, /MutationObserver|master-search-copy|tsv-apply/);
+
+  const access = await read('js/sheet-master-search-access.js');
+  assert.match(access, /import "\.\/outfit-ofc-save\.js"/);
+
+  const fields = await read('js/outfit-ofc-fields.js');
+  assert.match(fields, /if \(supabase\.__tnxOfcSaveWrapped\) return/);
 });
