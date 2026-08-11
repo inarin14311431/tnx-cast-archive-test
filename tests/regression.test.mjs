@@ -52,3 +52,25 @@ test('zero style skills remain a valid editor state', async () => {
   assert.match(sheet, /#add-style-skill/);
   assert.match(sheet, /addSkill\("style", "normal", ""\)/);
 });
+
+test('master search legacy bridge contains no feature implementation', async () => {
+  const bridge = await read('js/sheet-master-search-dash-fix.js');
+  assert.match(bridge, /sheet-master-search-enhancements\.js/);
+  assert.doesNotMatch(bridge, /restoreDash|master-search-details-toggle|createElement\("script"\)|MutationObserver/);
+});
+
+test('master search enhancements are separated by responsibility', async () => {
+  const entry = await read('js/sheet-master-search-enhancements.js');
+  assert.match(entry, /sheet-master-search-result-ui\.js/);
+  assert.match(entry, /sheet-master-search-ofc-normalize\.js/);
+  assert.match(entry, /sheet-master-search-bs-tooltips\.js/);
+
+  const resultUi = await read('js/sheet-master-search-result-ui.js');
+  assert.match(resultUi, /master-search-details-toggle/);
+  assert.doesNotMatch(resultUi, /purchase_value|restoreDash|can_use_master_search/);
+
+  const ofc = await read('js/sheet-master-search-ofc-normalize.js');
+  assert.match(ofc, /purchase_value/);
+  assert.match(ofc, /restoreDash/);
+  assert.doesNotMatch(ofc, /master-search-details-toggle|can_use_master_search/);
+});
