@@ -154,20 +154,10 @@
     return true;
   }
 
-  function removeUnexpectedRows(expected,usedKeys){
-    const allowances=new Map();
-    for(const skill of expected){
-      const key=comparable(skill.name);
-      allowances.set(key,(allowances.get(key)||0)+1);
-    }
-    const kept=new Map();
+  function removeUnexpectedRows(usedKeys){
     for(const row of rows()){
       if(usedKeys.has(row.dataset.skillKey))continue;
-      const key=comparable(rowValue(row));
-      if(!key)continue;
-      const limit=allowances.get(key)||0;
-      const count=kept.get(key)||0;
-      if(count<limit){kept.set(key,count+1);continue}
+      if(!rowValue(row))continue;
       row.querySelector('[data-delete-skill]')?.click();
     }
   }
@@ -270,7 +260,7 @@
         repaired++;
       }
     }
-    removeUnexpectedRows(expected,used);
+    removeUnexpectedRows(used);
     const missing=expected.filter(skill=>!rows().some(row=>rowValue(row)===skill.name));
     if(missing.length)throw new Error(`スタイル技能${missing.length}件を取込できませんでした：${missing.map(item=>item.name).join("、")}`);
     if(orderedKeys.length!==expected.length||!alignImportedOrder(orderedKeys))throw new Error("スタイル技能をJSONの並び順に復元できませんでした。");
