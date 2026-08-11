@@ -121,3 +121,18 @@ test('OFC save enhancement is isolated from field rendering', async () => {
   const fields = await read('js/outfit-ofc-fields.js');
   assert.doesNotMatch(fields, /BASE_SAVE_RPC|OFC_SAVE_RPC|wrapSaveRpc|enrichOutfitPayload|__tnxOfcSaveWrapped/);
 });
+
+test('OFC TSV transfer is isolated from field rendering', async () => {
+  const tsv = await read('js/outfit-ofc-tsv.js');
+  assert.match(tsv, /function handleMasterCopy/);
+  assert.match(tsv, /function handleTsvImport/);
+  assert.match(tsv, /function createFullOfcTsv/);
+  assert.match(tsv, /function parseTsv/);
+  assert.doesNotMatch(tsv, /save_character_bundle_with_ofc|CATEGORY_FIELDS|enhanceTable/);
+
+  const access = await read('js/sheet-master-search-access.js');
+  assert.match(access, /import "\.\/outfit-ofc-tsv\.js"/);
+
+  const fields = await read('js/outfit-ofc-fields.js');
+  assert.doesNotMatch(fields, /handleMasterCopy|handleTsvImport|createFullOfcTsv|parseTsv|toTsv|TSV_EXTRA_HEADERS/);
+});
