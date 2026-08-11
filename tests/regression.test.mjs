@@ -24,13 +24,12 @@ test('editor help is exposed through one global trigger', async () => {
   assert.doesNotMatch(source, /installSidebarHelp|installSectionHelp|installImageHelp|installComboHelp/);
 });
 
-test('legacy JSON repair no longer owns import listeners', async () => {
-  const source = await read('js/sheet-json-import-repair.js');
-  assert.doesNotMatch(source, /addEventListener|MutationObserver|setTimeout/);
-  assert.match(source, /sheet-import-style-skill-compat\.js/);
+test('retired JSON repair shim is no longer loaded', async () => {
+  const html = await read('sheet.html');
+  assert.doesNotMatch(html, /sheet-json-import-repair\.js/);
 });
 
-test('style import compatibility preserves symbols while matching without them', async () => {
+test('style import compatibility owns JSON repair and preserves symbols', async () => {
   const source = await read('js/sheet-import-style-skill-compat.js');
   assert.match(source, /replace\(\/\^\[★■┗†※\]\+\\s\*\//);
   assert.match(source, /setValue\(row\.querySelector\('\[data-f="name"\]'\),data\.name\)/);
