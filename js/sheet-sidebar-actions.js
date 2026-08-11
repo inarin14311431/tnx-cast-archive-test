@@ -9,7 +9,7 @@
     import: /データ取込/,
     autofill: /SKD・OFC補完|補完/
   };
-  let arranging = false;
+  let queued = false;
 
   const labelOf = element => String(element?.textContent || '').replace(/\s+/g, ' ').trim();
 
@@ -25,10 +25,16 @@
   };
 
   const removeViewerOnlyActions = () => {
+    let changed = false;
     panel.querySelectorAll(':scope > button, :scope > a, :scope > div > button, :scope > div > a').forEach(element => {
       if (element.matches('#cast-view-button,[data-sheet-help],.sheet-help-trigger')) return;
-      if (VIEWER_ONLY_ACTION.test(labelOf(element))) topLevelChild(element)?.remove();
+      if (!VIEWER_ONLY_ACTION.test(labelOf(element))) return;
+      const target = topLevelChild(element);
+      if (!target) return;
+      target.remove();
+      changed = true;
     });
+    return changed;
   };
 
   const reorderActions = () => {
@@ -37,16 +43,17 @@
     const view = topLevelChild(document.querySelector('#cast-view-button') || findByLabel(LABELS.view));
     const importAction = topLevelChild(document.querySelector('#legacy-import-open') || findByLabel(LABELS.import));
     const autofill = topLevelChild(findByLabel(LABELS.autofill));
-
-    // Experience summary and section navigation already occupy the top of the rail.
-    // Re-appending only action controls gives the requested stable order below them.
     const ordered = [visibility, save, view, importAction, autofill].filter(Boolean);
-    const seen = new Set();
-    ordered.forEach(element => {
-      if (seen.has(element)) return;
-      seen.add(element);
-      panel.append(element);
-    });
+    if (!ordered.length) return false;
+
+    const children = [...panel.children];
+    const current = children.filter(child => ordered.includes(child));
+    if (current.length === ordered.length && current.every((child, index) => child === ordered[index])) return false;
+
+    const fragment = document.createDocumentFragment();
+    ordered.forEach(element => fragment.append(element));
+    panel.append(fragment);
+    return true;
   };
 
   const GROUP_COLORS = {
@@ -54,42 +61,42 @@
     action: '#35d7ff'
   };
 
-  const classify = () => {
-    if (arranging) return;
-    arranging = true;
-    try {
-      removeViewerOnlyActions();
-      reorderActions();
-      panel.querySelectorAll(':scope > button, :scope > a.sheet-view-link, :scope > .sheet-import-control > button').forEach(element => {
-        const label = labelOf(element);
-        let group = '';
-        if (element.id === 'save-button' || /保存済み|未保存|保存中|保存失敗/.test(label)) group = 'save';
-        else if (/キャストを閲覧|データ取込|SKD・OFC補完/.test(label)) group = 'action';
+  const classifyActions = () => {
+    panel.querySelectorAll(':scope > button, :scope > a.sheet-view-link, :scope > .sheet-import-control > button').forEach(element => {
+      const label = labelOf(element);
+      let group = '';
+      if (element.id === 'save-button' || /保存済み|未保存|保存中|保存失敗/.test(label)) group = 'save';
+      else if (/キャストを閲覧|データ取込|SKD・OFC補完/.test(label)) group = 'action';
 
-        if (!group) {
-          delete element.dataset.actionGroup;
-          element.style.removeProperty('--action-rail');
-          element.style.removeProperty('border-left-color');
-          return;
-        }
-        element.dataset.actionGroup = group;
-        element.style.setProperty('--action-rail', GROUP_COLORS[group]);
-      });
-    } finally {
-      arranging = false;
-    }
+      if (!group) {
+        if (element.dataset.actionGroup) delete element.dataset.actionGroup;
+        if (element.style.getPropertyValue('--action-rail')) element.style.removeProperty('--action-rail');
+        return;
+      }
+      if (element.dataset.actionGroup !== group) element.dataset.actionGroup = group;
+      const color = GROUP_COLORS[group];
+      if (element.style.getPropertyValue('--action-rail') !== color) element.style.setProperty('--action-rail', color);
+    });
   };
 
-  classify();
-  requestAnimationFrame(classify);
-  window.addEventListener('load', classify, { once: true });
+  const arrange = () => {
+    queued = false;
+    removeViewerOnlyActions();
+    reorderActions();
+    classifyActions();
+  };
 
-  new MutationObserver(classify).observe(panel, {
+  const queueArrange = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(arrange);
+  };
+
+  arrange();
+  window.addEventListener('load', queueArrange, { once: true });
+  new MutationObserver(queueArrange).observe(panel, {
     childList: true,
-    subtree: true,
-    characterData: true,
-    attributes: true,
-    attributeFilter: ['hidden', 'class', 'id']
+    subtree: true
   });
 })();
 
@@ -128,9 +135,6 @@
 
     displayBase.value = calculatedBase;
     finalOutput.textContent = finalValue;
-
-    // sheet.js saves cs as cs_base + cs_mod. Adjust only the hidden storage value
-    // so the persisted final CS also respects the minimum value of zero.
     storedBase.value = finalValue - modifier;
   };
 
@@ -165,27 +169,18 @@
     renameBaseLabels();
 
     document.addEventListener('input', event => {
-      if (event.target.matches('#reason-base,#reason-mod,#passion-base,#passion-mod,#life-base,#life-mod,#cs-mod')) {
-        queueMicrotask(recalculateCs);
-      }
+      if (event.target.matches('#reason-base,#reason-mod,#passion-base,#passion-mod,#life-base,#life-mod,#cs-mod')) queueMicrotask(recalculateCs);
     });
     document.addEventListener('change', event => {
-      if (event.target.matches('#reason-base,#reason-mod,#passion-base,#passion-mod,#life-base,#life-mod,#cs-mod')) {
-        queueMicrotask(recalculateCs);
-      }
+      if (event.target.matches('#reason-base,#reason-mod,#passion-base,#passion-mod,#life-base,#life-mod,#cs-mod')) queueMicrotask(recalculateCs);
     });
 
     const abilityGrid = document.querySelector('#ability-grid');
     if (abilityGrid) {
       new MutationObserver(records => {
         renameBaseLabels();
-        if (records.some(record => ['reason-final', 'passion-final', 'life-final'].includes(record.target?.id))) {
-          queueMicrotask(recalculateCs);
-        }
-      }).observe(abilityGrid, {
-        childList: true,
-        subtree: true
-      });
+        if (records.some(record => ['reason-final', 'passion-final', 'life-final'].includes(record.target?.id))) queueMicrotask(recalculateCs);
+      }).observe(abilityGrid, { childList: true, subtree: true });
     }
     return true;
   };
