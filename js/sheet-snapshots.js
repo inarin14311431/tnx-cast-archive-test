@@ -64,6 +64,17 @@ function enable() {
   if (button) button.disabled = !characterId;
 }
 
+function hasUnsavedChanges() {
+  const status = document.querySelector("#save-status");
+  const saveButton = document.querySelector("#save-button");
+  return Boolean(
+    status?.classList.contains("unsaved") ||
+    /未保存|NOT SAVED/i.test(status?.textContent || "") ||
+    saveButton?.classList.contains("is-unsaved") ||
+    saveButton?.dataset.saveState === "unsaved"
+  );
+}
+
 async function refresh() {
   if (!characterId) return;
   setMessage("履歴を確認中…");
@@ -84,6 +95,15 @@ async function refresh() {
 
 async function createSnapshot() {
   if (!characterId) return;
+
+  if (hasUnsavedChanges()) {
+    const warning = "未保存の変更があります。先にキャストを保存してからスナップショットを作成してください。";
+    setMessage(warning, "error");
+    alert(warning);
+    document.querySelector("#save-button")?.focus();
+    return;
+  }
+
   const button = panel.querySelector("#snapshot-create");
   const labelInput = panel.querySelector("#snapshot-label");
   button.disabled = true;
