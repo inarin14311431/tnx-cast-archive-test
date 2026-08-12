@@ -40,3 +40,13 @@ test('snapshot creation is blocked while the sheet has unsaved changes', async (
   assert.match(source, /alert\(warning\)/);
   assert.match(source, /#save-button/);
 });
+
+test('snapshot panel follows active theme tokens', async () => {
+  const css = await read('css-next/components/sheet-snapshots.css');
+  assert.match(css, /var\(--color-text\)/);
+  assert.match(css, /var\(--color-accent\)/);
+  assert.match(css, /var\(--color-danger\)/);
+  assert.match(css, /var\(--color-success\)/);
+  assert.match(css, /var\(--color-surface-alt\)/);
+  assert.doesNotMatch(css, /rgba\(117,225,255|#35d7ff|#70efa9/);
+});
