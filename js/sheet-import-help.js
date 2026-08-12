@@ -4,11 +4,15 @@
 
   let control=importButton.closest('.sheet-import-control');
   if(!control){
-    control=document.createElement('div');
+    control=document.createElement('section');
     control.className='sheet-import-control';
     importButton.before(control);
     control.append(importButton);
   }
+  control.classList.add('sheet-import-panel');
+
+  importButton.classList.add('sheet-import-main-action');
+  importButton.innerHTML='<span>データ取込</span><small>IMPORT DATA</small>';
 
   const helpButton=document.createElement('button');
   helpButton.id='sheet-import-help-button';
@@ -17,9 +21,30 @@
   helpButton.dataset.sheetHelp='import';
   helpButton.setAttribute('aria-haspopup','dialog');
   helpButton.setAttribute('aria-controls','sheet-import-help-dialog');
-  helpButton.innerHTML='<span>?</span><small>IMPORT<br>HELP</small>';
+  helpButton.innerHTML='<span class="sheet-import-help-mark">?</span><small>IMPORT<br>HELP</small>';
   helpButton.title='データ取込・ブックマークレットの詳しい使い方';
-  control.append(helpButton);
+
+  const description=document.createElement('p');
+  description.className='sheet-import-panel__description';
+  description.innerHTML='キャラシ倉庫のデータを<br>このキャストに取り込みます';
+
+  const copyButton=document.createElement('button');
+  copyButton.id='sheet-import-bookmarklet-copy';
+  copyButton.className='sheet-import-bookmarklet-copy';
+  copyButton.type='button';
+  copyButton.innerHTML='<span class="sheet-import-bookmark-icon" aria-hidden="true"></span><span>ブックマークレットをコピー<small>COPY BOOKMARKLET</small></span>';
+  copyButton.title='キャラシ倉庫用ブックマークレットをコピー';
+
+  control.append(helpButton,description,copyButton);
+
+  copyButton.addEventListener('click',()=>{
+    const source=document.querySelector('#legacy-bookmarklet-copy');
+    if(!source){
+      window.alert('ブックマークレットを準備できませんでした。データ取込画面を開いてから再度お試しください。');
+      return;
+    }
+    source.click();
+  });
 
   const dialog=document.createElement('dialog');
   dialog.id='sheet-import-help-dialog';
@@ -27,51 +52,43 @@
   dialog.innerHTML=`
     <article class="sheet-import-help-shell">
       <header class="sheet-import-help-header">
-        <div><p>DATA IMPORT GUIDE</p><h2>データ取込ヘルプ <small>IMPORT HELP / BOOKMARKLET GUIDE</small></h2></div>
+        <div><h2>データ取込ヘルプ</h2><small>IMPORT HELP</small></div>
         <button type="button" class="sheet-import-help-close" aria-label="ヘルプを閉じる">×</button>
       </header>
+      <p class="sheet-import-help-intro">キャラシ倉庫からデータを取り込み、このアプリのキャストとして保存する手順を説明します。</p>
       <div class="sheet-import-help-body">
-        <section class="sheet-import-help-lead">
-          <strong>キャラシ倉庫からデータを取り込み、このアプリのキャストとして保存する手順です。</strong>
-          <p>元ページからJSONを取得し、編集画面へ反映します。取込だけではDBへ保存されないため、最後に内容を確認してキャストを保存してください。</p>
-        </section>
-
         <div class="sheet-import-help-flow">
-          <section><h3><b>01</b> データ取込画面を開く</h3><p>編集画面左側の「データ取込」を押し、「キャラシ倉庫JSON取込」画面を開きます。</p></section>
-          <section><h3><b>02</b> 「ブックマークレットをコピー」を押す</h3><p>取込画面にあるボタンを押すと、ブックマークレット用のコードがクリップボードへコピーされます。</p></section>
-          <section><h3><b>03</b> ブックマークレットとは</h3><p>ブラウザのブックマークにJavaScriptを登録し、開いているページの入力内容を取得する仕組みです。</p><div class="sheet-import-help-callout"><strong>登録は最初の1回だけ</strong><p>一度登録しておけば、次回以降はキャラシ倉庫の対象ページでそのブックマークを押すだけで利用できます。</p></div></section>
-          <section><h3><b>04</b> ブラウザのブックマークへ登録</h3><p>コピーした内容を、新しいブックマークのURL欄へ貼り付けて保存します。URLは <code>javascript:</code> から始まります。</p></section>
-          <section><h3><b>05</b> キャラシ倉庫の対象キャストを開く</h3><p>取り込みたいキャストの編集ページを開き、入力内容が表示された状態にします。</p></section>
-          <section><h3><b>06</b> 登録したブックマークレットを実行</h3><p>対象キャストを開いたまま、先ほど登録したブックマークを押します。ページ内の入力項目を読み取り、JSONを生成します。</p></section>
-          <section><h3><b>07</b> JSONがクリップボードへコピーされる</h3><p>成功すると「キャラシJSONをコピーしました。」と表示されます。クリップボードへコピーできない環境では、手動コピー用の画面が表示されます。</p></section>
-          <section><h3><b>08</b> このアプリへJSONを貼り付ける</h3><p>このアプリへ戻り、「データ取込」を開いて大きな入力欄へJSONを貼り付けます。</p></section>
-          <section><h3><b>09</b> 「編集画面へ反映」を押す</h3><p>貼り付けたJSONを解析し、プロフィール、スタイル、能力値、技能、アウトフィット等を編集画面へ反映します。</p></section>
-          <section class="sheet-import-help-important"><h3><b>10</b> 内容確認後、キャストを保存</h3><p><strong>取込直後はまだDBへ保存されていません。</strong>各項目を確認し、必要に応じて修正してから左側の「保存」を押してください。</p></section>
+          <section><h3><b>1</b> データ取込画面を開く</h3><p>編集画面左側の「データ取込」を押し、「キャラシ倉庫JSON取込」を開きます。</p></section>
+          <section><h3><b>2</b> 「ブックマークレットをコピー」をクリック</h3><p>ブックマークレットのコードがクリップボードへコピーされます。</p></section>
+          <section><h3><b>3</b> ブックマークレットとは？</h3><p>ブラウザのブックマークに登録して、開いているページからデータを取得するための小さなプログラムです。</p></section>
+          <section><h3><b>4</b> ブラウザのブックマークへ登録</h3><p>コピーしたブックマークレットを、新しいブックマークのURL欄へ貼り付けて保存します。登録は最初の1回だけです。</p></section>
+          <section><h3><b>5</b> キャラシ倉庫の対象キャストページを開く</h3><p>取り込みたいキャストのページを開き、入力内容が表示された状態にします。</p></section>
+          <section><h3><b>6</b> ブックマークレットを実行</h3><p>登録したブックマークをクリックします。ページ内の入力値を読み取り、JSONデータを生成します。</p></section>
+          <section><h3><b>7</b> JSONがクリップボードへコピー</h3><p>「キャラシJSONをコピーしました。」と表示されたら、JSONデータがクリップボードへコピーされています。</p></section>
+          <section><h3><b>8</b> このアプリへ貼り付け</h3><p>このアプリへ戻り、「データ取込」の入力欄へJSONを貼り付けます。</p></section>
+          <section><h3><b>9</b> 「編集画面へ反映」をクリック</h3><p>貼り付けたデータが、プロフィール・スタイル・能力値・技能・アウトフィット等へ反映されます。</p></section>
+          <section><h3><b>10</b> 内容を確認して、キャストを保存</h3><p>反映内容を確認し、必要に応じて修正したうえで、最後に左側の「保存」を押してください。</p></section>
         </div>
-
-        <div class="sheet-import-help-side">
+        <aside class="sheet-import-help-side">
           <section>
-            <h3>ブックマークレットの登録方法（Chrome例）</h3>
+            <h3>ブックマークレットの登録方法（Chrome の例）</h3>
             <ol>
-              <li>「ブックマークレットをコピー」を押す</li>
-              <li>ブラウザのブックマークバーを表示する</li>
-              <li>ブックマークバーを右クリックし「ページを追加」</li>
+              <li>「ブックマークレットをコピー」をクリック</li>
+              <li>ブックマークマネージャーを表示（Ctrl+Shift+B）</li>
+              <li>ブックマークバーで右クリック → 「ページを追加」</li>
               <li>名前を入力（例：キャラシ倉庫取込）</li>
-              <li>URL欄へコピー内容を貼り付ける</li>
-              <li>保存して登録完了</li>
+              <li>URL欄へ貼り付け（Ctrl+V）</li>
+              <li>「保存」をクリックして登録完了</li>
             </ol>
-            <p class="sheet-import-help-note">Edge / Firefox / Safariでも、ブックマークのURLを編集できる場合は同様に登録できます。</p>
+            <p>Edge / Firefox / Safari でも、ブックマークのURLを編集できる場合は同様に登録できます。</p>
           </section>
-
-          <section><h3>ブックマークレットが動かない場合</h3><dl class="sheet-import-help-troubleshooting"><div><dt>対象ページを確認</dt><dd>キャラシ倉庫の対象キャストページを開いた状態で実行してください。他サイトや空のページでは動作しません。</dd></div><div><dt>URL欄を確認</dt><dd>登録したブックマークのURLが <code>javascript:</code> から始まっているか確認してください。</dd></div><div><dt>ページ読込後に実行</dt><dd>ページの入力欄がすべて表示されてから実行してください。</dd></div></dl></section>
-
-          <section><h3>JSONがコピーされない場合</h3><dl class="sheet-import-help-troubleshooting"><div><dt>クリップボード制限</dt><dd>ブラウザが書き込みを制限した場合は、手動コピー用の入力画面が表示されます。表示されたJSONをすべてコピーしてください。</dd></div><div><dt>成功表示後も貼り付けできない</dt><dd>ページを再読み込みし、対象キャストを確認してからもう一度ブックマークレットを実行してください。</dd></div></dl></section>
-
-          <section><h3>別キャストを取得した場合</h3><p>ブックマークレットは実行時に開いているページを読み取ります。対象キャストのページへ移動してから再実行してください。</p></section>
-          <section><h3>一部の項目が想定と違う場合</h3><p>キャラシ倉庫と本アプリでは入力形式や項目名が異なるため、完全一致しない場合があります。取込後に編集画面で内容を確認し、必要箇所だけ修正してください。</p></section>
-        </div>
+          <section><h3>ブックマークレットが動かない場合</h3><ul><li>キャラシ倉庫の対象キャストページで開いているか確認してください。</li><li>ブックマークのURLが <code>javascript:</code> から始まっているか確認してください。</li><li>ページの読み込みが完了した状態で実行してください。</li></ul></section>
+          <section><h3>JSONがコピーされない場合</h3><ul><li>ブラウザがクリップボードへの書き込みをブロックする場合があります。</li><li>手動コピー用の画面が表示された場合は、表示されたJSONをすべてコピーしてください。</li><li>成功表示後も貼り付けできない場合は、ページを再読み込みして再実行してください。</li></ul></section>
+          <section><h3>別キャストを取得してしまった場合</h3><p>キャラシ倉庫を開き直し、対象キャストのページで再度ブックマークレットを実行してください。</p></section>
+          <section><h3>一部の項目が想定と違う場合</h3><p>キャラシ倉庫と本アプリでは入力形式や名称が異なるため、完全一致しない場合があります。取込後に編集画面で内容を確認し、必要に応じて調整してください。</p></section>
+        </aside>
       </div>
-      <footer><p class="sheet-import-help-footer-note">データ取込は補助機能です。反映内容を確認してからキャストを保存してください。</p><button type="button" class="sheet-import-help-done">閉じる <small>CLOSE GUIDE</small></button></footer>
+      <footer><p>ⓘ データ取込はあくまで補助機能です。反映内容は必ず確認し、最後にキャストを保存してください。</p></footer>
     </article>`;
   document.body.append(dialog);
 
@@ -79,6 +96,5 @@
   const closeHelp=()=>dialog.close?.();
   helpButton.addEventListener('click',openHelp);
   dialog.querySelector('.sheet-import-help-close').addEventListener('click',closeHelp);
-  dialog.querySelector('.sheet-import-help-done').addEventListener('click',closeHelp);
   dialog.addEventListener('click',event=>{if(event.target===dialog)closeHelp();});
 })();
