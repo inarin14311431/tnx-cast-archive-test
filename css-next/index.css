@@ -18,6 +18,7 @@
 @import url("./components/dialog.css");
 @import url("./components/status.css");
 @import url("./components/help.css?v=1");
+@import url("./components/global-theme-picker.css?v=1");
 @import url("./components/sheet-snapshots.css?v=1");
 @import url("./components/sheet-import-help.css?v=1");
 @import url("./editor/editor.css?v=25");
