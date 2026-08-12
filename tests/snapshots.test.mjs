@@ -30,3 +30,13 @@ test('snapshot UI supports create restore and delete without image duplication',
   const html = await read('sheet.html');
   assert.match(html, /sheet-snapshots\.js/);
 });
+
+test('snapshot creation is blocked while the sheet has unsaved changes', async () => {
+  const source = await read('js/sheet-snapshots.js');
+  assert.match(source, /function hasUnsavedChanges\(\)/);
+  assert.match(source, /classList\.contains\("unsaved"\)/);
+  assert.match(source, /未保存\|NOT SAVED/);
+  assert.match(source, /先にキャストを保存してからスナップショットを作成してください/);
+  assert.match(source, /alert\(warning\)/);
+  assert.match(source, /#save-button/);
+});
