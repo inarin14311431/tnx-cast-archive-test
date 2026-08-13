@@ -1,7 +1,12 @@
-/* Paper-play adjustments for the quick sheet. Keeps cast.js data/rendering responsibilities intact. */
+/* Paper-play adjustments for the quick sheet.
+ * Keeps the page-compaction script in charge of moving the complete
+ * other-outfits section between pages. */
 (function () {
   const pages = document.querySelector("#quick-sheet-pages");
   if (!pages) return;
+
+  let scheduled = 0;
+  let normalizing = false;
 
   function paperCounter(limit) {
     const count = Math.max(0, Number(limit) || 0);
@@ -12,13 +17,18 @@
   function convertCounters(root) {
     root.querySelectorAll(".quick-sheet__combo-card.is-counter").forEach(card => {
       const status = card.querySelector("header > b");
-      if (!status || status.querySelector(".quick-sheet__paper-counter")) return;
-      const text = status.textContent.trim();
-      const match = text.match(/(?:\d+\s*\/\s*)?(\d+)/);
+      if (!status || status.classList.contains("is-paper-counter")) return;
+      const match = status.textContent.trim().match(/(?:\d+\s*\/\s*)?(\d+)/);
       if (!match) return;
       status.innerHTML = paperCounter(match[1]);
       status.classList.add("is-paper-counter");
     });
+  }
+
+  function putBeforeFooter(page, element, footer) {
+    if (!page || !element || !footer) return;
+    if (element.parentElement === page && element.nextElementSibling === footer) return;
+    page.insertBefore(element, footer);
   }
 
   function reorderPageTwo(root) {
@@ -33,31 +43,43 @@
     const otherOutfits = root.querySelector('[data-quick-sheet-section="other-outfits"]');
     const combos = root.querySelector(".quick-sheet__combos");
 
-    // Registered outfit groups inside otherOutfits are already ordered as:
-    // cyberware, tron, vehicle, residence, other.
-    if (styleSkills) pageTwo.insertBefore(styleSkills, footer);
-    if (weapons) pageTwo.insertBefore(weapons, footer);
-    if (armor) pageTwo.insertBefore(armor, footer);
-    if (otherOutfits) pageTwo.insertBefore(otherOutfits, footer);
+    putBeforeFooter(pageTwo, styleSkills, footer);
+    putBeforeFooter(pageTwo, weapons, footer);
+    putBeforeFooter(pageTwo, armor, footer);
 
-    // Combos / paper counters are the final play section.
-    if (combos) pageTwo.insertBefore(combos, footer);
+    // The complete wrapper stays intact so the page compactor can move it
+    // between page 2 and page 3 without losing outfit order.
+    if (otherOutfits?.parentElement === pageTwo) putBeforeFooter(pageTwo, otherOutfits, footer);
+
+    // Combos / paper counters are the final section whenever they are on page 2.
+    if (combos?.parentElement === pageTwo) putBeforeFooter(pageTwo, combos, footer);
   }
 
-  function normalize(root) {
-    convertCounters(root);
-    reorderPageTwo(root);
+  function normalize() {
+    if (normalizing) return;
+    normalizing = true;
+    observer.disconnect();
+    try {
+      convertCounters(pages);
+      reorderPageTwo(pages);
+    } finally {
+      observer.observe(pages, { childList: true, subtree: true });
+      normalizing = false;
+    }
   }
 
-  let scheduled = false;
-  const observer = new MutationObserver(() => {
-    if (scheduled) return;
-    scheduled = true;
-    queueMicrotask(() => {
-      scheduled = false;
-      normalize(pages);
+  function scheduleNormalize() {
+    if (scheduled) cancelAnimationFrame(scheduled);
+    scheduled = requestAnimationFrame(() => {
+      scheduled = 0;
+      normalize();
     });
-  });
+  }
+
+  const observer = new MutationObserver(scheduleNormalize);
   observer.observe(pages, { childList: true, subtree: true });
-  normalize(pages);
+
+  document.querySelector("#cast-quick-sheet-button")?.addEventListener("click", scheduleNormalize);
+  document.querySelector("#quick-sheet-detail-toggle")?.addEventListener("click", scheduleNormalize);
+  window.addEventListener("resize", scheduleNormalize);
 })();
