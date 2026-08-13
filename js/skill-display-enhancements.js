@@ -4,9 +4,13 @@
   window.TNXSkillDisplayEnhancementsLoaded = true;
 
   const STYLE_SEPARATOR = "[[STYLE_SEPARATOR]]";
-  const BASE_SKILLS = new Set(["医療","射撃","知覚","電脳","心理","自我","交渉","運動","回避","白兵","信用","圧力","隠密"]);
-  const cleanName = value => String(value || "").trim().replace(/^★\s*/, "");
-  const isBase = value => BASE_SKILLS.has(cleanName(value));
+  const BASE_SKILLS = new Set(["射撃", "心理", "自我", "回避", "白兵", "圧力", "信用"]);
+  const BASE_SKILL_PREFIXES = ["操縦："];
+  const cleanName = value => String(value || "").trim().replace(/^★\s*/, "").replace(/[;；]/g, "：");
+  const isBase = value => {
+    const name = cleanName(value);
+    return BASE_SKILLS.has(name) || BASE_SKILL_PREFIXES.some(prefix => name.startsWith(prefix));
+  };
 
   const style = document.createElement("style");
   style.textContent = `
@@ -23,11 +27,18 @@
 
   function editorStars() {
     document.querySelectorAll('#general-skills tr[data-skill-key]').forEach(row => {
-      const kind = row.querySelector('[data-f="skill_kind"]')?.value;
       const input = row.querySelector('[data-f="name"]');
-      if (!input || kind !== "general" || !isBase(input.value)) return;
+      if (!input) return;
       const cell = input.closest('td');
-      if (!cell || cell.querySelector('.tnx-base-skill-star')) return;
+      if (!cell) return;
+      const existing = cell.querySelector('.tnx-base-skill-star');
+      if (!isBase(input.value)) {
+        existing?.remove();
+        const wrap = input.closest('.tnx-base-skill-name');
+        if (wrap) wrap.replaceWith(input);
+        return;
+      }
+      if (existing) return;
       const wrap = document.createElement('span');
       wrap.className = 'tnx-base-skill-name';
       const star = document.createElement('span');
@@ -51,20 +62,25 @@
     });
   }
 
-  function viewerStars() {
-    document.querySelectorAll('.skill-section--general tbody tr').forEach(row => {
+  function syncStaticStars(selector) {
+    document.querySelectorAll(selector).forEach(row => {
       const cell = row.cells[0];
-      if (!cell || !isBase(cell.textContent) || cell.querySelector('.tnx-base-skill-star')) return;
-      cell.insertAdjacentHTML('afterbegin','<span class="tnx-base-skill-star" aria-hidden="true">★</span>');
+      if (!cell) return;
+      const existing = cell.querySelector('.tnx-base-skill-star');
+      if (!isBase(cell.textContent)) {
+        existing?.remove();
+        return;
+      }
+      if (!existing) cell.insertAdjacentHTML('afterbegin','<span class="tnx-base-skill-star" aria-hidden="true">★</span>');
     });
   }
 
+  function viewerStars() {
+    syncStaticStars('.skill-section--general tbody tr');
+  }
+
   function quickStars() {
-    document.querySelectorAll('.quick-sheet__general-skills tbody tr').forEach(row => {
-      const cell = row.cells[0];
-      if (!cell || !isBase(cell.textContent) || cell.querySelector('.tnx-base-skill-star')) return;
-      cell.insertAdjacentHTML('afterbegin','<span class="tnx-base-skill-star" aria-hidden="true">★</span>');
-    });
+    syncStaticStars('.quick-sheet__general-skills tbody tr');
   }
 
   function quickSeparators() {
