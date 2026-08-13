@@ -39,13 +39,19 @@
     ensureThemeOptions(overlay.querySelector("[data-theme-select]"));
   }
 
+  function findThemePickerHost() {
+    return document.querySelector('.app-header, .showcase-header, .site-header, .auth-header');
+  }
+
   function ensureGlobalThemePicker() {
     if (!document.body || document.body.dataset.page === "index.html" || document.querySelector("[data-global-theme-picker]")) return;
+    const host = findThemePickerHost();
+    if (!host) return;
     const label = document.createElement("label");
     label.className = "global-theme-picker";
     label.setAttribute("data-global-theme-picker", "1");
     label.innerHTML = `<span>テーマ</span><select data-theme-select aria-label="表示テーマ"></select>`;
-    document.body.append(label);
+    host.append(label);
     ensureThemeOptions(label.querySelector("[data-theme-select]"));
   }
 
