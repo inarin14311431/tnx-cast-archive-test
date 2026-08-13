@@ -1,10 +1,6 @@
 /* Network scan sequence and ambient data stream for the public cast view. */
 (function(){
-  const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true;
-  if(reducedMotion){
-    document.body.classList.add('cast-reduced-motion');
-    return;
-  }
+  if(window.matchMedia?.('(max-width: 600px)').matches===true)return;
   document.body.classList.add('cast-scan-mode');
   const publicId=new URLSearchParams(location.search).get('id')?.trim()||'UNKNOWN';
 
@@ -40,66 +36,25 @@
 
   const bar=overlay.querySelector('.cast-access-progress span');
   const log=overlay.querySelector('.cast-access-log');
-  const entries=[
-    ['ROUTE','都市ネットへ接続'],
-    ['TRACE','対象IDを追跡'],
-    ['AUTH','アクセス権限を照合'],
-    ['SCAN','身体・経歴・技能データを抽出'],
-    ['VERIFY','データ整合性を確認']
-  ];
+  const entries=[['ROUTE','都市ネットへ接続'],['TRACE','対象IDを追跡'],['AUTH','アクセス権限を照合'],['SCAN','身体・経歴・技能データを抽出'],['VERIFY','データ整合性を確認']];
   const startedAt=performance.now();
-  const minimumDisplayMs=1900;
-  let progress=0;
-  let line=0;
-  let resolved=false;
+  const minimumDisplayMs=2100;
+  let progress=0,line=0,resolved=false;
 
-  function addLog(label,text,ok=false){
-    const p=document.createElement('p');
-    p.className=ok?'ok':'';
-    p.innerHTML=`<strong>${escapeHtml(label)}</strong> // ${escapeHtml(text)}`;
-    log.append(p);
-  }
-
+  function addLog(label,text,ok=false){const p=document.createElement('p');p.className=ok?'ok':'';p.innerHTML=`<strong>${escapeHtml(label)}</strong> // ${escapeHtml(text)}`;log.append(p);}
   function finish(success){
-    if(resolved)return;
-    resolved=true;
-    progress=100;
-    bar.style.width='100%';
-    addLog(success?'ACCESS GRANTED':'DENIED',success?'パーソナルデータ取得完了':'対象データの取得に失敗',success);
+    if(resolved)return;resolved=true;progress=100;bar.style.width='100%';addLog(success?'ACCESS GRANTED':'DENIED',success?'パーソナルデータ取得完了':'対象データの取得に失敗',success);
     const remain=Math.max(0,minimumDisplayMs-(performance.now()-startedAt));
-    window.setTimeout(()=>{
-      overlay.classList.add('is-complete');
-      window.setTimeout(()=>overlay.remove(),620);
-    },remain+220);
+    window.setTimeout(()=>{overlay.classList.add('is-complete');window.setTimeout(()=>overlay.remove(),620);},remain+220);
   }
-
   addLog('LINK','暗号化経路を確立中…');
   const timer=setInterval(()=>{
-    const content=document.querySelector('#cast-content');
-    const error=document.querySelector('#cast-error');
-    const dataReady=content&&!content.hidden;
-    const failed=error&&!error.hidden;
-    const cap=(dataReady||failed)?100:90;
-    progress=Math.min(cap,progress+Math.max(2,Math.round((cap-progress)*0.15)));
-    bar.style.width=`${progress}%`;
-    const threshold=[18,36,56,76,91];
-    while(line<entries.length&&progress>=threshold[line]){
-      addLog(entries[line][0],entries[line][1],line<2);
-      line++;
-    }
-    if(failed){clearInterval(timer);finish(false);return;}
-    if(dataReady&&progress>=96){clearInterval(timer);finish(true);}
+    const content=document.querySelector('#cast-content'),error=document.querySelector('#cast-error');
+    const dataReady=content&&!content.hidden,failed=error&&!error.hidden,cap=(dataReady||failed)?100:90;
+    progress=Math.min(cap,progress+Math.max(2,Math.round((cap-progress)*.15)));bar.style.width=`${progress}%`;
+    const threshold=[18,36,56,76,91];while(line<entries.length&&progress>=threshold[line]){addLog(entries[line][0],entries[line][1],line<2);line++;}
+    if(failed){clearInterval(timer);finish(false);return;}if(dataReady&&progress>=96){clearInterval(timer);finish(true);}
   },110);
-
-  window.setTimeout(()=>{
-    if(resolved)return;
-    const content=document.querySelector('#cast-content');
-    const error=document.querySelector('#cast-error');
-    if(content&&!content.hidden){clearInterval(timer);finish(true);}
-    else if(error&&!error.hidden){clearInterval(timer);finish(false);}
-  },3600);
-
-  function escapeHtml(value){
-    return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  }
+  window.setTimeout(()=>{if(resolved)return;const content=document.querySelector('#cast-content'),error=document.querySelector('#cast-error');if(content&&!content.hidden){clearInterval(timer);finish(true);}else if(error&&!error.hidden){clearInterval(timer);finish(false);}},3600);
+  function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
 })();
