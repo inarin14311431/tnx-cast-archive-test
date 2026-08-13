@@ -1,5 +1,5 @@
 import { getStyleSkills } from "./cast-data-store.js";
-import "./skill-display-enhancements.js?v=1";
+import "./skill-display-enhancements.js?v=2";
 
 const PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const SEPARATOR_MARKER = "[[STYLE_SEPARATOR]]";
