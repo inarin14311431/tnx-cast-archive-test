@@ -1,0 +1,96 @@
+/* Editor-only skill column safeguards.
+ * Keep suit controls usable and visible without changing viewer/quick-sheet layouts. */
+body[data-page="sheet.html"] #general-skills {
+  --editor-general-suit-column: 34px;
+}
+
+body[data-page="sheet.html"] #general-skills .skill-table .suit-col,
+body[data-page="sheet.html"] #general-skills .skill-table .suit-cell {
+  box-sizing: border-box;
+  width: var(--editor-general-suit-column) !important;
+  min-width: var(--editor-general-suit-column) !important;
+  max-width: var(--editor-general-suit-column) !important;
+  padding-inline: 2px !important;
+  overflow: visible;
+  text-align: center;
+}
+
+body[data-page="sheet.html"] #general-skills .suit-check {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+}
+
+body[data-page="sheet.html"] #general-skills .suit-check span {
+  box-sizing: border-box;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+}
+
+/* Do not let the name wrapper introduced for the base-skill star consume suit space. */
+body[data-page="sheet.html"] #general-skills .tnx-base-skill-name {
+  width: 100%;
+  min-width: 0;
+}
+
+body[data-page="sheet.html"] #style-skills {
+  --style-suit-column: 38px;
+}
+
+body[data-page="sheet.html"] #style-skills .style-skill-full-table thead tr,
+body[data-page="sheet.html"] #style-skills .style-skill-full-table tbody tr[data-skill-key]:not(.style-skill-separator-row):not(.tnx-style-separator-row) {
+  grid-template-columns:
+    minmax(132px, 2fr)
+    minmax(56px, .92fr)
+    var(--style-level-column)
+    repeat(4, var(--style-suit-column))
+    minmax(70px, 1.08fr)
+    minmax(46px, .66fr)
+    minmax(78px, 1.15fr)
+    minmax(58px, .82fr)
+    minmax(54px, .76fr)
+    minmax(54px, .76fr)
+    minmax(50px, .68fr)
+    minmax(180px, 3fr)
+    var(--style-page-column)
+    var(--style-action-column);
+}
+
+body[data-page="sheet.html"] #style-skills .style-suit-cell {
+  box-sizing: border-box;
+  width: var(--style-suit-column);
+  min-width: var(--style-suit-column);
+  max-width: var(--style-suit-column);
+  padding-inline: 2px;
+  overflow: visible;
+  justify-content: center;
+}
+
+body[data-page="sheet.html"] #style-skills .suit-check {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+}
+
+body[data-page="sheet.html"] #style-skills .suit-check span {
+  box-sizing: border-box;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+}
+
+/* On phones the editor tables remain horizontally scrollable instead of squeezing controls. */
+@media (max-width: 760px) {
+  body[data-page="sheet.html"] #general-skills :is(.general-skill-column, .skill-group.social, .skill-group.connection) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  body[data-page="sheet.html"] #general-skills .skill-table {
+    min-width: 340px;
+  }
+}
