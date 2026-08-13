@@ -3,8 +3,6 @@
   const pages = document.querySelector("#quick-sheet-pages");
   if (!pages) return;
 
-  const OUTFIT_ORDER = ["weapons", "armor", "cyberware", "tron", "vehicle", "residence", "other"];
-
   function paperCounter(limit) {
     const count = Math.max(0, Number(limit) || 0);
     if (!count) return "";
@@ -23,14 +21,6 @@
     });
   }
 
-  function getOtherGroups(section) {
-    const groups = new Map();
-    section?.querySelectorAll("[data-quick-outfit-category]").forEach(group => {
-      groups.set(group.dataset.quickOutfitCategory, group);
-    });
-    return groups;
-  }
-
   function reorderPageTwo(root) {
     const pageTwo = root.querySelector(".quick-sheet__page--two");
     if (!pageTwo) return;
@@ -40,25 +30,17 @@
     const styleSkills = root.querySelector('[data-quick-sheet-section="style-skills"]');
     const weapons = root.querySelector('[data-quick-sheet-section="weapons"]');
     const armor = root.querySelector('[data-quick-sheet-section="armor"]');
-    const otherSection = root.querySelector('[data-quick-sheet-section="other-outfits"]');
-    const groups = getOtherGroups(otherSection);
+    const otherOutfits = root.querySelector('[data-quick-sheet-section="other-outfits"]');
     const combos = root.querySelector(".quick-sheet__combos");
 
-    // Core skill data first, then outfits in play-reference order.
+    // Registered outfit groups inside otherOutfits are already ordered as:
+    // cyberware, tron, vehicle, residence, other.
     if (styleSkills) pageTwo.insertBefore(styleSkills, footer);
     if (weapons) pageTwo.insertBefore(weapons, footer);
     if (armor) pageTwo.insertBefore(armor, footer);
+    if (otherOutfits) pageTwo.insertBefore(otherOutfits, footer);
 
-    // Move each registered outfit group independently so its order is deterministic.
-    for (const category of OUTFIT_ORDER.slice(2)) {
-      const group = groups.get(category);
-      if (group) pageTwo.insertBefore(group, footer);
-    }
-
-    // Empty wrapper is unnecessary after its groups have been distributed.
-    if (otherSection && !otherSection.querySelector("[data-quick-outfit-category]")) otherSection.remove();
-
-    // Combos / paper counters are always the final play section.
+    // Combos / paper counters are the final play section.
     if (combos) pageTwo.insertBefore(combos, footer);
   }
 
@@ -67,8 +49,14 @@
     reorderPageTwo(root);
   }
 
+  let scheduled = false;
   const observer = new MutationObserver(() => {
-    queueMicrotask(() => normalize(pages));
+    if (scheduled) return;
+    scheduled = true;
+    queueMicrotask(() => {
+      scheduled = false;
+      normalize(pages);
+    });
   });
   observer.observe(pages, { childList: true, subtree: true });
   normalize(pages);
