@@ -11,8 +11,6 @@
     return url.href;
   }
 
-  // cast-mobile.js currently keys off mobile=1. Normalize the URL without
-  // reloading so a shared cast URL automatically enters mobile mode.
   if (useMobile && requestedMode !== "1") {
     history.replaceState(null, "", modeUrl("1"));
   }
@@ -25,7 +23,7 @@
     const host = document.querySelector(".cast-header__primary-actions");
     if (!host) return;
     const link = document.createElement("a");
-    link.className = "cast-view-mode-link";
+    link.className = "cast-edit-link cast-view-mode-link";
     link.dataset.castMobileToggle = "1";
     link.href = modeUrl("1");
     link.innerHTML = "<span>モバイル表示</span><small>MOBILE VIEW</small>";
