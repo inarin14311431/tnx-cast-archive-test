@@ -8,9 +8,8 @@
   importButton.innerHTML='<span>データ取込</span>';
   const helpButton=document.createElement('button');
   helpButton.id='sheet-import-help-button';helpButton.className='sheet-import-help-button';helpButton.type='button';helpButton.dataset.sheetHelp='import';helpButton.setAttribute('aria-haspopup','dialog');helpButton.setAttribute('aria-controls','sheet-import-help-dialog');helpButton.setAttribute('aria-label','データ取込ヘルプ');helpButton.innerHTML='<span class="sheet-import-help-mark">?</span>';helpButton.title='データ取込・ブックマークレットの詳しい使い方';
-  const description=document.createElement('p');description.className='sheet-import-panel__description';description.textContent='キャラシ倉庫のデータをこのキャストに取り込みます';
   const copyButton=document.createElement('button');copyButton.id='sheet-import-bookmarklet-copy';copyButton.className='sheet-import-bookmarklet-copy';copyButton.type='button';copyButton.innerHTML='<span class="sheet-import-bookmark-icon" aria-hidden="true"></span><span>ブックマークレットをコピー</span>';copyButton.title='キャラシ倉庫用ブックマークレットをコピー';
-  control.append(helpButton,description,copyButton);
+  control.append(helpButton,copyButton);
   copyButton.addEventListener('click',()=>{const source=document.querySelector('#legacy-bookmarklet-copy');if(!source){window.alert('ブックマークレットを準備できませんでした。データ取込画面を開いてから再度お試しください。');return;}source.click();});
   const steps=[
     ['データ取込画面を開く','編集画面左側の「データ取込」を押し、「キャラシ倉庫JSON取込」を開きます。','ここが取込作業の入口です。'],
