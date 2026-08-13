@@ -1,7 +1,6 @@
 /* Trigger visible cyber effects after cast data and enhanced style cards exist. */
 (function(){
-  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true;
-  if(reduced)return;
+  if(window.matchMedia?.('(max-width: 600px)').matches===true)return;
   const body=document.body;
   const content=document.querySelector('#cast-content');
   if(!body||!content)return;
@@ -23,12 +22,8 @@
     });
     const id=document.querySelector('.cast-header__public-id');
     if(id){
-      const scan=()=>{
-        id.classList.remove('cast-id-scan');
-        void id.offsetWidth;
-        id.classList.add('cast-id-scan');
-      };
-      scan();
+      const scan=()=>{id.classList.remove('cast-id-scan');void id.offsetWidth;id.classList.add('cast-id-scan');};
+      window.setTimeout(scan,350);
       window.setInterval(scan,5600);
     }
   }
@@ -38,5 +33,6 @@
   window.setTimeout(start,0);
   window.setTimeout(start,250);
   window.setTimeout(start,700);
-  window.setTimeout(()=>observer.disconnect(),5000);
+  window.setTimeout(start,1400);
+  window.setTimeout(()=>observer.disconnect(),6000);
 })();
