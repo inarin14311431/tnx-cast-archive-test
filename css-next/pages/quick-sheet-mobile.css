@@ -136,12 +136,16 @@
   body[data-page="cast.html"] .quick-sheet__ability-grid .is-cs span b { margin-left: 1px; font-size: 8px; }
 
   body[data-page="cast.html"] .quick-sheet__skill-grid {
-    grid-template-columns: minmax(0, 1.45fr) minmax(0, .85fr);
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, .75fr);
     gap: 3px;
   }
   body[data-page="cast.html"] .quick-sheet__general-columns { gap: 2px; padding: 2px; }
   body[data-page="cast.html"] .quick-sheet__skill-side { gap: 3px; }
-  body[data-page="cast.html"] .quick-sheet__skill-table { font-size: 5px; }
+  body[data-page="cast.html"] .quick-sheet__skill-table {
+    width: 100%;
+    table-layout: fixed;
+    font-size: 5px;
+  }
   body[data-page="cast.html"] .quick-sheet__skill-table :is(th, td),
   body[data-page="cast.html"] .quick-sheet__detail-table :is(th, td) {
     height: 13px;
@@ -149,10 +153,38 @@
     font-size: 5px;
     line-height: 1.05;
   }
-  body[data-page="cast.html"] .quick-sheet__skill-table th:first-child,
-  body[data-page="cast.html"] .quick-sheet__skill-table td:first-child { width: auto; }
-  body[data-page="cast.html"] .quick-sheet__suit { font-size: 5px; }
-  body[data-page="cast.html"] .tnx-base-skill-star { font-size: 5px; }
+
+  /* General / Social / Connection tables: protect the skill name column first.
+   * Name 44%, LV 12%, each suit 11%. */
+  body[data-page="cast.html"] .quick-sheet__skill-table :is(th,td):nth-child(1) {
+    width: 44% !important;
+    max-width: none;
+    padding-inline: 2px;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body[data-page="cast.html"] .quick-sheet__skill-table :is(th,td):nth-child(2) {
+    width: 12% !important;
+    padding-inline: 0;
+    text-align: center;
+  }
+  body[data-page="cast.html"] .quick-sheet__skill-table :is(th,td):nth-child(n+3):nth-child(-n+6) {
+    width: 11% !important;
+    padding: 0;
+    text-align: center;
+  }
+  body[data-page="cast.html"] .quick-sheet__skill-table :is(th,td):nth-child(n+3):nth-child(-n+6) :is(span,b) {
+    font-size: 4px;
+  }
+  body[data-page="cast.html"] .quick-sheet__suit {
+    display: inline-block;
+    min-width: 0;
+    font-size: 4px;
+    line-height: 1;
+  }
+  body[data-page="cast.html"] .tnx-base-skill-star { margin-right: 1px; font-size: 4px; }
 
   body[data-page="cast.html"] .quick-sheet__table-scroll {
     width: 100%;
