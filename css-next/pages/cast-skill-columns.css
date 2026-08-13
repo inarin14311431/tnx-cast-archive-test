@@ -1,0 +1,72 @@
+/* Viewer skill column safeguards.
+ * General/social/connection tables are intentionally compact: NAME + LV + four suits.
+ * Style skills keep the same 48px suit columns and scroll horizontally when needed. */
+body[data-page="cast.html"] {
+  --cast-view-suit-column: 48px;
+}
+
+/* The compact viewer tables do not display the generic DETAIL column.
+ * Keeping it in the 432px fixed-layout table forces the four suit columns to collapse. */
+body[data-page="cast.html"] .cast-skill-layout :is(
+  .skill-data-table--general,
+  .skill-data-table--social,
+  .skill-data-table--connection
+) col.skill-col-detail,
+body[data-page="cast.html"] .cast-skill-layout :is(
+  .skill-data-table--general,
+  .skill-data-table--social,
+  .skill-data-table--connection
+) :is(th, td):nth-child(7) {
+  display: none;
+}
+
+body[data-page="cast.html"] .cast-skill-layout :is(
+  .skill-data-table--general,
+  .skill-data-table--social,
+  .skill-data-table--connection
+) col.skill-col-suit {
+  width: var(--cast-view-suit-column) !important;
+}
+
+body[data-page="cast.html"] .cast-skill-layout :is(
+  .skill-data-table--general,
+  .skill-data-table--social,
+  .skill-data-table--connection
+) :is(th, td):nth-child(n+3):nth-child(-n+6) {
+  box-sizing: border-box;
+  width: var(--cast-view-suit-column) !important;
+  min-width: var(--cast-view-suit-column) !important;
+  max-width: var(--cast-view-suit-column) !important;
+  padding-inline: 2px;
+  overflow: visible;
+  text-align: center;
+}
+
+body[data-page="cast.html"] .cast-skill-layout .cast-suit-box {
+  width: 27px;
+  min-width: 27px;
+  height: 27px;
+  min-height: 27px;
+}
+
+/* Style-skill viewer: never allow the suit columns to be compressed by adjacent fields. */
+body[data-page="cast.html"] .style-skill-view-table col.style-col-suit {
+  width: var(--cast-view-suit-column) !important;
+}
+
+body[data-page="cast.html"] .style-skill-view-table :is(th, td):nth-child(n+4):nth-child(-n+7) {
+  box-sizing: border-box;
+  width: var(--cast-view-suit-column) !important;
+  min-width: var(--cast-view-suit-column) !important;
+  max-width: var(--cast-view-suit-column) !important;
+  padding-inline: 2px;
+  overflow: visible;
+  text-align: center;
+}
+
+body[data-page="cast.html"] .style-skill-view-table .style-suit-mark {
+  width: 27px;
+  min-width: 27px;
+  height: 27px;
+  min-height: 27px;
+}
