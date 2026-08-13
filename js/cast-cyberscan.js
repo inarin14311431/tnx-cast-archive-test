@@ -7,20 +7,11 @@
   }
   document.body.classList.add('cast-scan-mode');
   const publicId=new URLSearchParams(location.search).get('id')?.trim()||'UNKNOWN';
-  const scanSessionKey='tnx-cast-scan-complete-v1';
-  const fastScanWindowMs=10*60*1000;
-  let fastScan=false;
-  try{
-    const lastScanAt=Number(sessionStorage.getItem(scanSessionKey));
-    const elapsed=Date.now()-lastScanAt;
-    fastScan=Number.isFinite(lastScanAt)&&lastScanAt>0&&elapsed>=0&&elapsed<=fastScanWindowMs;
-  }catch{}
-  if(fastScan)document.body.classList.add('cast-scan-fast');
 
   const rain=document.createElement('div');
   rain.className='cast-data-rain';
   rain.setAttribute('aria-hidden','true');
-  const chars='01 N◎VA CAST ACCESS DATA LINK TRACE AUTH '; 
+  const chars='01 N◎VA CAST ACCESS DATA LINK TRACE AUTH ';
   for(let index=0;index<16;index++){
     const line=document.createElement('span');
     line.style.left=`${index*6.4+(index%3)*1.2}%`;
@@ -36,7 +27,6 @@
 
   const overlay=document.createElement('section');
   overlay.className='cast-access-overlay';
-  if(fastScan)overlay.classList.add('is-fast-scan');
   overlay.setAttribute('aria-live','polite');
   overlay.innerHTML=`
     <div class="cast-access-terminal">
@@ -57,6 +47,8 @@
     ['SCAN','身体・経歴・技能データを抽出'],
     ['VERIFY','データ整合性を確認']
   ];
+  const startedAt=performance.now();
+  const minimumDisplayMs=1900;
   let progress=0;
   let line=0;
   let resolved=false;
@@ -68,46 +60,44 @@
     log.append(p);
   }
 
-  addLog('LINK',fastScan?'既存の認証経路を再接続中…':'暗号化経路を確立中…');
+  function finish(success){
+    if(resolved)return;
+    resolved=true;
+    progress=100;
+    bar.style.width='100%';
+    addLog(success?'ACCESS GRANTED':'DENIED',success?'パーソナルデータ取得完了':'対象データの取得に失敗',success);
+    const remain=Math.max(0,minimumDisplayMs-(performance.now()-startedAt));
+    window.setTimeout(()=>{
+      overlay.classList.add('is-complete');
+      window.setTimeout(()=>overlay.remove(),620);
+    },remain+220);
+  }
+
+  addLog('LINK','暗号化経路を確立中…');
   const timer=setInterval(()=>{
     const content=document.querySelector('#cast-content');
     const error=document.querySelector('#cast-error');
     const dataReady=content&&!content.hidden;
     const failed=error&&!error.hidden;
-    const cap=dataReady?100:failed?100:88;
-    progress=Math.min(cap,progress+Math.max(fastScan?12:2,Math.round((cap-progress)*(fastScan ? 0.44 : 0.16))));
+    const cap=(dataReady||failed)?100:90;
+    progress=Math.min(cap,progress+Math.max(2,Math.round((cap-progress)*0.15)));
     bar.style.width=`${progress}%`;
-
     const threshold=[18,36,56,76,91];
     while(line<entries.length&&progress>=threshold[line]){
       addLog(entries[line][0],entries[line][1],line<2);
       line++;
     }
+    if(failed){clearInterval(timer);finish(false);return;}
+    if(dataReady&&progress>=96){clearInterval(timer);finish(true);}
+  },110);
 
-    if(failed&&!resolved){
-      resolved=true;
-      addLog('DENIED','対象データの取得に失敗','');
-      setTimeout(()=>overlay.classList.add('is-complete'),700);
-      clearInterval(timer);
-      return;
-    }
-
-    if(dataReady&&progress>=100&&!resolved){
-      resolved=true;
-      addLog('ACCESS GRANTED','パーソナルデータ取得完了',true);
-      try{sessionStorage.setItem(scanSessionKey,String(Date.now()));}catch{}
-      document.querySelector('#cast-status')?.setAttribute('data-scan-state','complete');
-      setTimeout(()=>overlay.classList.add('is-complete'),fastScan?90:520);
-      setTimeout(()=>overlay.remove(),fastScan?460:1300);
-      clearInterval(timer);
-    }
-  },fastScan?45:120);
-
-  setTimeout(()=>{
+  window.setTimeout(()=>{
     if(resolved)return;
     const content=document.querySelector('#cast-content');
-    if(content&&!content.hidden){progress=100;bar.style.width='100%';}
-  },fastScan?850:2600);
+    const error=document.querySelector('#cast-error');
+    if(content&&!content.hidden){clearInterval(timer);finish(true);}
+    else if(error&&!error.hidden){clearInterval(timer);finish(false);}
+  },3600);
 
   function escapeHtml(value){
     return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
