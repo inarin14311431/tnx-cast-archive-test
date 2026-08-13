@@ -31,7 +31,6 @@
 @import url("./editor/button-hover.css?v=1");
 @import url("./pages/archive.css?v=4");
 @import url("./pages/cast.css?v=43");
-@import url("./pages/cast-skill-columns.css?v=1");
 @import url("./pages/cast-divine-layout.css?v=1");
 @import url("./pages/cast-export-hover.css?v=1");
 @import url("./pages/quick-sheet-paper.css?v=1");
@@ -42,5 +41,4 @@
 @import url("./components/armor-totals.css?v=2");
 @import url("./responsive.css?v=7");
 @import url("./tablet.css?v=1");
-@import url("./editor/skill-columns-fix.css?v=1");
 @import url("./pages/quick-sheet-mobile.css?v=1");
