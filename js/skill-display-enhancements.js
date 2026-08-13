@@ -6,7 +6,6 @@
   const STYLE_SEPARATOR = "[[STYLE_SEPARATOR]]";
   const BASE_SKILLS = new Set(["射撃", "心理", "自我", "回避", "白兵", "圧力", "信用"]);
   const BASE_SKILL_PREFIXES = ["操縦："];
-  const SUIT_MARKS = ["♠", "♣", "♥", "♦"];
   const cleanName = value => String(value || "").trim().replace(/^★\s*/, "").replace(/[;；]/g, "：");
   const isBase = value => {
     const name = cleanName(value);
@@ -23,18 +22,6 @@
     .tnx-style-separator-content small{font-size:9px;letter-spacing:.12em;opacity:.58}
     .tnx-style-separator-actions{margin-left:auto;display:flex;gap:3px}
     .quick-sheet tr.tnx-style-separator-row>td{padding:4px 7px!important;font-size:10px}
-
-    /* Final viewer DOM safeguards. These rules intentionally live here because
-       cast-style-skills.js replaces the original style table after cast.js renders. */
-    body[data-page="cast.html"] .skill-data-table--general col.skill-col-suit,
-    body[data-page="cast.html"] .skill-data-table--social col.skill-col-suit,
-    body[data-page="cast.html"] .skill-data-table--connection col.skill-col-suit,
-    body[data-page="cast.html"] .style-skill-view-table col.style-col-suit{width:48px!important}
-    body[data-page="cast.html"] :is(.skill-data-table--general,.skill-data-table--social,.skill-data-table--connection) :is(th,td):nth-child(n+3):nth-child(-n+6),
-    body[data-page="cast.html"] .style-skill-view-table :is(th,td):nth-child(n+4):nth-child(-n+7){box-sizing:border-box;width:48px!important;min-width:48px!important;max-width:48px!important;padding-inline:3px!important;text-align:center!important;overflow:visible!important}
-    body[data-page="cast.html"] .cast-suit-box,
-    body[data-page="cast.html"] .style-suit-mark{box-sizing:border-box;display:inline-grid;width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;place-items:center;border:1px solid var(--color-border);border-radius:6px;color:var(--color-muted);background:var(--color-surface-alt);font-size:20px;line-height:1}
-    body[data-page="cast.html"] :is(.cast-suit-box,.style-suit-mark).is-active{border-color:var(--color-accent);color:var(--color-bg);background:var(--color-accent);box-shadow:var(--shadow-glow)}
   `;
   document.head.append(style);
 
@@ -92,29 +79,6 @@
     syncStaticStars('.skill-section--general tbody tr');
   }
 
-  function viewerSuits() {
-    document.querySelectorAll('body[data-page="cast.html"] :is(.skill-data-table--general,.skill-data-table--social,.skill-data-table--connection) tbody tr').forEach(row => {
-      SUIT_MARKS.forEach((mark, index) => {
-        const cell = row.cells[index + 2];
-        if (!cell || cell.querySelector('.cast-suit-box')) return;
-        const active = Boolean(String(cell.textContent || '').trim());
-        cell.textContent = '';
-        const box = document.createElement('span');
-        box.className = `cast-suit-box${active ? ' is-active' : ''}`;
-        box.textContent = mark;
-        box.setAttribute('aria-label', `${mark}${active ? '取得' : '未取得'}`);
-        cell.append(box);
-      });
-    });
-
-    document.querySelectorAll('body[data-page="cast.html"] .style-skill-view-table .style-suit-cell').forEach((cell, index) => {
-      const mark = cell.querySelector('.style-suit-mark');
-      if (!mark) return;
-      const suitIndex = index % 4;
-      if (!mark.textContent.trim()) mark.textContent = SUIT_MARKS[suitIndex];
-    });
-  }
-
   function quickStars() {
     syncStaticStars('.quick-sheet__general-skills tbody tr');
   }
@@ -130,11 +94,10 @@
     });
   }
 
-  function apply() { editorStars(); editorSeparators(); viewerStars(); viewerSuits(); quickStars(); quickSeparators(); }
+  function apply() { editorStars(); editorSeparators(); viewerStars(); quickStars(); quickSeparators(); }
   let queued = false;
   const queue = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; apply(); }); };
   new MutationObserver(queue).observe(document.body, { childList:true, subtree:true });
   document.addEventListener('change', queue, true);
-  document.addEventListener('tnx:style-skills-rendered', queue);
   apply();
 })();
