@@ -18,10 +18,6 @@
     return document.body?.dataset.page === "index.html";
   }
 
-  function isStyleMarkPage() {
-    return ["index.html", "account.html"].includes(document.body?.dataset.page || "");
-  }
-
   function ensureStyleMarkStyles() {
     if (document.querySelector("style[data-style-mark-normalizer]")) return;
     const style = document.createElement("style");
@@ -94,7 +90,6 @@
   }
 
   function normalizeStyleMarks(root = document) {
-    if (!isStyleMarkPage()) return;
     ensureStyleMarkStyles();
     const nodes = [];
     if (root instanceof Element && root.matches(".cast-card__style-chip b, .owned-cast__style b")) nodes.push(root);
@@ -109,7 +104,7 @@
   }
 
   function observeStyleMarks() {
-    if (!isStyleMarkPage() || !document.body) return;
+    if (!document.body) return;
     normalizeStyleMarks(document);
     const observer = new MutationObserver(records => {
       records.forEach(record => record.addedNodes.forEach(node => {
