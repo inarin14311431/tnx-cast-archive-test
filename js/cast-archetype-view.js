@@ -61,6 +61,7 @@
 
     const personaNames = new Set(entries.filter(({ mark }) => String(mark).includes("◎")).map(({ name }) => name).filter(Boolean));
     const keyNames = new Set(entries.filter(({ mark }) => String(mark).includes("●")).map(({ name }) => name).filter(Boolean));
+    const shownShadowNames = new Set();
 
     const roleForCard = (name, mark) => {
       const value = String(mark || "").trim();
@@ -69,7 +70,10 @@
       if (hasPersona && hasKey) return "PERSONA=KEY";
       if (hasPersona) return "PERSONA";
       if (hasKey) return "KEY";
-      if (!personaNames.has(name) && !keyNames.has(name)) return "SHADOW";
+      if (!personaNames.has(name) && !keyNames.has(name) && !shownShadowNames.has(name)) {
+        shownShadowNames.add(name);
+        return "SHADOW";
+      }
       return "";
     };
 
