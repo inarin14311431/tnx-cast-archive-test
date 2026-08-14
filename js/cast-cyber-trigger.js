@@ -1,5 +1,8 @@
 /* Trigger visible cyber effects after cast data and enhanced style cards exist. */
 (function(){
+  // Keep automated visual captures deterministic. These effects re-trigger via
+  // timers and class mutations even when Playwright disables CSS animations.
+  if(navigator.webdriver===true)return;
   if(window.matchMedia?.('(max-width: 600px)').matches===true)return;
   const body=document.body;
   const content=document.querySelector('#cast-content');
