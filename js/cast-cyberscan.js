@@ -63,7 +63,13 @@
     if(resolved)return;resolved=true;progress=100;bar.style.width='100%';addLog(success?'ACCESS GRANTED':'DENIED',success?(fastScan?'認証済みデータへ接続':'パーソナルデータ取得完了'):'対象データの取得に失敗',success);
     if(success){try{sessionStorage.setItem(scanSessionKey,String(Date.now()));}catch{}}
     const remain=Math.max(0,minimumDisplayMs-(performance.now()-startedAt));
-    window.setTimeout(()=>{overlay.classList.add('is-complete');window.setTimeout(()=>overlay.remove(),fastScan?260:620);},remain+(fastScan?80:220));
+    window.setTimeout(()=>{
+      overlay.classList.add('is-complete');
+      window.setTimeout(()=>{
+        overlay.remove();
+        window.dispatchEvent(new CustomEvent('tnx:cast-scan-complete',{detail:{success,fastScan}}));
+      },fastScan?260:620);
+    },remain+(fastScan?80:220));
   }
   addLog('LINK',fastScan?'既存の認証経路を呼び出し中…':'暗号化経路を確立中…');
   const timer=setInterval(()=>{
