@@ -35,13 +35,7 @@
     if (value.includes("●")) return "is-key";
     return "is-standard";
   }
-  function roleFor(mark) {
-    const value = String(mark || "").trim();
-    if (value.includes("◎") && value.includes("●")) return "PERSONA=KEY";
-    if (value.includes("◎")) return "PERSONA";
-    if (value.includes("●")) return "KEY";
-    return "SHADOW";
-  }
+
   function enhanceStyles() {
     const styles = document.querySelector("#cast-styles");
     const chips = [...document.querySelectorAll("#cast-styles .style-chip")];
@@ -57,13 +51,29 @@
       styles.before(heading);
     }
     heading.classList.add("cast-unified-heading");
-    chips.forEach((chip, index) => {
-      chip.querySelectorAll(".cast-archetype-card__scan,.cast-archetype-card__role").forEach(element => element.remove());
-      chip.classList.remove("cast-archetype-card", "is-persona", "is-key", "is-dual", "is-standard");
+
+    const entries = chips.map(chip => {
+      const name = chip.querySelector(".style-chip__name")?.textContent.trim() || "";
       const markElement = chip.querySelector(".style-chip__mark");
       const mark = markElement?.getAttribute("aria-label") || markElement?.textContent || "";
+      return { chip, name, mark };
+    });
+    const personaNames = new Set(entries.filter(({ mark }) => String(mark).includes("◎")).map(({ name }) => name).filter(Boolean));
+    const keyNames = new Set(entries.filter(({ mark }) => String(mark).includes("●")).map(({ name }) => name).filter(Boolean));
+    const roleForName = name => {
+      const isPersona = personaNames.has(name);
+      const isKey = keyNames.has(name);
+      if (isPersona && isKey) return "PERSONA=KEY";
+      if (isPersona) return "PERSONA";
+      if (isKey) return "KEY";
+      return "SHADOW";
+    };
+
+    entries.forEach(({ chip, name, mark }, index) => {
+      chip.querySelectorAll(".cast-archetype-card__scan,.cast-archetype-card__role").forEach(element => element.remove());
+      chip.classList.remove("cast-archetype-card", "is-persona", "is-key", "is-dual", "is-standard");
       chip.classList.add("cast-style-card-simple", stateFor(mark));
-      chip.dataset.styleRole = roleFor(mark);
+      chip.dataset.styleRole = roleForName(name);
       chip.dataset.castStyleSlot = String(index + 1).padStart(2, "0");
       delete chip.dataset.archetypeCode;
       delete chip.dataset.archetypeEnhanced;
