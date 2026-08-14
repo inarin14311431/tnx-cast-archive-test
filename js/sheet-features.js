@@ -78,6 +78,8 @@ function initializeArmorOutfitColumns(){
         head.querySelectorAll("[data-ofc-head]").forEach(cell=>{
           cell.hidden=!allowedOFC.has(cell.dataset.ofcHead||"");
         });
+        const slotHead=head.querySelector(".outfit-table-head--slot");
+        if(slotHead)slotHead.textContent="部位";
         const desired=order.map(key=>head.querySelector(selectorFor("head",key))).filter(Boolean);
         const current=[...head.children].filter(cell=>!cell.hidden);
         if(desired.some((cell,index)=>current[index]!==cell))desired.forEach(cell=>head.append(cell));
