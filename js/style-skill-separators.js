@@ -54,11 +54,16 @@
 
   function ensureActionCell(row){
     const cells=[...row.children].filter(cell=>cell.tagName==="TD");
-    let actionCell=cells.find(cell=>cell.querySelector('[data-skill-move],[data-delete-skill]'))||null;
-    if(!actionCell){
-      actionCell=document.createElement("td");
-      row.append(actionCell);
-    }
+    if(cells.length<2)return null;
+
+    /* A normal skill row already owns its action cell at the far right.
+     * Never manufacture a new td here: doing so is itself a childList mutation and,
+     * while the row is being rebuilt by another enhancer, used to create one extra
+     * cell on every observer pass. Reuse only the existing last cell. */
+    const actionCell=cells[cells.length-1];
+    cells.forEach(cell=>{
+      if(cell!==actionCell)cell.classList.remove("style-separator-actions");
+    });
     actionCell.classList.add("style-separator-actions");
 
     const actions=[...row.querySelectorAll('[data-skill-move],[data-delete-skill]')];
