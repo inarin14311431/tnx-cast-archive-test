@@ -6,6 +6,7 @@
   if(!container)return;
 
   let addButton=null;
+  let decorateQueued=false;
 
   const wait=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   const rows=()=>[...container.querySelectorAll('tr[data-skill-key]')];
@@ -60,7 +61,6 @@
     }
     actionCell.classList.add("style-separator-actions");
 
-    /* Keep every normal skill action in one dedicated right-edge cell. */
     const actions=[...row.querySelectorAll('[data-skill-move],[data-delete-skill]')];
     for(const action of actions){
       if(action.parentElement!==actionCell)actionCell.append(action);
@@ -83,7 +83,6 @@
       emit(name);
     }
 
-    /* "スタイル名" used to be inserted as a dummy initial value. Treat it as empty. */
     if(name.value==="スタイル名"&&!row.dataset.styleSeparatorUserNamed){
       name.value="";
       row.dataset.styleSeparatorTitle="";
@@ -144,8 +143,17 @@
     rows().forEach(decorate);
   }
 
+  function queueDecorate(){
+    if(decorateQueued)return;
+    decorateQueued=true;
+    requestAnimationFrame(()=>{
+      decorateQueued=false;
+      decorateAll();
+    });
+  }
+
   async function createSeparator(){
-    if(!addButton)return;
+    if(!addButton||addButton.disabled)return;
     addButton.disabled=true;
     try{
       const before=new Set(rows().map(row=>row.dataset.skillKey));
@@ -162,6 +170,10 @@
       const detail=row.querySelector('[data-f="description"]');
       const name=row.querySelector('[data-f="name"]');
 
+      row.dataset.styleSeparator="1";
+      row.dataset.styleSeparatorTitle="";
+      row.dataset.styleSeparatorUserNamed="";
+
       if(name){name.value="";emit(name);}
       if(kind){
         if(!kind.querySelector('option[value="none"]')){
@@ -170,37 +182,37 @@
           option.textContent="なし";
           kind.prepend(option);
         }
+        kind.dataset.styleSeparatorLocked="1";
         kind.value="none";
         emit(kind);
       }
       if(level){level.value="1";emit(level);}
       row.querySelectorAll('input[type="checkbox"][data-f]').forEach(box=>{
+        if(!box.checked)return;
         box.checked=false;
         emit(box);
       });
       if(detail){detail.value=MARKER;emit(detail);}
 
-      row.dataset.styleSeparator="1";
-      row.dataset.styleSeparatorTitle="";
-      row.dataset.styleSeparatorUserNamed="";
       decorate(row);
       const editable=ensureNameField(row);
       editable?.focus();
     }finally{
       addButton.disabled=false;
+      queueDecorate();
     }
   }
 
-  const observer=new MutationObserver(decorateAll);
+  const observer=new MutationObserver(queueDecorate);
   observer.observe(container,{childList:true,subtree:true});
 
   container.addEventListener("input",event=>{
     const row=event.target.closest?.('tr[data-skill-key]');
-    if(row)decorate(row);
+    if(row&&isSeparator(row))queueDecorate();
   });
   container.addEventListener("change",event=>{
     const row=event.target.closest?.('tr[data-skill-key]');
-    if(row)decorate(row);
+    if(row&&isSeparator(row))queueDecorate();
   });
 
   decorateAll();
