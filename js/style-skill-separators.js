@@ -52,14 +52,65 @@
     emit(kind);
   }
 
+  function retargetAction(action,key){
+    if(action.matches('[data-skill-move]'))action.dataset.skillKey=key;
+    if(action.matches('[data-delete-skill]'))action.dataset.deleteSkill=key;
+    action.querySelectorAll?.('[data-skill-move]').forEach(button=>button.dataset.skillKey=key);
+    action.querySelectorAll?.('[data-delete-skill]').forEach(button=>button.dataset.deleteSkill=key);
+  }
+
+  function buildFallbackActions(key){
+    const up=document.createElement("button");
+    up.type="button";
+    up.textContent="▲";
+    up.dataset.skillMove="up";
+    up.dataset.skillKey=key;
+    up.title="上へ移動";
+
+    const down=document.createElement("button");
+    down.type="button";
+    down.textContent="▼";
+    down.dataset.skillMove="down";
+    down.dataset.skillKey=key;
+    down.title="下へ移動";
+
+    const del=document.createElement("button");
+    del.type="button";
+    del.textContent="×";
+    del.dataset.deleteSkill=key;
+    del.title="削除";
+
+    return [up,down,del];
+  }
+
+  function restoreMissingActions(row,actionCell){
+    const key=row?.dataset.skillKey;
+    if(!key||!actionCell)return;
+    if(row.querySelector('[data-skill-move],[data-delete-skill]'))return;
+
+    const template=rows().find(candidate=>
+      candidate!==row&&
+      !isSeparator(candidate)&&
+      candidate.querySelector('[data-skill-move],[data-delete-skill]')
+    );
+    const templateActions=template
+      ? [...template.querySelectorAll('[data-skill-move],[data-delete-skill]')]
+      : [];
+    const actions=templateActions.length
+      ? templateActions.map(action=>action.cloneNode(true))
+      : buildFallbackActions(key);
+
+    for(const action of actions){
+      retargetAction(action,key);
+      actionCell.append(action);
+    }
+  }
+
   function ensureActionCell(row){
     const cells=[...row.children].filter(cell=>cell.tagName==="TD");
     if(cells.length<2)return null;
 
-    /* A normal skill row already owns its action cell at the far right.
-     * Never manufacture a new td here: doing so is itself a childList mutation and,
-     * while the row is being rebuilt by another enhancer, used to create one extra
-     * cell on every observer pass. Reuse only the existing last cell. */
+    /* Reuse only the existing far-right cell. Never create td elements here. */
     const actionCell=cells[cells.length-1];
     cells.forEach(cell=>{
       if(cell!==actionCell)cell.classList.remove("style-separator-actions");
@@ -68,8 +119,10 @@
 
     const actions=[...row.querySelectorAll('[data-skill-move],[data-delete-skill]')];
     for(const action of actions){
+      retargetAction(action,row.dataset.skillKey);
       if(action.parentElement!==actionCell)actionCell.append(action);
     }
+    restoreMissingActions(row,actionCell);
     return actionCell;
   }
 
@@ -84,6 +137,7 @@
       name.type="text";
       name.dataset.f="name";
       name.value=row.dataset.styleSeparatorTitle||"";
+      /* Remove only presentation remnants. Never touch the action cell. */
       cell.replaceChildren(name);
       emit(name);
     }
