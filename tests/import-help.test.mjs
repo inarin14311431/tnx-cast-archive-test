@@ -27,7 +27,7 @@ test('data import exposes the approved compact panel and guided bookmarklet help
   assert.match(help, /import "\.\/sheet-import-help\.js"/);
 
   const css = await read('css-next/components/sheet-import-help.css');
-  assert.match(css, /grid-template-areas:"main help" "desc desc" "copy copy"/);
+  assert.match(css, /grid-template-areas:"main help" "copy copy"/);
   assert.match(css, /sheet-import-bookmarklet-copy/);
   assert.match(css, /sheet-import-help-progress/);
   assert.match(css, /sheet-import-help-stage/);
