@@ -76,8 +76,16 @@
     ensureNoneKind(row);
     const name=row.querySelector('[data-f="name"]');
     if(name){
+      /* Separator titles are ordinary saved skill-name inputs. Keep them explicitly editable even
+       * when another style-skill enhancer has touched the row. */
+      name.disabled=false;
+      name.readOnly=false;
+      name.removeAttribute("disabled");
+      name.removeAttribute("readonly");
+      name.tabIndex=0;
       name.placeholder="スタイル名を入力（例：アヤカシ）";
       name.setAttribute("aria-label","スタイル技能の区切り名");
+      name.dataset.styleSeparatorName="1";
     }
   }
 
