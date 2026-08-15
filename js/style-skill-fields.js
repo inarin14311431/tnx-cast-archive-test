@@ -1,7 +1,6 @@
 /* Restore the full style-skill editor fields used by the original sheet. */
 (function(){
   const PREFIX="@@TNX_STYLE_DETAIL_V1@@";
-  const SEPARATOR_MARKER="[[STYLE_SEPARATOR]]";
   const SUITS=[
     ["reason","♠"],
     ["passion","♣"],
@@ -41,32 +40,24 @@
 
   function encode(data){return PREFIX+"\n"+JSON.stringify(data);}
 
-  function isSeparatorRow(row){
-    if(!row)return false;
-    if(row.dataset.styleSeparator==="1")return true;
-    const original=row.querySelector('textarea[data-f="description"]');
-    const text=String(original?.value||"");
-    if(text.startsWith(SEPARATOR_MARKER))return true;
-    if(!text.startsWith(PREFIX))return false;
-    try{
-      const detail=JSON.parse(text.slice(PREFIX.length).trim());
-      return String(detail?.description||"").startsWith(SEPARATOR_MARKER);
-    }catch{return false;}
-  }
-
   function ensureKindOptions(row){
     const select=row.querySelector('select[data-f="skill_kind"]');
     if(!select)return;
+
+    /* Separator rows use the native "none" option created by sheet.js.
+       Never rewrite that select: separator.js and this enhancer must not compete. */
+    if(row.dataset.styleSeparator==="1"||select.dataset.styleSeparatorLocked==="1"||select.value==="none")return;
+
     const definitions=window.TNXStyleSkillKinds?.definitions||[
       {value:"normal",label:"通常"},{value:"secret",label:"秘技"},{value:"ultimate",label:"奥義"},{value:"direction",label:"演出"}
     ];
     const selected=select.value;
     const current=[...select.options];
-    const sameOptions=current.length===definitions.length&&current.every((option,index)=>{
+    const same=current.length===definitions.length&&current.every((option,index)=>{
       const item=definitions[index];
       return option.value===item.value&&option.textContent===item.label;
     });
-    if(!sameOptions){
+    if(!same){
       select.replaceChildren(...definitions.map(item=>{
         const option=document.createElement("option");
         option.value=item.value;
@@ -86,7 +77,7 @@
   }
 
   function syncRowFromOriginal(row){
-    if(!row||row.dataset.fullStyleFields!=="1"||isSeparatorRow(row))return false;
+    if(!row||row.dataset.fullStyleFields!=="1")return false;
     const original=row.querySelector('textarea[data-f="description"]');
     if(!original)return false;
     const data=parse(original.value);
@@ -101,9 +92,6 @@
   }
 
   function rebuildRow(row){
-    /* Separator rows intentionally keep the native sheet.js row structure so the
-       native ▲/▼/× action group remains untouched and functional. */
-    if(isSeparatorRow(row))return;
     ensureKindOptions(row);
     if(row.dataset.fullStyleFields==="1")return;
     const nameCell=row.children[0];
@@ -111,8 +99,8 @@
     const levelCell=row.children[2];
     const suitCells=[...row.querySelectorAll(":scope > .suit-cell")];
     const original=row.querySelector('textarea[data-f="description"]');
-    const deleteCell=row.lastElementChild;
-    if(!nameCell||!typeCell||!levelCell||suitCells.length!==4||!original||!deleteCell)return;
+    const actionCell=row.lastElementChild;
+    if(!nameCell||!typeCell||!levelCell||suitCells.length!==4||!original||!actionCell)return;
 
     suitCells.forEach((cell,index)=>{
       cell.classList.add("style-suit-cell",`style-suit-cell--${SUITS[index][0]}`);
@@ -145,7 +133,7 @@
       }
       cells.push(td);
     }
-    cells.push(deleteCell);
+    cells.push(actionCell);
     row.replaceChildren(...cells);
     row.dataset.fullStyleFields="1";
   }
@@ -183,9 +171,7 @@
     root.addEventListener("input",event=>{
       const original=event.target.closest?.('textarea[data-f="description"]');
       if(!original||!root.contains(original))return;
-      const row=original.closest('tr[data-skill-key]');
-      if(isSeparatorRow(row))return;
-      syncRowFromOriginal(row);
+      syncRowFromOriginal(original.closest('tr[data-skill-key]'));
     },true);
     queue();
   }
