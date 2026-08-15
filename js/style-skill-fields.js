@@ -1,6 +1,7 @@
 /* Restore the full style-skill editor fields used by the original sheet. */
 (function(){
   const PREFIX="@@TNX_STYLE_DETAIL_V1@@";
+  const SEPARATOR_MARKER="[[STYLE_SEPARATOR]]";
   const SUITS=[
     ["reason","♠"],
     ["passion","♣"],
@@ -40,13 +41,18 @@
 
   function encode(data){return PREFIX+"\n"+JSON.stringify(data);}
 
+  function isSeparatorRow(row){
+    if(!row)return false;
+    if(row.dataset.styleSeparator==="1"||row.classList.contains("style-skill-separator-row"))return true;
+    const original=row.querySelector('textarea[data-f="description"]');
+    if(!original)return false;
+    return String(parse(original.value).description||"").startsWith(SEPARATOR_MARKER);
+  }
+
   function ensureKindOptions(row){
     const select=row.querySelector('select[data-f="skill_kind"]');
     if(!select)return;
-
-    /* Separator rows use the native "none" option created by sheet.js.
-       Never rewrite that select: separator.js and this enhancer must not compete. */
-    if(row.dataset.styleSeparator==="1"||select.dataset.styleSeparatorLocked==="1"||select.value==="none")return;
+    if(isSeparatorRow(row)||select.dataset.styleSeparatorLocked==="1")return;
 
     const definitions=window.TNXStyleSkillKinds?.definitions||[
       {value:"normal",label:"通常"},{value:"secret",label:"秘技"},{value:"ultimate",label:"奥義"},{value:"direction",label:"演出"}
@@ -77,7 +83,7 @@
   }
 
   function syncRowFromOriginal(row){
-    if(!row||row.dataset.fullStyleFields!=="1")return false;
+    if(!row||row.dataset.fullStyleFields!=="1"||isSeparatorRow(row))return false;
     const original=row.querySelector('textarea[data-f="description"]');
     if(!original)return false;
     const data=parse(original.value);
@@ -92,6 +98,10 @@
   }
 
   function rebuildRow(row){
+    /* A divider must stay in the native row shape until separator.js reduces it
+       to its stable two-cell layout. Expanding it to the 17-column skill layout
+       is what caused the row to collapse after move-up/move-down rerenders. */
+    if(isSeparatorRow(row))return;
     ensureKindOptions(row);
     if(row.dataset.fullStyleFields==="1")return;
     const nameCell=row.children[0];
@@ -171,7 +181,9 @@
     root.addEventListener("input",event=>{
       const original=event.target.closest?.('textarea[data-f="description"]');
       if(!original||!root.contains(original))return;
-      syncRowFromOriginal(original.closest('tr[data-skill-key]'));
+      const row=original.closest('tr[data-skill-key]');
+      if(isSeparatorRow(row))return;
+      syncRowFromOriginal(row);
     },true);
     queue();
   }
