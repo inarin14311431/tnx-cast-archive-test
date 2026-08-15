@@ -91,6 +91,27 @@ function restoreStyle(field){
   fitStyle(field);
 }
 
+function setStyleNameExact(rowOrKey,value){
+  const key=typeof rowOrKey==="string"?rowOrKey:rowOrKey?.dataset?.skillKey;
+  if(!key)return null;
+  appliedStyles.add(String(key));
+  enhance();
+  const row=styleRoot?.querySelector(`tr[data-skill-key="${CSS.escape(String(key))}"]`);
+  if(!row)return null;
+  let field=row.querySelector('textarea[data-f="name"]');
+  if(!field){
+    const input=row.querySelector('input[data-f="name"]');
+    if(input)field=convert(input,"style");
+  }
+  if(!(field instanceof HTMLTextAreaElement))return null;
+  field.value=normalize(value);
+  markEdited(field);
+  field.dispatchEvent(new Event("input",{bubbles:true}));
+  field.dispatchEvent(new Event("change",{bubbles:true}));
+  fitStyle(field);
+  return field;
+}
+
 function restoreOutfit(owner){
   const key=owner?.dataset.outfitKey;
   const data=key?outfitValues.get(key):null;
@@ -194,6 +215,6 @@ document.addEventListener("click",event=>{
   const mode=document.querySelector("#tsv-title")?.textContent.includes("SKD")?"skd":"ofc";
   restoreImport(mode,parseTsv(document.querySelector("#tsv-text")?.value));
 },true);
-window.TNXMultilineFields={enhance,queue,normalize};
+window.TNXMultilineFields={enhance,queue,normalize,setStyleNameExact};
 queue();
 loadOriginal();
