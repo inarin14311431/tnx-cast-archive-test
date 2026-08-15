@@ -1,4 +1,4 @@
-/* Style-skill separator rows. Keep the native sheet row/action DOM intact. */
+/* Style-skill separator rows. The row structure itself is owned by sheet.js/style-skill-fields.js. */
 (()=>{
   const MARKER="[[STYLE_SEPARATOR]]";
   const DETAIL_PREFIX="@@TNX_STYLE_DETAIL_V1@@";
@@ -6,7 +6,7 @@
   if(!container)return;
 
   let addButton=null;
-  let decorateQueued=false;
+  let queued=false;
   const wait=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   const rows=()=>[...container.querySelectorAll('tr[data-skill-key]')];
   const emit=element=>{
@@ -35,72 +35,32 @@
     return row?.dataset.styleSeparator==="1"||isMarker(descriptionValue(row));
   }
 
-  function ensureNoneKind(row){
-    const kind=row?.querySelector('[data-f="skill_kind"]');
-    if(!kind)return;
-    if(!kind.querySelector('option[value="none"]')){
-      const option=document.createElement("option");
-      option.value="none";
-      option.textContent="なし";
-      kind.prepend(option);
-    }
-    kind.dataset.styleSeparatorLocked="1";
-    if(kind.value!=="none"){
-      kind.value="none";
-      emit(kind);
-    }
-  }
-
-  function ensureNameField(row){
-    const cell=row?.children?.[0];
-    if(!cell)return null;
-    cell.classList.add("style-separator-name-cell");
-    let name=cell.querySelector('[data-f="name"]');
-    if(!name){
-      name=document.createElement("input");
-      name.type="text";
-      name.dataset.f="name";
-      name.value=row.dataset.styleSeparatorTitle||"";
-      cell.replaceChildren(name);
-      emit(name);
-    }
-    if(name.value==="スタイル名"&&!row.dataset.styleSeparatorUserNamed){
-      name.value="";
-      emit(name);
-    }
-    name.disabled=false;
-    name.readOnly=false;
-    name.placeholder="スタイル名を入力（例：アヤカシ）";
-    name.setAttribute("aria-label","スタイル技能の区切り名");
-    name.dataset.styleSeparatorName="1";
-    if(name.dataset.styleSeparatorRemember!=="1"){
-      const remember=()=>{
-        row.dataset.styleSeparatorTitle=name.value;
-        row.dataset.styleSeparatorUserNamed=name.value?"1":"";
-      };
-      name.addEventListener("input",remember);
-      name.addEventListener("change",remember);
-      name.dataset.styleSeparatorRemember="1";
-    }
-    row.dataset.styleSeparatorTitle=name.value;
-    return name;
-  }
-
   function decorate(row){
     if(!isSeparator(row))return;
-    row.classList.add("style-skill-separator-row");
     row.dataset.styleSeparator="1";
-    ensureNoneKind(row);
-    ensureNameField(row);
-    /* Important: do not move, clone, remove, or rebuild the native right-edge action cell.
-       sheet.js owns ▲/▼/× and their enabled state. */
+    row.classList.add("style-skill-separator-row");
+
+    const kind=row.querySelector('[data-f="skill_kind"]');
+    if(kind){
+      kind.dataset.styleSeparatorLocked="1";
+      if(kind.value!=="none")kind.value="none";
+    }
+
+    const name=row.querySelector('[data-f="name"]');
+    if(name){
+      if(name.value==="スタイル名"&&row.dataset.styleSeparatorMigrated!=="1")name.value="";
+      row.dataset.styleSeparatorMigrated="1";
+      name.disabled=false;
+      name.readOnly=false;
+      name.placeholder="スタイル名を入力（例：アヤカシ）";
+      name.setAttribute("aria-label","スタイル技能の区切り名");
+      name.dataset.styleSeparatorName="1";
+    }
   }
 
   function ensureAddButton(){
     const toolbar=document.querySelector("#add-style-skill")?.closest(".toolbar");
-    const headingActions=container.querySelector('.skill-group-actions[data-v28],.skill-group-actions');
-    const target=toolbar||headingActions;
-    if(!target)return;
+    if(!toolbar)return;
     if(!addButton){
       addButton=document.createElement("button");
       addButton.id="add-style-separator";
@@ -109,8 +69,8 @@
       addButton.innerHTML="区切りを追加<small>ADD DIVIDER</small>";
       addButton.addEventListener("click",createSeparator);
     }
-    if(addButton.parentElement!==target)target.append(addButton);
-    if(target===toolbar)toolbar.classList.add("has-style-divider");
+    if(addButton.parentElement!==toolbar)toolbar.append(addButton);
+    toolbar.classList.add("has-style-divider");
   }
 
   function decorateAll(){
@@ -119,10 +79,10 @@
   }
 
   function queueDecorate(){
-    if(decorateQueued)return;
-    decorateQueued=true;
+    if(queued)return;
+    queued=true;
     requestAnimationFrame(()=>{
-      decorateQueued=false;
+      queued=false;
       decorateAll();
     });
   }
@@ -133,42 +93,36 @@
     try{
       const before=new Set(rows().map(row=>row.dataset.skillKey));
       document.querySelector("#add-style-skill")?.click();
+
       let row=null;
-      for(let attempt=0;attempt<30&&!row;attempt++){
+      for(let attempt=0;attempt<20&&!row;attempt++){
         await wait();
         row=rows().find(candidate=>!before.has(candidate.dataset.skillKey));
       }
       if(!row)return;
 
-      /* Mark first so every later enhancer can recognize this as a separator. */
+      /* Mark before firing field events so the other enhancer never treats this as a normal skill. */
       row.dataset.styleSeparator="1";
-      row.dataset.styleSeparatorTitle="";
-      row.dataset.styleSeparatorUserNamed="";
+      row.dataset.styleSeparatorMigrated="1";
+      row.classList.add("style-skill-separator-row");
 
       const name=row.querySelector('[data-f="name"]');
       const kind=row.querySelector('[data-f="skill_kind"]');
       const level=row.querySelector('[data-f="level"]');
       const detail=row.querySelector('[data-f="description"]');
 
-      if(name&&name.value!==""){name.value="";emit(name);}
-      if(kind){
-        if(!kind.querySelector('option[value="none"]')){
-          const option=document.createElement("option");
-          option.value="none";
-          option.textContent="なし";
-          kind.prepend(option);
-        }
-        kind.dataset.styleSeparatorLocked="1";
-        if(kind.value!=="none"){kind.value="none";emit(kind);}
-      }
-      if(level&&level.value!=="1"){level.value="1";emit(level);}
+      if(name){name.value="";emit(name);}
+      if(kind){kind.dataset.styleSeparatorLocked="1";kind.value="none";emit(kind);}
+      if(level){level.value="1";emit(level);}
       row.querySelectorAll('input[type="checkbox"][data-f]').forEach(box=>{
-        if(box.checked){box.checked=false;emit(box);}
+        if(!box.checked)return;
+        box.checked=false;
+        emit(box);
       });
-      if(detail&&detail.value!==MARKER){detail.value=MARKER;emit(detail);}
+      if(detail){detail.value=MARKER;emit(detail);}
 
       decorate(row);
-      ensureNameField(row)?.focus();
+      row.querySelector('[data-f="name"]')?.focus();
     }finally{
       addButton.disabled=false;
       queueDecorate();
