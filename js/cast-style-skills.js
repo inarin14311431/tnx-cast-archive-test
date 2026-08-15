@@ -55,10 +55,12 @@ function ensureDedicatedPanel(section) {
 function fieldCell(value, key) {
   const text = normalizeNewlines(value);
   if (key === "description") return `<td class="style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${esc(text)}</textarea></td>`;
+  if (key === "name") {
+    const rows = Math.max(1, Math.min(6, text.split("\n").length));
+    return `<td class="style-view-cell style-view-cell--name"><textarea class="style-field-scroll style-skill-name-view" rows="${rows}" wrap="soft" readonly aria-label="名称">${esc(text)}</textarea></td>`;
+  }
   const oneLine = text.replace(/\r?\n/g, " ");
-  const extraClass = key === "name" ? " style-skill-name-view" : "";
-  const ariaLabel = key === "name" ? "名称" : key;
-  return `<td class="style-view-cell style-view-cell--${key}"><input class="style-field-scroll${extraClass}" type="text" readonly value="${esc(oneLine)}" title="${esc(text)}" aria-label="${esc(ariaLabel)}"></td>`;
+  return `<td class="style-view-cell style-view-cell--${key}"><input class="style-field-scroll" type="text" readonly value="${esc(oneLine)}" title="${esc(text)}" aria-label="${esc(key)}"></td>`;
 }
 function headerCell(key, label) { return key !== "description" ? `<th>${label}</th>` : `<th class="style-description-heading"><span>${label}</span><button type="button" class="style-description-toggle-all" aria-pressed="false" aria-label="すべての解説を表示">全表示</button></th>`; }
 function createSeparatorRow(skill) { return `<tr class="style-skill-public-separator" data-style-separator-public="1"><td colspan="16"><span class="style-skill-public-separator__label">${esc(normalizeNewlines(skill.name).trim() || "スタイル技能")}</span><small>STYLE SECTION</small></td></tr>`; }
