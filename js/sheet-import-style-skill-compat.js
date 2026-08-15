@@ -1,6 +1,6 @@
 /* Canonical compatibility layer for legacy style-skill imports.
  * Owns JSON control-character repair, symbol-preserving name matching,
- * duplicate cleanup and source-order restoration after the base importer.
+ * multiline-name restoration, duplicate cleanup and source-order restoration after the base importer.
  */
 (()=>{
   const APPLY="#legacy-import-apply";
@@ -14,10 +14,17 @@
     .replace(/\[\s*["']?([^\]"']+)["']?\s*\]/g,".$1")
     .replace(/^[.#]+|[.]$/g,"")
     .replace(/\.{2,}/g,".");
-  const exactName=value=>String(value??"").trim().replace(/Ｎ◎ＶＡ/g,"N◎VA");
-  // Display symbols are meaningful, but old importers may strip them.
-  // Ignore symbols only while matching; applySkill() always restores source text.
-  const matchName=value=>exactName(value).replace(/^[★■┗†※]+\s*/,"");
+  const normalizeMultiline=value=>String(value??"")
+    .replace(/\r\n?/g,"\n")
+    .replace(/\\r\\n|\\n|\\r/g,"\n");
+  const exactName=value=>normalizeMultiline(value).trim().replace(/Ｎ◎ＶＡ/g,"N◎VA");
+  // Display symbols and line breaks are meaningful. Matching is intentionally
+  // more tolerant so a temporary one-line value created by the base importer
+  // can still be found and restored to the exact source text.
+  const matchName=value=>exactName(value)
+    .replace(/^[★■┗†※]+\s*/,"")
+    .replace(/\s+/g," ")
+    .trim();
   const first=(object,...keys)=>{
     for(const key of keys){
       const value=object?.[key];
@@ -136,6 +143,13 @@
   const rowValue=row=>exactName(row?.querySelector('[data-f="name"]')?.value);
   const comparable=value=>matchName(value);
 
+  function ensureMultilineNameField(row){
+    if(!row)return row;
+    window.TNXMultilineFields?.enhance?.();
+    const key=row.dataset.skillKey;
+    return document.querySelector(`${ROOT} tr[data-skill-key="${CSS.escape(key)}"]`)||row;
+  }
+
   function alignImportedOrder(orderedKeys){
     for(let targetIndex=0;targetIndex<orderedKeys.length;targetIndex++){
       const key=orderedKeys[targetIndex];
@@ -194,6 +208,7 @@
     const key=row.dataset.skillKey;
     row=await waitStableRow(key);
     if(!row)return false;
+    row=ensureMultilineNameField(row);
     setValue(row.querySelector('[data-f="name"]'),data.name);
     setValue(row.querySelector('[data-f="skill_kind"]'),skillKind(data));
     const suits=skillSuits(data);
@@ -245,6 +260,7 @@
   async function repair(data){
     const expected=sourceSkills(data);
     await waitBaseImport();
+    window.TNXMultilineFields?.enhance?.();
     const used=new Set();
     const orderedKeys=[];
     let repaired=0;
@@ -255,14 +271,15 @@
         orderedKeys.push(row.dataset.skillKey);
         if(await applySkill(row,skill))repaired++;
       }else if(await addMissingSkill(skill)){
-        row=rows().find(candidate=>!used.has(candidate.dataset.skillKey)&&rowValue(candidate)===skill.name);
+        row=rows().find(candidate=>!used.has(candidate.dataset.skillKey)&&comparable(rowValue(candidate))===comparable(skill.name));
         if(row){used.add(row.dataset.skillKey);orderedKeys.push(row.dataset.skillKey)}
         repaired++;
       }
     }
     removeUnexpectedRows(used);
-    const missing=expected.filter(skill=>!rows().some(row=>rowValue(row)===skill.name));
-    if(missing.length)throw new Error(`スタイル技能${missing.length}件を取込できませんでした：${missing.map(item=>item.name).join("、")}`);
+    window.TNXMultilineFields?.enhance?.();
+    const missing=expected.filter(skill=>!rows().some(row=>exactName(rowValue(row))===exactName(skill.name)));
+    if(missing.length)throw new Error(`スタイル技能${missing.length}件を取込できませんでした：${missing.map(item=>item.name.replace(/\n/g," / ")).join("、")}`);
     if(orderedKeys.length!==expected.length||!alignImportedOrder(orderedKeys))throw new Error("スタイル技能をJSONの並び順に復元できませんでした。");
     document.querySelector(ROOT)?.dispatchEvent(new Event("input",{bubbles:true}));
     window.TNXMultilineFields?.enhance?.();
