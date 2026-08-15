@@ -1,4 +1,5 @@
 import "./help-ui.js?v=4";
+import "./combo-multi-suit.js?v=1";
 
 /* Sheet editor helper features.
  * Keeps only presentation helpers. DB persistence is handled by sheet.js,
