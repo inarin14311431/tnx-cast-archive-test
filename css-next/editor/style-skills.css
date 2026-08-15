@@ -175,13 +175,27 @@ body[data-page="sheet.html"] .skill-toolbar--two.has-style-divider { align-items
 
 /*
  * Style divider.
- * The DOM remains the same full style-skill row as every other row.
- * CSS only hides the middle cells; first cell and native last action cell remain in place.
+ * Keep the exact same 17-column grid as normal style-skill rows. The title spans
+ * columns 1-16 and the native sheet.js action cell stays in column 17.
  */
 #style-skills .style-skill-full-table tbody tr.style-skill-separator-row[data-skill-key] {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--style-action-column);
+  grid-template-columns:
+    minmax(0, 2fr)
+    minmax(0, .92fr)
+    var(--style-level-column)
+    repeat(4, var(--style-suit-column))
+    minmax(0, 1.08fr)
+    minmax(0, .66fr)
+    minmax(0, 1.15fr)
+    minmax(0, .82fr)
+    minmax(0, .76fr)
+    minmax(0, .76fr)
+    minmax(0, .68fr)
+    minmax(0, 3fr)
+    var(--style-page-column)
+    var(--style-action-column);
   align-items: center;
   width: 100%;
   min-width: 0;
@@ -209,7 +223,7 @@ body[data-page="sheet.html"] .skill-toolbar--two.has-style-divider { align-items
 
 #style-skills .style-skill-separator-row > td:first-child {
   display: flex;
-  grid-column: 1;
+  grid-column: 1 / 17;
   align-items: center;
   gap: 10px;
   padding: 4px 8px 4px 20px;
@@ -230,7 +244,7 @@ body[data-page="sheet.html"] .skill-toolbar--two.has-style-divider { align-items
 
 #style-skills .style-skill-separator-row > td:last-child {
   display: flex;
-  grid-column: 2;
+  grid-column: 17;
   align-items: center;
   justify-content: center;
   padding: 5px 3px;
