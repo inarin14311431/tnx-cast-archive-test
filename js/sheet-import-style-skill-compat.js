@@ -18,9 +18,6 @@
     .replace(/\r\n?/g,"\n")
     .replace(/\\r\\n|\\n|\\r/g,"\n");
   const exactName=value=>normalizeMultiline(value).trim().replace(/Ｎ◎ＶＡ/g,"N◎VA");
-  // Matching must tolerate the temporary value produced by a single-line input.
-  // Browsers may collapse "A\nB" to "AB", so ignore whitespace only while matching.
-  // applySkill() always restores the exact source text including line breaks.
   const matchName=value=>exactName(value)
     .replace(/^[★■┗†※]+\s*/,"")
     .replace(/\s+/g,"")
@@ -150,6 +147,13 @@
     return document.querySelector(`${ROOT} tr[data-skill-key="${CSS.escape(key)}"]`)||row;
   }
 
+  function setExactName(row,value){
+    if(!row)return false;
+    const field=window.TNXMultilineFields?.setStyleNameExact?.(row,value);
+    if(field)return true;
+    return setValue(row.querySelector('[data-f="name"]'),normalizeMultiline(value));
+  }
+
   function alignImportedOrder(orderedKeys){
     for(let targetIndex=0;targetIndex<orderedKeys.length;targetIndex++){
       const key=orderedKeys[targetIndex];
@@ -209,11 +213,10 @@
     row=await waitStableRow(key);
     if(!row)return false;
     row=ensureMultilineNameField(row);
-    const nameField=row.querySelector('[data-f="name"]');
-    setValue(nameField,data.name);
+    setExactName(row,data.name);
     await frame();
     row=ensureMultilineNameField(row);
-    setValue(row.querySelector('[data-f="name"]'),data.name);
+    setExactName(row,data.name);
     setValue(row.querySelector('[data-f="skill_kind"]'),skillKind(data));
     const suits=skillSuits(data);
     const level=skillLevel(data);
@@ -283,6 +286,10 @@
     removeUnexpectedRows(used);
     window.TNXMultilineFields?.enhance?.();
     await frame();
+    for(const skill of expected){
+      const row=rows().find(candidate=>comparable(rowValue(candidate))===comparable(skill.name));
+      if(row)setExactName(row,skill.name);
+    }
     const missing=expected.filter(skill=>!rows().some(row=>comparable(rowValue(row))===comparable(skill.name)));
     if(missing.length)throw new Error(`スタイル技能${missing.length}件を取込できませんでした：${missing.map(item=>item.name.replace(/\n/g," / ")).join("、")}`);
     if(orderedKeys.length!==expected.length||!alignImportedOrder(orderedKeys))throw new Error("スタイル技能をJSONの並び順に復元できませんでした。");
