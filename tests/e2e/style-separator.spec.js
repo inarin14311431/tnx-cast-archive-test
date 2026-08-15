@@ -23,12 +23,14 @@ test("スタイル技能の区切りを1行だけ追加でき操作ボタンも�
   await expect(divider.locator('[data-skill-move="down"]')).toHaveCount(1);
   await expect(divider.locator('[data-delete-skill]')).toHaveCount(1);
 
-  // style-skill-fields.js has finished rebuilding every row into the same stable column structure.
-  await expect.poll(async () => divider.locator(":scope > td").count()).toBe(17);
+  // Divider owns a dedicated two-cell DOM: title field + native action cell.
+  await expect.poll(async () => divider.locator(":scope > td").count()).toBe(2);
+  await expect(divider.locator(":scope > td").first()).toHaveClass(/style-separator-main/);
+  await expect(divider.locator(":scope > td").last()).toHaveClass(/style-separator-actions/);
 
-  // Catch observer loops / accidental cell multiplication after the initial conversion settles.
+  // Catch observer loops / accidental cell multiplication after conversion settles.
   await page.waitForTimeout(750);
   await expect(rows).toHaveCount(beforeRows + 1);
   await expect(separators).toHaveCount(beforeSeparators + 1);
-  await expect(divider.locator(":scope > td")).toHaveCount(17);
+  await expect(divider.locator(":scope > td")).toHaveCount(2);
 });
