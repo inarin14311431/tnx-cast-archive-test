@@ -91,6 +91,18 @@ function restoreStyle(field){
   fitStyle(field);
 }
 
+function captureStyleNamesBeforeMove(){
+  if(!styleRoot)return;
+  styleRoot.querySelectorAll('tr[data-skill-key] textarea[data-f="name"]').forEach(field=>{
+    const key=field.closest('tr[data-skill-key]')?.dataset.skillKey;
+    if(!key)return;
+    styleValues.set(String(key),normalize(field.value));
+    /* sheet.js reconstructs style rows on move. Allow the newly created field
+       to be restored from this exact pre-move value, including line breaks. */
+    appliedStyles.delete(String(key));
+  });
+}
+
 function setStyleNameExact(rowOrKey,value){
   const key=typeof rowOrKey==="string"?rowOrKey:rowOrKey?.dataset?.skillKey;
   if(!key)return null;
@@ -208,6 +220,11 @@ document.addEventListener("input",event=>{
 document.addEventListener("change",event=>{
   const field=event.target;
   if(field instanceof HTMLTextAreaElement&&!isImportSource(field))normalizeTextarea(field);
+},true);
+/* Capture exact names in the capture phase, before sheet.js handles the move and
+   replaces the rows. This prevents HTML input value normalization from removing \n. */
+document.addEventListener("click",event=>{
+  if(event.target.closest?.("#style-skills [data-skill-move]"))captureStyleNamesBeforeMove();
 },true);
 document.addEventListener("click",event=>{
   if(event.target.closest?.("#legacy-import-apply"))enhance();
