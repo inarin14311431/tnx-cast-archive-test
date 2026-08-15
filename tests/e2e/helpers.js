@@ -28,6 +28,21 @@ export function watchPageErrors(page) {
   };
 }
 
+export function watchStaticAssetErrors(page) {
+  const errors = [];
+  const handler = response => {
+    if (response.status() < 400) return;
+    const url = new URL(response.url());
+    if (!/\.(?:css|js)(?:$|\?)/i.test(`${url.pathname}${url.search}`)) return;
+    errors.push(`${response.status()} ${url.pathname}${url.search}`);
+  };
+  page.on("response", handler);
+  return () => {
+    page.off("response", handler);
+    expect(errors, errors.join("\n")).toEqual([]);
+  };
+}
+
 export async function disableAnimations(page) {
   await page.addStyleTag({
     content: `
