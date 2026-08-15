@@ -1,5 +1,6 @@
 import { SHEET_HELP_ORDER, SHEET_HELP_TOPICS } from "./help-content.js";
 import "./sheet-import-help.js";
+import "./transfer-help.js?v=1";
 
 const page = document.body?.dataset.page;
 if (page === "sheet.html") initializeSheetHelp();
