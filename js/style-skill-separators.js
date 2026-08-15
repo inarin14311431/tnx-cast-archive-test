@@ -51,6 +51,27 @@
     emit(kind);
   }
 
+  function ensureNameField(row){
+    const cell=row?.children?.[0];
+    if(!cell)return null;
+
+    let name=cell.querySelector('[data-f="name"]');
+    if(name)return name;
+
+    const fallback=String(cell.textContent||"").trim()||"スタイル名";
+    name=document.createElement("input");
+    name.type="text";
+    name.dataset.f="name";
+    name.value=fallback.replace(/\s*STYLE SECTION\s*/gi,"").trim()||"スタイル名";
+
+    /* A separator title must always remain a real editable form control.  Some style-skill
+     * enhancement passes can replace the original name field with presentation-only content;
+     * rebuild it here so the normal sheet event/save pipeline can see data-f=name again. */
+    cell.replaceChildren(name);
+    emit(name);
+    return name;
+  }
+
   function ensureAddButton(){
     const headingActions=container.querySelector('.skill-group-actions[data-v28],.skill-group-actions');
     const toolbar=document.querySelector("#add-style-skill")?.closest(".toolbar");
@@ -74,10 +95,8 @@
     row.classList.add("style-skill-separator-row");
     row.dataset.styleSeparator="1";
     ensureNoneKind(row);
-    const name=row.querySelector('[data-f="name"]');
+    const name=ensureNameField(row);
     if(name){
-      /* Separator titles are ordinary saved skill-name inputs. Keep them explicitly editable even
-       * when another style-skill enhancer has touched the row. */
       name.disabled=false;
       name.readOnly=false;
       name.removeAttribute("disabled");
@@ -107,7 +126,7 @@
       }
       if(!row)return;
 
-      const name=row.querySelector('[data-f="name"]');
+      let name=row.querySelector('[data-f="name"]');
       const kind=row.querySelector('[data-f="skill_kind"]');
       const level=row.querySelector('[data-f="level"]');
       const detail=row.querySelector('[data-f="description"]');
@@ -134,8 +153,13 @@
 
       row.dataset.styleSeparator="1";
       decorate(row);
+      name=ensureNameField(row);
+      if(name&&name.value!=="スタイル名"){
+        name.value="スタイル名";
+        emit(name);
+      }
       name?.focus();
-      name?.select();
+      name?.select?.();
     }finally{
       addButton.disabled=false;
     }
