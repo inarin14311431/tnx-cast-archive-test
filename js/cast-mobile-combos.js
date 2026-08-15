@@ -80,7 +80,7 @@ function renderCounter(combo) {
         <p class="mobile-combo-counter__meta">${limit ? `1アクト ${limit}回` : "使用回数上限なし"}／技能カウンター</p>
         ${limit ? `<button class="mobile-combo-counter__reset" type="button" data-mobile-counter-reset>RESET</button>` : ""}
       </div>
-      ${limit ? `<div class="mobile-combo-counter__boxes" role="group" aria-label="使用回数">${Array.from({length:limit},(_,index)=>`<button type="button" class="mobile-combo-counter__box" data-mobile-counter-box="${index}" aria-pressed="false" aria-label="${index+1}回目"></button>`).join("")}</div>` : ""}
+      ${limit ? `<div class="mobile-combo-counter__boxes" role="group" aria-label="使用回数">${Array.from({length:limit},(_,index)=>`<button type="button" class="mobile-combo-counter__box" data-mobile-counter-box="${index}" aria-pressed="false" aria-label="${index+1}回目：未使用"><span aria-hidden="true">□</span></button>`).join("")}</div>` : ""}
     </article>`;
 }
 
@@ -115,6 +115,9 @@ function paintCounter(card, used, limit) {
     const active = index < used;
     button.classList.toggle("is-used", active);
     button.setAttribute("aria-pressed", String(active));
+    button.setAttribute("aria-label", `${index + 1}回目：${active ? "使用済み" : "未使用"}`);
+    const symbol = button.querySelector("span");
+    if (symbol) symbol.textContent = active ? "☑" : "□";
   });
   card.dataset.mobileCounterUsed = String(used);
   card.setAttribute("aria-label", `技能カウンター ${used}/${limit}回使用`);
