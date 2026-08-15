@@ -105,6 +105,13 @@
     });
   }
 
+  async function stabilizeAfterReorder(){
+    await wait();
+    decorateAll();
+    await wait();
+    decorateAll();
+  }
+
   async function createSeparator(){
     if(!addButton||addButton.disabled)return;
     addButton.disabled=true;
@@ -145,6 +152,13 @@
       queueDecorate();
     }
   }
+
+  container.addEventListener("click",event=>{
+    const button=event.target.closest('.row-actions button');
+    const row=button?.closest('tr[data-skill-key]');
+    if(!button||!row||!isSeparator(row))return;
+    stabilizeAfterReorder();
+  });
 
   new MutationObserver(queueDecorate).observe(container,{childList:true,subtree:true});
   decorateAll();
