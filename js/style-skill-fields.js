@@ -1,6 +1,7 @@
 /* Restore the full style-skill editor fields used by the original sheet. */
 (function(){
   const PREFIX="@@TNX_STYLE_DETAIL_V1@@";
+  const SEPARATOR_MARKER="[[STYLE_SEPARATOR]]";
   const SUITS=[
     ["reason","♠"],
     ["passion","♣"],
@@ -40,26 +41,31 @@
 
   function encode(data){return PREFIX+"\n"+JSON.stringify(data);}
 
+  function isSeparatorRow(row){
+    if(!row)return false;
+    if(row.dataset.styleSeparator==="1")return true;
+    const original=row.querySelector('textarea[data-f="description"]');
+    const text=String(original?.value||"");
+    if(text.startsWith(SEPARATOR_MARKER))return true;
+    if(!text.startsWith(PREFIX))return false;
+    try{
+      const detail=JSON.parse(text.slice(PREFIX.length).trim());
+      return String(detail?.description||"").startsWith(SEPARATOR_MARKER);
+    }catch{return false;}
+  }
+
   function ensureKindOptions(row){
     const select=row.querySelector('select[data-f="skill_kind"]');
     if(!select)return;
-
-    const baseDefinitions=window.TNXStyleSkillKinds?.definitions||[
+    const definitions=window.TNXStyleSkillKinds?.definitions||[
       {value:"normal",label:"通常"},{value:"secret",label:"秘技"},{value:"ultimate",label:"奥義"},{value:"direction",label:"演出"}
     ];
-    const separator=row.dataset.styleSeparator==="1"||select.dataset.styleSeparatorLocked==="1"||select.value==="none";
-    const definitions=separator
-      ? [{value:"none",label:"なし"},...baseDefinitions.filter(item=>item.value!=="none")]
-      : baseDefinitions;
     const selected=select.value;
     const current=[...select.options];
     const sameOptions=current.length===definitions.length&&current.every((option,index)=>{
       const item=definitions[index];
       return option.value===item.value&&option.textContent===item.label;
     });
-
-    /* Avoid replacing identical options. Rebuilding the select is a childList mutation,
-     * so doing it on every observer pass creates an endless enhancer/observer loop. */
     if(!sameOptions){
       select.replaceChildren(...definitions.map(item=>{
         const option=document.createElement("option");
@@ -68,9 +74,7 @@
         return option;
       }));
     }
-
-    if(definitions.some(item=>item.value===selected))select.value=selected;
-    else select.value=separator?"none":"normal";
+    select.value=definitions.some(item=>item.value===selected)?selected:"normal";
   }
 
   function rebuildHeader(table){
@@ -82,7 +86,7 @@
   }
 
   function syncRowFromOriginal(row){
-    if(!row||row.dataset.fullStyleFields!=="1")return false;
+    if(!row||row.dataset.fullStyleFields!=="1"||isSeparatorRow(row))return false;
     const original=row.querySelector('textarea[data-f="description"]');
     if(!original)return false;
     const data=parse(original.value);
@@ -97,6 +101,9 @@
   }
 
   function rebuildRow(row){
+    /* Separator rows intentionally keep the native sheet.js row structure so the
+       native ▲/▼/× action group remains untouched and functional. */
+    if(isSeparatorRow(row))return;
     ensureKindOptions(row);
     if(row.dataset.fullStyleFields==="1")return;
     const nameCell=row.children[0];
@@ -115,7 +122,6 @@
 
     const data=parse(original.value);
     const cells=[nameCell,typeCell,levelCell,...suitCells];
-
     for(const [key,label,tag] of FIELDS){
       const td=document.createElement("td");
       td.className=`style-field-cell style-field-cell--${key}`;
@@ -139,7 +145,6 @@
       }
       cells.push(td);
     }
-
     cells.push(deleteCell);
     row.replaceChildren(...cells);
     row.dataset.fullStyleFields="1";
@@ -178,13 +183,14 @@
     root.addEventListener("input",event=>{
       const original=event.target.closest?.('textarea[data-f="description"]');
       if(!original||!root.contains(original))return;
-      syncRowFromOriginal(original.closest('tr[data-skill-key]'));
+      const row=original.closest('tr[data-skill-key]');
+      if(isSeparatorRow(row))return;
+      syncRowFromOriginal(row);
     },true);
     queue();
   }
 
   window.TNXStyleSkillFields={enhance,syncAll,syncRow:syncRowFromOriginal};
-
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initialize,{once:true});
   else initialize();
 })();
