@@ -7,9 +7,12 @@
   const BUTTON_ID = "transfer-help-button";
 
   ensureStyles();
-  const observer = new MutationObserver(install);
+
+  const observer = new MutationObserver(() => {
+    if (install()) observer.disconnect();
+  });
   observer.observe(document.documentElement, { childList: true, subtree: true });
-  install();
+  if (install()) observer.disconnect();
   window.setTimeout(() => observer.disconnect(), 12000);
 
   function install() {
@@ -41,8 +44,11 @@
     const udonarium = document.querySelector("#udonarium-export-button");
     const cocofolia = document.querySelector("#cocofolia-copy-button");
     if (parent) {
-      [udonarium, cocofolia, tsv, bm, button].filter(node => node && node.parentElement === parent).forEach(node => parent.append(node));
-    } else {
+      const desired = [udonarium, cocofolia, tsv, bm, button].filter(node => node && node.parentElement === parent);
+      const current = [...parent.children].filter(node => desired.includes(node));
+      const alreadyOrdered = desired.length === current.length && desired.every((node, index) => current[index] === node);
+      if (!alreadyOrdered) desired.forEach(node => parent.append(node));
+    } else if (button.previousElementSibling !== bm) {
       bm.insertAdjacentElement("afterend", button);
     }
     return true;
