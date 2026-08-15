@@ -52,77 +52,67 @@
     emit(kind);
   }
 
-  function retargetAction(action,key){
-    if(action.matches('[data-skill-move]'))action.dataset.skillKey=key;
-    if(action.matches('[data-delete-skill]'))action.dataset.deleteSkill=key;
-    action.querySelectorAll?.('[data-skill-move]').forEach(button=>button.dataset.skillKey=key);
-    action.querySelectorAll?.('[data-delete-skill]').forEach(button=>button.dataset.deleteSkill=key);
-  }
-
-  function buildFallbackActions(key){
-    const up=document.createElement("button");
-    up.type="button";
-    up.textContent="▲";
-    up.dataset.skillMove="up";
-    up.dataset.skillKey=key;
-    up.title="上へ移動";
-
-    const down=document.createElement("button");
-    down.type="button";
-    down.textContent="▼";
-    down.dataset.skillMove="down";
-    down.dataset.skillKey=key;
-    down.title="下へ移動";
-
-    const del=document.createElement("button");
-    del.type="button";
-    del.textContent="×";
-    del.dataset.deleteSkill=key;
-    del.title="削除";
-
-    return [up,down,del];
-  }
-
-  function restoreMissingActions(row,actionCell){
-    const key=row?.dataset.skillKey;
-    if(!key||!actionCell)return;
-    if(row.querySelector('[data-skill-move],[data-delete-skill]'))return;
-
-    const template=rows().find(candidate=>
-      candidate!==row&&
-      !isSeparator(candidate)&&
-      candidate.querySelector('[data-skill-move],[data-delete-skill]')
-    );
-    const templateActions=template
-      ? [...template.querySelectorAll('[data-skill-move],[data-delete-skill]')]
-      : [];
-    const actions=templateActions.length
-      ? templateActions.map(action=>action.cloneNode(true))
-      : buildFallbackActions(key);
-
-    for(const action of actions){
-      retargetAction(action,key);
-      actionCell.append(action);
+  function createActionButton(type,key){
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="row-action skill-action-button";
+    if(type==="up"){
+      button.classList.add("row-action--up");
+      button.textContent="▲";
+      button.dataset.skillMove="up";
+      button.dataset.skillKey=key;
+      button.title="上へ移動";
+      button.setAttribute("aria-label","上へ移動");
+    }else if(type==="down"){
+      button.classList.add("row-action--down");
+      button.textContent="▼";
+      button.dataset.skillMove="down";
+      button.dataset.skillKey=key;
+      button.title="下へ移動";
+      button.setAttribute("aria-label","下へ移動");
+    }else{
+      button.classList.add("row-action--delete","skill-action-delete");
+      button.textContent="×";
+      button.dataset.deleteSkill=key;
+      button.title="削除";
+      button.setAttribute("aria-label","削除");
     }
+    return button;
   }
 
   function ensureActionCell(row){
     const cells=[...row.children].filter(cell=>cell.tagName==="TD");
     if(cells.length<2)return null;
-
-    /* Reuse only the existing far-right cell. Never create td elements here. */
     const actionCell=cells[cells.length-1];
-    cells.forEach(cell=>{
-      if(cell!==actionCell)cell.classList.remove("style-separator-actions");
-    });
-    actionCell.classList.add("style-separator-actions");
+    cells.forEach(cell=>cell.classList.toggle("style-separator-actions",cell===actionCell));
+    actionCell.classList.add("row-actions","row-action-group");
 
-    const actions=[...row.querySelectorAll('[data-skill-move],[data-delete-skill]')];
-    for(const action of actions){
-      retargetAction(action,row.dataset.skillKey);
-      if(action.parentElement!==actionCell)actionCell.append(action);
-    }
-    restoreMissingActions(row,actionCell);
+    const key=row.dataset.skillKey;
+    if(!key)return actionCell;
+
+    let up=actionCell.querySelector('[data-skill-move="up"]');
+    let down=actionCell.querySelector('[data-skill-move="down"]');
+    let del=actionCell.querySelector('[data-delete-skill]');
+
+    if(!up){up=createActionButton("up",key);actionCell.append(up);}
+    if(!down){down=createActionButton("down",key);actionCell.append(down);}
+    if(!del){del=createActionButton("delete",key);actionCell.append(del);}
+
+    up.dataset.skillKey=key;
+    down.dataset.skillKey=key;
+    del.dataset.deleteSkill=key;
+
+    /* Remove duplicate action controls left behind by prior enhancement passes. */
+    row.querySelectorAll('[data-skill-move],[data-delete-skill]').forEach(action=>{
+      if(action===up||action===down||action===del)return;
+      action.remove();
+    });
+
+    const styleRows=rows();
+    const index=styleRows.findIndex(candidate=>candidate.dataset.skillKey===key);
+    up.disabled=index<=0;
+    down.disabled=index<0||index>=styleRows.length-1;
+    del.disabled=false;
     return actionCell;
   }
 
@@ -137,7 +127,6 @@
       name.type="text";
       name.dataset.f="name";
       name.value=row.dataset.styleSeparatorTitle||"";
-      /* Remove only presentation remnants. Never touch the action cell. */
       cell.replaceChildren(name);
       emit(name);
     }
@@ -173,8 +162,8 @@
     row.classList.add("style-skill-separator-row");
     row.dataset.styleSeparator="1";
     ensureNoneKind(row);
-    ensureActionCell(row);
     const name=ensureNameField(row);
+    ensureActionCell(row);
     if(name){
       name.disabled=false;
       name.readOnly=false;
@@ -254,6 +243,7 @@
       if(detail){detail.value=MARKER;emit(detail);}
 
       decorate(row);
+      ensureActionCell(row);
       const editable=ensureNameField(row);
       editable?.focus();
     }finally{
