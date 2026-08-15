@@ -43,10 +43,11 @@ function renderEntry(combo) {
   if (isCounter(combo)) return renderCounter(combo);
 
   const suits = parseSuitKeys(combo.ability || combo.ability_key);
+  const limit = positiveInteger(combo.act_use_limit);
   const stats = [
     hasValue(combo.modifier) ? ["判定修正", combo.modifier] : null,
     hasValue(combo.target_value) ? ["達成目安", combo.target_value] : null,
-    positiveInteger(combo.act_use_limit) ? ["使用上限", `${positiveInteger(combo.act_use_limit)}回/ACT`] : null
+    limit ? ["使用上限", `${limit}回/ACT`] : null
   ].filter(Boolean);
   const detail = [
     hasValue(combo.timing) ? `タイミング：${combo.timing}` : "",
@@ -54,9 +55,10 @@ function renderEntry(combo) {
     hasValue(combo.range) ? `射程：${combo.range}` : ""
   ].filter(Boolean).join("／");
   const description = combo.description || combo.effect || "";
+  const id = String(combo.id || combo.name || combo.skills || "combo");
 
   return `
-    <article class="mobile-combo-card mobile-combo-card--detail">
+    <article class="mobile-combo-card mobile-combo-card--detail"${limit ? ` data-mobile-counter-id="${esc(id)}" data-mobile-counter-limit="${limit}"` : ""}>
       <header class="mobile-combo-card__header">
         <div class="mobile-combo-card__title"><span>COMBO</span><strong>${esc(combo.name || "COMBO")}</strong></div>
         ${suits.length ? `<div class="mobile-combo-card__suits">${suits.map(renderSuit).join("")}</div>` : ""}
@@ -65,6 +67,7 @@ function renderEntry(combo) {
       ${stats.length ? `<dl class="mobile-combo-card__stats">${stats.map(([label,value]) => `<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>` : ""}
       ${detail ? `<p class="mobile-combo-card__detail">${esc(detail)}</p>` : ""}
       ${description ? `<p class="mobile-combo-card__description">${nl2br(description)}</p>` : ""}
+      ${limit ? renderUsageTracker(limit) : ""}
     </article>`;
 }
 
@@ -76,12 +79,17 @@ function renderCounter(combo) {
       <header class="mobile-combo-card__header">
         <div class="mobile-combo-card__title"><span>COUNTER</span><strong>${esc(combo.name || combo.skills || "技能カウンター")}</strong></div>
       </header>
-      <div class="mobile-combo-counter__row">
-        <p class="mobile-combo-counter__meta">${limit ? `1アクト ${limit}回` : "使用回数上限なし"}／技能カウンター</p>
-        ${limit ? `<button class="mobile-combo-counter__reset" type="button" data-mobile-counter-reset>RESET</button>` : ""}
-      </div>
-      ${limit ? `<div class="mobile-combo-counter__boxes" role="group" aria-label="使用回数">${Array.from({length:limit},(_,index)=>`<button type="button" class="mobile-combo-counter__box" data-mobile-counter-box="${index}" aria-pressed="false" aria-label="${index+1}回目：未使用"><span aria-hidden="true">□</span></button>`).join("")}</div>` : ""}
+      ${limit ? renderUsageTracker(limit, `${limit}回/ACT`) : `<p class="mobile-combo-counter__meta">使用回数上限なし／技能カウンター</p>`}
     </article>`;
+}
+
+function renderUsageTracker(limit, label = `${limit}回/ACT`) {
+  return `
+    <div class="mobile-combo-counter__row">
+      <p class="mobile-combo-counter__meta">使用回数 ${esc(label)}</p>
+      <button class="mobile-combo-counter__reset" type="button" data-mobile-counter-reset>RESET</button>
+    </div>
+    <div class="mobile-combo-counter__boxes" role="group" aria-label="使用回数">${Array.from({length:limit},(_,index)=>`<button type="button" class="mobile-combo-counter__box" data-mobile-counter-box="${index}" aria-pressed="false" aria-label="${index+1}回目：未使用"><span aria-hidden="true">□</span></button>`).join("")}</div>`;
 }
 
 function initializeCounters(list) {
@@ -120,7 +128,6 @@ function paintCounter(card, used, limit) {
     if (symbol) symbol.textContent = active ? "☑" : "□";
   });
   card.dataset.mobileCounterUsed = String(used);
-  card.setAttribute("aria-label", `技能カウンター ${used}/${limit}回使用`);
 }
 
 function counterStorageKey(id) {
