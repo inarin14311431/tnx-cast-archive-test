@@ -23,6 +23,7 @@ async function initialize() {
       const combos = await getCombos();
       list.dataset.mobileComboEnhanced = "1";
       list.innerHTML = combos.map(renderEntry).join("");
+      initializeCounters(list);
     } catch (error) {
       console.warn("mobile combo enhancement failed", error);
     }
@@ -69,13 +70,72 @@ function renderEntry(combo) {
 
 function renderCounter(combo) {
   const limit = positiveInteger(combo.act_use_limit);
+  const id = String(combo.id || combo.name || combo.skills || "counter");
   return `
-    <article class="mobile-combo-card mobile-combo-card--counter">
+    <article class="mobile-combo-card mobile-combo-card--counter" data-mobile-counter-id="${esc(id)}" data-mobile-counter-limit="${limit || 0}">
       <header class="mobile-combo-card__header">
         <div class="mobile-combo-card__title"><span>COUNTER</span><strong>${esc(combo.name || combo.skills || "技能カウンター")}</strong></div>
       </header>
-      <p class="mobile-combo-counter__meta">${limit ? `1アクト ${limit}回` : "使用回数上限なし"}／技能カウンター</p>
+      <div class="mobile-combo-counter__row">
+        <p class="mobile-combo-counter__meta">${limit ? `1アクト ${limit}回` : "使用回数上限なし"}／技能カウンター</p>
+        ${limit ? `<button class="mobile-combo-counter__reset" type="button" data-mobile-counter-reset>RESET</button>` : ""}
+      </div>
+      ${limit ? `<div class="mobile-combo-counter__boxes" role="group" aria-label="使用回数">${Array.from({length:limit},(_,index)=>`<button type="button" class="mobile-combo-counter__box" data-mobile-counter-box="${index}" aria-pressed="false" aria-label="${index+1}回目"></button>`).join("")}</div>` : ""}
     </article>`;
+}
+
+function initializeCounters(list) {
+  list.querySelectorAll("[data-mobile-counter-id]").forEach(card => {
+    const limit = positiveInteger(card.dataset.mobileCounterLimit);
+    if (!limit) return;
+    const key = counterStorageKey(card.dataset.mobileCounterId);
+    let used = readUsedCount(key, limit);
+    paintCounter(card, used, limit);
+
+    card.querySelectorAll("[data-mobile-counter-box]").forEach(button => {
+      button.addEventListener("click", () => {
+        const index = Number(button.dataset.mobileCounterBox || 0);
+        used = index < used ? index : index + 1;
+        used = Math.max(0, Math.min(limit, used));
+        writeUsedCount(key, used);
+        paintCounter(card, used, limit);
+      });
+    });
+
+    card.querySelector("[data-mobile-counter-reset]")?.addEventListener("click", () => {
+      used = 0;
+      writeUsedCount(key, used);
+      paintCounter(card, used, limit);
+    });
+  });
+}
+
+function paintCounter(card, used, limit) {
+  card.querySelectorAll("[data-mobile-counter-box]").forEach((button,index) => {
+    const active = index < used;
+    button.classList.toggle("is-used", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  card.dataset.mobileCounterUsed = String(used);
+  card.setAttribute("aria-label", `技能カウンター ${used}/${limit}回使用`);
+}
+
+function counterStorageKey(id) {
+  const publicId = new URLSearchParams(location.search).get("id")?.trim() || "unknown";
+  return `tnx-mobile-counter:${publicId}:${id}`;
+}
+
+function readUsedCount(key, limit) {
+  try {
+    const value = Number.parseInt(localStorage.getItem(key) || "0", 10);
+    return Number.isFinite(value) ? Math.max(0, Math.min(limit, value)) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeUsedCount(key, value) {
+  try { localStorage.setItem(key, String(value)); } catch {}
 }
 
 function renderSuit(key) {
