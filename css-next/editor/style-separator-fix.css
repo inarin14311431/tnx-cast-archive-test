@@ -1,11 +1,12 @@
 /* Stable divider layout: separator rows are normalized by style-skill-separators.js to exactly two cells. */
-#style-skills .style-skill-full-table tbody tr.style-skill-separator-row[data-skill-key] {
+#style-skills tbody tr.style-skill-separator-row[data-skill-key] {
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--style-action-column);
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) var(--style-action-column) !important;
   align-items: center;
-  width: 100%;
+  width: 100% !important;
   min-width: 0;
+  max-width: 100%;
   min-height: 50px;
   margin: 10px 0 4px;
   overflow: hidden;
@@ -27,10 +28,12 @@
 
 #style-skills .style-skill-separator-row > .style-separator-main,
 #style-skills .style-skill-separator-row > td:first-child {
-  display: flex;
-  grid-column: 1;
+  display: flex !important;
+  grid-column: 1 !important;
   align-items: center;
   gap: 10px;
+  width: auto !important;
+  min-width: 0;
   padding: 4px 8px 4px 20px;
   overflow: hidden;
 }
@@ -50,10 +53,11 @@
 
 #style-skills .style-skill-separator-row > .style-separator-actions,
 #style-skills .style-skill-separator-row > td:last-child {
-  display: flex;
-  grid-column: 2;
+  display: flex !important;
+  grid-column: 2 !important;
   align-items: center;
   justify-content: center;
+  width: auto !important;
   padding: 5px 3px;
   overflow: visible;
 }
