@@ -14,21 +14,26 @@ async function initialize() {
   const container = document.querySelector("#combo-container");
   if (!container) return;
 
+  let applying = false;
   const apply = async () => {
+    if (applying) return;
     const cards = [...container.querySelectorAll(".combo-card")];
     if (!cards.length) return;
-    let combos = [];
-    try { combos = await getCombos(); } catch (error) { console.warn("combo enhancement load failed", error); return; }
-
-    const normalCombos = combos.filter(combo => !isCounter(combo));
-    let normalIndex = 0;
-    cards.forEach(card => {
-      if (card.classList.contains("combo-skill-counter")) return;
-      const combo = normalCombos[normalIndex++];
-      if (!combo) return;
-      enhanceAbility(card, combo);
-      enhanceDetail(card, combo);
-    });
+    applying = true;
+    try {
+      const combos = await getCombos();
+      let comboIndex = 0;
+      cards.forEach(card => {
+        const combo = combos[comboIndex++];
+        if (!combo || card.classList.contains("combo-skill-counter")) return;
+        enhanceAbility(card, combo);
+        enhanceDetail(card, combo);
+      });
+    } catch (error) {
+      console.warn("combo enhancement load failed", error);
+    } finally {
+      applying = false;
+    }
   };
 
   new MutationObserver(() => apply()).observe(container, { childList: true, subtree: true });
@@ -68,9 +73,4 @@ function parseSuitKeys(value) {
   if (!text) return [];
   const known = new Set(Object.keys(SUITS));
   return [...new Set(text.split(/[\s,|/+]+/).filter(key => known.has(key)))];
-}
-
-function isCounter(combo) {
-  return String(combo?.entry_type || combo?.type || "").toLowerCase() === "counter" ||
-    String(combo?.name || "").startsWith("@@COUNTER@@");
 }
