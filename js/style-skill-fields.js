@@ -42,19 +42,35 @@
 
   function ensureKindOptions(row){
     const select=row.querySelector('select[data-f="skill_kind"]');
-    const definitions=window.TNXStyleSkillKinds?.definitions||[
+    if(!select)return;
+
+    const baseDefinitions=window.TNXStyleSkillKinds?.definitions||[
       {value:"normal",label:"通常"},{value:"secret",label:"秘技"},{value:"ultimate",label:"奥義"},{value:"direction",label:"演出"}
     ];
-    if(!select)return;
+    const separator=row.dataset.styleSeparator==="1"||select.dataset.styleSeparatorLocked==="1"||select.value==="none";
+    const definitions=separator
+      ? [{value:"none",label:"なし"},...baseDefinitions.filter(item=>item.value!=="none")]
+      : baseDefinitions;
     const selected=select.value;
-    select.replaceChildren(...definitions.map(item=>{
-      const option=document.createElement("option");
-      option.value=item.value;
-      option.textContent=item.label;
-      option.selected=item.value===selected;
-      return option;
-    }));
-    if(!definitions.some(item=>item.value===selected))select.value="normal";
+    const current=[...select.options];
+    const sameOptions=current.length===definitions.length&&current.every((option,index)=>{
+      const item=definitions[index];
+      return option.value===item.value&&option.textContent===item.label;
+    });
+
+    /* Avoid replacing identical options. Rebuilding the select is a childList mutation,
+     * so doing it on every observer pass creates an endless enhancer/observer loop. */
+    if(!sameOptions){
+      select.replaceChildren(...definitions.map(item=>{
+        const option=document.createElement("option");
+        option.value=item.value;
+        option.textContent=item.label;
+        return option;
+      }));
+    }
+
+    if(definitions.some(item=>item.value===selected))select.value=selected;
+    else select.value=separator?"none":"normal";
   }
 
   function rebuildHeader(table){
