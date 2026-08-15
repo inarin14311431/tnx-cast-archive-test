@@ -18,12 +18,12 @@
     .replace(/\r\n?/g,"\n")
     .replace(/\\r\\n|\\n|\\r/g,"\n");
   const exactName=value=>normalizeMultiline(value).trim().replace(/Ｎ◎ＶＡ/g,"N◎VA");
-  // Display symbols and line breaks are meaningful. Matching is intentionally
-  // more tolerant so a temporary one-line value created by the base importer
-  // can still be found and restored to the exact source text.
+  // Matching must tolerate the temporary value produced by a single-line input.
+  // Browsers may collapse "A\nB" to "AB", so ignore whitespace only while matching.
+  // applySkill() always restores the exact source text including line breaks.
   const matchName=value=>exactName(value)
     .replace(/^[★■┗†※]+\s*/,"")
-    .replace(/\s+/g," ")
+    .replace(/\s+/g,"")
     .trim();
   const first=(object,...keys)=>{
     for(const key of keys){
@@ -209,6 +209,10 @@
     row=await waitStableRow(key);
     if(!row)return false;
     row=ensureMultilineNameField(row);
+    const nameField=row.querySelector('[data-f="name"]');
+    setValue(nameField,data.name);
+    await frame();
+    row=ensureMultilineNameField(row);
     setValue(row.querySelector('[data-f="name"]'),data.name);
     setValue(row.querySelector('[data-f="skill_kind"]'),skillKind(data));
     const suits=skillSuits(data);
@@ -278,7 +282,8 @@
     }
     removeUnexpectedRows(used);
     window.TNXMultilineFields?.enhance?.();
-    const missing=expected.filter(skill=>!rows().some(row=>exactName(rowValue(row))===exactName(skill.name)));
+    await frame();
+    const missing=expected.filter(skill=>!rows().some(row=>comparable(rowValue(row))===comparable(skill.name)));
     if(missing.length)throw new Error(`スタイル技能${missing.length}件を取込できませんでした：${missing.map(item=>item.name.replace(/\n/g," / ")).join("、")}`);
     if(orderedKeys.length!==expected.length||!alignImportedOrder(orderedKeys))throw new Error("スタイル技能をJSONの並び順に復元できませんでした。");
     document.querySelector(ROOT)?.dispatchEvent(new Event("input",{bubbles:true}));
