@@ -1,4 +1,4 @@
-/* Style-skill separator rows. The row structure itself is owned by sheet.js/style-skill-fields.js. */
+/* Style-skill separator rows. Normal style-skill rows remain owned by sheet.js/style-skill-fields.js. */
 (()=>{
   const MARKER="[[STYLE_SEPARATOR]]";
   const DETAIL_PREFIX="@@TNX_STYLE_DETAIL_V1@@";
@@ -35,6 +35,22 @@
     return row?.dataset.styleSeparator==="1"||isMarker(descriptionValue(row));
   }
 
+  function normalizeStructure(row){
+    const name=row.querySelector('[data-f="name"]');
+    const actions=row.querySelector('.row-actions');
+    const nameCell=name?.closest("td");
+    const actionCell=actions?.closest("td");
+    if(!name||!actions||!nameCell||!actionCell||nameCell===actionCell)return false;
+
+    nameCell.className="style-separator-main";
+    actionCell.className="style-separator-actions";
+    if(row.children.length!==2||row.firstElementChild!==nameCell||row.lastElementChild!==actionCell){
+      row.replaceChildren(nameCell,actionCell);
+    }
+    row.dataset.styleSeparatorStructure="2cell";
+    return true;
+  }
+
   function decorate(row){
     if(!isSeparator(row))return;
     row.dataset.styleSeparator="1";
@@ -56,6 +72,8 @@
       name.setAttribute("aria-label","スタイル技能の区切り名");
       name.dataset.styleSeparatorName="1";
     }
+
+    normalizeStructure(row);
   }
 
   function ensureAddButton(){
@@ -101,7 +119,6 @@
       }
       if(!row)return;
 
-      /* Mark before firing field events so the other enhancer never treats this as a normal skill. */
       row.dataset.styleSeparator="1";
       row.dataset.styleSeparatorMigrated="1";
       row.classList.add("style-skill-separator-row");
