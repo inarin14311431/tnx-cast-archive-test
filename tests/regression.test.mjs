@@ -38,7 +38,9 @@ test('retired compatibility scripts are no longer loaded', async () => {
 test('style import compatibility owns JSON repair and preserves symbols', async () => {
   const source = await read('js/sheet-import-style-skill-compat.js');
   assert.match(source, /replace\(\/\^\[★■┗†※\]\+\\s\*\//);
-  assert.match(source, /setValue\(row\.querySelector\('\[data-f="name"\]'\),data\.name\)/);
+  assert.match(source, /function setExactName\(row,value\)/);
+  assert.match(source, /normalizeMultiline\(value\)/);
+  assert.match(source, /setExactName\(row,data\.name\)/);
   assert.match(source, /repairJsonStringControls/);
   assert.match(source, /removeUnexpectedRows/);
 });
