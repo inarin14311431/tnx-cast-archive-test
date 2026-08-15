@@ -26,7 +26,9 @@ body[data-page="sheet.html"] .skill-toolbar--two.has-style-divider { align-items
 #style-skills .style-skill-separator-row > td:first-child { display: flex; align-items: center; gap: 10px; padding: 4px 8px 4px 20px; overflow: hidden; }
 #style-skills .style-skill-separator-row > td:first-child::before { content: "STYLE SECTION"; flex: 0 0 auto; padding: 5px 7px; border: 1px solid var(--color-border); color: var(--color-accent); background: var(--color-accent-soft); font: 800 .64rem/1 var(--font-data); letter-spacing: .16em; white-space: nowrap; }
 #style-skills .style-skill-separator-row > td:last-child { display: flex; align-items: center; justify-content: center; padding: 5px 3px; overflow: hidden; }
-#style-skills .style-skill-separator-row input[data-f="name"] { flex: 1 1 auto; width: 100%; min-width: 0; height: 38px; margin: 0; padding: 5px 9px; border: 0; color: var(--color-text); background: transparent; font-size: clamp(.82rem, 1vw, 1.08rem); font-weight: 900; letter-spacing: .1em; }
+#style-skills .style-skill-separator-row input[data-f="name"] { position: relative; z-index: 1; flex: 1 1 auto; width: 100%; min-width: 0; height: 38px; margin: 0; padding: 5px 9px; border: 1px solid transparent; border-radius: 2px; color: var(--color-text); background: color-mix(in srgb, var(--color-field) 58%, transparent); font-size: clamp(.82rem, 1vw, 1.08rem); font-weight: 900; letter-spacing: .1em; pointer-events: auto; cursor: text; }
+#style-skills .style-skill-separator-row input[data-f="name"]:hover { border-color: var(--color-border); background: var(--color-field); }
+#style-skills .style-skill-separator-row input[data-f="name"]:focus { outline: 1px solid var(--color-accent); outline-offset: 1px; border-color: var(--color-accent); background: var(--color-field); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 16%, transparent); }
 
 @media (max-width: 760px) {
   body[data-page="sheet.html"] #style-skills {
