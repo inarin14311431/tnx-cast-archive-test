@@ -51,17 +51,18 @@
     emit(kind);
   }
 
-  function cleanRecoveredTitle(value){
-    return String(value||"")
-      .replace(/STYLE SECTION/gi,"")
-      .replace(/[▲▼×✕✖]/g,"")
+  function cleanFallbackTitle(text){
+    return String(text||"")
+      .replace(/STYLE\s*SECTION/gi,"")
+      .replace(/[▲△▼▽×✕✖]/g,"")
       .replace(/\s+/g," ")
       .trim();
   }
 
-  function rememberTitle(row,name){
-    const value=String(name?.value||"").trim();
-    if(value)row.dataset.styleSeparatorTitle=value;
+  function isActionNode(node){
+    if(!(node instanceof Element))return false;
+    return node.matches('button,[data-skill-move],[data-delete-skill],.row-actions,.skill-row-actions')||
+      Boolean(node.querySelector('button,[data-skill-move],[data-delete-skill]'));
   }
 
   function ensureNameField(row){
@@ -70,22 +71,27 @@
 
     let name=cell.querySelector('[data-f="name"]');
     if(name){
-      rememberTitle(row,name);
+      row.dataset.styleSeparatorTitle=name.value||row.dataset.styleSeparatorTitle||"スタイル名";
       return name;
     }
 
-    const fallback=cleanRecoveredTitle(row.dataset.styleSeparatorTitle||cell.textContent)||"スタイル名";
+    const fallback=cleanFallbackTitle(row.dataset.styleSeparatorTitle||cell.textContent)||"スタイル名";
     name=document.createElement("input");
     name.type="text";
     name.dataset.f="name";
     name.value=fallback;
 
-    /* A separator title must always remain a real editable form control.  Some style-skill
-     * enhancement passes can replace the original name field with presentation-only content;
-     * rebuild it here so the normal sheet event/save pipeline can see data-f=name again.
-     * Never trust action glyphs in cell.textContent as part of the title. */
-    cell.replaceChildren(name);
-    rememberTitle(row,name);
+    /* Never replace the whole name cell: depending on which editor enhancer ran last,
+     * the row-action buttons can temporarily live in the same cell/wrapper. Preserve
+     * every action node and remove only presentation/name remnants before inserting
+     * the editable separator title field. */
+    for(const node of [...cell.childNodes]){
+      if(node===name)continue;
+      if(node instanceof Element&&isActionNode(node))continue;
+      node.remove();
+    }
+    cell.prepend(name);
+    row.dataset.styleSeparatorTitle=name.value;
     emit(name);
     return name;
   }
@@ -123,7 +129,13 @@
       name.placeholder="スタイル名を入力（例：アヤカシ）";
       name.setAttribute("aria-label","スタイル技能の区切り名");
       name.dataset.styleSeparatorName="1";
-      rememberTitle(row,name);
+      const remember=()=>{row.dataset.styleSeparatorTitle=name.value||"スタイル名";};
+      if(name.dataset.styleSeparatorRemember!=="1"){
+        name.addEventListener("input",remember);
+        name.addEventListener("change",remember);
+        name.dataset.styleSeparatorRemember="1";
+      }
+      remember();
     }
   }
 
@@ -150,7 +162,7 @@
       const level=row.querySelector('[data-f="level"]');
       const detail=row.querySelector('[data-f="description"]');
 
-      if(name){name.value="スタイル名";rememberTitle(row,name);emit(name);}
+      if(name){name.value="スタイル名";emit(name);}
       if(kind){
         if(!kind.querySelector('option[value="none"]')){
           const option=document.createElement("option");
@@ -176,7 +188,7 @@
       name=ensureNameField(row);
       if(name&&name.value!=="スタイル名"){
         name.value="スタイル名";
-        rememberTitle(row,name);
+        row.dataset.styleSeparatorTitle="スタイル名";
         emit(name);
       }
       name?.focus();
@@ -193,16 +205,12 @@
 
   container.addEventListener("input",event=>{
     const row=event.target.closest?.('tr[data-skill-key]');
-    if(!row)return;
-    if(event.target.matches?.('[data-f="name"]'))rememberTitle(row,event.target);
-    decorate(row);
+    if(row)decorate(row);
   });
 
   container.addEventListener("change",event=>{
     const row=event.target.closest?.('tr[data-skill-key]');
-    if(!row)return;
-    if(event.target.matches?.('[data-f="name"]'))rememberTitle(row,event.target);
-    decorate(row);
+    if(row)decorate(row);
   });
 
   decorateAll();
