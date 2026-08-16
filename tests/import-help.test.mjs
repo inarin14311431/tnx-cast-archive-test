@@ -4,37 +4,23 @@ import { readFile } from 'node:fs/promises';
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('data import exposes the approved compact panel and guided bookmarklet help', async () => {
-  const source = await read('js/sheet-import-help.js');
-  assert.match(source, /sheet-import-panel/);
-  assert.match(source, /sheet-import-help-button/);
-  assert.match(source, /sheet-import-bookmarklet-copy/);
-  assert.match(source, /legacy-bookmarklet-copy/);
-  assert.match(source, /ブックマークレットとは/);
-  assert.match(source, /javascript:/);
-  assert.match(source, /キャラシJSONをコピーしました/);
-  assert.match(source, /確認して保存/);
-  assert.match(source, /Chromeではブックマークバー/);
-  assert.match(source, /const steps=\[/);
-  assert.match(source, /data-import-step/);
-  assert.match(source, /renderStep/);
-  assert.match(source, /data-import-next/);
-  assert.match(source, /data-import-prev/);
-  assert.match(source, /aria-label','データ取込ヘルプ/);
-  assert.doesNotMatch(source, /IMPORT<br>HELP/);
+test('data import uses direct character-sheets URL and global help', async () => {
+  const source = await read('js/sheet-import-url.js');
+  assert.match(source, /character-sheets\.appspot\.com/);
+  assert.match(source, /\/tnx\/display/);
+  assert.match(source, /legacy-import-json/);
+  assert.match(source, /legacy-import-apply/);
+  assert.match(source, /help-ui\.js/);
+  assert.doesNotMatch(source, /MutationObserver/);
 
-  const help = await read('js/help-ui.js');
-  assert.match(help, /import "\.\/sheet-import-help\.js"/);
+  const helpUi = await read('js/help-ui.js');
+  assert.match(helpUi, /sheet-global-help/);
+  assert.doesNotMatch(helpUi, /sheet-import-help\.js/);
 
-  const css = await read('css-next/components/sheet-import-help.css');
-  assert.match(css, /grid-template-areas:"main help" "copy copy"/);
-  assert.match(css, /sheet-import-bookmarklet-copy/);
-  assert.match(css, /sheet-import-help-progress/);
-  assert.match(css, /sheet-import-help-stage/);
-  assert.match(css, /var\(--color-accent\)/);
-  assert.match(css, /var\(--color-surface\)/);
-  assert.match(css, /var\(--color-text\)/);
-  assert.doesNotMatch(css, /#35d7ff|#70efa9|rgba\(117,225,255/);
+  const helpContent = await read('js/help-content.js');
+  assert.match(helpContent, /importData/);
+  assert.match(helpContent, /キャラクターシート倉庫/);
+  assert.match(helpContent, /PC・スマートフォンとも同じ手順/);
 });
 
 test('sidebar action rails follow the active theme tokens', async () => {
