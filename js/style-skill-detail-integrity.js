@@ -127,7 +127,6 @@
       queued = true;
       requestAnimationFrame(() => { queued = false; scan(); });
     };
-    new MutationObserver(queue).observe(root, { childList: true, subtree: true, characterData: true });
     root.addEventListener(STYLE_SKILLS_CHANGED_EVENT, queue);
     queue();
   }
