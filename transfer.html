@@ -32,9 +32,11 @@
         <label class="transfer-choice"><input type="radio" name="transfer-mode" value="update"> <span>既存キャストを更新</span></label>
       </fieldset>
 
-      <label class="update-only update-target-field" hidden>更新先キャラシ倉庫URL
-        <input id="update-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://character-sheets.appspot.com/tnx/edit.html?key=...">
-      </label>
+      <div class="update-only update-target-field" hidden>
+        <label>更新先キャラシ倉庫URL
+          <input id="update-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://character-sheets.appspot.com/tnx/edit.html?key=...">
+        </label>
+      </div>
 
       <label>キャラシ倉庫の編集パスワード
         <input id="transfer-password" type="password" required minlength="1" autocomplete="new-password">
