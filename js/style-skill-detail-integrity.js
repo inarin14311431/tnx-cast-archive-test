@@ -4,6 +4,7 @@
 (() => {
   import("./skill-display-enhancements.js?v=1");
   const PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
+  const STYLE_SKILLS_CHANGED_EVENT = "tnx:style-skills-changed";
   const DETAIL_KEYS = ["skill", "limit", "timing", "target", "range", "difficulty", "confrontation", "description", "page"];
 
   function balancedJson(text, start) {
@@ -127,7 +128,7 @@
       requestAnimationFrame(() => { queued = false; scan(); });
     };
     new MutationObserver(queue).observe(root, { childList: true, subtree: true, characterData: true });
-    root.addEventListener("input", queue, true);
+    root.addEventListener(STYLE_SKILLS_CHANGED_EVENT, queue);
     queue();
   }
 
