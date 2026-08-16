@@ -12,7 +12,7 @@
     if (!(trigger instanceof HTMLButtonElement)) return;
     const publicId = resolvePublicId(trigger);
     trigger.disabled = !publicId;
-    trigger.title = publicId ? "キャラシ倉庫へデータ転記" : "保存済みキャストで利用できます。";
+    trigger.title = publicId ? "キャラクターシート倉庫へデータ転記" : "保存済みキャストで利用できます。";
   }
 
   function syncTriggers(root = document) {
