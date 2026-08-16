@@ -1,5 +1,5 @@
 (()=>{
-  const PROTOTYPE_VERSION='0.3.0';
+  const PROTOTYPE_VERSION='0.4.0';
   const $=selector=>document.querySelector(selector);
   const source=$('#source-json');
   const target=$('#target-id');
@@ -16,10 +16,9 @@
 
   if(versionLabel)versionLabel.textContent=`VERSION ${PROTOTYPE_VERSION}`;
 
-  // Shortcuts/Safari向け軽量抽出版。
-  // 既存取込が参照する path/type/value/checked のみ返し、
-  // label/section/id/name の重複情報を省いて出力サイズを抑える。
-  const EXTRACTOR=`/* TNX MOBILE IMPORT v${PROTOTYPE_VERSION} */\ntry{var nodes=document.querySelectorAll('input,select,textarea');var fields=[];for(var i=0;i<nodes.length;i++){var e=nodes[i];var type=String(e.type||e.tagName||'').toLowerCase();if(type==='button'||type==='submit'||type==='password'||type==='reset'||type==='file')continue;var path=e.id||e.name||'';if(!path)continue;var isCheck=type==='checkbox'||type==='radio';fields.push({path:path,type:type,value:isCheck?(e.checked?(e.value||true):false):String(e.value==null?'':e.value),checked:!!e.checked});}var data={format:'tnx-character-sheets-v2',version:'${PROTOTYPE_VERSION}',url:location.href,title:document.title,fields:fields};var out=JSON.stringify(data);completion(out);}catch(error){completion('TNX_IMPORT_ERROR:v${PROTOTYPE_VERSION}:'+String(error&&error.message?error.message:error));}`;
+  // iOS Shortcuts は completion() の戻り値を内部でJSON変換するため、
+  // JSON.stringify()せず辞書オブジェクトを直接返す。
+  const EXTRACTOR=`/* TNX MOBILE IMPORT v${PROTOTYPE_VERSION} */\ntry{var nodes=document.querySelectorAll('input,select,textarea');var fields=[];for(var i=0;i<nodes.length;i++){var e=nodes[i];var type=String(e.type||e.tagName||'').toLowerCase();if(type==='button'||type==='submit'||type==='password'||type==='reset'||type==='file')continue;var path=e.id||e.name||'';if(!path)continue;var isCheck=type==='checkbox'||type==='radio';fields.push({path:path,type:type,value:isCheck?(e.checked?(e.value||true):false):String(e.value==null?'':e.value),checked:!!e.checked});}completion({format:'tnx-character-sheets-v2',version:'${PROTOTYPE_VERSION}',url:location.href,title:document.title,fieldCount:fields.length,fields:fields});}catch(error){completion({format:'tnx-mobile-import-error',version:'${PROTOTYPE_VERSION}',error:String(error&&error.message?error.message:error)});}`;
 
   function status(node,text,isError=false){
     node.textContent=text;
@@ -42,15 +41,15 @@
 
   copyExtractor.addEventListener('click',async()=>{
     const ok=await copyText(EXTRACTOR);
-    status(extractorStatus,ok?`抽出JavaScript v${PROTOTYPE_VERSION} をコピーしました。ショートカット側のコードをすべて置き換えてください。`:'コピーできませんでした。',!ok);
+    status(extractorStatus,ok?`抽出JavaScript v${PROTOTYPE_VERSION} をコピーしました。今回は「JavaScriptの結果を表示」だけで確認してください。`:'コピーできませんでした。',!ok);
   });
 
   source.addEventListener('input',()=>{
     const raw=source.value.trim();
     if(!raw){status(jsonStatus,'');return;}
-    if(raw.startsWith('TNX_IMPORT_ERROR:')){status(jsonStatus,raw,true);return;}
     try{
       const data=JSON.parse(raw);
+      if(data?.format==='tnx-mobile-import-error')throw new Error(data.error||'抽出エラー');
       const supported=Array.isArray(data?.fields)||(data&&typeof data==='object'&&(data.base||data.skills1||data.superhumanskills||data.weapons));
       if(!supported)throw new Error('対応するキャラシ倉庫JSONではありません。');
       const fieldCount=Array.isArray(data.fields)?data.fields.length:'旧形式';
@@ -109,9 +108,8 @@
     frameWrap.classList.remove('active');
     status(applyStatus,'準備中…');
     try{
-      const raw=source.value.trim();
-      if(raw.startsWith('TNX_IMPORT_ERROR:'))throw new Error(raw);
-      const data=JSON.parse(raw);
+      const data=JSON.parse(source.value.trim());
+      if(data?.format==='tnx-mobile-import-error')throw new Error(data.error||'抽出エラー');
       const supported=Array.isArray(data?.fields)||(data&&typeof data==='object'&&(data.base||data.skills1||data.superhumanskills||data.weapons));
       if(!supported)throw new Error('対応するキャラシ倉庫JSONではありません。');
       editorUrl=resolveEditorUrl(target.value);
