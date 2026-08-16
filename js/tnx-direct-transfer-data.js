@@ -1,21 +1,21 @@
 import { supabase } from "./supabase-client.js";
 
 const STYLE_CODES = new Map([
-  ["カブキ", "0"], ["カタナ", "1"], ["バサラ", "2"], ["タタラ", "3"], ["ミストレス", "4"], ["カブト", "5"],
-  ["カリスマ", "6"], ["マネキン", "7"], ["カゼ", "8"], ["フェイト", "9"], ["クロマク", "10"], ["エグゼク", "11"],
+  ["カブキ", "0"], ["バサラ", "1"], ["タタラ", "2"], ["ミストレス", "3"], ["カブト", "4"], ["カリスマ", "5"],
+  ["マネキン", "6"], ["カゼ", "7"], ["フェイト", "8"], ["クロマク", "9"], ["エグゼク", "10"], ["カタナ", "11"],
   ["クグツ", "12"], ["カゲ", "13"], ["チャクラ", "14"], ["レッガー", "15"], ["カブトワリ", "16"], ["ハイランダー", "17"],
-  ["マヤカシ", "18"], ["トーキー", "19"], ["イヌ", "20"], ["ニューロ", "21"], ["ヒルコ", "22"], ["コモン", "23"],
-  ["クロガネ", "24"], ["イブキ", "25"], ["シキガミ", "26"], ["アラシ", "27"], ["カゲムシャ", "28"], ["ミギウデ", "29"],
-  ["エトランゼ", "30"], ["アヤカシ", "31"], ["ウツワ", "32"]
+  ["マヤカシ", "18"], ["トーキー", "19"], ["イヌ", "20"], ["ニューロ", "21"],
+  ["コモン", "-0"], ["ヒルコ", "-1"], ["クロガネ", "-2"], ["イブキ", "-4"], ["シキガミ", "-6"],
+  ["アラシ", "-7"], ["カゲムシャ", "-9"], ["ミギウデ", "-12"], ["エトランゼ", "-17"], ["アヤカシ", "-18"], ["ウツワ", "-21"]
 ]);
 
 const STYLE_ENGLISH = new Map([
-  ["カブキ", "Kabuki"], ["カタナ", "Katana"], ["バサラ", "Vasara"], ["タタラ", "Tatara"], ["ミストレス", "Mistress"], ["カブト", "Kabuto"],
+  ["カブキ", "Kabuki"], ["バサラ", "Vasara"], ["タタラ", "Tatara"], ["ミストレス", "Mistress"], ["カブト", "Kabuto"],
   ["カリスマ", "Charisma"], ["マネキン", "Mannequin"], ["カゼ", "Kaze"], ["フェイト", "Fate"], ["クロマク", "Kuromaku"],
-  ["エグゼク", "Exec"], ["クグツ", "Kugutsu"], ["カゲ", "Kage"], ["チャクラ", "Chakra"], ["レッガー", "Legger"],
-  ["カブトワリ", "Kabuto-Wari"], ["ハイランダー", "Highlander"], ["マヤカシ", "Mayakashi"], ["トーキー", "Talkie"],
-  ["イヌ", "Inu"], ["ニューロ", "Neuro"], ["ヒルコ", "Hiruko"], ["コモン", "Common"], ["クロガネ", "Kurogane"],
-  ["イブキ", "Ibuki"], ["シキガミ", "Shikigami"], ["アラシ", "Arashi"], ["カゲムシャ", "Kagemusha"],
+  ["エグゼク", "Exec"], ["カタナ", "Katana"], ["クグツ", "Kugutsu"], ["カゲ", "Kage"], ["チャクラ", "Chakra"],
+  ["レッガー", "Legger"], ["カブトワリ", "Kabuto-Wari"], ["ハイランダー", "Highlander"], ["マヤカシ", "Mayakashi"],
+  ["トーキー", "Talkie"], ["イヌ", "Inu"], ["ニューロ", "Neuro"], ["コモン", "Common"], ["ヒルコ", "Hiruko"],
+  ["クロガネ", "Kurogane"], ["イブキ", "Ibuki"], ["シキガミ", "Shikigami"], ["アラシ", "Arashi"], ["カゲムシャ", "Kagemusha"],
   ["ミギウデ", "Migiude"], ["エトランゼ", "Etranger"], ["アヤカシ", "Ayakashi"], ["ウツワ", "Utsuwa"]
 ]);
 
@@ -160,8 +160,9 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
     skills3: social.length ? social.map(skill => toSimpleSkill(skill, "社会：")) : [blankSkill("社会：Ｎ◎ＶＡ")],
     skills4: connections.length ? connections.map(skill => toSimpleSkill(skill, "コネ：")) : [blankSkill("コネ：")],
     styles: {
-      pk1: markCode(styles[0].mark), pk2: markCode(styles[1].mark), pk3: markCode(styles[2].mark),
-      style1: STYLE_CODES.get(styles[0].name), style2: STYLE_CODES.get(styles[1].name), style3: STYLE_CODES.get(styles[2].name),
+      style1: STYLE_CODES.get(styles[0].name),
+      style2: STYLE_CODES.get(styles[1].name),
+      style3: STYLE_CODES.get(styles[2].name),
       utsuwa: {
         element1: styles[0].name === "ウツワ" ? nullable(styles[0].attribute) : null,
         element2: styles[1].name === "ウツワ" ? nullable(styles[1].attribute) : null,
@@ -200,7 +201,6 @@ function ability(character, key) {
   };
 }
 function emptyAbilityModifier() { return { cs: null, life: { abl: null, ctl: null }, mundane: { abl: null, ctl: null }, passion: { abl: null, ctl: null }, reason: { abl: null, ctl: null } }; }
-function markCode(mark) { return mark.includes("◎") && mark.includes("●") ? "3" : mark.includes("◎") ? "2" : mark.includes("●") ? "1" : null; }
 function createOutline(styles) { return `STYLE:${styles.map(item => STYLE_ENGLISH.get(item.name)).join("=")}`; }
 function cleanSkillName(value) { return text(value).replace(/^[★]+\s*/, ""); }
 function findGeneral(general, target) {
