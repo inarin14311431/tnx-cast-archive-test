@@ -8,25 +8,16 @@
   <link rel="stylesheet" href="./css-next/pages/cast-cyber-runtime.css?v=1">
   <link rel="stylesheet" href="./css-next/pages/cast-mobile.css?v=3">
   <link rel="stylesheet" href="./css-next/pages/cast-mobile-combos.css?v=2">
+  <link rel="stylesheet" href="./css-next/pages/cast-transfer.css?v=1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="index, follow">
   <title>キャストデータ // N◎VA ARCHIVE</title>
-  <style>
-    .cast-header__export-actions #udonarium-export-button{order:1}
-    .cast-header__export-actions #cocofolia-copy-button{order:2}
-    .cast-header__export-actions #direct-transfer-button{order:3}
-    #direct-transfer-button{display:grid;min-width:92px;min-height:38px;align-content:center;gap:2px;padding:6px 9px;border:1px solid color-mix(in srgb,var(--color-accent,#22d3ee) 42%,var(--color-border,#35515c));background:color-mix(in srgb,var(--color-accent,#22d3ee) 7%,var(--color-surface,#0d1820));color:var(--color-accent,#22d3ee);font:700 .68rem/1 var(--font-data,monospace);text-align:left}
-    #direct-transfer-button small{font-size:.48rem;letter-spacing:.08em;opacity:.65}
-    #direct-transfer-button:hover,#direct-transfer-button:focus-visible{border-color:#66d9c7;background:color-mix(in srgb,#66d9c7 18%,var(--color-surface,#0d1820));color:#d8fff8;box-shadow:0 0 14px color-mix(in srgb,#66d9c7 24%,transparent)}
-    #direct-transfer-button:disabled{opacity:.45}
-    @media(max-width:640px){#direct-transfer-button{min-width:76px;padding-inline:6px}}
-  </style>
 </head>
 <body data-page="cast.html">
   <div class="background-grid"></div><div class="scanlines"></div>
   <header class="cast-header app-header">
-    <div class="cast-header__actions"><div class="cast-header__primary-actions"><a class="cast-header__back app-back-link" href="./index.html"><span>&lt; キャスト一覧へ</span><small>RETURN TO ARCHIVE</small></a><a id="cast-edit-button" class="cast-edit-link" hidden><span>キャストを編集</span><small>EDIT CAST</small></a><button id="cast-quick-sheet-button" class="cast-quick-sheet-link" type="button" aria-controls="quick-sheet" aria-expanded="false" hidden><span>簡易表示</span><small>QUICK SHEET</small></button></div><div class="cast-header__export-panel" role="group" aria-label="データ出力"><span class="cast-header__export-label">データ出力 <small>EXPORT / TRANSFER</small></span><div class="cast-header__export-actions"><button id="direct-transfer-button" type="button"><span>データ転記</span><small>CHARACTER SHEETS</small></button></div></div></div>
+    <div class="cast-header__actions"><div class="cast-header__primary-actions"><a class="cast-header__back app-back-link" href="./index.html"><span>&lt; キャスト一覧へ</span><small>RETURN TO ARCHIVE</small></a><a id="cast-edit-button" class="cast-edit-link" hidden><span>キャストを編集</span><small>EDIT CAST</small></a><button id="cast-quick-sheet-button" class="cast-quick-sheet-link" type="button" aria-controls="quick-sheet" aria-expanded="false" hidden><span>簡易表示</span><small>QUICK SHEET</small></button></div><div class="cast-header__export-panel" role="group" aria-label="データ出力"><span class="cast-header__export-label">データ出力 <small>EXPORT / TRANSFER</small></span><div class="cast-header__export-actions"><button id="direct-transfer-button" class="direct-transfer-button direct-transfer-button--desktop" type="button" data-direct-transfer-trigger><span>データ転記</span><small>CHARACTER SHEETS</small></button></div></div></div>
     <div class="cast-header__record"><p id="cast-status" class="cast-header__status">キャストデータへアクセス中…</p><p id="cast-public-id" class="cast-public-id cast-header__public-id"></p></div>
   </header>
   <section id="mobile-cast-view" hidden aria-label="iPhone向けキャスト表示"></section>
@@ -51,8 +42,8 @@
   <script type="module" src="./js/cast-outfits.js?v=4"></script>
   <script src="./js/cast-archetype-view.js?v=78"></script>
   <script src="./js/cast-cyber-trigger.js?v=2"></script>
-  <script type="module" src="./js/cast-mobile.js?v=3"></script>
+  <script type="module" src="./js/cast-mobile.js?v=4"></script>
   <script type="module" src="./js/cast-mobile-combos.js?v=4"></script>
-  <script src="./js/direct-transfer-button.js?v=3"></script>
+  <script src="./js/direct-transfer-button.js?v=4"></script>
 </body>
 </html>
