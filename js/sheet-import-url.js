@@ -1,6 +1,6 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.3.0 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.3.1 */
 (()=>{
-  const VERSION='1.3.0';
+  const VERSION='1.3.1';
   import('./help-ui.js?v=6').catch(error=>console.error('sheet help failed to load',error));
 
   const dialog=document.querySelector('#legacy-import-dialog');
@@ -48,16 +48,6 @@
 
   const input=box.querySelector('#character-sheets-import-url');
   const run=box.querySelector('#character-sheets-import-run');
-
-  const style=document.createElement('style');
-  style.textContent=`
-    #legacy-import-dialog .character-sheets-url-import{display:grid;gap:10px;margin:16px 0}
-    #legacy-import-dialog .character-sheets-url-import label{font-weight:700}
-    #legacy-import-dialog .character-sheets-url-import input{width:100%;min-width:0;padding:11px 12px}
-    #legacy-import-dialog .character-sheets-url-import button{min-height:44px}
-    #legacy-import-dialog .character-sheets-url-import__version{justify-self:end;opacity:.52;font-size:10px;letter-spacing:.06em}
-  `;
-  document.head.append(style);
 
   function setMessage(text,isError=false){
     message.textContent=text;
