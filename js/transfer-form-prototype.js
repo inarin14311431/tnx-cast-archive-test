@@ -47,6 +47,35 @@ function resolveUpdateKey(raw) {
   return key;
 }
 
+function styleMarkCode(mark) {
+  const value = String(mark || "");
+  const persona = value.includes("◎");
+  const key = value.includes("●");
+  if (persona && key) return "3";
+  if (persona) return "2";
+  if (key) return "1";
+  return null;
+}
+
+function applyStyleMarks(payload, bundle) {
+  if (!payload?.jsonData || !bundle?.character) return payload;
+  const raw = String(payload.jsonData);
+  if (!raw.startsWith("(") || !raw.endsWith(")")) throw new Error("スタイル指定を追加できないjsonData形式です。");
+  const json = JSON.parse(raw.slice(1, -1));
+  json.styles ||= {};
+  json.styles.pk1 = styleMarkCode(bundle.character.style_1_mark);
+  json.styles.pk2 = styleMarkCode(bundle.character.style_2_mark);
+  json.styles.pk3 = styleMarkCode(bundle.character.style_3_mark);
+  return { ...payload, jsonData: `(${JSON.stringify(json)})` };
+}
+
+function buildPayload(bundle) {
+  return applyStyleMarks(
+    buildCharacterSheetsPayload(bundle, { hideFromList: hideInput.checked }),
+    bundle
+  );
+}
+
 function invalidateLoadedData(message = "CASTデータが変更されました。再読込してください。") {
   loadedBundle = null;
   loadedPayload = null;
@@ -78,7 +107,7 @@ async function loadCast() {
 
   try {
     const bundle = await fetchTransferBundle(publicId);
-    const payload = buildCharacterSheetsPayload(bundle, { hideFromList: hideInput.checked });
+    const payload = buildPayload(bundle);
     loadedBundle = bundle;
     loadedPayload = payload;
     sourceInput.value = payload.summary.publicId || publicId;
@@ -105,7 +134,7 @@ async function loadCast() {
 function rebuildLoadedPayload() {
   if (!loadedBundle) return;
   try {
-    loadedPayload = buildCharacterSheetsPayload(loadedBundle, { hideFromList: hideInput.checked });
+    loadedPayload = buildPayload(loadedBundle);
     renderPayloadPreview(loadedPayload);
     loadStatus.dataset.state = "ok";
   } catch (error) {
