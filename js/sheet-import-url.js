@@ -1,6 +1,6 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.0.0 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.1.0 */
 (()=>{
-  const VERSION='1.0.0';
+  const VERSION='1.1.0';
   const dialog=document.querySelector('#legacy-import-dialog');
   const form=dialog?.querySelector('form');
   const legacyText=document.querySelector('#legacy-import-json');
@@ -15,11 +15,14 @@
   const heading=form.querySelector('h2');
   const intro=heading?.nextElementSibling;
   if(heading)heading.textContent='キャラシ倉庫から取込';
-  if(intro?.tagName==='P')intro.textContent='キャラクターシート倉庫のURLを入力して「取込み」を押してください。取得したデータは編集画面へ反映されます。保存ボタンを押すまでDBには保存されません。';
+  if(intro?.tagName==='P')intro.textContent='キャラクターシート倉庫のURLを入力して「取込み」を押してください。';
 
-  legacyCopy?.setAttribute('hidden','');
-  legacyText.setAttribute('hidden','');
-  legacyApply.setAttribute('hidden','');
+  // 旧方式のBMコピー・JSON貼付UIは廃止。内部変換エンジン用の要素だけ保持する。
+  legacyCopy?.remove();
+  legacyText.hidden=true;
+  legacyText.setAttribute('aria-hidden','true');
+  legacyApply.hidden=true;
+  legacyApply.setAttribute('aria-hidden','true');
 
   const box=document.createElement('section');
   box.className='character-sheets-url-import';
@@ -40,7 +43,7 @@
     #legacy-import-dialog .character-sheets-url-import label{font-weight:700}
     #legacy-import-dialog .character-sheets-url-import input{width:100%;min-width:0;padding:11px 12px}
     #legacy-import-dialog .character-sheets-url-import button{min-height:44px}
-    #legacy-import-dialog .character-sheets-url-import__version{justify-self:end;opacity:.62;font-size:11px;letter-spacing:.06em}
+    #legacy-import-dialog .character-sheets-url-import__version{justify-self:end;opacity:.52;font-size:10px;letter-spacing:.06em}
   `;
   document.head.append(style);
 
