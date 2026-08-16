@@ -19,6 +19,13 @@
     root.querySelectorAll?.(TRIGGER_SELECTOR).forEach(syncTrigger);
   }
 
+  function closeDialogOnEscape(event) {
+    if (event.key !== "Escape" || !dialog?.open) return;
+    event.preventDefault();
+    event.stopPropagation();
+    dialog.close();
+  }
+
   function ensureDialog() {
     if (dialog) return dialog;
 
@@ -35,12 +42,23 @@
       </div>`;
     document.body.append(dialog);
 
+    const frame = dialog.querySelector(".cast-transfer-dialog__frame");
     dialog.querySelector(".cast-transfer-dialog__close")?.addEventListener("click", () => dialog.close());
     dialog.addEventListener("click", event => {
       if (event.target === dialog) dialog.close();
     });
+    dialog.addEventListener("cancel", event => {
+      event.preventDefault();
+      dialog.close();
+    });
+    frame?.addEventListener("load", () => {
+      try {
+        frame.contentDocument?.addEventListener("keydown", closeDialogOnEscape, true);
+      } catch {
+        // Ignore cross-origin iframe content. Native dialog Escape remains available from the parent document.
+      }
+    });
     dialog.addEventListener("close", () => {
-      const frame = dialog.querySelector(".cast-transfer-dialog__frame");
       if (frame) frame.src = "about:blank";
     });
     return dialog;
@@ -57,6 +75,7 @@
     else modal.setAttribute("open", "");
   }
 
+  document.addEventListener("keydown", closeDialogOnEscape, true);
   document.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : null;
     const trigger = target?.closest(TRIGGER_SELECTOR);
