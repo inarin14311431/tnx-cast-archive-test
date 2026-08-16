@@ -115,7 +115,7 @@ function prepareNewResult() {
   if (newKeyRow) newKeyRow.hidden = false;
   if (resultLink) resultLink.hidden = true;
   if (resultKeyInput) resultKeyInput.value = "";
-  if (resultMessage) resultMessage.textContent = "新規登録処理を送信しました。ページ移動は行いません。下の登録結果に表示されるJSONまたはkeyからキャラシ倉庫URLを生成できます。";
+  if (resultMessage) resultMessage.textContent = "新規登録処理を送信しました。ページ移動は行いません。下の登録結果に表示されるJSONまたはkeyからキャラクターシート倉庫URLを生成できます。";
   revealResultPanel("pending", "登録結果待ち");
 }
 
@@ -236,8 +236,8 @@ function refreshModeUi() {
     ? "指定した既存キャストを、読み込んだCAST ARCHIVEデータで上書き更新することを確認しました。"
     : "読み込んだCAST ARCHIVEキャストを新規登録することを確認しました。";
   submitButton.innerHTML = isUpdate
-    ? 'キャラシ倉庫を更新 <small>POST UPDATE TO CHARACTER SHEETS</small>'
-    : 'キャラシ倉庫へ新規登録 <small>POST TO CHARACTER SHEETS</small>';
+    ? 'キャラクターシート倉庫を更新 <small>POST UPDATE TO CHARACTER SHEETS</small>'
+    : 'キャラクターシート倉庫へ新規登録 <small>POST TO CHARACTER SHEETS</small>';
   confirmInput.checked = false;
   if (resultPanel) {
     resultPanel.hidden = true;
@@ -308,7 +308,7 @@ function submitOutbound(event) {
   if (isUpdate) {
     if (responseBox) responseBox.hidden = true;
     if (newKeyRow) newKeyRow.hidden = true;
-    showResultLink(key, "更新処理を送信しました。更新先のキャラシ倉庫URLを確認できます。", "更新送信済み");
+    showResultLink(key, "更新処理を送信しました。更新先のキャラクターシート倉庫URLを確認できます。", "更新送信済み");
   } else {
     prepareNewResult();
   }
@@ -349,7 +349,7 @@ function buildResultLink() {
   try {
     const key = extractResultKey(resultKeyInput?.value);
     if (responseBox) responseBox.hidden = true;
-    showResultLink(key, "登録されたキャラシ倉庫URLを生成しました。必要な場合だけ下のボタンから開けます。", "URL生成済み");
+    showResultLink(key, "登録されたキャラクターシート倉庫URLを生成しました。必要な場合だけ下のボタンから開けます。", "URL生成済み");
   } catch (error) {
     if (resultMessage) resultMessage.textContent = error instanceof Error ? error.message : String(error);
     if (resultLink) resultLink.hidden = true;
@@ -388,7 +388,7 @@ responseFrame.addEventListener("load", () => {
   if (!outboundSubmissionPending) return;
   outboundSubmissionPending = false;
   if (currentMode() !== "new") return;
-  if (resultMessage) resultMessage.textContent = "登録結果をこの画面内に表示しました。表示されたJSONまたはkeyを下の欄へ貼り付けると、キャラシ倉庫URLを生成できます。";
+  if (resultMessage) resultMessage.textContent = "登録結果をこの画面内に表示しました。表示されたJSONまたはkeyを下の欄へ貼り付けると、キャラクターシート倉庫URLを生成できます。";
   revealResultPanel("pending", "登録結果表示");
   resultKeyInput?.focus();
 });
