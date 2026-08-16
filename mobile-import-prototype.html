@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Mobile Import Prototype // N◎VA ARCHIVE TEST</title>
   <style>
-    :root{color-scheme:dark;background:#071014;color:#d9f7ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;background:#071014;color:#d9f7ff}.wrap{max-width:760px;margin:auto;padding:20px 16px 48px}.head{border:1px solid #3c6f7d;padding:16px;margin-bottom:16px;background:#0a171d}.head small,.step small{display:block;color:#79a9b7;letter-spacing:.08em}.head h1{font-size:22px;margin:4px 0 0}.notice{padding:12px;border-left:3px solid #d3a84d;background:#19180f;color:#f5e6bd;margin:16px 0}.step{border:1px solid #244a55;background:#0a151b;padding:16px;margin:12px 0}.step h2{font-size:17px;margin:0 0 10px}.step p{line-height:1.65;color:#b7d3db}label{display:block;margin:12px 0 6px;font-size:13px;color:#9cc2cc}textarea,input{width:100%;border:1px solid #3a6875;background:#061016;color:#eaffff;border-radius:4px;padding:12px;font:inherit}textarea{min-height:180px;resize:vertical}button{width:100%;border:1px solid #5ca9bb;background:#0d2a34;color:#eaffff;padding:13px 14px;border-radius:4px;font-weight:700;font-size:15px;margin-top:10px}button:disabled{opacity:.45}.secondary{border-color:#53666d;background:#111b1f}.status{min-height:1.5em;margin:10px 0 0;font-size:13px;color:#9ee0ef}.status.error{color:#ff9f9f}.frame-wrap{height:1px;overflow:hidden;opacity:0;pointer-events:none}.frame-wrap.active{height:72vh;opacity:1;pointer-events:auto;margin-top:16px;border:1px solid #315765}.frame-wrap iframe{width:100%;height:100%;border:0;background:#fff}.danger{font-size:12px;color:#b2c2c7;margin-top:10px}.tag{display:inline-block;padding:3px 7px;border:1px solid #5e6f76;color:#91aab1;font-size:11px;margin-bottom:8px}
+    :root{color-scheme:dark;background:#071014;color:#d9f7ff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;background:#071014;color:#d9f7ff}.wrap{max-width:760px;margin:auto;padding:20px 16px 48px}.head{border:1px solid #3c6f7d;padding:16px;margin-bottom:16px;background:#0a171d}.head small,.step small{display:block;color:#79a9b7;letter-spacing:.08em}.head h1{font-size:22px;margin:4px 0 0}.notice{padding:12px;border-left:3px solid #d3a84d;background:#19180f;color:#f5e6bd;margin:16px 0}.step{border:1px solid #244a55;background:#0a151b;padding:16px;margin:12px 0}.step h2{font-size:17px;margin:0 0 10px}.step p{line-height:1.65;color:#b7d3db}label{display:block;margin:12px 0 6px;font-size:13px;color:#9cc2cc}textarea,input{width:100%;border:1px solid #3a6875;background:#061016;color:#eaffff;border-radius:4px;padding:12px;font:inherit}textarea{min-height:180px;resize:vertical}button{width:100%;border:1px solid #5ca9bb;background:#0d2a34;color:#eaffff;padding:13px 14px;border-radius:4px;font-weight:700;font-size:15px;margin-top:10px}button:disabled{opacity:.45}.secondary{border-color:#53666d;background:#111b1f}.status{min-height:1.5em;margin:10px 0 0;font-size:13px;color:#9ee0ef}.status.error{color:#ff9f9f}.frame-wrap{height:1px;overflow:hidden;opacity:0;pointer-events:none}.frame-wrap.active{height:72vh;opacity:1;pointer-events:auto;margin-top:16px;border:1px solid #315765}.frame-wrap iframe{width:100%;height:100%;border:0;background:#fff}.danger{font-size:12px;color:#b2c2c7;margin-top:10px}.tag{display:inline-block;padding:3px 7px;border:1px solid #5e6f76;color:#91aab1;font-size:11px;margin-bottom:8px}.version{display:inline-block;margin-left:6px;padding:3px 7px;border:1px solid #2f6673;color:#9ee0ef;font-size:11px}
   </style>
 </head>
 <body>
   <main class="wrap">
-    <header class="head"><span class="tag">TEST / ISOLATED PROTOTYPE</span><small>N◎VA MUNICIPAL DATABASE</small><h1>スマホ用データ取込・試作</h1></header>
+    <header class="head"><span class="tag">TEST / ISOLATED PROTOTYPE</span><span class="version" id="prototype-version">VERSION 0.3.0</span><small>N◎VA MUNICIPAL DATABASE</small><h1>スマホ用データ取込・試作</h1></header>
     <div class="notice">既存の「データ取込」には変更を加えない独立試作です。このページ自体を削除すれば機能全体を撤去できます。</div>
 
     <section class="step">
@@ -39,6 +39,6 @@
 
     <div id="editor-frame-wrap" class="frame-wrap"><iframe id="editor-frame" title="キャスト編集画面"></iframe></div>
   </main>
-  <script src="./js/mobile-import-prototype.js?v=1"></script>
+  <script src="./js/mobile-import-prototype.js?v=3"></script>
 </body>
 </html>
