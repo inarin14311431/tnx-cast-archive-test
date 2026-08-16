@@ -4,7 +4,7 @@
   <script>if(new URLSearchParams(location.search).get("embed")==="1")document.documentElement.classList.add("is-transfer-embed");</script>
   <script src="./js/css-next-theme.js"></script>
   <link rel="stylesheet" href="./css-next/index.css?v=56" data-css-system="next">
-  <link rel="stylesheet" href="./css-next/pages/transfer.css?v=1">
+  <link rel="stylesheet" href="./css-next/pages/transfer.css?v=2">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -32,7 +32,7 @@
         <label class="transfer-choice"><input type="radio" name="transfer-mode" value="update"> <span>既存キャストを更新</span></label>
       </fieldset>
 
-      <label class="update-only" hidden>更新先キャラシ倉庫URL
+      <label class="update-only update-target-field" hidden>更新先キャラシ倉庫URL
         <input id="update-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://character-sheets.appspot.com/tnx/edit.html?key=...">
       </label>
 
@@ -62,9 +62,20 @@
       <p id="status" aria-live="polite">未送信です。</p>
     </form>
 
-    <section id="transfer-result" class="transfer-result" hidden aria-labelledby="transfer-result-title">
-      <h2 id="transfer-result-title">キャラシ倉庫URL</h2>
+    <section id="transfer-result" class="transfer-result" hidden tabindex="-1" aria-labelledby="transfer-result-title">
+      <header class="transfer-result__header">
+        <div>
+          <span>TRANSFER RESULT</span>
+          <h2 id="transfer-result-title">キャラシ倉庫URL</h2>
+        </div>
+        <strong id="transfer-result-status" class="transfer-result__status">未処理</strong>
+      </header>
       <p id="transfer-result-message">転記先を確認できます。</p>
+      <div id="transfer-response-box" class="transfer-result__response" hidden>
+        <strong>キャラシ倉庫からの登録結果</strong>
+        <p>この画面内に登録結果を表示します。表示されたJSONまたはkeyを下の欄へ貼り付けてください。</p>
+        <iframe id="transfer-response-frame" name="character-sheets-transfer-response" title="キャラシ倉庫の登録結果"></iframe>
+      </div>
       <div id="new-key-row" class="transfer-result__row" hidden>
         <label>登録結果JSON または key
           <input id="result-key" type="text" autocomplete="off" spellcheck="false" placeholder='{"key":"..."} または key を貼り付け'>
@@ -74,6 +85,6 @@
       <a id="transfer-result-link" class="transfer-result__link" href="#" target="_blank" rel="noopener" hidden>キャラシ倉庫で開く</a>
     </section>
   </main>
-  <script type="module" src="./js/transfer.js?v=1"></script>
+  <script type="module" src="./js/transfer.js?v=2"></script>
 </body>
 </html>
