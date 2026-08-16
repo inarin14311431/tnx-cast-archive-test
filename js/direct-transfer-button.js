@@ -1,4 +1,12 @@
 (() => {
+  const removeLegacyTransferButtons = () => {
+    document.querySelector("#transfer-tsv-copy-button")?.remove();
+    document.querySelector("#transfer-bookmarklet-copy-button")?.remove();
+  };
+
+  removeLegacyTransferButtons();
+  window.addEventListener("load", removeLegacyTransferButtons, { once: true });
+
   const button = document.querySelector("#direct-transfer-button");
   if (!button) return;
 
