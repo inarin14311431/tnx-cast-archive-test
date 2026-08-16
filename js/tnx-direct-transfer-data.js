@@ -32,6 +32,17 @@ const numText = value => {
   const match = raw.match(/-?\d+(?:\.\d+)?/);
   return match ? match[0] : raw;
 };
+const joinName = (handle, name) => [text(handle), text(name)].filter(Boolean).join(" ");
+function splitProfileMemo(value) {
+  const raw = String(value ?? "");
+  const marker = "【メモ】";
+  const index = raw.indexOf(marker);
+  if (index < 0) return { profile: text(raw), memo: "" };
+  return {
+    profile: text(raw.slice(0, index)),
+    memo: text(raw.slice(index + marker.length))
+  };
+}
 
 export async function fetchTransferBundle(publicId) {
   const id = text(publicId);
@@ -98,6 +109,9 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
   }
 
   const displayValue = hideFromList ? "0" : null;
+  const profileParts = splitProfileMemo(character.profile);
+  const castName = joinName(character.handle, character.character_name);
+  const castKana = joinName(character.handle_kana, character.character_kana);
   const json = {
     ability: {
       cs: numText(character.cs ?? character.cs_base),
@@ -120,10 +134,10 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
         experience: nullable(character.life_path_origin),
         memo: nullable(character.summary)
       },
-      memo: null,
-      memoir: nullable(character.profile),
-      name: text(character.character_name),
-      nameKana: nullable(character.character_kana),
+      memo: nullable(profileParts.memo),
+      memoir: nullable(profileParts.profile),
+      name: castName,
+      nameKana: nullable(castKana),
       player: nullable(character.player_name),
       post: nullable(character.affiliation),
       rank: nullable(character.citizen_rank), reward: null,
@@ -155,8 +169,8 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
 
   const jsonData = `(${JSON.stringify(json)})`;
   return {
-    name: text(character.character_name),
-    nameKana: text(character.character_kana),
+    name: castName,
+    nameKana: castKana,
     player: text(character.player_name),
     outline: json.outline,
     display: displayValue,
