@@ -25,6 +25,9 @@ const previewDisplay = document.querySelector("#preview-display");
 const returnLink = document.querySelector("#return-to-cast");
 const resultPanel = document.querySelector("#transfer-result");
 const resultMessage = document.querySelector("#transfer-result-message");
+const resultStatus = document.querySelector("#transfer-result-status");
+const responseBox = document.querySelector("#transfer-response-box");
+const responseFrame = document.querySelector("#transfer-response-frame");
 const newKeyRow = document.querySelector("#new-key-row");
 const resultKeyInput = document.querySelector("#result-key");
 const buildResultLinkButton = document.querySelector("#build-result-link");
@@ -33,8 +36,9 @@ const resultLink = document.querySelector("#transfer-result-link");
 let loadedBundle = null;
 let loadedPayload = null;
 let loading = false;
+let outboundSubmissionPending = false;
 
-if (!form || !sourceInput || !loadButton || !loadStatus || !modeInputs.length || !updateUrlInput || !passwordInput || !hideInput || !confirmInput || !confirmText || !submitButton || !status) {
+if (!form || !sourceInput || !loadButton || !loadStatus || !modeInputs.length || !updateUrlInput || !passwordInput || !hideInput || !confirmInput || !confirmText || !submitButton || !status || !responseFrame) {
   throw new Error("データ転記UIを初期化できませんでした。");
 }
 
@@ -85,22 +89,34 @@ function extractResultKey(raw) {
   throw new Error("登録結果からkeyを確認できませんでした。");
 }
 
-function showResultLink(key, message) {
+function revealResultPanel(state, label) {
+  if (!resultPanel) return;
+  resultPanel.hidden = false;
+  resultPanel.dataset.state = state;
+  if (resultStatus) resultStatus.textContent = label;
+  requestAnimationFrame(() => {
+    resultPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    resultPanel.focus({ preventScroll: true });
+  });
+}
+
+function showResultLink(key, message, label = "URL確認可能") {
   if (!resultPanel || !resultLink) return;
   const href = createTargetEditUrl(key);
-  resultPanel.hidden = false;
   resultLink.href = href;
   resultLink.hidden = false;
   if (resultMessage) resultMessage.textContent = message;
+  revealResultPanel("success", label);
 }
 
 function prepareNewResult() {
   if (!resultPanel) return;
-  resultPanel.hidden = false;
+  if (responseBox) responseBox.hidden = false;
   if (newKeyRow) newKeyRow.hidden = false;
   if (resultLink) resultLink.hidden = true;
-  if (resultMessage) resultMessage.textContent = "別タブに表示された登録結果JSONを下へ貼り付けると、登録されたキャラシ倉庫URLを生成します。";
-  resultKeyInput?.focus();
+  if (resultKeyInput) resultKeyInput.value = "";
+  if (resultMessage) resultMessage.textContent = "新規登録処理を送信しました。ページ移動は行いません。下の登録結果に表示されるJSONまたはkeyからキャラシ倉庫URLを生成できます。";
+  revealResultPanel("pending", "登録結果待ち");
 }
 
 function styleMarkCode(mark) {
@@ -213,6 +229,7 @@ function renderPayloadPreview(payload) {
 function refreshModeUi() {
   const isUpdate = currentMode() === "update";
   updateOnly.forEach(node => { node.hidden = !isUpdate; });
+  updateUrlInput.disabled = !isUpdate;
   updateUrlInput.required = isUpdate;
   previewMode.textContent = isUpdate ? "既存キャストを更新" : "新規登録";
   confirmText.textContent = isUpdate
@@ -222,8 +239,13 @@ function refreshModeUi() {
     ? 'キャラシ倉庫を更新 <small>POST UPDATE TO CHARACTER SHEETS</small>'
     : 'キャラシ倉庫へ新規登録 <small>POST TO CHARACTER SHEETS</small>';
   confirmInput.checked = false;
-  if (resultPanel) resultPanel.hidden = true;
+  if (resultPanel) {
+    resultPanel.hidden = true;
+    resultPanel.dataset.state = "";
+  }
+  if (responseBox) responseBox.hidden = true;
   if (newKeyRow) newKeyRow.hidden = true;
+  if (resultLink) resultLink.hidden = true;
   updateReadyState();
 }
 
@@ -280,12 +302,13 @@ function submitOutbound(event) {
   hideInput.disabled = true;
   confirmInput.disabled = true;
   status.textContent = isUpdate
-    ? `「${loadedPayload.name}」の更新結果を別タブで開きます。`
-    : `「${loadedPayload.name}」の新規登録結果を別タブで開きます。`;
+    ? `「${loadedPayload.name}」の更新処理を送信しました。この画面から移動しません。`
+    : `「${loadedPayload.name}」の新規登録処理を送信しました。この画面から移動しません。`;
 
   if (isUpdate) {
+    if (responseBox) responseBox.hidden = true;
     if (newKeyRow) newKeyRow.hidden = true;
-    showResultLink(key, "更新先のキャラシ倉庫を開けます。別タブの登録結果も確認してください。");
+    showResultLink(key, "更新処理を送信しました。更新先のキャラシ倉庫URLを確認できます。", "更新送信済み");
   } else {
     prepareNewResult();
   }
@@ -293,7 +316,7 @@ function submitOutbound(event) {
   const outbound = document.createElement("form");
   outbound.method = "POST";
   outbound.action = REGISTER_URL;
-  outbound.target = "_blank";
+  outbound.target = responseFrame.name;
   outbound.acceptCharset = "UTF-8";
   outbound.style.display = "none";
 
@@ -317,6 +340,7 @@ function submitOutbound(event) {
     outbound.append(input);
   }
   document.body.append(outbound);
+  outboundSubmissionPending = true;
   outbound.submit();
   outbound.remove();
 }
@@ -324,10 +348,12 @@ function submitOutbound(event) {
 function buildResultLink() {
   try {
     const key = extractResultKey(resultKeyInput?.value);
-    showResultLink(key, "登録されたキャラシ倉庫URLを生成しました。");
+    if (responseBox) responseBox.hidden = true;
+    showResultLink(key, "登録されたキャラシ倉庫URLを生成しました。必要な場合だけ下のボタンから開けます。", "URL生成済み");
   } catch (error) {
     if (resultMessage) resultMessage.textContent = error instanceof Error ? error.message : String(error);
     if (resultLink) resultLink.hidden = true;
+    revealResultPanel("pending", "key確認待ち");
   }
 }
 
@@ -357,6 +383,14 @@ resultKeyInput?.addEventListener("keydown", event => {
   if (event.key !== "Enter") return;
   event.preventDefault();
   buildResultLink();
+});
+responseFrame.addEventListener("load", () => {
+  if (!outboundSubmissionPending) return;
+  outboundSubmissionPending = false;
+  if (currentMode() !== "new") return;
+  if (resultMessage) resultMessage.textContent = "登録結果をこの画面内に表示しました。表示されたJSONまたはkeyを下の欄へ貼り付けると、キャラシ倉庫URLを生成できます。";
+  revealResultPanel("pending", "登録結果表示");
+  resultKeyInput?.focus();
 });
 
 refreshModeUi();
