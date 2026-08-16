@@ -27,7 +27,7 @@
 
   const heading=form.querySelector('h2');
   const intro=heading?.nextElementSibling;
-  if(heading)heading.textContent='キャラシ倉庫から取込';
+  if(heading)heading.textContent='キャラクターシート倉庫から取込';
   if(intro?.tagName==='P')intro.textContent='キャラクターシート倉庫のURLを入力して「取込み」を押してください。';
 
   legacyCopy?.remove();
@@ -91,7 +91,7 @@
       }
       break;
     }
-    if(!data||typeof data!=='object')throw new Error('キャラシ倉庫から有効なデータを取得できませんでした。');
+    if(!data||typeof data!=='object')throw new Error('キャラクターシート倉庫から有効なデータを取得できませんでした。');
     const supported=Array.isArray(data.fields)||data.base||data.skills1||data.skills2||data.superhumanskills||data.weapons||data.outfits;
     if(!supported)throw new Error('取得データをTNXキャラクターシートとして認識できません。');
     return data;
@@ -110,9 +110,9 @@
         if(settled)return;
         settled=true;clearTimeout(timer);cleanup();fn(value);
       };
-      const timer=setTimeout(()=>finish(reject,new Error('キャラシ倉庫からの応答がタイムアウトしました。')),timeout);
+      const timer=setTimeout(()=>finish(reject,new Error('キャラクターシート倉庫からの応答がタイムアウトしました。')),timeout);
       window[callback]=payload=>finish(resolve,payload);
-      script.onerror=()=>finish(reject,new Error('キャラシ倉庫のデータ取得に失敗しました。'));
+      script.onerror=()=>finish(reject,new Error('キャラクターシート倉庫のデータ取得に失敗しました。'));
       script.src=`https://character-sheets.appspot.com/tnx/display?ajax=1&key=${encodeURIComponent(key)}&callback=${encodeURIComponent(callback)}`;
       document.head.append(script);
     });
@@ -134,7 +134,7 @@
     if(run.disabled)return;
     run.disabled=true;
     input.disabled=true;
-    setMessage('キャラシ倉庫からデータを取得しています…');
+    setMessage('キャラクターシート倉庫からデータを取得しています…');
     try{
       const key=resolveSource(input.value);
       const payload=await fetchJsonp(key);
