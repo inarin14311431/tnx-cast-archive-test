@@ -1,6 +1,8 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.2.1 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.3.0 */
 (()=>{
-  const VERSION='1.2.1';
+  const VERSION='1.3.0';
+  import('./help-ui.js?v=6').catch(error=>console.error('sheet help failed to load',error));
+
   const dialog=document.querySelector('#legacy-import-dialog');
   const form=dialog?.querySelector('form');
   const legacyText=document.querySelector('#legacy-import-json');
@@ -13,7 +15,7 @@
   dialog.dataset.urlImportReady='1';
   dialog.dataset.urlImportVersion=VERSION;
 
-  // 旧HELPは削除済み。残存DOMだけを初期化時に1回掃除する。
+  // 旧取込専用HELPは廃止済み。残存DOMだけを初期化時に1回掃除する。
   document.querySelectorAll('#sheet-import-help-button,#sheet-import-bookmarklet-copy,#sheet-import-help-dialog').forEach(node=>node.remove());
   const obsoleteControl=importButton.closest('.sheet-import-control');
   if(obsoleteControl&&obsoleteControl.parentNode){
