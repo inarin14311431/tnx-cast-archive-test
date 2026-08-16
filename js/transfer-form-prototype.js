@@ -1,6 +1,7 @@
 import { fetchTransferBundle, resolvePublicId, buildCharacterSheetsPayload } from "./tnx-direct-transfer-data.js?v=2";
 
 const REGISTER_URL = "https://character-sheets.appspot.com/tnx/register";
+const TARGET_EDIT_URL = "https://character-sheets.appspot.com/tnx/edit.html";
 const form = document.querySelector("#prototype-form");
 const sourceInput = document.querySelector("#source-cast");
 const loadButton = document.querySelector("#load-cast");
@@ -21,17 +22,37 @@ const previewOutfits = document.querySelector("#preview-outfits");
 const previewMode = document.querySelector("#preview-mode");
 const previewKey = document.querySelector("#preview-key");
 const previewDisplay = document.querySelector("#preview-display");
+const returnLink = document.querySelector("#return-to-cast");
+const resultPanel = document.querySelector("#transfer-result");
+const resultMessage = document.querySelector("#transfer-result-message");
+const newKeyRow = document.querySelector("#new-key-row");
+const resultKeyInput = document.querySelector("#result-key");
+const buildResultLinkButton = document.querySelector("#build-result-link");
+const resultLink = document.querySelector("#transfer-result-link");
 
 let loadedBundle = null;
 let loadedPayload = null;
 let loading = false;
 
 if (!form || !sourceInput || !loadButton || !loadStatus || !modeInputs.length || !updateUrlInput || !passwordInput || !hideInput || !confirmInput || !confirmText || !submitButton || !status) {
-  throw new Error("転記プロトタイプのUIを初期化できませんでした。");
+  throw new Error("データ転記UIを初期化できませんでした。");
 }
 
 function currentMode() {
   return modeInputs.find(input => input.checked)?.value === "update" ? "update" : "new";
+}
+
+function validKey(value) {
+  const key = String(value || "").trim();
+  return /^[A-Za-z0-9_-]+$/.test(key) ? key : "";
+}
+
+function createTargetEditUrl(key) {
+  const safeKey = validKey(key);
+  if (!safeKey) throw new Error("有効なkeyを確認できませんでした。");
+  const url = new URL(TARGET_EDIT_URL);
+  url.searchParams.set("key", safeKey);
+  return url.href;
 }
 
 function resolveUpdateKey(raw) {
@@ -41,10 +62,45 @@ function resolveUpdateKey(raw) {
   try { url = new URL(value); } catch { throw new Error("更新先URLの形式が正しくありません。"); }
   if (url.protocol !== "https:" || url.hostname !== "character-sheets.appspot.com") throw new Error("character-sheets.appspot.com のHTTPS URLを指定してください。");
   if (url.pathname.replace(/\/+$/, "") !== "/tnx/edit.html") throw new Error("TNXの edit.html URLを指定してください。");
-  const key = url.searchParams.get("key")?.trim() || "";
-  if (!key) throw new Error("更新先URLに key がありません。");
-  if (!/^[A-Za-z0-9_-]+$/.test(key)) throw new Error("更新先keyの形式を確認してください。");
+  const key = validKey(url.searchParams.get("key"));
+  if (!key) throw new Error("更新先URLに有効な key がありません。");
   return key;
+}
+
+function extractResultKey(raw) {
+  const value = String(raw || "").trim();
+  if (!value) throw new Error("登録結果JSONまたはkeyを入力してください。");
+  const direct = validKey(value);
+  if (direct) return direct;
+  try {
+    const parsed = JSON.parse(value);
+    const key = validKey(parsed?.key);
+    if (key) return key;
+  } catch {}
+  try {
+    const url = new URL(value);
+    const key = validKey(url.searchParams.get("key"));
+    if (key) return key;
+  } catch {}
+  throw new Error("登録結果からkeyを確認できませんでした。");
+}
+
+function showResultLink(key, message) {
+  if (!resultPanel || !resultLink) return;
+  const href = createTargetEditUrl(key);
+  resultPanel.hidden = false;
+  resultLink.href = href;
+  resultLink.hidden = false;
+  if (resultMessage) resultMessage.textContent = message;
+}
+
+function prepareNewResult() {
+  if (!resultPanel) return;
+  resultPanel.hidden = false;
+  if (newKeyRow) newKeyRow.hidden = false;
+  if (resultLink) resultLink.hidden = true;
+  if (resultMessage) resultMessage.textContent = "別タブに表示された登録結果JSONを下へ貼り付けると、登録されたキャラシ倉庫URLを生成します。";
+  resultKeyInput?.focus();
 }
 
 function styleMarkCode(mark) {
@@ -111,6 +167,7 @@ async function loadCast() {
     loadedBundle = bundle;
     loadedPayload = payload;
     sourceInput.value = payload.summary.publicId || publicId;
+    if (returnLink) returnLink.href = `./cast.html?id=${encodeURIComponent(payload.summary.publicId || publicId)}`;
     loadStatus.dataset.state = "ok";
     loadStatus.textContent = `読込・変換確認済み：${payload.name}（${payload.summary.publicId}）。このデータだけが送信対象です。`;
     renderPayloadPreview(payload);
@@ -165,6 +222,8 @@ function refreshModeUi() {
     ? 'キャラシ倉庫を更新 <small>POST UPDATE TO CHARACTER SHEETS</small>'
     : 'キャラシ倉庫へ新規登録 <small>POST TO CHARACTER SHEETS</small>';
   confirmInput.checked = false;
+  if (resultPanel) resultPanel.hidden = true;
+  if (newKeyRow) newKeyRow.hidden = true;
   updateReadyState();
 }
 
@@ -221,12 +280,20 @@ function submitOutbound(event) {
   hideInput.disabled = true;
   confirmInput.disabled = true;
   status.textContent = isUpdate
-    ? `「${loadedPayload.name}」で既存キャストを更新するためキャラシ倉庫へ移動します。再送信しないでください。`
-    : `「${loadedPayload.name}」を新規登録するためキャラシ倉庫へ移動します。再送信しないでください。`;
+    ? `「${loadedPayload.name}」の更新結果を別タブで開きます。`
+    : `「${loadedPayload.name}」の新規登録結果を別タブで開きます。`;
+
+  if (isUpdate) {
+    if (newKeyRow) newKeyRow.hidden = true;
+    showResultLink(key, "更新先のキャラシ倉庫を開けます。別タブの登録結果も確認してください。");
+  } else {
+    prepareNewResult();
+  }
 
   const outbound = document.createElement("form");
   outbound.method = "POST";
   outbound.action = REGISTER_URL;
+  outbound.target = "_blank";
   outbound.acceptCharset = "UTF-8";
   outbound.style.display = "none";
 
@@ -251,6 +318,17 @@ function submitOutbound(event) {
   }
   document.body.append(outbound);
   outbound.submit();
+  outbound.remove();
+}
+
+function buildResultLink() {
+  try {
+    const key = extractResultKey(resultKeyInput?.value);
+    showResultLink(key, "登録されたキャラシ倉庫URLを生成しました。");
+  } catch (error) {
+    if (resultMessage) resultMessage.textContent = error instanceof Error ? error.message : String(error);
+    if (resultLink) resultLink.hidden = true;
+  }
 }
 
 loadButton.addEventListener("click", loadCast);
@@ -274,5 +352,18 @@ hideInput.addEventListener("change", () => {
 });
 confirmInput.addEventListener("change", updateReadyState);
 form.addEventListener("submit", submitOutbound);
+buildResultLinkButton?.addEventListener("click", buildResultLink);
+resultKeyInput?.addEventListener("keydown", event => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  buildResultLink();
+});
 
 refreshModeUi();
+
+const initialId = new URLSearchParams(location.search).get("id")?.trim() || "";
+if (initialId) {
+  sourceInput.value = initialId;
+  if (returnLink) returnLink.href = `./cast.html?id=${encodeURIComponent(initialId)}`;
+  loadCast();
+}
