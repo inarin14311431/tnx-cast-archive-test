@@ -9,9 +9,11 @@
   const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
 
   ensureStyles();
-  const observer = new MutationObserver(install);
+  const observer = new MutationObserver(() => {
+    if (install()) observer.disconnect();
+  });
   observer.observe(document.documentElement, { childList: true, subtree: true });
-  install();
+  if (install()) observer.disconnect();
   window.setTimeout(() => observer.disconnect(), 15000);
 
   function install() {
@@ -64,7 +66,10 @@
 
     const udonarium = parent.querySelector("#udonarium-export-button");
     const cocofolia = parent.querySelector("#cocofolia-copy-button");
-    [udonarium, cocofolia, transfer, help].filter(Boolean).forEach(node => parent.append(node));
+    const desired = [udonarium, cocofolia, transfer, help].filter(node => node && node.parentElement === parent);
+    const current = [...parent.children].filter(node => desired.includes(node));
+    const alreadyOrdered = desired.length === current.length && desired.every((node, index) => current[index] === node);
+    if (!alreadyOrdered) desired.forEach(node => parent.append(node));
     return true;
   }
 
