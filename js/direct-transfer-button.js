@@ -1,14 +1,18 @@
 (() => {
-  const removeLegacyTransferButtons = () => {
-    document.querySelector("#transfer-tsv-copy-button")?.remove();
-    document.querySelector("#transfer-bookmarklet-copy-button")?.remove();
-  };
-
-  removeLegacyTransferButtons();
-  window.addEventListener("load", removeLegacyTransferButtons, { once: true });
-
   const button = document.querySelector("#direct-transfer-button");
   if (!button) return;
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .cast-header__export-actions #direct-transfer-button:hover,
+    .cast-header__export-actions #direct-transfer-button:focus-visible {
+      border-color: #66d9c7;
+      background: color-mix(in srgb, #66d9c7 18%, var(--color-surface, #0d1820));
+      color: #d8fff8;
+      box-shadow: 0 0 14px color-mix(in srgb, #66d9c7 24%, transparent);
+    }
+  `;
+  document.head.append(style);
 
   const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
   button.disabled = !publicId;
