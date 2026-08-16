@@ -1,6 +1,6 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.2.0 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.2.1 */
 (()=>{
-  const VERSION='1.2.0';
+  const VERSION='1.2.1';
   const dialog=document.querySelector('#legacy-import-dialog');
   const form=dialog?.querySelector('form');
   const legacyText=document.querySelector('#legacy-import-json');
@@ -13,27 +13,21 @@
   dialog.dataset.urlImportReady='1';
   dialog.dataset.urlImportVersion=VERSION;
 
-  function cleanupObsoleteImportUi(){
-    document.querySelectorAll('#sheet-import-help-button,#sheet-import-bookmarklet-copy,#sheet-import-help-dialog').forEach(node=>node.remove());
-    const control=importButton.closest('.sheet-import-control');
-    if(control&&control.parentNode){
-      control.parentNode.insertBefore(importButton,control);
-      control.remove();
-    }
-    importButton.classList.remove('sheet-import-main-action');
-    importButton.innerHTML='データ取込 <small>IMPORT DATA</small>';
+  // 旧HELPは削除済み。残存DOMだけを初期化時に1回掃除する。
+  document.querySelectorAll('#sheet-import-help-button,#sheet-import-bookmarklet-copy,#sheet-import-help-dialog').forEach(node=>node.remove());
+  const obsoleteControl=importButton.closest('.sheet-import-control');
+  if(obsoleteControl&&obsoleteControl.parentNode){
+    obsoleteControl.parentNode.insertBefore(importButton,obsoleteControl);
+    obsoleteControl.remove();
   }
-  cleanupObsoleteImportUi();
-  const obsoleteObserver=new MutationObserver(cleanupObsoleteImportUi);
-  const actionPanel=document.querySelector('.exp-panel');
-  if(actionPanel)obsoleteObserver.observe(actionPanel,{childList:true,subtree:true});
+  importButton.classList.remove('sheet-import-main-action');
+  importButton.innerHTML='データ取込 <small>IMPORT DATA</small>';
 
   const heading=form.querySelector('h2');
   const intro=heading?.nextElementSibling;
   if(heading)heading.textContent='キャラシ倉庫から取込';
   if(intro?.tagName==='P')intro.textContent='キャラクターシート倉庫のURLを入力して「取込み」を押してください。';
 
-  // 旧方式のBMコピー・JSON貼付UIは廃止。内部変換エンジン用の要素だけ保持する。
   legacyCopy?.remove();
   legacyText.hidden=true;
   legacyText.setAttribute('aria-hidden','true');
