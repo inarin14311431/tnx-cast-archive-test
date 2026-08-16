@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>キャラシ倉庫 実データ転記試験 // N◎VA ARCHIVE TEST</title>
+  <title>キャラクターシート倉庫 実データ転記試験 // N◎VA ARCHIVE TEST</title>
   <style>
     *,*::before,*::after{box-sizing:border-box}
     body{min-height:100vh;margin:0;padding:20px;background:var(--color-bg);color:var(--color-text)}
@@ -48,7 +48,7 @@
 </head>
 <body data-page="transfer-form-prototype.html">
   <main class="prototype">
-    <h1>キャラシ倉庫 実データ転記試験</h1>
+    <h1>キャラクターシート倉庫 実データ転記試験</h1>
     <p class="lead">CAST ARCHIVEの実キャストデータをキャラクターシート倉庫形式へ変換し、通常のHTMLフォームPOSTで新規登録または既存キャスト更新を行います。</p>
     <p class="warning"><strong>実登録・実更新を行います。</strong> 自動送信・自動再試行はありません。送信前にCAST ARCHIVEデータを読み込み、変換できた内容を確認してから最終ボタンを押してください。変換仕様を確認できていないスタイルが含まれる場合は送信を停止します。</p>
 
@@ -67,15 +67,15 @@
         <label class="transfer-choice"><input type="radio" name="transfer-mode" value="update"> <span>既存キャストを更新</span></label>
       </fieldset>
 
-      <label class="update-only" hidden>更新先キャラシ倉庫URL
+      <label class="update-only" hidden>更新先キャラクターシート倉庫URL
         <input id="update-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://character-sheets.appspot.com/tnx/edit.html?key=...">
       </label>
 
-      <label>キャラシ倉庫の編集パスワード
+      <label>キャラクターシート倉庫の編集パスワード
         <input id="transfer-password" type="password" required minlength="1" autocomplete="new-password">
       </label>
 
-      <label class="check"><input id="hide-from-list" type="checkbox"> <span>キャラシ倉庫のリストに載せない</span></label>
+      <label class="check"><input id="hide-from-list" type="checkbox"> <span>キャラクターシート倉庫のリストに載せない</span></label>
 
       <section class="preview" aria-labelledby="preview-title">
         <strong id="preview-title">送信内容の要約</strong>
@@ -93,7 +93,7 @@
 
       <p id="update-warning" class="danger update-only" hidden><strong>上書き注意：</strong>指定したkeyの既存キャラクターを、現在読み込んだCAST ARCHIVEデータで更新します。更新先URLと編集パスワードを確認してください。</p>
       <label class="check"><input id="confirm-register" type="checkbox"> <span id="confirm-text">読み込んだCAST ARCHIVEキャストを新規登録することを確認しました。</span></label>
-      <button id="submit-register" type="submit" disabled>キャラシ倉庫へ新規登録 <small>POST TO CHARACTER SHEETS</small></button>
+      <button id="submit-register" type="submit" disabled>キャラクターシート倉庫へ新規登録 <small>POST TO CHARACTER SHEETS</small></button>
       <p id="status" aria-live="polite">未送信です。</p>
     </form>
   </main>
