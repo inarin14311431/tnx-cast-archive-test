@@ -12,7 +12,7 @@
   const applyStatus=$('#apply-status');
   let editorUrl='';
 
-  const EXTRACTOR=`const label=e=>{const id=e.id;const l=id&&document.querySelector('label[for="'+CSS.escape(id)+'"]');return(l?.innerText||e.closest('label')?.innerText||e.closest('th,td')?.innerText||'').trim()};const section=e=>{let n=e;while(n&&n!==document.body){const h=n.querySelector?.(':scope>h1,:scope>h2,:scope>h3,:scope>legend');if(h)return h.innerText.trim();n=n.parentElement}return''};const fields=[...document.querySelectorAll('input,select,textarea')].filter(e=>!['button','submit','password'].includes(e.type)).map(e=>({path:e.id||e.name||'',id:e.id||'',name:e.name||'',type:e.type||e.tagName.toLowerCase(),value:e.type==='checkbox'||e.type==='radio'?(e.checked?(e.value||true):false):e.value,checked:!!e.checked,label:label(e),section:section(e)}));const data={format:'tnx-character-sheets-v2',url:location.href,exportedAt:new Date().toISOString(),title:document.title,fields};completion(JSON.stringify(data));`;
+  const EXTRACTOR=`try{const safeText=v=>String(v??'').trim();const label=e=>{try{const id=e.id;const l=id&&document.querySelector('label[for="'+CSS.escape(id)+'"]');return safeText(l?.innerText||e.closest('label')?.innerText||e.closest('th,td')?.innerText||'')}catch{return''}};const section=e=>{try{let n=e;while(n&&n!==document.body){const h=n.querySelector?.(':scope>h1,:scope>h2,:scope>h3,:scope>legend');if(h)return safeText(h.innerText);n=n.parentElement}return''}catch{return''}};const controls=[...document.querySelectorAll('input,select,textarea')].filter(e=>!['button','submit','password'].includes(String(e.type||'').toLowerCase()));const fields=controls.map(e=>({path:e.id||e.name||'',id:e.id||'',name:e.name||'',type:e.type||e.tagName.toLowerCase(),value:e.type==='checkbox'||e.type==='radio'?(e.checked?(e.value||true):false):e.value,checked:!!e.checked,label:label(e),section:section(e)}));const data={format:'tnx-character-sheets-v2',url:location.href,exportedAt:new Date().toISOString(),title:document.title,fields};const out=JSON.stringify(data);completion(out);}catch(error){completion('TNX_IMPORT_ERROR:'+String(error&&error.stack||error&&error.message||error));}`;
 
   function status(node,text,isError=false){
     node.textContent=text;
@@ -35,12 +35,13 @@
 
   copyExtractor.addEventListener('click',async()=>{
     const ok=await copyText(EXTRACTOR);
-    status(extractorStatus,ok?'ショートカット用JavaScriptをコピーしました。':'コピーできませんでした。長押しコピー用の表示機能を後続版で追加します。',!ok);
+    status(extractorStatus,ok?'診断対応版の抽出JavaScriptをコピーしました。ショートカット側の「クリップボードにコピー」の入力を「JavaScriptの結果」に指定してください。':'コピーできませんでした。',!ok);
   });
 
   source.addEventListener('input',()=>{
     const raw=source.value.trim();
     if(!raw){status(jsonStatus,'');return;}
+    if(raw.startsWith('TNX_IMPORT_ERROR:')){status(jsonStatus,raw,true);return;}
     try{
       const data=JSON.parse(raw);
       const supported=Array.isArray(data?.fields)||(data&&typeof data==='object'&&(data.base||data.skills1||data.superhumanskills||data.weapons));
@@ -100,7 +101,9 @@
     frameWrap.classList.remove('active');
     status(applyStatus,'準備中…');
     try{
-      const data=JSON.parse(source.value.trim());
+      const raw=source.value.trim();
+      if(raw.startsWith('TNX_IMPORT_ERROR:'))throw new Error(raw);
+      const data=JSON.parse(raw);
       const supported=Array.isArray(data?.fields)||(data&&typeof data==='object'&&(data.base||data.skills1||data.superhumanskills||data.weapons));
       if(!supported)throw new Error('対応するキャラシ倉庫JSONではありません。');
       editorUrl=resolveEditorUrl(target.value);
