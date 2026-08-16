@@ -1,8 +1,8 @@
 import { supabase } from "./supabase-client.js";
 
 const STYLE_CODES = new Map([
-  ["カブキ", "0"], ["バサラ", "1"], ["タタラ", "2"], ["ミストレス", "3"], ["カブト", "4"], ["カリスマ", "5"],
-  ["マネキン", "6"], ["カゼ", "7"], ["フェイト", "8"], ["クロマク", "9"], ["エグゼク", "10"], ["カタナ", "11"],
+  ["カブキ", "0"], ["カタナ", "1"], ["バサラ", "2"], ["タタラ", "3"], ["ミストレス", "4"], ["カブト", "5"],
+  ["カリスマ", "6"], ["マネキン", "7"], ["カゼ", "8"], ["フェイト", "9"], ["クロマク", "10"], ["エグゼク", "11"],
   ["クグツ", "12"], ["カゲ", "13"], ["チャクラ", "14"], ["レッガー", "15"], ["カブトワリ", "16"], ["ハイランダー", "17"],
   ["マヤカシ", "18"], ["トーキー", "19"], ["イヌ", "20"], ["ニューロ", "21"], ["ヒルコ", "22"], ["コモン", "23"],
   ["クロガネ", "24"], ["イブキ", "25"], ["シキガミ", "26"], ["アラシ", "27"], ["カゲムシャ", "28"], ["ミギウデ", "29"],
@@ -10,12 +10,12 @@ const STYLE_CODES = new Map([
 ]);
 
 const STYLE_ENGLISH = new Map([
-  ["カブキ", "Kabuki"], ["バサラ", "Vasara"], ["タタラ", "Tatara"], ["ミストレス", "Mistress"], ["カブト", "Kabuto"],
+  ["カブキ", "Kabuki"], ["カタナ", "Katana"], ["バサラ", "Vasara"], ["タタラ", "Tatara"], ["ミストレス", "Mistress"], ["カブト", "Kabuto"],
   ["カリスマ", "Charisma"], ["マネキン", "Mannequin"], ["カゼ", "Kaze"], ["フェイト", "Fate"], ["クロマク", "Kuromaku"],
-  ["エグゼク", "Exec"], ["カタナ", "Katana"], ["クグツ", "Kugutsu"], ["カゲ", "Kage"], ["チャクラ", "Chakra"],
-  ["レッガー", "Legger"], ["カブトワリ", "Kabuto-Wari"], ["ハイランダー", "Highlander"], ["マヤカシ", "Mayakashi"],
-  ["トーキー", "Talkie"], ["イヌ", "Inu"], ["ニューロ", "Neuro"], ["ヒルコ", "Hiruko"], ["コモン", "Common"],
-  ["クロガネ", "Kurogane"], ["イブキ", "Ibuki"], ["シキガミ", "Shikigami"], ["アラシ", "Arashi"], ["カゲムシャ", "Kagemusha"],
+  ["エグゼク", "Exec"], ["クグツ", "Kugutsu"], ["カゲ", "Kage"], ["チャクラ", "Chakra"], ["レッガー", "Legger"],
+  ["カブトワリ", "Kabuto-Wari"], ["ハイランダー", "Highlander"], ["マヤカシ", "Mayakashi"], ["トーキー", "Talkie"],
+  ["イヌ", "Inu"], ["ニューロ", "Neuro"], ["ヒルコ", "Hiruko"], ["コモン", "Common"], ["クロガネ", "Kurogane"],
+  ["イブキ", "Ibuki"], ["シキガミ", "Shikigami"], ["アラシ", "Arashi"], ["カゲムシャ", "Kagemusha"],
   ["ミギウデ", "Migiude"], ["エトランゼ", "Etranger"], ["アヤカシ", "Ayakashi"], ["ウツワ", "Utsuwa"]
 ]);
 
@@ -32,7 +32,13 @@ const numText = value => {
   const match = raw.match(/-?\d+(?:\.\d+)?/);
   return match ? match[0] : raw;
 };
-const joinName = (handle, name) => [text(handle), text(name)].filter(Boolean).join(" ");
+const quoteHandle = value => {
+  const raw = text(value);
+  if (!raw) return "";
+  const inner = raw.replace(/^[“”"'「『]+\s*/, "").replace(/\s*[“”"'」』]+$/, "").trim();
+  return inner ? `“${inner}”` : "";
+};
+const joinName = (handle, name) => [quoteHandle(handle), text(name)].filter(Boolean).join(" ");
 function splitProfileMemo(value) {
   const raw = String(value ?? "");
   const marker = "【メモ】";
@@ -195,7 +201,7 @@ function ability(character, key) {
 }
 function emptyAbilityModifier() { return { cs: null, life: { abl: null, ctl: null }, mundane: { abl: null, ctl: null }, passion: { abl: null, ctl: null }, reason: { abl: null, ctl: null } }; }
 function markCode(mark) { return mark.includes("◎") && mark.includes("●") ? "3" : mark.includes("◎") ? "2" : mark.includes("●") ? "1" : null; }
-function createOutline(styles) { return `STYLE:${styles.map(item => `${STYLE_ENGLISH.get(item.name)}${item.mark}`).join("=")}`; }
+function createOutline(styles) { return `STYLE:${styles.map(item => STYLE_ENGLISH.get(item.name)).join("=")}`; }
 function cleanSkillName(value) { return text(value).replace(/^[★]+\s*/, ""); }
 function findGeneral(general, target) {
   const exact = general.find(skill => cleanSkillName(skill.name) === target);
