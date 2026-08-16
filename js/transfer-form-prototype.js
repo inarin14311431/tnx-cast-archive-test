@@ -1,4 +1,4 @@
-import { fetchTransferBundle, resolvePublicId, buildCharacterSheetsPayload } from "./tnx-direct-transfer-data.js?v=1";
+import { fetchTransferBundle, resolvePublicId, buildCharacterSheetsPayload } from "./tnx-direct-transfer-data.js?v=2";
 
 const REGISTER_URL = "https://character-sheets.appspot.com/tnx/register";
 const form = document.querySelector("#prototype-form");
