@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <script src="./js/css-next-theme.js"></script>
+  <link rel="stylesheet" href="./css-next/index.css?v=56" data-css-system="next">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>データ転記 // N◎VA ARCHIVE</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    body{min-height:100vh;margin:0;padding:20px;background:var(--color-bg);color:var(--color-text)}
+    .transfer-page{width:min(760px,100%);margin:0 auto;padding:22px;border:1px solid var(--color-border);background:var(--color-surface);overflow:hidden}
+    .transfer-page__back{display:inline-block;margin-bottom:16px;color:var(--color-accent);text-decoration:none;font:700 .78rem/1.3 var(--font-data,monospace)}
+    .transfer-page h1{margin:0 0 10px;color:var(--color-accent);font-size:1.35rem}
+    .transfer-page .lead,.transfer-page .warning{line-height:1.75}
+    .transfer-page .warning{padding:12px 14px;border-left:3px solid var(--color-accent);background:var(--color-accent-soft)}
+    .transfer-page form{display:grid;gap:14px;margin-top:20px;min-width:0}
+    .transfer-page label:not(.transfer-choice):not(.check){display:grid;gap:7px;min-width:0;font-weight:700}
+    .transfer-page input[type="text"],.transfer-page input[type="url"],.transfer-page input[type="password"]{width:100%;max-width:100%;min-width:0;padding:12px}
+    .transfer-page .source-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+    .transfer-page .source-row label{margin:0}
+    .transfer-page .source-row button{white-space:nowrap}
+    .transfer-page .transfer-mode{display:grid;grid-template-columns:1fr;gap:10px;min-width:0;margin:0;padding:14px;border:1px solid var(--color-border-muted)}
+    .transfer-page .transfer-mode legend{padding:0 7px;font-weight:800}
+    .transfer-page .transfer-choice,.transfer-page .check{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;width:100%!important;min-width:0!important;margin:0!important;padding:4px 0!important;font-weight:600;line-height:1.55;writing-mode:horizontal-tb!important;text-orientation:mixed!important;white-space:normal!important}
+    .transfer-page .transfer-choice input,.transfer-page .check input{position:static!important;inset:auto!important;float:none!important;flex:0 0 auto!important;width:22px!important;height:22px!important;margin:0!important}
+    .transfer-page .transfer-choice span,.transfer-page .check span{display:block!important;position:static!important;min-width:0!important;width:auto!important;max-width:100%!important;writing-mode:horizontal-tb!important;white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important}
+    .transfer-page button{min-height:48px;padding:11px 16px;font-weight:800}
+    .transfer-page button:disabled{opacity:.45;cursor:not-allowed}
+    .transfer-page .preview,.transfer-result{min-width:0;padding:13px;border:1px solid var(--color-border-muted);background:var(--color-bg);line-height:1.7;word-break:break-word}
+    .transfer-page .preview dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px 12px;margin:0}
+    .transfer-page .preview dt{color:var(--color-muted)}
+    .transfer-page .preview dd{min-width:0;margin:0}
+    .transfer-page .update-only[hidden],.transfer-result[hidden]{display:none!important}
+    .transfer-page .danger{padding:11px 13px;border:1px solid var(--color-danger,#ff6b6b);line-height:1.6}
+    .transfer-page .loaded{padding:11px 13px;border:1px solid var(--color-border-muted);line-height:1.65}
+    .transfer-page .loaded[data-state="ok"]{border-color:var(--color-accent)}
+    .transfer-page .loaded[data-state="error"]{border-color:var(--color-danger,#ff6b6b)}
+    .transfer-page small{color:var(--color-muted)}
+    .transfer-result{display:grid;gap:10px;margin-top:18px;border-color:var(--color-accent)}
+    .transfer-result h2{margin:0;color:var(--color-accent);font-size:1rem}
+    .transfer-result p{margin:0}
+    .transfer-result__row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+    .transfer-result__link{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 14px;border:1px solid var(--color-accent);color:var(--color-accent);font-weight:800;text-decoration:none}
+    .transfer-result__link[hidden]{display:none}
+    @media(max-width:600px){
+      body{padding:8px}.transfer-page{padding:16px}.transfer-page .transfer-mode{padding:12px}
+      .transfer-page .preview dl{grid-template-columns:1fr}.transfer-page .preview dd{margin:0 0 8px}
+      .transfer-page .transfer-choice,.transfer-page .check{align-items:flex-start!important}
+      .transfer-page .transfer-choice input,.transfer-page .check input{margin-top:.15em!important}
+      .transfer-page .source-row,.transfer-result__row{grid-template-columns:1fr}.transfer-page .source-row button{width:100%}
+    }
+  </style>
+</head>
+<body data-page="transfer.html">
+  <main class="transfer-page">
+    <a id="return-to-cast" class="transfer-page__back" href="./index.html">&lt; キャスト画面へ戻る</a>
+    <h1>データ転記</h1>
+    <p class="lead">CAST ARCHIVEのキャストデータをキャラクターシート倉庫形式へ変換し、新規登録または既存キャスト更新を行います。PC・スマートフォンのどちらからでも利用できます。</p>
+    <p class="warning"><strong>実登録・実更新を行います。</strong> 送信前に転記内容と編集パスワードを確認してください。パスワードはCAST ARCHIVEには保存しません。</p>
+
+    <form id="prototype-form" autocomplete="off">
+      <div class="source-row">
+        <label>CAST ARCHIVE キャストID またはURL
+          <input id="source-cast" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="TNX-000117 または cast.html?id=TNX-000117">
+        </label>
+        <button id="load-cast" type="button">CASTデータ読込</button>
+      </div>
+      <p id="load-status" class="loaded" aria-live="polite">未読込です。送信はできません。</p>
+
+      <fieldset class="transfer-mode">
+        <legend>転記方法</legend>
+        <label class="transfer-choice"><input type="radio" name="transfer-mode" value="new" checked> <span>新規登録</span></label>
+        <label class="transfer-choice"><input type="radio" name="transfer-mode" value="update"> <span>既存キャストを更新</span></label>
+      </fieldset>
+
+      <label class="update-only" hidden>更新先キャラシ倉庫URL
+        <input id="update-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://character-sheets.appspot.com/tnx/edit.html?key=...">
+      </label>
+
+      <label>キャラシ倉庫の編集パスワード
+        <input id="transfer-password" type="password" required minlength="1" autocomplete="new-password">
+      </label>
+
+      <label class="check"><input id="hide-from-list" type="checkbox"> <span>キャラシ倉庫のリストに載せない</span></label>
+
+      <section class="preview" aria-labelledby="preview-title">
+        <strong id="preview-title">送信内容の要約</strong>
+        <dl>
+          <dt>CAST</dt><dd id="preview-cast">未読込</dd>
+          <dt>スタイル</dt><dd id="preview-styles">—</dd>
+          <dt>技能</dt><dd id="preview-skills">—</dd>
+          <dt>アウトフィット</dt><dd id="preview-outfits">—</dd>
+          <dt>処理</dt><dd id="preview-mode">新規登録</dd>
+          <dt>key</dt><dd id="preview-key">空欄（新規登録）</dd>
+          <dt>リスト表示</dt><dd id="preview-display">表示する</dd>
+          <dt>送信先</dt><dd>character-sheets.appspot.com/tnx/register</dd>
+        </dl>
+      </section>
+
+      <p class="danger update-only" hidden><strong>上書き注意：</strong>指定したkeyの既存キャラクターを、現在読み込んだCAST ARCHIVEデータで更新します。</p>
+      <label class="check"><input id="confirm-register" type="checkbox"> <span id="confirm-text">読み込んだCAST ARCHIVEキャストを新規登録することを確認しました。</span></label>
+      <button id="submit-register" type="submit" disabled>キャラシ倉庫へ新規登録 <small>POST TO CHARACTER SHEETS</small></button>
+      <p id="status" aria-live="polite">未送信です。</p>
+    </form>
+
+    <section id="transfer-result" class="transfer-result" hidden aria-labelledby="transfer-result-title">
+      <h2 id="transfer-result-title">キャラシ倉庫URL</h2>
+      <p id="transfer-result-message">転記先を確認できます。</p>
+      <div id="new-key-row" class="transfer-result__row" hidden>
+        <label>登録結果JSON または key
+          <input id="result-key" type="text" autocomplete="off" spellcheck="false" placeholder='{"key":"..."} または key を貼り付け'>
+        </label>
+        <button id="build-result-link" type="button">URL生成</button>
+      </div>
+      <a id="transfer-result-link" class="transfer-result__link" href="#" target="_blank" rel="noopener" hidden>キャラシ倉庫で開く</a>
+    </section>
+  </main>
+  <script type="module" src="./js/transfer-form-prototype.js?v=6"></script>
+</body>
+</html>
