@@ -11,13 +11,18 @@ test("style skill fields publish the canonical change event", () => {
   assert.match(fields, /dispatchEvent\(new CustomEvent\(STYLE_SKILLS_CHANGED_EVENT/);
 });
 
+test("style skill fields also publish after structural rebuilds", () => {
+  assert.match(fields, /if\(enhance\(\)\)publishChange\(\)/);
+});
+
 test("sheet features no longer owns raw style-skill input events", () => {
   assert.doesNotMatch(features, /styleRoot\.addEventListener\(["']input["']/);
   assert.match(features, /styleRoot\.addEventListener\(["']tnx:style-skills-changed["'],queue\)/);
 });
 
-test("style skill integrity follows the canonical change event instead of raw input", () => {
+test("style skill integrity follows the canonical change event instead of raw input or DOM mutation", () => {
   assert.match(integrity, /STYLE_SKILLS_CHANGED_EVENT\s*=\s*["']tnx:style-skills-changed["']/);
   assert.doesNotMatch(integrity, /root\.addEventListener\(["']input["']/);
+  assert.doesNotMatch(integrity, /new MutationObserver/);
   assert.match(integrity, /root\.addEventListener\(STYLE_SKILLS_CHANGED_EVENT, queue\)/);
 });
