@@ -21,6 +21,7 @@
 @import url("./components/global-theme-picker.css?v=1");
 @import url("./components/sheet-snapshots.css?v=1");
 @import url("./components/sheet-import-help.css?v=1");
+@import url("./components/sheet-url-import.css?v=1");
 
 /* Sheet editor */
 @import url("./editor/editor.css?v=25");
