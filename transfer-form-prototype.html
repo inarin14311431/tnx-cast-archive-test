@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>キャラシ倉庫 フォームPOST試験 // N◎VA ARCHIVE TEST</title>
+  <title>キャラシ倉庫 転記POST試験 // N◎VA ARCHIVE TEST</title>
   <style>
     body{min-height:100vh;padding:20px;background:var(--color-bg);color:var(--color-text)}
     .prototype{width:min(760px,100%);margin:0 auto;padding:22px;border:1px solid var(--color-border);background:var(--color-surface)}
@@ -15,26 +15,40 @@
     .prototype .warning{padding:12px 14px;border-left:3px solid var(--color-accent);background:var(--color-accent-soft)}
     .prototype form{display:grid;gap:14px;margin-top:20px}
     .prototype label{display:grid;gap:7px;font-weight:700}
-    .prototype input[type="text"],.prototype input[type="password"]{width:100%;min-width:0;padding:12px}
-    .prototype .check{display:flex;align-items:flex-start;gap:9px;font-weight:600;line-height:1.55}
-    .prototype .check input{margin-top:.25em;flex:0 0 auto}
+    .prototype input[type="text"],.prototype input[type="url"],.prototype input[type="password"]{width:100%;min-width:0;padding:12px}
+    .prototype fieldset{display:grid;gap:10px;margin:0;padding:14px;border:1px solid var(--color-border-muted)}
+    .prototype legend{padding:0 7px;font-weight:800}
+    .prototype .radio,.prototype .check{display:flex;align-items:flex-start;gap:9px;font-weight:600;line-height:1.55}
+    .prototype .radio input,.prototype .check input{margin-top:.25em;flex:0 0 auto}
     .prototype button{min-height:48px;padding:11px 16px;font-weight:800}
     .prototype button:disabled{opacity:.45;cursor:not-allowed}
     .prototype .preview{padding:13px;border:1px solid var(--color-border-muted);background:var(--color-bg);line-height:1.7;word-break:break-word}
     .prototype .preview dl{display:grid;grid-template-columns:max-content 1fr;gap:5px 12px;margin:0}
     .prototype .preview dt{color:var(--color-muted)}
     .prototype .preview dd{margin:0}
+    .prototype .update-only[hidden]{display:none!important}
+    .prototype .danger{padding:11px 13px;border:1px solid var(--color-danger,#ff6b6b);line-height:1.6}
     .prototype small{color:var(--color-muted)}
     @media(max-width:600px){body{padding:8px}.prototype{padding:16px}.prototype .preview dl{grid-template-columns:1fr}.prototype .preview dd{margin:0 0 8px}}
   </style>
 </head>
 <body data-page="transfer-form-prototype.html">
   <main class="prototype">
-    <h1>キャラシ倉庫 フォームPOST試験</h1>
-    <p class="lead">iPhone Safariを含む通常ブラウザから、CORSを使わずHTMLフォーム送信でキャラクターシート倉庫へ新規登録できるか確認するための検証ページです。</p>
-    <p class="warning"><strong>実登録試験です。</strong> 下の最終ボタンを押した場合のみ、キャラクターシート倉庫へテストキャストを1件新規登録します。自動送信・再試行・更新処理はありません。送信内容は、実際の新規登録HARで確認できた正常な最小構造をそのまま基準にしています。</p>
+    <h1>キャラシ倉庫 転記POST試験</h1>
+    <p class="lead">通常のHTMLフォームPOSTを使い、スマートフォンからキャラクターシート倉庫へ新規登録または既存キャスト更新を行う検証ページです。</p>
+    <p class="warning"><strong>実登録・実更新を行う試験です。</strong> 最終ボタンを押した場合のみ送信します。自動送信・自動再試行はありません。現在は実CAST ARCHIVEデータではなく、HARで確認した正常な最小シートデータを使用します。</p>
 
     <form id="prototype-form" autocomplete="off">
+      <fieldset>
+        <legend>転記方法</legend>
+        <label class="radio"><input type="radio" name="transfer-mode" value="new" checked> <span>新規登録</span></label>
+        <label class="radio"><input type="radio" name="transfer-mode" value="update"> <span>既存キャストを更新</span></label>
+      </fieldset>
+
+      <label class="update-only" hidden>更新先キャラシ倉庫URL
+        <input id="update-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://character-sheets.appspot.com/tnx/edit.html?key=...">
+      </label>
+
       <label>テストキャスト名
         <input id="test-name" type="text" required maxlength="80" value="CAST ARCHIVE TEST" inputmode="text">
       </label>
@@ -45,22 +59,26 @@
         <input id="test-password" type="password" required minlength="1" autocomplete="new-password">
       </label>
 
+      <label class="check"><input id="hide-from-list" type="checkbox"> <span>キャラシ倉庫のリストに載せない</span></label>
+
       <section class="preview" aria-labelledby="preview-title">
         <strong id="preview-title">送信内容の要約</strong>
         <dl>
           <dt>送信先</dt><dd>character-sheets.appspot.com/tnx/register</dd>
           <dt>方式</dt><dd>通常のHTML form POST</dd>
-          <dt>key</dt><dd>空欄（新規登録）</dd>
-          <dt>内容</dt><dd>キャスト名・プレイヤー名・パスワード＋HAR確認済みの新規シート初期データ</dd>
-          <dt>既存データ</dt><dd>更新しない</dd>
+          <dt>処理</dt><dd id="preview-mode">新規登録</dd>
+          <dt>key</dt><dd id="preview-key">空欄（新規登録）</dd>
+          <dt>リスト表示</dt><dd id="preview-display">表示する</dd>
+          <dt>内容</dt><dd>キャスト名・プレイヤー名・パスワード＋HAR確認済みの最小シートデータ</dd>
         </dl>
       </section>
 
-      <label class="check"><input id="confirm-register" type="checkbox"> <span>この操作でキャラクターシート倉庫にテストキャストが1件新規登録されることを確認しました。</span></label>
+      <p id="update-warning" class="danger update-only" hidden><strong>上書き注意：</strong>指定したkeyの既存キャラクターを更新します。更新先URLと編集パスワードが正しいことを確認してください。</p>
+      <label class="check"><input id="confirm-register" type="checkbox"> <span id="confirm-text">キャラクターシート倉庫にテストキャストが1件新規登録されることを確認しました。</span></label>
       <button id="submit-register" type="submit" disabled>テストキャストを新規登録 <small>POST TO CHARACTER SHEETS</small></button>
       <p id="status" aria-live="polite">未送信です。</p>
     </form>
   </main>
-  <script src="./js/transfer-form-prototype.js?v=1"></script>
+  <script src="./js/transfer-form-prototype.js?v=2"></script>
 </body>
 </html>
