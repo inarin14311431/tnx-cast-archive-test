@@ -10,12 +10,12 @@
 </head>
 <body>
   <main class="wrap">
-    <header class="head"><span class="tag">TEST / ISOLATED PROTOTYPE</span><span class="version" id="prototype-version">VERSION 0.3.0</span><small>N◎VA MUNICIPAL DATABASE</small><h1>スマホ用データ取込・試作</h1></header>
+    <header class="head"><span class="tag">TEST / ISOLATED PROTOTYPE</span><span class="version" id="prototype-version">VERSION 0.4.0</span><small>N◎VA MUNICIPAL DATABASE</small><h1>スマホ用データ取込・試作</h1></header>
     <div class="notice">既存の「データ取込」には変更を加えない独立試作です。このページ自体を削除すれば機能全体を撤去できます。</div>
 
     <section class="step">
       <small>STEP 01</small><h2>iPhoneショートカット用JavaScript</h2>
-      <p>Safariの「WebページでJavaScriptを実行」アクションへ貼る抽出コードです。対象のキャラシ倉庫ページ上で実行すると、JSONをショートカットへ返します。</p>
+      <p>Safariの「WebページでJavaScriptを実行」へ貼る抽出コードです。v0.4.0では文字列化せず、Shortcutsへ辞書データを直接返します。</p>
       <button id="copy-extractor" type="button">抽出JavaScriptをコピー</button>
       <p class="status" id="extractor-status" aria-live="polite"></p>
     </section>
@@ -39,6 +39,6 @@
 
     <div id="editor-frame-wrap" class="frame-wrap"><iframe id="editor-frame" title="キャスト編集画面"></iframe></div>
   </main>
-  <script src="./js/mobile-import-prototype.js?v=3"></script>
+  <script src="./js/mobile-import-prototype.js?v=4"></script>
 </body>
 </html>
