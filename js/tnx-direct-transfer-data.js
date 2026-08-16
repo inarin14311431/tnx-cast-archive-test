@@ -4,7 +4,9 @@ const STYLE_CODES = new Map([
   ["カブキ", "0"], ["バサラ", "1"], ["タタラ", "2"], ["ミストレス", "3"], ["カブト", "4"], ["カリスマ", "5"],
   ["マネキン", "6"], ["カゼ", "7"], ["フェイト", "8"], ["クロマク", "9"], ["エグゼク", "10"], ["カタナ", "11"],
   ["クグツ", "12"], ["カゲ", "13"], ["チャクラ", "14"], ["レッガー", "15"], ["カブトワリ", "16"], ["ハイランダー", "17"],
-  ["マヤカシ", "18"], ["トーキー", "19"], ["イヌ", "20"], ["ニューロ", "21"]
+  ["マヤカシ", "18"], ["トーキー", "19"], ["イヌ", "20"], ["ニューロ", "21"], ["ヒルコ", "22"], ["コモン", "23"],
+  ["クロガネ", "24"], ["イブキ", "25"], ["シキガミ", "26"], ["アラシ", "27"], ["カゲムシャ", "28"], ["ミギウデ", "29"],
+  ["エトランゼ", "30"], ["アヤカシ", "31"], ["ウツワ", "32"]
 ]);
 
 const STYLE_ENGLISH = new Map([
@@ -12,7 +14,9 @@ const STYLE_ENGLISH = new Map([
   ["カリスマ", "Charisma"], ["マネキン", "Mannequin"], ["カゼ", "Kaze"], ["フェイト", "Fate"], ["クロマク", "Kuromaku"],
   ["エグゼク", "Exec"], ["カタナ", "Katana"], ["クグツ", "Kugutsu"], ["カゲ", "Kage"], ["チャクラ", "Chakra"],
   ["レッガー", "Legger"], ["カブトワリ", "Kabuto-Wari"], ["ハイランダー", "Highlander"], ["マヤカシ", "Mayakashi"],
-  ["トーキー", "Talkie"], ["イヌ", "Inu"], ["ニューロ", "Neuro"]
+  ["トーキー", "Talkie"], ["イヌ", "Inu"], ["ニューロ", "Neuro"], ["ヒルコ", "Hiruko"], ["コモン", "Common"],
+  ["クロガネ", "Kurogane"], ["イブキ", "Ibuki"], ["シキガミ", "Shikigami"], ["アラシ", "Arashi"], ["カゲムシャ", "Kagemusha"],
+  ["ミギウデ", "Migiude"], ["エトランゼ", "Etranger"], ["アヤカシ", "Ayakashi"], ["ウツワ", "Utsuwa"]
 ]);
 
 const GENERAL_ORDER = ["医療","射撃","知覚","電脳","製作：","心理","自我","交渉","芸術：","運動","回避","白兵","操縦：","信用","圧力","隠密"];
@@ -74,7 +78,7 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
     attribute: text(character[`style_${index}_attribute`])
   }));
   const unsupported = styles.filter(item => item.name && !STYLE_CODES.has(item.name)).map(item => item.name);
-  if (unsupported.length) throw new Error(`安全停止：キャラシ倉庫側のコードを未確認のスタイルがあります（${[...new Set(unsupported)].join("、")}）。このキャストはまだ送信できません。`);
+  if (unsupported.length) throw new Error(`安全停止：未対応のスタイル名があります（${[...new Set(unsupported)].join("、")}）。`);
   if (styles.some(item => !item.name)) throw new Error("安全停止：スタイル3枠のいずれかが空です。");
 
   const general = skills.filter(skill => skill.category === "general");
@@ -138,7 +142,11 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
     styles: {
       pk1: markCode(styles[0].mark), pk2: markCode(styles[1].mark), pk3: markCode(styles[2].mark),
       style1: STYLE_CODES.get(styles[0].name), style2: STYLE_CODES.get(styles[1].name), style3: STYLE_CODES.get(styles[2].name),
-      utsuwa: { element1: nullable(styles[0].attribute), element2: nullable(styles[1].attribute), element3: nullable(styles[2].attribute) }
+      utsuwa: {
+        element1: styles[0].name === "ウツワ" ? nullable(styles[0].attribute) : null,
+        element2: styles[1].name === "ウツワ" ? nullable(styles[1].attribute) : null,
+        element3: styles[2].name === "ウツワ" ? nullable(styles[2].attribute) : null
+      }
     },
     superhumanskills: styleSkills.length ? styleSkills.map(toStyleSkill) : [blankStyleSkill()],
     vehicles: groups.vehicles.length ? groups.vehicles : [blankVehicle()],
@@ -155,7 +163,7 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
     jsonData,
     summary: {
       publicId: text(character.public_id),
-      styles: styles.map(item => `${item.name}${item.mark}`).join(" / "),
+      styles: styles.map(item => `${item.name}${item.mark}${item.name === "ウツワ" && item.attribute ? `（${item.attribute}）` : ""}`).join(" / "),
       generalSkills: general.length,
       socialSkills: social.length,
       connectionSkills: connections.length,
