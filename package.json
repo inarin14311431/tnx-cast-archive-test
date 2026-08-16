@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "check:js": "node scripts/check-js.mjs",
-    "verify": "npm run check:js && npm test",
+    "audit:integrity": "node scripts/audit-runtime-integrity.mjs",
+    "verify": "npm run check:js && npm run audit:integrity && npm test",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
