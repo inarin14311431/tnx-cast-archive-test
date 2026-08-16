@@ -1,16 +1,32 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.1.0 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.2.0 */
 (()=>{
-  const VERSION='1.1.0';
+  const VERSION='1.2.0';
   const dialog=document.querySelector('#legacy-import-dialog');
   const form=dialog?.querySelector('form');
   const legacyText=document.querySelector('#legacy-import-json');
   const legacyApply=document.querySelector('#legacy-import-apply');
   const legacyCopy=document.querySelector('#legacy-bookmarklet-copy');
   const message=document.querySelector('#legacy-import-message');
-  if(!dialog||!form||!legacyText||!legacyApply||!message)return;
+  const importButton=document.querySelector('#legacy-import-open');
+  if(!dialog||!form||!legacyText||!legacyApply||!message||!importButton)return;
   if(dialog.dataset.urlImportReady==='1')return;
   dialog.dataset.urlImportReady='1';
   dialog.dataset.urlImportVersion=VERSION;
+
+  function cleanupObsoleteImportUi(){
+    document.querySelectorAll('#sheet-import-help-button,#sheet-import-bookmarklet-copy,#sheet-import-help-dialog').forEach(node=>node.remove());
+    const control=importButton.closest('.sheet-import-control');
+    if(control&&control.parentNode){
+      control.parentNode.insertBefore(importButton,control);
+      control.remove();
+    }
+    importButton.classList.remove('sheet-import-main-action');
+    importButton.innerHTML='データ取込 <small>IMPORT DATA</small>';
+  }
+  cleanupObsoleteImportUi();
+  const obsoleteObserver=new MutationObserver(cleanupObsoleteImportUi);
+  const actionPanel=document.querySelector('.exp-panel');
+  if(actionPanel)obsoleteObserver.observe(actionPanel,{childList:true,subtree:true});
 
   const heading=form.querySelector('h2');
   const intro=heading?.nextElementSibling;
