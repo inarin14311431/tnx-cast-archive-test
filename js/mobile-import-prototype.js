@@ -1,14 +1,15 @@
 (()=>{
-  const PROTOTYPE_VERSION='0.4.0';
+  const PROTOTYPE_VERSION='0.5.0';
   const $=selector=>document.querySelector(selector);
+  const sourceUrl=$('#source-url');
+  const fetchButton=$('#fetch-source');
+  const fetchStatus=$('#fetch-status');
   const source=$('#source-json');
   const target=$('#target-id');
   const apply=$('#apply-mobile-import');
   const openEditor=$('#open-editor');
   const frame=$('#editor-frame');
   const frameWrap=$('#editor-frame-wrap');
-  const copyExtractor=$('#copy-extractor');
-  const extractorStatus=$('#extractor-status');
   const jsonStatus=$('#json-status');
   const applyStatus=$('#apply-status');
   const versionLabel=$('#prototype-version');
@@ -16,45 +17,104 @@
 
   if(versionLabel)versionLabel.textContent=`VERSION ${PROTOTYPE_VERSION}`;
 
-  // iOS Shortcuts は completion() の戻り値を内部でJSON変換するため、
-  // JSON.stringify()せず辞書オブジェクトを直接返す。
-  const EXTRACTOR=`/* TNX MOBILE IMPORT v${PROTOTYPE_VERSION} */\ntry{var nodes=document.querySelectorAll('input,select,textarea');var fields=[];for(var i=0;i<nodes.length;i++){var e=nodes[i];var type=String(e.type||e.tagName||'').toLowerCase();if(type==='button'||type==='submit'||type==='password'||type==='reset'||type==='file')continue;var path=e.id||e.name||'';if(!path)continue;var isCheck=type==='checkbox'||type==='radio';fields.push({path:path,type:type,value:isCheck?(e.checked?(e.value||true):false):String(e.value==null?'':e.value),checked:!!e.checked});}completion({format:'tnx-character-sheets-v2',version:'${PROTOTYPE_VERSION}',url:location.href,title:document.title,fieldCount:fields.length,fields:fields});}catch(error){completion({format:'tnx-mobile-import-error',version:'${PROTOTYPE_VERSION}',error:String(error&&error.message?error.message:error)});}`;
-
   function status(node,text,isError=false){
+    if(!node)return;
     node.textContent=text;
     node.classList.toggle('error',Boolean(isError));
   }
 
-  async function copyText(text){
-    try{
-      await navigator.clipboard.writeText(text);
-      return true;
-    }catch{
-      const area=document.createElement('textarea');
-      area.value=text;
-      area.style.position='fixed';area.style.opacity='0';
-      document.body.append(area);area.select();
-      const ok=document.execCommand('copy');area.remove();
-      return ok;
-    }
+  function resolveSource(value){
+    const raw=String(value||'').trim();
+    if(!raw)throw new Error('キャラクターシート倉庫のURLを入力してください。');
+    const parsed=new URL(raw);
+    if(parsed.hostname!=='character-sheets.appspot.com')throw new Error('character-sheets.appspot.com のURLを指定してください。');
+    const parts=parsed.pathname.split('/').filter(Boolean);
+    if(parts[0]!=='tnx')throw new Error('トーキョーN◎VAのキャラクターシートURLではありません。');
+    const key=parsed.searchParams.get('key')?.trim();
+    if(!key)throw new Error('URLに key がありません。保存済みキャラクターの編集URLを指定してください。');
+    return {key};
   }
 
-  copyExtractor.addEventListener('click',async()=>{
-    const ok=await copyText(EXTRACTOR);
-    status(extractorStatus,ok?`抽出JavaScript v${PROTOTYPE_VERSION} をコピーしました。今回は「JavaScriptの結果を表示」だけで確認してください。`:'コピーできませんでした。',!ok);
+  function normalizePayload(payload){
+    let data=payload;
+    for(let i=0;i<3;i++){
+      if(typeof data==='string'){
+        try{data=JSON.parse(data);continue;}catch{break;}
+      }
+      if(data&&typeof data==='object'&&typeof data.jsonData==='string'&&data.jsonData.trim()){
+        try{data=JSON.parse(data.jsonData);continue;}catch{}
+      }
+      if(data&&typeof data==='object'&&data.data&&typeof data.data==='object'&&!data.base&&!data.skills1&&!data.superhumanskills&&!data.weapons){
+        data=data.data;continue;
+      }
+      break;
+    }
+    if(!data||typeof data!=='object')throw new Error('キャラシ倉庫から有効なデータを取得できませんでした。');
+    return data;
+  }
+
+  function fetchJsonp(key,timeout=15000){
+    return new Promise((resolve,reject)=>{
+      const callback=`__tnxMobileImport_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const script=document.createElement('script');
+      let settled=false;
+      const cleanup=()=>{
+        try{delete window[callback];}catch{window[callback]=undefined;}
+        script.remove();
+      };
+      const timer=setTimeout(()=>{
+        if(settled)return;
+        settled=true;cleanup();reject(new Error('キャラシ倉庫からの応答がタイムアウトしました。'));
+      },timeout);
+      window[callback]=payload=>{
+        if(settled)return;
+        settled=true;clearTimeout(timer);cleanup();resolve(payload);
+      };
+      script.onerror=()=>{
+        if(settled)return;
+        settled=true;clearTimeout(timer);cleanup();reject(new Error('キャラシ倉庫のデータ取得に失敗しました。'));
+      };
+      script.src=`https://character-sheets.appspot.com/tnx/display?ajax=1&key=${encodeURIComponent(key)}&callback=${encodeURIComponent(callback)}`;
+      document.head.append(script);
+    });
+  }
+
+  function validateAndDescribe(data,raw){
+    const supported=Array.isArray(data?.fields)||(data&&typeof data==='object'&&(data.base||data.skills1||data.skills2||data.superhumanskills||data.weapons||data.outfits));
+    if(!supported)throw new Error('取得データをTNXキャラクターシートとして認識できません。');
+    const name=data?.base?.name||data?.characterName||data?.name||'';
+    const fieldCount=Array.isArray(data.fields)?data.fields.length:null;
+    const suffix=fieldCount!==null?` / 項目数 ${fieldCount}`:'';
+    return `${name?`「${name}」 `:''}データ取得済み / ${raw.length.toLocaleString()}文字${suffix}`;
+  }
+
+  fetchButton.addEventListener('click',async()=>{
+    fetchButton.disabled=true;
+    status(fetchStatus,'キャラシ倉庫へ接続中…');
+    status(jsonStatus,'');
+    try{
+      const {key}=resolveSource(sourceUrl.value);
+      const payload=await fetchJsonp(key);
+      const data=normalizePayload(payload);
+      const raw=JSON.stringify(data);
+      const description=validateAndDescribe(data,raw);
+      source.value=raw;
+      source.dispatchEvent(new Event('input',{bubbles:true}));
+      status(fetchStatus,description);
+    }catch(error){
+      console.error('character-sheets jsonp fetch failed',error);
+      status(fetchStatus,`取得エラー: ${error.message||error}`,true);
+    }finally{
+      fetchButton.disabled=false;
+    }
   });
 
   source.addEventListener('input',()=>{
     const raw=source.value.trim();
     if(!raw){status(jsonStatus,'');return;}
     try{
-      const data=JSON.parse(raw);
-      if(data?.format==='tnx-mobile-import-error')throw new Error(data.error||'抽出エラー');
-      const supported=Array.isArray(data?.fields)||(data&&typeof data==='object'&&(data.base||data.skills1||data.superhumanskills||data.weapons));
-      if(!supported)throw new Error('対応するキャラシ倉庫JSONではありません。');
-      const fieldCount=Array.isArray(data.fields)?data.fields.length:'旧形式';
-      const dataVersion=data.version?` / v${data.version}`:'';
-      status(jsonStatus,`JSONを確認しました。項目数: ${fieldCount} / ${raw.length.toLocaleString()}文字${dataVersion}`);
+      const data=normalizePayload(JSON.parse(raw));
+      status(jsonStatus,validateAndDescribe(data,raw));
     }catch(error){
       status(jsonStatus,`JSONエラー: ${error.message}`,true);
     }
@@ -108,10 +168,8 @@
     frameWrap.classList.remove('active');
     status(applyStatus,'準備中…');
     try{
-      const data=JSON.parse(source.value.trim());
-      if(data?.format==='tnx-mobile-import-error')throw new Error(data.error||'抽出エラー');
-      const supported=Array.isArray(data?.fields)||(data&&typeof data==='object'&&(data.base||data.skills1||data.superhumanskills||data.weapons));
-      if(!supported)throw new Error('対応するキャラシ倉庫JSONではありません。');
+      const data=normalizePayload(JSON.parse(source.value.trim()));
+      validateAndDescribe(data,source.value.trim());
       editorUrl=resolveEditorUrl(target.value);
       frame.src=editorUrl;
       status(applyStatus,'編集画面を読み込んでいます…');
