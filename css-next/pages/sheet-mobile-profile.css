@@ -1,5 +1,4 @@
 body[data-page="sheet-mobile.html"] .mobile-profile-source { display: none; }
-body[data-page="sheet-mobile.html"] .mobile-section-top { display: none; }
 
 body[data-page="sheet-mobile.html"] .mobile-profile-summary-grid {
   display: grid;
@@ -126,7 +125,7 @@ body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header { grid-templat
 body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header button { padding-inline: 8px; white-space: nowrap; }
 
 body[data-page="sheet-mobile.html"] .mobile-sheet-actions {
-  grid-template-columns: 44px minmax(62px, .8fr) 68px minmax(88px, 1.15fr);
+  grid-template-columns: 42px 62px 54px minmax(96px, 1fr);
   gap: 4px;
   padding-inline: max(5px, env(safe-area-inset-left)) max(5px, env(safe-area-inset-right));
 }
@@ -142,30 +141,29 @@ body[data-page="sheet-mobile.html"] .mobile-global-top {
 }
 body[data-page="sheet-mobile.html"] .mobile-global-visibility {
   display: grid;
-  grid-template-columns: 1fr;
   align-content: center;
   gap: 0;
   min-width: 0;
   min-height: 46px;
-  padding: 2px 4px;
+  padding: 2px;
   border: 1px solid var(--line-color, rgba(255,255,255,.22));
   background: var(--surface, rgba(6,18,28,.95));
 }
 body[data-page="sheet-mobile.html"] .mobile-global-visibility span {
   overflow: hidden;
-  height: 10px;
+  height: 9px;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 8px;
-  line-height: 10px;
-  opacity: .62;
+  font-size: 7px;
+  line-height: 9px;
+  opacity: .58;
 }
 body[data-page="sheet-mobile.html"] .mobile-global-visibility select {
   width: 100%;
   min-width: 0;
   min-height: 28px;
-  padding: 0 2px;
+  padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
@@ -181,6 +179,6 @@ body[data-page="sheet-mobile.html"] .mobile-sheet-actions #mobile-save {
 @media (max-width: 390px) {
   body[data-page="sheet-mobile.html"] .mobile-profile-summary-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
   body[data-page="sheet-mobile.html"] .mobile-profile-summary-card { min-height: 70px; padding: 9px; }
-  body[data-page="sheet-mobile.html"] .mobile-sheet-actions { grid-template-columns: 40px minmax(56px, .75fr) 62px minmax(82px, 1.1fr); gap: 3px; }
+  body[data-page="sheet-mobile.html"] .mobile-sheet-actions { grid-template-columns: 38px 56px 50px minmax(88px, 1fr); gap: 3px; }
   body[data-page="sheet-mobile.html"] .mobile-lifepath-row { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); gap: 4px; }
 }
