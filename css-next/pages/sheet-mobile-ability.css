@@ -18,24 +18,63 @@ body[data-page="sheet-mobile.html"] .mobile-sheet-section--style-skills { --mobi
 body[data-page="sheet-mobile.html"] .mobile-sheet-section--outfits { --mobile-section-accent: var(--color-section-outfits); }
 
 .mobile-ability-grid { gap: 8px; }
-.mobile-ability-columns { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
-.mobile-ability-cell,
-.mobile-cs-cell {
+.mobile-ability-matrix {
+  display: grid;
+  grid-template-columns: 58px repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-section-ability) 45%, var(--line-color, rgba(255,255,255,.16)));
+  background: color-mix(in srgb, var(--color-section-ability) 28%, var(--line-color, rgba(255,255,255,.10)));
+}
+.mobile-ability-matrix > * {
   min-width: 0;
+  min-height: 38px;
+  border: 0;
+  background: var(--surface, #07131d);
+  color: inherit;
+}
+.mobile-ability-matrix__corner { display: block; }
+.mobile-ability-matrix__head,
+.mobile-ability-matrix__value {
+  display: grid;
+  place-items: center;
+  padding: 5px 2px;
+  text-align: center;
+  cursor: pointer;
+}
+.mobile-ability-matrix__head {
+  color: var(--color-section-ability);
+  font-size: 11px;
+  font-weight: 800;
+}
+.mobile-ability-matrix__value {
+  font: 800 1.05rem/1 var(--font-data, inherit);
+}
+.mobile-ability-matrix__rowlabel {
+  display: grid;
+  place-items: center start;
+  padding: 5px 7px;
+  color: var(--color-section-ability);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.mobile-cs-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 50px;
+  padding: 7px 10px;
   border: 1px solid color-mix(in srgb, var(--color-section-ability) 45%, var(--line-color, rgba(255,255,255,.16)));
   background: color-mix(in srgb, var(--surface, #07131d) 92%, var(--color-section-ability) 4%);
   color: inherit;
+  text-align: left;
 }
-.mobile-ability-cell { display: grid; align-content: center; gap: 4px; min-height: 96px; padding: 8px 4px; text-align: center; }
-.mobile-ability-cell__label { display: grid; gap: 1px; color: var(--color-section-ability); font-size: 12px; font-weight: 800; }
-.mobile-ability-cell__label small { font-size: 8px; font-weight: 600; letter-spacing: .08em; opacity: .62; }
-.mobile-ability-cell > strong { font: 800 1.55rem/1 var(--font-data, inherit); }
-.mobile-ability-cell__control { font-size: 10px; opacity: .72; }
-.mobile-ability-cell__control b { font-size: 12px; }
-.mobile-cs-cell { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 8px 12px; text-align: left; }
 .mobile-cs-cell > span { color: var(--color-section-ability); font-weight: 800; }
 .mobile-cs-cell small { display: block; font-size: 8px; letter-spacing: .08em; opacity: .62; }
-.mobile-cs-cell strong { font: 800 1.5rem/1 var(--font-data, inherit); }
+.mobile-cs-cell strong { font: 800 1.3rem/1 var(--font-data, inherit); }
 .mobile-cs-cell em { font-size: 10px; font-style: normal; opacity: .55; }
 
 .mobile-ability-editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -49,10 +88,10 @@ body[data-page="sheet-mobile.html"] .mobile-sheet-section--outfits { --mobile-se
 .mobile-cs-editor { max-width: 420px; margin: 0 auto; }
 
 @media (max-width: 390px) {
-  .mobile-ability-columns { gap: 3px; }
-  .mobile-ability-cell { min-height: 90px; padding-inline: 2px; }
-  .mobile-ability-cell__label { font-size: 11px; }
-  .mobile-ability-cell > strong { font-size: 1.35rem; }
+  .mobile-ability-matrix { grid-template-columns: 50px repeat(4, minmax(0, 1fr)); }
+  .mobile-ability-matrix__head { font-size: 10px; }
+  .mobile-ability-matrix__value { font-size: .95rem; }
+  .mobile-ability-matrix__rowlabel { padding-inline: 5px; font-size: 9px; }
   .mobile-cs-cell { grid-template-columns: minmax(0, 1fr) auto; }
   .mobile-cs-cell em { display: none; }
 }
