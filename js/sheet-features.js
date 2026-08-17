@@ -181,7 +181,6 @@ function initializeComboStyleSkillCompletion(){
     requestAnimationFrame(sync);
   };
 
-  new MutationObserver(queue).observe(styleRoot,{childList:true,subtree:true});
   new MutationObserver(queue).observe(optionRoot,{childList:true,subtree:true});
   new MutationObserver(queue).observe(counterSelect,{childList:true});
   styleRoot.addEventListener("tnx:style-skills-changed",queue);
