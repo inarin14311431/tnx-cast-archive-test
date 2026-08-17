@@ -53,21 +53,25 @@ Decision:
 
 Do not merge these files in the current consolidation phase. Keep the new characterization test as a guard for the intentional separation.
 
-### 3. Quick-sheet presentation pair
+### 3. Quick-sheet presentation pair — keep separate
 
 Files:
 
 - `js/cast-quick-sheet-compact.js`
 - `js/quick-sheet-paper-layout.js`
 
-Potential benefit:
+Evaluation result:
 
-- both affect quick-sheet presentation and page layout.
+- characterization coverage now locks the current layout boundary;
+- `cast-quick-sheet-compact.js` owns content compaction, empty-block cleanup, page-2 overflow detection, and page-3 attach/detach behavior;
+- `quick-sheet-paper-layout.js` owns paper-counter conversion and stable page-2 section ordering;
+- both observe the quick-sheet DOM and react to detail-toggle/resize because they recover different timing-sensitive presentation responsibilities;
+- a merge could remove a small amount of duplicated scheduling/listener boilerplate, but it would couple page allocation to paper-only normalization without removing any duplicated data load or rendering pipeline;
+- the benefit is therefore too small relative to the risk of regressions in A4 page allocation, expanded descriptions, and print ordering.
 
-Reason to defer:
+Decision:
 
-- layout/reflow MutationObservers are timing-sensitive and currently serve recovery behavior;
-- characterization must cover A4 page allocation, expanded descriptions, and print layout before any merge.
+Do not merge these files in the current consolidation phase. Keep the new quick-sheet characterization test as a guard for the intentional separation.
 
 ## Explicit non-candidates for this phase
 
@@ -91,4 +95,12 @@ For each candidate:
 5. Confirm automated checks and targeted manual checks.
 6. Stop and reevaluate before choosing another candidate.
 
-The next candidate to evaluate is the quick-sheet presentation pair. The next code change should be characterization coverage, not the merge itself.
+## Phase status — complete
+
+The consolidation candidates identified for this phase have now been evaluated.
+
+- The mobile cast/mobile combo boundary was consolidated because it removed a duplicate data fetch and delayed enhancement observer.
+- The cast skill presentation pair remains separate because the modules own different data/render responsibilities.
+- The quick-sheet presentation pair remains separate because the modules own different timing-sensitive page-layout responsibilities.
+
+No further runtime files should be merged merely to reduce script count. Additional consolidation should start only when a concrete duplicated lifecycle, data load, or rendering responsibility is identified and covered by dedicated regression/E2E characterization first.
