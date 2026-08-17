@@ -1,0 +1,89 @@
+body[data-page="sheet-mobile.html"] #mobile-style-summary.mobile-style-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-cell {
+  display: grid;
+  min-width: 0;
+  min-height: 88px;
+  align-content: center;
+  gap: 4px;
+  padding: 8px 5px;
+  border: 1px solid color-mix(in srgb, var(--color-section-styles) 44%, var(--color-border-muted));
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-section-styles) 4%);
+  color: inherit;
+  text-align: center;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > span,
+body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > strong,
+body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > span {
+  color: var(--color-section-styles);
+  font-size: 12px;
+  font-weight: 800;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > strong { font-size: 11px; }
+body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > small { color: var(--color-muted); font-size: 9px; }
+
+body[data-page="sheet-mobile.html"] .mobile-style-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-editor-grid > label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  font-size: 12px;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-editor-grid :is(select,input) {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-muted);
+  background: var(--color-surface);
+  color: inherit;
+  font-size: 16px;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-divine,
+body[data-page="sheet-mobile.html"] .mobile-style-baseline-preview {
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-section-styles) 34%, var(--color-border-muted));
+}
+body[data-page="sheet-mobile.html"] .mobile-style-divine {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 3px 10px;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-divine > span { grid-row: 1 / 3; color: var(--color-muted); font-size: 10px; }
+body[data-page="sheet-mobile.html"] .mobile-style-divine > strong { color: var(--color-section-styles); }
+body[data-page="sheet-mobile.html"] .mobile-style-divine > small { font-size: 10px; opacity: .66; }
+body[data-page="sheet-mobile.html"] .mobile-style-baseline-preview h3 {
+  margin: 0 0 8px;
+  color: var(--color-section-styles);
+  font-size: 12px;
+}
+body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 3px;
+  border: 1px solid color-mix(in srgb, var(--color-section-styles) 22%, var(--color-border-muted));
+  text-align: center;
+}
+body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview span { font-size: 10px; }
+body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview strong { font-size: 16px; }
+body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview small { font-size: 9px; color: var(--color-muted); }
