@@ -14,7 +14,7 @@ test("cast tabs use an explicit idempotent initializer", () => {
 test("cast tabs preserve click keyboard and combo-jump behavior", () => {
   assert.match(source, /const TAB_SELECTOR = "\.cast-tab\[data-tab\]"/);
   assert.match(source, /const PANEL_SELECTOR = "\.cast-tab-panel\[data-panel\]"/);
-  assert.match(source, /data-cast-jump=\\"combo\\"/);
+  assert.match(source, /data-cast-jump="combo"/);
   assert.match(source, /document\.addEventListener\("click"/);
   assert.match(source, /document\.addEventListener\("keydown"/);
   assert.match(source, /\["ArrowLeft", "ArrowRight", "Home", "End"\]/);
