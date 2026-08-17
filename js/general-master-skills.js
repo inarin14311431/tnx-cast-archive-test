@@ -112,15 +112,17 @@
     requestAnimationFrame(()=>requestAnimationFrame(arrange));
   }
 
-  function initialize(){
+  function initializeGeneralMasterSkills(){
     const root=document.querySelector("#general-skills");
-    if(!root){setTimeout(initialize,80);return;}
+    if(!root){setTimeout(initializeGeneralMasterSkills,80);return;}
+    if(root.dataset.generalMasterSkillsInitialized==="1")return;
+    root.dataset.generalMasterSkillsInitialized="1";
     observer=new MutationObserver(queue);
     observer.observe(root,{childList:true,subtree:true});
     window.addEventListener("tnx:general-master-ready",queue);
     queue();
   }
 
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initialize,{once:true});
-  else initialize();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initializeGeneralMasterSkills,{once:true});
+  else initializeGeneralMasterSkills();
 })();
