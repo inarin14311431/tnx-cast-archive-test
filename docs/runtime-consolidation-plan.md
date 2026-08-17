@@ -18,46 +18,40 @@ Every consolidation must preserve the existing data shape, DOM ids, visible outp
 
 ## Candidate order
 
-### 1. Mobile cast + mobile combo enhancement
+### 1. Mobile cast + mobile combo enhancement — completed
 
 Files:
 
 - `js/cast-mobile.js`
-- `js/cast-mobile-combos.js`
+- retired `js/cast-mobile-combos.js`
 
-Why this is the first candidate:
+Result:
 
-- both are mobile-only and share `#mobile-cast-view` ownership;
-- `cast-mobile.js` already loads combo data as part of the initial mobile data request;
-- `cast-mobile-combos.js` currently fetches combo data again after the base mobile render;
-- the second module needs a MutationObserver only because it waits for the first module to create `.mobile-combo-list`;
-- one owner can potentially remove the duplicate combo fetch and delayed enhancement observer while preserving the same rendered combo cards and localStorage counter behavior.
+- mobile combo rendering and ACT-use counters are now owned directly by `cast-mobile.js`;
+- the duplicate combo fetch was removed;
+- the delayed MutationObserver enhancement path was removed;
+- `cast.html` no longer loads the retired module;
+- the retired runtime file was deleted after regression, Playwright, Pages, and targeted manual verification passed.
 
-Required guard before merge:
-
-- browser characterization for mobile view startup;
-- combo/counter rendering when an ACT-use limit exists;
-- checkbox/card-tap/reset behavior;
-- counter persistence across reload;
-- direct-transfer button synchronization and PC-view link behavior.
-
-Do not merge until those behaviors are covered sufficiently to detect regressions.
-
-### 2. Cast skill presentation modules
+### 2. Cast skill presentation modules — keep separate
 
 Files:
 
 - `js/cast-compact-skills.js`
 - `js/cast-style-skills.js`
 
-Potential benefit:
+Evaluation result:
 
-- both are post-core skill presentation owners and wait for cast readiness.
+- characterization coverage now locks their current ownership boundary;
+- `cast-compact-skills.js` is a DOM-normalization/layout owner for General / Social / Connection sections already rendered by the core cast view;
+- `cast-style-skills.js` is a separate data-loading/render owner for Style Skills and emits `tnx:style-skills-rendered` for downstream presentation behavior;
+- there is no duplicate skill data fetch shared between these two modules;
+- their cast-ready waits protect different render paths and combining them would not remove a meaningful recovery boundary;
+- merging them would primarily reduce file count while increasing coupling between distinct public-view responsibilities.
 
-Reason to defer:
+Decision:
 
-- they intentionally own different DOM structures and style-skill rendering emits `tnx:style-skills-rendered` for another presentation layer;
-- merging provides less lifecycle simplification than the mobile candidate.
+Do not merge these files in the current consolidation phase. Keep the new characterization test as a guard for the intentional separation.
 
 ### 3. Quick-sheet presentation pair
 
@@ -92,9 +86,9 @@ For each candidate:
 
 1. Add or strengthen characterization tests without changing runtime behavior.
 2. Confirm Regression, Playwright E2E, and Pages are green.
-3. Merge/remove exactly one runtime boundary.
+3. Merge/remove exactly one runtime boundary only when the evaluation shows a concrete lifecycle or maintenance benefit.
 4. Update runtime audits for the new script graph in the same logical migration.
 5. Confirm automated checks and targeted manual checks.
 6. Stop and reevaluate before choosing another candidate.
 
-The first implementation target is the mobile cast/mobile combo boundary. The next code change should be characterization coverage, not the merge itself.
+The next candidate to evaluate is the quick-sheet presentation pair. The next code change should be characterization coverage, not the merge itself.
