@@ -1,3 +1,4 @@
+import "./sheet-mobile-profile.js";
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 
