@@ -4,6 +4,15 @@ import { SITE_BASE_PATH } from "./config.js?v=2";
 
 const STYLE_DETAIL_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const STYLE_SEPARATOR_MARKER = "[[STYLE_SEPARATOR]]";
+const THEME_STORAGE_KEY = "tnx-cast-site-theme";
+const THEME_OPTIONS = [
+  ["nova", "トーキョーＮ◎ＶＡ"], ["moon", "オーサカM○●N"], ["star", "カムイST☆R"],
+  ["eden", "ミトラスGARDEN"], ["vlad", "ヴラド・コロニー"], ["lutetia", "ヴィル・ヌーヴ・ルテチア"],
+  ["buena", "ブエナIЯA"], ["canberra", "キャンベラAXYZ"], ["hongkong", "ホンコンHEAVEN"],
+  ["fesler", "フェスラー公国"], ["intron", "イントロン"], ["axleraters", "ニューロ！"],
+  ["inagaki", "稲垣 光平"], ["astral", "アストラル"], ["orbital", "軌道"], ["japanese-army", "日本"]
+];
+const THEME_VALUES = new Set(THEME_OPTIONS.map(([value]) => value));
 const SUITS = [
   ["reason", "♠"],
   ["passion", "♣"],
@@ -13,6 +22,7 @@ const SUITS = [
 const DETAIL_FIELDS = ["skill", "limit", "timing", "target", "range", "difficulty", "confrontation", "description", "page"];
 const KIND_LABELS = { none: "なし", normal: "通常", secret: "秘技", ultimate: "奥義", direction: "演出", general: "一般", proper: "固有名詞" };
 const OUTFIT_LABELS = { weapon: "武器", armor: "防具", cyberware: "サイバーウェア", tron: "トロン", vehicle: "ヴィークル", residence: "住居", other: "その他" };
+const CATEGORY_LABELS = { general: "一般技能", social: "社会", connection: "コネ" };
 const PROFILE_FIELDS = [
   "character_name", "character_kana", "handle", "handle_kana", "player_name", "affiliation", "citizen_rank",
   "age", "gender", "height", "weight", "eyes", "hair", "skin",
@@ -27,7 +37,7 @@ let character = null;
 let skills = [];
 let outfits = [];
 let dirtyProfile = false;
-const dirtyStyleSkills = new Set();
+const dirtySkills = new Set();
 let activeSkillId = null;
 let saving = false;
 
@@ -37,6 +47,7 @@ async function init() {
   user = await requireAuth();
   if (!user) return;
 
+  bindThemePicker();
   const publicId = new URLSearchParams(location.search).get("id");
   if (!publicId) {
     setStatus("モバイル試作版は既存キャストの編集専用です。PC版からキャストを作成してください。", "error");
@@ -46,6 +57,27 @@ async function init() {
 
   bindBaseEvents();
   await loadCharacter(publicId);
+}
+
+function bindThemePicker() {
+  const select = $("#mobile-theme-select");
+  if (!select) return;
+  select.replaceChildren(...THEME_OPTIONS.map(([value, label]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    return option;
+  }));
+  const current = THEME_VALUES.has(document.documentElement.dataset.theme)
+    ? document.documentElement.dataset.theme
+    : "nova";
+  select.value = current;
+  select.addEventListener("change", () => {
+    const next = THEME_VALUES.has(select.value) ? select.value : "nova";
+    document.documentElement.dataset.theme = next;
+    document.documentElement.style.colorScheme = ["intron", "orbital"].includes(next) ? "light" : "dark";
+    try { localStorage.setItem(THEME_STORAGE_KEY, next); } catch {}
+  });
 }
 
 function bindBaseEvents() {
@@ -67,11 +99,24 @@ function bindBaseEvents() {
     event.preventDefault();
     $("#style-skill-dialog")?.close();
   });
+  for (const [key] of SUITS) {
+    $("#mobile-style-suit-" + key)?.addEventListener("change", syncStyleLevelFromSuits);
+  }
+  $("#mobile-style-level")?.addEventListener("input", syncStyleLevelFromSuits);
+  $("#mobile-style-level")?.addEventListener("change", syncStyleLevelFromSuits);
   window.addEventListener("beforeunload", event => {
     if (!isDirty()) return;
     event.preventDefault();
     event.returnValue = "";
   });
+}
+
+function syncStyleLevelFromSuits() {
+  const levelInput = $("#mobile-style-level");
+  if (!levelInput) return;
+  const suitCount = SUITS.reduce((count, [key]) => count + ($("#mobile-style-suit-" + key)?.checked ? 1 : 0), 0);
+  const current = Math.max(0, Number(levelInput.value) || 0);
+  if (current < suitCount) levelInput.value = String(suitCount);
 }
 
 async function loadCharacter(publicId) {
@@ -97,7 +142,7 @@ async function loadCharacter(publicId) {
     skills = skillResult.data ?? [];
     outfits = outfitResult.data ?? [];
     dirtyProfile = false;
-    dirtyStyleSkills.clear();
+    dirtySkills.clear();
 
     renderIdentity();
     fillProfile();
@@ -160,11 +205,53 @@ function renderAbilitySummary() {
 function renderGeneralSkills() {
   const root = $("#mobile-general-skills");
   if (!root) return;
-  const list = skills.filter(skill => skill.category !== "style");
-  root.innerHTML = list.length ? list.map(skill => {
-    const suits = SUITS.filter(([key]) => skill[key]).map(([, mark]) => mark).join("");
-    return `<article class="mobile-readonly-card"><strong>${esc(skill.name || "名称未設定")}</strong><small>LV ${Number(skill.level) || 0}　${esc(suits || "—")}</small></article>`;
-  }).join("") : '<p class="mobile-sheet-section__note">登録なし</p>';
+  const categories = ["general", "social", "connection"];
+  root.innerHTML = categories.map(category => {
+    const list = skills.filter(skill => skill.category === category);
+    if (!list.length) return "";
+    return `<section class="mobile-general-group">
+      <h3>${CATEGORY_LABELS[category]}</h3>
+      <div class="mobile-general-table">
+        <div class="mobile-general-row mobile-general-row--head" aria-hidden="true">
+          <span>名称</span><span>LV</span>${SUITS.map(([, mark]) => `<span>${mark}</span>`).join("")}
+        </div>
+        ${list.map(renderGeneralSkillRow).join("")}
+      </div>
+    </section>`;
+  }).join("") || '<p class="mobile-sheet-section__note">登録なし</p>';
+
+  root.querySelectorAll("[data-mobile-general-skill]").forEach(row => bindGeneralSkillRow(row));
+}
+
+function renderGeneralSkillRow(skill) {
+  return `<div class="mobile-general-row" data-mobile-general-skill="${esc(skill.id)}">
+    <input class="mobile-general-name" data-mobile-general-field="name" value="${esc(skill.name || "")}" aria-label="名称">
+    <input class="mobile-general-level" data-mobile-general-field="level" type="number" min="0" inputmode="numeric" value="${Math.max(0, Number(skill.level) || 0)}" aria-label="レベル">
+    ${SUITS.map(([key, mark]) => `<label class="mobile-general-suit" aria-label="${mark}スート"><input data-mobile-general-field="${key}" type="checkbox" ${skill[key] ? "checked" : ""}><span>${mark}</span></label>`).join("")}
+  </div>`;
+}
+
+function bindGeneralSkillRow(row) {
+  const skill = skills.find(item => String(item.id) === String(row.dataset.mobileGeneralSkill));
+  if (!skill) return;
+  row.querySelectorAll("[data-mobile-general-field]").forEach(control => {
+    const apply = () => {
+      const field = control.dataset.mobileGeneralField;
+      if (field === "level") skill.level = Math.max(0, Number(control.value) || 0);
+      else if (SUITS.some(([key]) => key === field)) skill[field] = control.checked;
+      else skill[field] = control.value;
+
+      const suitCount = SUITS.reduce((count, [key]) => count + (skill[key] ? 1 : 0), 0);
+      skill.level = Math.max(Number(skill.level || 0), suitCount);
+      skill.free_level = Math.min(Math.max(Number(skill.free_level || 0), 0), skill.level);
+      const levelInput = row.querySelector('[data-mobile-general-field="level"]');
+      if (levelInput && Number(levelInput.value) !== skill.level) levelInput.value = String(skill.level);
+      dirtySkills.add(String(skill.id));
+      markDirty();
+    };
+    control.addEventListener("input", apply);
+    control.addEventListener("change", apply);
+  });
 }
 
 function isSeparator(skill) {
@@ -244,6 +331,7 @@ function openStyleSkillDialog(id) {
   $("#mobile-style-kind").value = ["normal", "secret", "ultimate", "direction"].includes(skill.skill_kind) ? skill.skill_kind : "normal";
   $("#mobile-style-level").value = Math.max(0, Number(skill.level) || 0);
   for (const [key] of SUITS) $("#mobile-style-suit-" + key).checked = Boolean(skill[key]);
+  syncStyleLevelFromSuits();
   for (const key of DETAIL_FIELDS) {
     const input = document.querySelector(`[data-mobile-style-detail="${key}"]`);
     if (input) input.value = detail[key] || "";
@@ -254,6 +342,7 @@ function openStyleSkillDialog(id) {
 function applyStyleSkillDialog() {
   const skill = skills.find(item => String(item.id) === String(activeSkillId));
   if (!skill) return;
+  syncStyleLevelFromSuits();
   skill.name = $("#mobile-style-name").value;
   skill.skill_kind = $("#mobile-style-kind").value;
   skill.level = Math.max(0, Number($("#mobile-style-level").value) || 0);
@@ -267,7 +356,7 @@ function applyStyleSkillDialog() {
     detail[key] = input?.value || "";
   }
   skill.description = encodeDetail(detail);
-  dirtyStyleSkills.add(String(skill.id));
+  dirtySkills.add(String(skill.id));
   markDirty();
   renderStyleSkills();
   $("#style-skill-dialog").close();
@@ -290,12 +379,12 @@ function collectProfileUpdate() {
   return payload;
 }
 
-function collectStyleSkillUpdate(skill) {
+function collectSkillUpdate(skill) {
   return {
     name: skill.name || "",
     level: Number(skill.level || 0),
     free_level: Math.min(Math.max(Number(skill.free_level || 0), 0), Math.max(Number(skill.level || 0), 0)),
-    skill_kind: skill.skill_kind || "normal",
+    skill_kind: skill.skill_kind || (skill.category === "general" ? "general" : "proper"),
     reason: Boolean(skill.reason),
     passion: Boolean(skill.passion),
     life: Boolean(skill.life),
@@ -328,15 +417,15 @@ async function saveChanges() {
       Object.assign(character, profilePayload);
     }
 
-    for (const id of [...dirtyStyleSkills]) {
+    for (const id of [...dirtySkills]) {
       const skill = skills.find(item => String(item.id) === id);
       if (!skill) continue;
-      const { error } = await supabase.from("character_skills").update(collectStyleSkillUpdate(skill)).eq("id", skill.id).eq("character_id", character.id);
+      const { error } = await supabase.from("character_skills").update(collectSkillUpdate(skill)).eq("id", skill.id).eq("character_id", character.id);
       if (error) throw error;
     }
 
     dirtyProfile = false;
-    dirtyStyleSkills.clear();
+    dirtySkills.clear();
     renderIdentity();
     setStatus("保存済み", "saved");
     setSaveState("saved");
@@ -349,7 +438,7 @@ async function saveChanges() {
   }
 }
 
-function isDirty() { return dirtyProfile || dirtyStyleSkills.size > 0; }
+function isDirty() { return dirtyProfile || dirtySkills.size > 0; }
 function markDirty() {
   setStatus("未保存の変更があります", "dirty");
   setSaveState("dirty");
