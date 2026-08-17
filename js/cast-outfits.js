@@ -9,9 +9,11 @@ import {
 const container = document.querySelector("#outfit-container");
 const content = document.querySelector("#cast-content");
 
-if (container) initialize();
+if (container) initializeCastOutfits();
 
-async function initialize() {
+async function initializeCastOutfits() {
+  if (container.dataset.castOutfitsInitialized === "1") return;
+  container.dataset.castOutfitsInitialized = "1";
   try {
     const outfits = await getOutfits();
     await waitForCastReady();
