@@ -81,10 +81,11 @@ body[data-page="sheet-mobile.html"] .mobile-sheet-section--outfits { --mobile-se
 .mobile-ability-editor-panel { min-width: 0; padding: 10px; border: 1px solid color-mix(in srgb, var(--color-section-ability) 38%, var(--line-color, rgba(255,255,255,.16))); background: color-mix(in srgb, var(--surface, #07131d) 94%, transparent); }
 .mobile-ability-editor-panel h3 { margin: 0 0 8px; color: var(--color-section-ability); font-size: 13px; }
 .mobile-ability-editor-panel label { display: grid; gap: 4px; margin-top: 8px; font-size: 11px; }
-.mobile-ability-editor-panel input { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid var(--line-color, rgba(255,255,255,.2)); background: var(--input-bg, rgba(0,0,0,.18)); color: inherit; }
+.mobile-ability-editor-panel :is(input,select) { width: 100%; min-width: 0; min-height: 44px; padding: 9px 10px; border: 1px solid var(--line-color, rgba(255,255,255,.2)); background: var(--input-bg, rgba(0,0,0,.18)); color: inherit; font-size:16px; }
+.mobile-ability-fixed{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;min-height:44px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--color-section-ability) 28%,var(--line-color,rgba(255,255,255,.16)));background:color-mix(in srgb,var(--color-section-ability) 7%,transparent);font-size:11px}
+.mobile-ability-fixed strong{color:var(--color-section-ability);font:800 1.2rem/1 var(--font-data,inherit)}
 .mobile-ability-preview { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line-color, rgba(255,255,255,.12)); font-size: 11px; }
 .mobile-ability-preview strong { font: 800 1.35rem/1 var(--font-data, inherit); }
-.mobile-ability-growth { margin-top: 6px; font-size: 10px; opacity: .6; }
 .mobile-cs-editor { max-width: 420px; margin: 0 auto; }
 
 @media (max-width: 390px) {
