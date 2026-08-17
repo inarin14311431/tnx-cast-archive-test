@@ -3,6 +3,7 @@ const $ = selector => document.querySelector(selector);
 function removeObsoleteControls() {
   document.querySelectorAll(".mobile-section-top").forEach(node => node.remove());
   ["#mobile-ability-dialog-apply", "#mobile-cs-dialog-apply"].forEach(selector => $(selector)?.remove());
+  ["#mobile-ability-dialog", "#mobile-cs-dialog"].forEach(selector => $(selector)?.querySelector(".mobile-editor-dialog__header")?.classList.add("mobile-editor-dialog__header--close-only"));
   document.querySelectorAll(".mobile-sheet-section > header > small").forEach(node => node.remove());
   document.querySelectorAll(".mobile-sheet-section > .mobile-sheet-section__body > .mobile-sheet-section__note").forEach(node => node.remove());
 }
