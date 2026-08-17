@@ -7,11 +7,12 @@ const SUITS = {
   mundane: ["♦", "外界"]
 };
 
-if (new URLSearchParams(location.search).get("mobile") === "1") initialize();
+if (new URLSearchParams(location.search).get("mobile") === "1") initializeMobileCombos();
 
-async function initialize() {
+async function initializeMobileCombos() {
   const root = document.querySelector("#mobile-cast-view");
-  if (!root) return;
+  if (!root || root.dataset.mobileCombosInitialized === "1") return;
+  root.dataset.mobileCombosInitialized = "1";
   const apply = async () => {
     const list = root.querySelector(".mobile-combo-list");
     if (!list || list.dataset.mobileComboEnhanced === "1") return false;
