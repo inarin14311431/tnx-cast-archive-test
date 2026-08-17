@@ -4,7 +4,7 @@ body[data-page="sheet-mobile.html"] .mobile-profile-summary-card{display:grid;mi
 body[data-page="sheet-mobile.html"] .mobile-profile-summary-card>strong{color:var(--mobile-section-accent,var(--color-accent));font-size:12px}
 body[data-page="sheet-mobile.html"] .mobile-profile-summary-card>span{min-width:0;overflow:hidden;color:var(--color-text);font-size:12px;line-height:1.4;text-overflow:ellipsis}
 body[data-page="sheet-mobile.html"] .mobile-profile-summary-card--wide{grid-column:1/-1}
-body[data-page="sheet-mobile.html"] :is([data-mobile-profile-group="summary"],[data-mobile-profile-group="profile"])>span{display:-webkit-box;min-height:calc(1.4em * 3);max-height:calc(1.4em * 3);-webkit-box-orient:vertical;-webkit-line-clamp:3;white-space:normal}
+body[data-page="sheet-mobile.html"] :is([data-mobile-profile-group="summary"],[data-mobile-profile-group="profile"])>span{display:-webkit-box;min-height:calc(1.4em * 3);max-height:calc(1.4em * 4);-webkit-box-orient:vertical;-webkit-line-clamp:4;white-space:pre-wrap}
 
 body[data-page="sheet-mobile.html"] .mobile-basic-name-block{display:grid;gap:4px;min-width:0}
 body[data-page="sheet-mobile.html"] .mobile-basic-name-block>div{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;gap:4px;min-width:0}
