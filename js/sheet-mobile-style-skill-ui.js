@@ -12,10 +12,12 @@ const SUIT_DISPLAY = [
 
 function renderAllSuits(root = document) {
   root.querySelectorAll?.(".mobile-edit-card__suits").forEach(node => {
-    const selected = node.dataset.selectedSuits || node.textContent || "";
-    if (!node.dataset.selectedSuits) node.dataset.selectedSuits = selected;
-    node.textContent = SUIT_DISPLAY.map(([filled, outline]) => selected.includes(filled) ? filled : outline).join("");
-    node.setAttribute("aria-label", `取得スート ${node.textContent}`);
+    const selected = node.dataset.selectedSuits ?? node.textContent ?? "";
+    if (node.dataset.selectedSuits == null) node.dataset.selectedSuits = selected;
+    const display = SUIT_DISPLAY.map(([filled, outline]) => selected.includes(filled) ? filled : outline).join("");
+    if (node.textContent !== display) node.textContent = display;
+    const aria = `取得スート ${display}`;
+    if (node.getAttribute("aria-label") !== aria) node.setAttribute("aria-label", aria);
   });
 }
 
