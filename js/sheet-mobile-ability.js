@@ -12,6 +12,11 @@ const ABILITIES = [
 
 const $ = selector => document.querySelector(selector);
 const num = value => Number(value || 0);
+const displayBaseAndMod = (base, mod) => {
+  const b = num(base), m = num(mod);
+  if (!m) return String(b);
+  return `${b}${m > 0 ? "+" : ""}${m}`;
+};
 
 let user = null;
 let character = null;
@@ -97,21 +102,26 @@ function bind() {
 function renderSummary() {
   const root = $("#mobile-ability-summary");
   if (!root || !character) return;
+  const header = ABILITIES.map(([key, jp]) => `<button type="button" class="mobile-ability-matrix__head" data-mobile-ability="${key}">${jp}</button>`).join("");
+  const baseRow = ABILITIES.map(([key]) => {
+    const base = character[`${key}_base`] ?? character[`${key}_value`] ?? 0;
+    const mod = num(character[`${key}_gear`]) + num(character[`${key}_manual`]);
+    return `<button type="button" class="mobile-ability-matrix__value" data-mobile-ability="${key}">${displayBaseAndMod(base, mod)}</button>`;
+  }).join("");
+  const controlRow = ABILITIES.map(([key]) => {
+    const base = character[`${key}_control_base`] ?? character[`${key}_control`] ?? 0;
+    const mod = num(character[`${key}_control_gear`]) + num(character[`${key}_control_manual`]);
+    return `<button type="button" class="mobile-ability-matrix__value" data-mobile-ability="${key}">${displayBaseAndMod(base, mod)}</button>`;
+  }).join("");
   root.innerHTML = `
-    <div class="mobile-ability-columns">
-      ${ABILITIES.map(([key, jp, en]) => {
-        const value = num(character[`${key}_value`] ?? character[`${key}_base`]);
-        const control = num(character[`${key}_control`] ?? character[`${key}_control_base`]);
-        return `<button type="button" class="mobile-ability-cell" data-mobile-ability="${key}">
-          <span class="mobile-ability-cell__label">${jp}<small>${en}</small></span>
-          <strong>${value}</strong>
-          <span class="mobile-ability-cell__control">制御 <b>${control}</b></span>
-        </button>`;
-      }).join("")}
+    <div class="mobile-ability-matrix">
+      <span class="mobile-ability-matrix__corner"></span>${header}
+      <strong class="mobile-ability-matrix__rowlabel">基本値</strong>${baseRow}
+      <strong class="mobile-ability-matrix__rowlabel">制御値</strong>${controlRow}
     </div>
     <button type="button" class="mobile-cs-cell" data-mobile-cs="1">
       <span>CS <small>CONTROL SPEED</small></span>
-      <strong>${num(character.cs ?? character.cs_base)}</strong>
+      <strong>${displayBaseAndMod(character.cs_base ?? character.cs ?? 0, num(character.cs_gear) + num(character.cs_manual))}</strong>
       <em>タップして編集</em>
     </button>`;
 }
