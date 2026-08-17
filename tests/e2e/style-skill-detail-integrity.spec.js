@@ -85,3 +85,30 @@ test("スタイル技能の名称・レベル変更はコンボとカウンタ�
   await expect(page.locator(`#sheet-combo-skill-options input[data-skill-name="${uniqueName}"]`)).toHaveCount(1);
   await expect(page.locator(`#sheet-counter-skill option[value="${uniqueName}"]`)).toHaveCount(1);
 });
+
+test("コンボ・カウンター候補の出力DOMが再描画されてもスタイル技能候補を復元する", async ({ page }) => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+
+  await page.goto(`/sheet.html?id=${getTestCastId()}`);
+  await waitForEditorReady(page);
+
+  const row = page.locator("#style-skills tbody tr[data-skill-key]:not(.style-skill-separator-row)").first();
+  await expect(row).toBeVisible();
+
+  const uniqueName = `E2E再描画候補${Date.now()}`;
+  await row.locator('[data-f="name"]').fill(uniqueName);
+  await row.locator('[data-f="level"]').fill("3");
+
+  const comboCandidate = page.locator(`#sheet-combo-skill-options input[data-skill-name="${uniqueName}"]`);
+  const counterCandidate = page.locator(`#sheet-counter-skill option[value="${uniqueName}"]`);
+  await expect(comboCandidate).toHaveCount(1);
+  await expect(counterCandidate).toHaveCount(1);
+
+  // Simulate a downstream renderer replacing the presentation-only candidate containers.
+  // The output-root observers currently owned by sheet-features.js must repopulate them.
+  await page.locator("#sheet-combo-skill-options").evaluate(element => element.replaceChildren());
+  await page.locator("#sheet-counter-skill").evaluate(element => element.replaceChildren());
+
+  await expect(comboCandidate).toHaveCount(1);
+  await expect(counterCandidate).toHaveCount(1);
+});
