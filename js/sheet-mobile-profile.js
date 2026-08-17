@@ -37,7 +37,7 @@ function ensureStyleSheet() {
   if (document.querySelector('link[data-mobile-profile-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/sheet-mobile-profile.css?v=4";
+  link.href = "./css-next/pages/sheet-mobile-profile.css?v=5";
   link.dataset.mobileProfileStyle = "1";
   document.head.append(link);
 }
@@ -66,7 +66,10 @@ function basicSummaryHtml() {
   const player = source("player_name")?.value || "—";
   const affiliation = source("affiliation")?.value || "—";
   const rank = source("citizen_rank")?.value || "—";
-  return `<div class="mobile-basic-summary-grid"><span>${esc(quote(handle))}</span><span>${esc(name)}</span><span>${esc(quote(handleKana))}</span><span>${esc(nameKana)}</span></div><div class="mobile-basic-summary-meta">PL ${esc(player)} / ${esc(affiliation)} / ${esc(rank)}</div>`;
+  return `<div class="mobile-basic-summary-box">
+    <div class="mobile-basic-summary-row"><span title="${esc(quote(handle))}">${esc(quote(handle))}</span><span title="${esc(name)}">${esc(name)}</span></div>
+    <div class="mobile-basic-summary-row mobile-basic-summary-row--kana"><span title="${esc(quote(handleKana))}">${esc(quote(handleKana))}</span><span title="${esc(nameKana)}">${esc(nameKana)}</span></div>
+  </div><div class="mobile-basic-summary-meta">PL ${esc(player)} / ${esc(affiliation)} / ${esc(rank)}</div>`;
 }
 
 function lifePathSummaryHtml() {
