@@ -12,6 +12,11 @@ test("mobile cast keeps its explicit mobile-only entry point", () => {
   assert.match(source, /document\.querySelector\("#mobile-cast-view"\)/);
 });
 
+test("mobile cast initializer is idempotent", () => {
+  assert.match(source, /root\.dataset\.mobileCastInitialized==="1"/);
+  assert.match(source, /root\.dataset\.mobileCastInitialized="1"/);
+});
+
 test("mobile cast preserves data loading render and transfer synchronization", () => {
   assert.match(source, /Promise\.all\(\[getCharacter\(\),getSkills\(\),getOutfits\(\),getCombos\(\)\]\)/);
   assert.match(source, /render\(root,c,s,o,b\)/);
