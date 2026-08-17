@@ -1,7 +1,8 @@
 /* Compatibility shim. Armor totals are maintained by outfit-tables.js. */
-(function(){
+function initializeArmorGrandTotal(){
   const root=document.querySelector('#outfit-list');
-  if(!root)return;
+  if(!root||root.dataset.tnxArmorGrandTotalInitialized==='true')return;
+  root.dataset.tnxArmorGrandTotalInitialized='true';
 
   function numericValue(value){
     const number=Number(String(value??'').trim());
@@ -9,6 +10,7 @@
   }
 
   function updateSection(section){
+    if(!section)return;
     const totals={s:0,i:0,p:0};
     section.querySelectorAll('tbody [data-armor-defense]').forEach(input=>{
       const key=String(input.dataset.armorDefense||'').toLowerCase();
@@ -33,4 +35,6 @@
 
   requestAnimationFrame(updateAll);
   setTimeout(updateAll,300);
-})();
+}
+
+initializeArmorGrandTotal();
