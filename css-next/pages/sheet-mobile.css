@@ -152,7 +152,31 @@ body[data-page="sheet-mobile.html"] textarea { min-height: 96px; resize: vertica
 .mobile-form-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .mobile-form-grid .mobile-span-2 { grid-column: 1 / -1; }
 
+.mobile-profile-groups { display: grid; gap: 12px; }
+.mobile-profile-group {
+  min-width: 0;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line-color, rgba(255,255,255,.14));
+}
+.mobile-profile-group legend {
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  opacity: .72;
+}
+
 .mobile-card-list { display: grid; gap: 8px; }
+.mobile-ability-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.mobile-ability-grid .mobile-readonly-card {
+  min-width: 0;
+  padding: 9px 6px;
+  text-align: center;
+}
+.mobile-ability-grid .mobile-readonly-card strong { font-size: 12px; white-space: nowrap; }
+.mobile-ability-grid .mobile-readonly-card small { display: block; margin-top: 3px; font-size: 10px; white-space: nowrap; }
+.mobile-ability-grid .mobile-readonly-card:last-child { grid-column: 1 / -1; }
 .mobile-edit-card {
   width: 100%;
   min-height: 64px;
@@ -313,12 +337,17 @@ body[data-page="sheet-mobile.html"] textarea { min-height: 96px; resize: vertica
 }
 
 @media (max-width: 420px) {
-  .mobile-form-grid--two:not(.mobile-style-detail-grid) { grid-template-columns: 1fr; }
-  .mobile-form-grid--two:not(.mobile-style-detail-grid) .mobile-span-2 { grid-column: auto; }
+  .mobile-form-grid--two:not(.mobile-style-detail-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .mobile-profile-group .mobile-span-2 { grid-column: 1 / -1; }
   .mobile-style-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .mobile-style-detail-grid :is(input, select, textarea) { padding-inline: 8px; }
+  .mobile-style-detail-grid :is(input, select, textarea),
+  .mobile-profile-group :is(input, select, textarea) { padding-inline: 8px; }
   .mobile-sheet-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mobile-theme-panel label { grid-template-columns: 1fr; }
   .mobile-general-row { grid-template-columns: minmax(0, 1fr) 40px repeat(4, 34px); gap: 2px; }
   .mobile-general-suit { min-height: 42px; }
+  .mobile-ability-grid { gap: 5px; }
+  .mobile-ability-grid .mobile-readonly-card { padding-inline: 3px; }
+  .mobile-ability-grid .mobile-readonly-card strong { font-size: 11px; }
+  .mobile-ability-grid .mobile-readonly-card small { font-size: 9px; }
 }
