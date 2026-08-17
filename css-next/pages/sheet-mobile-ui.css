@@ -1,10 +1,17 @@
 /* Common mobile editor UI chrome.
  * Feature-specific profile/style/ability/outfit rules do not belong here.
  */
+body[data-page="sheet-mobile.html"] .mobile-sheet-header{position:relative;top:auto}
+body[data-page="sheet-mobile.html"] .mobile-header-exp{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-top:3px;color:var(--color-muted);font-size:9px;letter-spacing:.04em}
+body[data-page="sheet-mobile.html"] .mobile-header-exp strong{color:var(--color-accent);font:800 13px/1 var(--font-data,inherit)}
 body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header{grid-template-columns:minmax(66px,auto) minmax(0,1fr) minmax(66px,auto)}
 body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header--close-only{grid-template-columns:minmax(66px,auto) minmax(0,1fr)}
 body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header button{padding-inline:8px;white-space:nowrap}
 body[data-page="sheet-mobile.html"] .mobile-edit-notice{margin:0 0 8px;padding:7px 9px;border-left:3px solid var(--color-accent);background:color-mix(in srgb,var(--color-surface) 92%,transparent);color:var(--color-muted);font-size:10px;line-height:1.45}
+
+body[data-page="sheet-mobile.html"] .mobile-section-addbar{display:grid;grid-template-columns:1fr;gap:5px;margin:0 0 9px}
+body[data-page="sheet-mobile.html"] .mobile-section-addbar--three{grid-template-columns:repeat(3,minmax(0,1fr))}
+body[data-page="sheet-mobile.html"] .mobile-section-add{min-width:0;min-height:38px;padding:5px 6px;border:1px solid color-mix(in srgb,var(--mobile-section-accent,var(--color-accent)) 48%,var(--color-border-muted));background:color-mix(in srgb,var(--mobile-section-accent,var(--color-accent)) 7%,var(--color-surface));color:var(--mobile-section-accent,var(--color-accent));font-size:10px;font-weight:700}
 
 body[data-page="sheet-mobile.html"] .mobile-sheet-actions{grid-template-columns:44px 68px 82px 82px;justify-content:center;gap:4px;padding-inline:max(5px,env(safe-area-inset-left)) max(5px,env(safe-area-inset-right))}
 body[data-page="sheet-mobile.html"] .mobile-sheet-actions>*{min-width:0}
@@ -17,4 +24,6 @@ body[data-page="sheet-mobile.html"] .mobile-sheet-actions #mobile-save{min-heigh
 
 @media(max-width:390px){
   body[data-page="sheet-mobile.html"] .mobile-sheet-actions{grid-template-columns:40px 62px 76px 76px;gap:3px}
+  body[data-page="sheet-mobile.html"] .mobile-section-addbar--three{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+  body[data-page="sheet-mobile.html"] .mobile-section-add{font-size:9px;padding-inline:3px}
 }
