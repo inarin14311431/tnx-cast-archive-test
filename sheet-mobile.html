@@ -4,7 +4,7 @@
   <script src="./js/css-next-theme.js"></script>
   <link rel="stylesheet" href="./css-next/index.css?v=43" data-css-system="next">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile.css?v=4">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ability.css?v=1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ability.css?v=2">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
@@ -58,8 +58,8 @@
   </main>
   <div class="mobile-sheet-actions" role="group" aria-label="モバイル編集操作"><a id="mobile-view-link" href="./cast.html">閲覧画面</a><button id="mobile-save" type="button" data-state="saved">保存済み</button></div>
   <dialog id="mobile-ability-dialog" class="mobile-editor-dialog"><form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--close-only"><button id="mobile-ability-dialog-cancel" type="button">閉じる</button><strong id="mobile-ability-dialog-title">能力値編集</strong></header><div class="mobile-editor-dialog__body"><div class="mobile-ability-editor-grid">
-    <section class="mobile-ability-editor-panel"><h3>能力値</h3><label>現在値<input data-mobile-ability-input="ability-base" type="number" min="0" inputmode="numeric"></label><label>補正値<input data-mobile-ability-input="ability-mod" type="number" inputmode="numeric"></label><p class="mobile-ability-growth">成長分 <strong id="mobile-ability-growth">0</strong></p><div class="mobile-ability-preview"><span>最終値</span><strong id="mobile-ability-final">0</strong></div></section>
-    <section class="mobile-ability-editor-panel"><h3>制御値</h3><label>現在値<input data-mobile-ability-input="control-base" type="number" min="0" inputmode="numeric"></label><label>補正値<input data-mobile-ability-input="control-mod" type="number" inputmode="numeric"></label><p class="mobile-ability-growth">成長分 <strong id="mobile-control-growth">0</strong></p><div class="mobile-ability-preview"><span>最終値</span><strong id="mobile-control-final">0</strong></div></section>
+    <section class="mobile-ability-editor-panel"><h3>能力値</h3><div class="mobile-ability-fixed"><span>基本値</span><strong data-mobile-ability-fixed="ability">0</strong></div><label>成長分<select data-mobile-ability-input="ability-growth"></select></label><label>補正値<select data-mobile-ability-input="ability-mod"></select></label><div class="mobile-ability-preview"><span>最終値</span><strong id="mobile-ability-final">0</strong></div></section>
+    <section class="mobile-ability-editor-panel"><h3>制御値</h3><div class="mobile-ability-fixed"><span>基本値</span><strong data-mobile-ability-fixed="control">0</strong></div><label>成長分<select data-mobile-ability-input="control-growth"></select></label><label>補正値<select data-mobile-ability-input="control-mod"></select></label><div class="mobile-ability-preview"><span>最終値</span><strong id="mobile-control-final">0</strong></div></section>
   </div></div></form></dialog>
   <dialog id="mobile-cs-dialog" class="mobile-editor-dialog"><form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--close-only"><button id="mobile-cs-dialog-cancel" type="button">閉じる</button><strong>CS編集</strong></header><div class="mobile-editor-dialog__body"><section class="mobile-ability-editor-panel mobile-cs-editor"><h3>CS / CONTROL SPEED</h3><label>現在値<input data-mobile-cs-input="base" type="number" inputmode="numeric"></label><label>補正値<input data-mobile-cs-input="mod" type="number" inputmode="numeric"></label><div class="mobile-ability-preview"><span>最終値</span><strong id="mobile-cs-final">0</strong></div></section></div></form></dialog>
   <dialog id="style-skill-dialog" class="mobile-editor-dialog"><form method="dialog"><header class="mobile-editor-dialog__header"><button id="style-skill-dialog-cancel" type="button">閉じる</button><strong id="style-skill-dialog-title">スタイル技能編集</strong><button id="style-skill-dialog-apply" type="submit">反映</button></header><div class="mobile-editor-dialog__body"><div class="mobile-form-grid mobile-form-grid--two mobile-style-detail-grid">
@@ -75,6 +75,6 @@
     <label>参照P<input data-mobile-style-detail="page"></label><label class="mobile-span-2">解説<textarea rows="8" data-mobile-style-detail="description"></textarea></label>
   </div></div></form></dialog>
   <script type="module" src="./js/sheet-mobile.js?v=2"></script>
-  <script type="module" src="./js/sheet-mobile-ability.js?v=3"></script>
+  <script type="module" src="./js/sheet-mobile-ability.js?v=4"></script>
 </body>
 </html>
