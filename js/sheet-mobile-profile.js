@@ -11,15 +11,15 @@ const GROUPS = {
   },
   personal: {
     title: "パーソナルデータ",
-    wide: false,
+    wide: true,
     fields: [
       ["age", "年齢", "text"], ["gender", "性別", "text"], ["height", "身長", "text"], ["weight", "体重", "text"],
       ["eyes", "瞳", "text"], ["hair", "髪", "text"], ["skin", "肌", "text"]
     ]
   },
   lifepath: { title: "ライフパス", wide: true, fields: [] },
-  summary: { title: "概要", wide: false, fields: [["summary", "概要", "textarea-short"]] },
-  profile: { title: "プロフィール", wide: false, fields: [["profile", "プロフィール", "textarea-long"]] }
+  summary: { title: "概要", wide: true, fields: [["summary", "概要", "textarea-short"]] },
+  profile: { title: "プロフィール", wide: true, fields: [["profile", "プロフィール", "textarea-long"]] }
 };
 
 const LIFE_PATHS = [
@@ -37,7 +37,7 @@ function ensureStyleSheet() {
   if (document.querySelector('link[data-mobile-profile-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/sheet-mobile-profile.css?v=3";
+  link.href = "./css-next/pages/sheet-mobile-profile.css?v=4";
   link.dataset.mobileProfileStyle = "1";
   document.head.append(link);
 }
@@ -83,7 +83,7 @@ function summaryText(groupKey) {
   const group = GROUPS[groupKey];
   const field = group?.fields?.[0]?.[0];
   const value = field ? source(field)?.value?.trim() || "未入力" : "";
-  return value.replace(/\s+/g, " ").slice(0, 56) + (value.length > 56 ? "…" : "");
+  return value.replace(/\s+/g, " ");
 }
 
 function cardInnerHtml(key, group) {
