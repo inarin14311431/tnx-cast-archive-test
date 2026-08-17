@@ -15,8 +15,9 @@ test("style skill fields also publish after structural rebuilds", () => {
   assert.match(fields, /if\(enhance\(\)\)publishChange\(\)/);
 });
 
-test("sheet features no longer owns raw style-skill input events", () => {
+test("sheet features follows the canonical style-skill event without observing styleRoot", () => {
   assert.doesNotMatch(features, /styleRoot\.addEventListener\(["']input["']/);
+  assert.doesNotMatch(features, /new MutationObserver\(queue\)\.observe\(styleRoot/);
   assert.match(features, /styleRoot\.addEventListener\(["']tnx:style-skills-changed["'],queue\)/);
 });
 
