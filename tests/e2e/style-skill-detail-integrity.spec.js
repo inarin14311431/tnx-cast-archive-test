@@ -58,3 +58,30 @@ test("スタイル技能詳細は表示欄と保存用descriptionの双方向同
   await expect(page.locator("#style-skills tbody tr[data-skill-key]")).toHaveCount(rowCount);
   await expect(visibleDescription).not.toContainText(PREFIX);
 });
+
+test("スタイル技能の名称・レベル変更はコンボとカウンター候補へ反映される", async ({ page }) => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+
+  await page.goto(`/sheet.html?id=${getTestCastId()}`);
+  await waitForEditorReady(page);
+
+  const row = page.locator("#style-skills tbody tr[data-skill-key]:not(.style-skill-separator-row)").first();
+  await expect(row).toBeVisible();
+
+  const uniqueName = `E2E候補同期${Date.now()}`;
+  const name = row.locator('[data-f="name"]');
+  const level = row.locator('[data-f="level"]');
+  await expect(name).toHaveCount(1);
+  await expect(level).toHaveCount(1);
+
+  await name.fill(uniqueName);
+  await level.fill("2");
+
+  await expect(page.locator(`#sheet-combo-skill-options input[data-skill-name="${uniqueName}"]`)).toHaveCount(1);
+  await expect(page.locator(`#sheet-counter-skill option[value="${uniqueName}"]`)).toHaveCount(1);
+
+  // Candidate refresh is presentation-only in this test; no save action is performed.
+  await page.waitForTimeout(250);
+  await expect(page.locator(`#sheet-combo-skill-options input[data-skill-name="${uniqueName}"]`)).toHaveCount(1);
+  await expect(page.locator(`#sheet-counter-skill option[value="${uniqueName}"]`)).toHaveCount(1);
+});
