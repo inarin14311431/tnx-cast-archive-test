@@ -28,6 +28,7 @@ async function init() {
     return;
   }
   character = data;
+  normalizeLoadedMarks();
   renderSummary();
   renderEditor();
   observeSummaryOwner();
@@ -37,7 +38,7 @@ function ensureStyleSheet() {
   if (document.querySelector('link[data-mobile-style-editor-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/sheet-mobile-style.css?v=5";
+  link.href = "./css-next/pages/sheet-mobile-style.css?v=6";
   link.dataset.mobileStyleEditorStyle = "1";
   document.head.append(link);
 }
@@ -121,6 +122,22 @@ function baselineFor(source) {
   return result;
 }
 
+function normalizeLoadedMarks() {
+  if (!character) return;
+  let personaOwner = 0;
+  let keyOwner = 0;
+  for (let index = 1; index <= 3; index++) {
+    const current = MARKS.includes(character[`style_${index}_mark`]) ? character[`style_${index}_mark`] : "";
+    const wantsPersona = current.includes("◎");
+    const wantsKey = current.includes("●");
+    const keepPersona = wantsPersona && !personaOwner;
+    const keepKey = wantsKey && !keyOwner;
+    character[`style_${index}_mark`] = keepPersona && keepKey ? "◎●" : keepPersona ? "◎" : keepKey ? "●" : "";
+    if (keepPersona) personaOwner = index;
+    if (keepKey) keyOwner = index;
+  }
+}
+
 function renderSummary() {
   const root = $("#mobile-style-summary");
   if (!root || !character) return;
@@ -159,9 +176,32 @@ function renderEditor() {
 function cycleMark(index) {
   if (!character || index < 1 || index > 3) return;
   const current = character[`style_${index}_mark`] || "";
-  const next = MARKS[(MARKS.indexOf(current) + 1) % MARKS.length];
-  applyStylePatch(index, { mark: next });
+  const position = MARKS.indexOf(current);
+  const next = MARKS[(position < 0 ? 0 : position + 1) % MARKS.length];
+  applyExclusiveMark(index, next);
   renderEditor();
+}
+
+function applyExclusiveMark(index, next) {
+  const patch = {};
+  for (let other = 1; other <= 3; other++) {
+    if (other === index) continue;
+    const current = character[`style_${other}_mark`] || "";
+    let replacement = current;
+    if (next === "◎●") replacement = "";
+    else if (next === "◎") {
+      if (current === "◎") replacement = "";
+      else if (current === "◎●") replacement = "●";
+    } else if (next === "●") {
+      if (current === "●") replacement = "";
+      else if (current === "◎●") replacement = "◎";
+    }
+    if (replacement !== current) patch[other] = replacement;
+  }
+  patch[index] = next;
+  for (const [slot, mark] of Object.entries(patch)) character[`style_${slot}_mark`] = mark;
+  window.dispatchEvent(new CustomEvent("tnx:mobile-style-patch", { detail: collectPatch() }));
+  renderSummary();
 }
 
 function applyEditorChange(index) {
@@ -175,7 +215,6 @@ function applyEditorChange(index) {
 function applyStylePatch(index, patch) {
   const oldBaseline = baselineFor(character);
   if (Object.hasOwn(patch, "name")) character[`style_${index}`] = patch.name;
-  if (Object.hasOwn(patch, "mark")) character[`style_${index}_mark`] = patch.mark;
   if (Object.hasOwn(patch, "attribute")) character[`style_${index}_attribute`] = patch.attribute;
   if (character[`style_${index}`] !== "ウツワ") character[`style_${index}_attribute`] = "";
 
@@ -200,10 +239,10 @@ function adjustBaseline(key, oldBaseline, nextBaseline) {
   const gearField = `${key}_gear`;
   const manualField = `${key}_manual`;
   const currentBase = num(character[baseField] ?? (key.endsWith("_control") ? character[key] : character[`${key}_value`]));
-  if (currentBase === num(oldBaseline) || currentBase === 0) character[baseField] = num(nextBaseline);
-  const base = num(character[baseField]);
-  character[growthField] = Math.max(0, base - num(nextBaseline));
-  character[valueField] = base + num(character[gearField]) + num(character[manualField]);
+  const growth = Math.max(0, num(character[growthField] || (currentBase - num(oldBaseline))));
+  character[growthField] = growth;
+  character[baseField] = num(nextBaseline) + growth;
+  character[valueField] = character[baseField] + num(character[gearField]) + num(character[manualField]);
 }
 
 function collectPatch() {
