@@ -10,6 +10,7 @@ const num = value => Number(value || 0);
 let user = null;
 let character = null;
 let activeIndex = 0;
+let repairingSummary = false;
 
 init();
 
@@ -28,13 +29,14 @@ async function init() {
   }
   character = data;
   renderSummary();
+  observeSummaryOwner();
 }
 
 function ensureStyleSheet() {
   if (document.querySelector('link[data-mobile-style-editor-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/sheet-mobile-style.css?v=2";
+  link.href = "./css-next/pages/sheet-mobile-style.css?v=3";
   link.dataset.mobileStyleEditorStyle = "1";
   document.head.append(link);
 }
@@ -86,6 +88,17 @@ function bind() {
   $("#mobile-style-attribute")?.addEventListener("change", updateDialogPreview);
 }
 
+function observeSummaryOwner() {
+  const root = $("#mobile-style-summary");
+  if (!root) return;
+  new MutationObserver(() => {
+    if (!character || repairingSummary || root.querySelector("[data-mobile-style-slot]")) return;
+    repairingSummary = true;
+    renderSummary();
+    repairingSummary = false;
+  }).observe(root, { childList: true, subtree: true });
+}
+
 function styleRecord(name, attribute = "") {
   if (name === "ウツワ") return UTSUWA_ATTRIBUTES.find(item => item.name === attribute) || null;
   return STYLE_DATA.find(item => item.name === name) || null;
@@ -111,13 +124,17 @@ function baselineFor(source) {
 function renderSummary() {
   const root = $("#mobile-style-summary");
   if (!root || !character) return;
-  root.classList.add("mobile-style-summary-list");
+  root.className = "mobile-style-summary-list";
   root.innerHTML = [1,2,3].map(index => {
     const name = character[`style_${index}`] || "未設定";
     const mark = character[`style_${index}_mark`] || "";
-    const divine = styleDefinition(name)?.divine || character[`divine_${index}`] || "—";
-    return `<button type="button" class="mobile-style-summary-row" data-mobile-style-slot="${index}">
-      <strong>${esc(name)}</strong><span class="mobile-style-summary-row__mark">${esc(mark)}</span><span class="mobile-style-summary-row__divine">${esc(divine)}</span>
+    const style = styleDefinition(name);
+    const divine = style?.divine || character[`divine_${index}`] || "—";
+    const divineYomi = style?.divineYomi || character[`divine_${index}_yomi`] || divine;
+    return `<button type="button" class="mobile-style-summary-row" data-mobile-style-slot="${index}" aria-label="スタイル${index}を編集">
+      <span class="mobile-style-summary-row__name">${esc(name)}</span>
+      <span class="mobile-style-summary-row__mark">${esc(mark)}</span>
+      <span class="mobile-style-summary-row__divine"><ruby><strong>${esc(divine)}</strong><rt>${esc(divineYomi)}</rt></ruby></span>
     </button>`;
   }).join("");
 }
