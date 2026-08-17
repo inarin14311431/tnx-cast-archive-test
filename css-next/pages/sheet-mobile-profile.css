@@ -18,12 +18,7 @@ body[data-page="sheet-mobile.html"] .mobile-profile-summary-card {
   color: inherit;
   text-align: left;
 }
-
-body[data-page="sheet-mobile.html"] .mobile-profile-summary-card strong {
-  color: var(--mobile-section-accent, var(--color-accent));
-  font-size: 12px;
-}
-
+body[data-page="sheet-mobile.html"] .mobile-profile-summary-card strong { color: var(--mobile-section-accent, var(--color-accent)); font-size: 12px; }
 body[data-page="sheet-mobile.html"] .mobile-profile-summary-card span {
   min-width: 0;
   overflow: hidden;
@@ -33,16 +28,23 @@ body[data-page="sheet-mobile.html"] .mobile-profile-summary-card span {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 body[data-page="sheet-mobile.html"] .mobile-profile-summary-card--wide { grid-column: 1 / -1; }
-
-body[data-page="sheet-mobile.html"] #mobile-profile-dialog-fields {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
+body[data-page="sheet-mobile.html"] #mobile-profile-dialog-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 body[data-page="sheet-mobile.html"] #mobile-profile-dialog-fields > * { min-width: 0; }
+
+body[data-page="sheet-mobile.html"] .mobile-sheet-actions.mobile-sheet-actions--three {
+  grid-template-columns: minmax(72px, .65fr) minmax(0, 1fr) minmax(0, 1.35fr);
+}
+body[data-page="sheet-mobile.html"] .mobile-sheet-actions [data-mobile-fixed-top] {
+  font-size: 12px;
+  letter-spacing: .08em;
+}
 
 @media (max-width: 390px) {
   body[data-page="sheet-mobile.html"] .mobile-profile-summary-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
   body[data-page="sheet-mobile.html"] .mobile-profile-summary-card { min-height: 70px; padding: 9px; }
+  body[data-page="sheet-mobile.html"] .mobile-sheet-actions.mobile-sheet-actions--three {
+    grid-template-columns: 70px minmax(0, .9fr) minmax(0, 1.25fr);
+    gap: 6px;
+  }
 }
