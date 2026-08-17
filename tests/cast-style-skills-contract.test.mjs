@@ -4,6 +4,13 @@ import { readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../js/cast-style-skills.js", import.meta.url), "utf8");
 
+test("style skill view uses an explicit idempotent initializer", () => {
+  assert.match(source, /async function initializeCastStyleSkills\(\)/);
+  assert.match(source, /root\.dataset\.castStyleSkillsInitialized === "1"/);
+  assert.match(source, /root\.dataset\.castStyleSkillsInitialized = "1"/);
+  assert.match(source, /initializeCastStyleSkills\(\);/);
+});
+
 test("style skill view preserves data load and cast-ready render flow", () => {
   assert.match(source, /const skills =? ?await getStyleSkills\(\)|skills = await getStyleSkills\(\)/);
   assert.match(source, /whenCastReady\(\(\) =>/);
