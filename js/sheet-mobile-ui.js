@@ -1,3 +1,4 @@
+import "./sheet-mobile-style-skill-ui.js";
 const $ = selector => document.querySelector(selector);
 
 function removeObsoleteControls() {
