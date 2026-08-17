@@ -24,6 +24,7 @@ let activeAbility = null;
 let abilityDirty = false;
 let replayingSave = false;
 let savingAbility = false;
+let repairingSummary = false;
 
 init();
 
@@ -46,6 +47,7 @@ async function init() {
   }
   character = data;
   renderSummary();
+  observeSummaryOwner();
 }
 
 function bind() {
@@ -97,6 +99,17 @@ function bind() {
     event.preventDefault();
     event.returnValue = "";
   });
+}
+
+function observeSummaryOwner() {
+  const root = $("#mobile-ability-summary");
+  if (!root) return;
+  new MutationObserver(() => {
+    if (!character || repairingSummary || root.querySelector("[data-mobile-ability]")) return;
+    repairingSummary = true;
+    renderSummary();
+    repairingSummary = false;
+  }).observe(root, { childList: true, subtree: true });
 }
 
 function renderSummary() {
