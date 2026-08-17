@@ -1,6 +1,7 @@
 const GROUPS = {
   identity: {
     title: "基本情報",
+    wide: false,
     fields: [
       ["character_name", "キャスト名", "text"], ["character_kana", "名前ルビ", "text"],
       ["handle", "ハンドル", "text"], ["handle_kana", "ハンドルルビ", "text"]
@@ -8,6 +9,7 @@ const GROUPS = {
   },
   management: {
     title: "管理情報",
+    wide: false,
     fields: [
       ["player_name", "プレイヤー名", "text"], ["affiliation", "所属", "text"],
       ["citizen_rank", "市民ランク", "text"], ["visibility", "公開状態", "visibility"]
@@ -15,6 +17,7 @@ const GROUPS = {
   },
   personal: {
     title: "パーソナルデータ",
+    wide: false,
     fields: [
       ["age", "年齢", "text"], ["gender", "性別", "text"], ["height", "身長", "text"], ["weight", "体重", "text"],
       ["eyes", "瞳", "text"], ["hair", "髪", "text"], ["skin", "肌", "text"]
@@ -22,12 +25,13 @@ const GROUPS = {
   },
   lifepath: {
     title: "ライフパス",
+    wide: false,
     fields: [
       ["life_path_origin", "出自", "text"], ["life_path_experience", "経験", "text"], ["life_path_encounter", "邂逅", "text"]
     ]
   },
-  summary: { title: "概要", fields: [["summary", "概要", "textarea-short"]] },
-  profile: { title: "プロフィール", fields: [["profile", "プロフィール", "textarea-long"]] }
+  summary: { title: "概要", wide: true, fields: [["summary", "概要", "textarea-short"]] },
+  profile: { title: "プロフィール", wide: true, fields: [["profile", "プロフィール", "textarea-long"]] }
 };
 
 const $ = selector => document.querySelector(selector);
@@ -62,6 +66,52 @@ function summaryText(groupKey) {
   }
   const value = source(group.fields[0][0])?.value?.trim() || "未入力";
   return value.replace(/\s+/g, " ").slice(0, 56) + (value.length > 56 ? "…" : "");
+}
+
+function injectSummaryUi() {
+  const form = $("#mobile-profile-form");
+  if (!form || $("#mobile-profile-summary-grid")) return;
+  form.classList.add("mobile-profile-source");
+  const grid = document.createElement("div");
+  grid.id = "mobile-profile-summary-grid";
+  grid.className = "mobile-profile-summary-grid";
+  grid.innerHTML = Object.entries(GROUPS).map(([key, group]) => `
+    <button type="button" class="mobile-profile-summary-card${group.wide ? " mobile-profile-summary-card--wide" : ""}" data-mobile-profile-group="${key}">
+      <strong>${group.title}</strong>
+      <span data-mobile-profile-summary>${summaryText(key)}</span>
+    </button>`).join("");
+  form.before(grid);
+}
+
+function injectDialog() {
+  if ($("#mobile-profile-dialog")) return;
+  const dialog = document.createElement("dialog");
+  dialog.id = "mobile-profile-dialog";
+  dialog.className = "mobile-editor-dialog";
+  dialog.innerHTML = `
+    <form method="dialog">
+      <header class="mobile-editor-dialog__header">
+        <button id="mobile-profile-dialog-close" type="button">閉じる</button>
+        <strong id="mobile-profile-dialog-title">基本情報編集</strong>
+        <button id="mobile-profile-dialog-apply" type="submit">反映</button>
+      </header>
+      <div class="mobile-editor-dialog__body">
+        <div id="mobile-profile-dialog-fields" class="mobile-form-grid mobile-form-grid--two"></div>
+      </div>
+    </form>`;
+  document.body.append(dialog);
+}
+
+function injectTopAction() {
+  const actions = $(".mobile-sheet-actions");
+  if (!actions || actions.querySelector("[data-mobile-fixed-top]")) return;
+  const top = document.createElement("a");
+  top.href = "#mobile-sheet-top";
+  top.dataset.mobileFixedTop = "1";
+  top.textContent = "↑ TOP";
+  top.setAttribute("aria-label", "ページ上部へ戻る");
+  actions.prepend(top);
+  actions.classList.add("mobile-sheet-actions--three");
 }
 
 function renderSummaries() {
@@ -113,9 +163,10 @@ function applyGroup() {
   $("#mobile-profile-dialog")?.close();
 }
 
-function init() {
-  document.querySelectorAll("[data-mobile-profile-group]").forEach(button => {
-    button.addEventListener("click", () => openGroup(button.dataset.mobileProfileGroup));
+function bind() {
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-mobile-profile-group]");
+    if (button) openGroup(button.dataset.mobileProfileGroup);
   });
   $("#mobile-profile-dialog-close")?.addEventListener("click", () => $("#mobile-profile-dialog")?.close());
   $("#mobile-profile-dialog-apply")?.addEventListener("click", event => {
@@ -131,6 +182,13 @@ function init() {
   if (status) {
     new MutationObserver(renderSummaries).observe(status, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state"] });
   }
+}
+
+function init() {
+  injectSummaryUi();
+  injectDialog();
+  injectTopAction();
+  bind();
   setTimeout(renderSummaries, 0);
 }
 
