@@ -1,9 +1,8 @@
 # Sheet editor DOM ownership audit
 
-This document records the current overlap map for `sheet.html` before runtime refactoring.
-It is intentionally descriptive: no editor behavior is changed by this document or by `scripts/report-sheet-dom-ownership.mjs`.
+This document records the overlap map for `sheet.html` that was captured before runtime refactoring, plus the current disposition of the first refactor candidate.
 
-## Current baseline
+## Baseline before runtime refactoring
 
 - Local scripts loaded by `sheet.html`: 37
 - Literal DOM IDs detected across those scripts: 106
@@ -41,26 +40,33 @@ It is intentionally descriptive: no editor behavior is changed by this document 
 
 These overlaps are not automatically bugs. Some modules read the same state while others own presentation or synchronization.
 
-## First refactor candidate
+## First refactor candidate: completed
 
-The only duplicate literal event ownership currently detected is:
+The initial duplicate event ownership was `#style-skills` / `input` across `sheet-features.js`, `style-skill-fields.js`, and `style-skill-detail-integrity.js`.
 
-- `#style-skills` / `input`
-  - `sheet-features.js`
-  - `style-skill-fields.js`
-  - `style-skill-detail-integrity.js`
+That path has now been consolidated behind the canonical `tnx:style-skills-changed` event:
 
-The three listeners currently have distinct purposes:
+1. `style-skill-fields.js` owns raw `#style-skills` input bridging and the structural MutationObserver required to enhance newly rendered rows.
+2. `style-skill-detail-integrity.js` no longer owns a raw input listener or MutationObserver; it consumes `tnx:style-skills-changed` and keeps the structured detail payload canonical.
+3. `sheet-features.js` no longer owns raw style-skill input handling or a `#style-skills` MutationObserver; combo/counter candidate refresh consumes `tnx:style-skills-changed`.
 
-1. `sheet-features.js` updates combo/counter skill candidates when style skills change.
-2. `style-skill-fields.js` synchronizes the visible structured fields with the hidden canonical description payload.
-3. `style-skill-detail-integrity.js` repairs/canonicalizes structured style-skill detail data.
+Behavioral coverage now protects:
 
-Because all three are independently attached to the same root event, this is the best first candidate for a controlled ownership refactor. It should be migrated one responsibility at a time, with the current listener behavior kept as the compatibility baseline until E2E/regression coverage exists for each responsibility.
+- visible structured detail -> hidden canonical description synchronization;
+- hidden canonical description -> visible structured detail synchronization;
+- style-skill name/level changes -> combo and counter candidate refresh;
+- structural rerenders without row/cell multiplication;
+- separator-row reorder compatibility.
+
+`sheet-features.js` intentionally still observes the combo/counter candidate output roots themselves (`#sheet-combo-skill-options` and `#sheet-counter-skill`). E2E coverage confirms those observers restore style-skill candidates if a downstream renderer replaces those presentation containers. They are therefore compatibility observers, not duplicate ownership of the style-skill source DOM, and should not be removed until the downstream renderers expose an explicit completion event or equivalent contract.
 
 ## Deferred high-overlap areas
 
 `#save-status`, `#save-button`, and `#outfit-list` should not be consolidated yet. They touch save state, image handling, snapshots, layout, and outfit rendering, so their blast radius is larger than the style-skill input path.
+
+## Next refactor boundary
+
+The next safe phase is to move one existing responsibility at a time behind an explicit, idempotent initializer while preserving `sheet.html` script order and output. Do not reduce script count or merge modules until those initialization contracts have browser coverage.
 
 ## Guardrails
 
@@ -70,4 +76,4 @@ Before changing runtime ownership:
 - do not change database persistence, payload format, DOM IDs, or save timing;
 - preserve the style-skill canonical payload prefix `@@TNX_STYLE_DETAIL_V1@@`;
 - add a regression test for each responsibility before removing an existing listener;
-- migrate one listener at a time and run Regression checks + Playwright after each step.
+- migrate one listener or initializer at a time and run Regression checks + Playwright after each step.
