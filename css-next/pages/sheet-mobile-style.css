@@ -5,35 +5,61 @@ body[data-page="sheet-mobile.html"] #mobile-style-summary.mobile-style-summary-l
 }
 body[data-page="sheet-mobile.html"] .mobile-style-summary-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) 42px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) 38px minmax(0, 1.15fr);
   align-items: center;
   gap: 8px;
   min-width: 0;
-  min-height: 48px;
+  min-height: 50px;
   padding: 7px 10px;
   border: 1px solid color-mix(in srgb, var(--color-section-styles) 44%, var(--color-border-muted));
   background: color-mix(in srgb, var(--color-surface) 92%, var(--color-section-styles) 4%);
   color: inherit;
   text-align: left;
 }
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row > * {
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__name,
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__mark,
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine {
   min-width: 0;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__name {
   overflow: hidden;
+  color: var(--color-section-styles);
+  font-size: 12px;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row > strong {
-  color: var(--color-section-styles);
-  font-size: 12px;
-}
 body[data-page="sheet-mobile.html"] .mobile-style-summary-row__mark {
   text-align: center;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
+  white-space: nowrap;
 }
 body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine {
-  font-size: 11px;
+  overflow: hidden;
   text-align: right;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine ruby {
+  display: inline-flex;
+  max-width: 100%;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  line-height: 1.05;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine rt {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 body[data-page="sheet-mobile.html"] .mobile-style-editor-grid {
