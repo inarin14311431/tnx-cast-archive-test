@@ -1,120 +1,23 @@
-body[data-page="sheet-mobile.html"] #mobile-style-summary.mobile-style-summary-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 5px;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) 38px minmax(0, 1.15fr);
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  min-height: 50px;
-  padding: 7px 10px;
-  border: 1px solid color-mix(in srgb, var(--color-section-styles) 44%, var(--color-border-muted));
-  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-section-styles) 4%);
-  color: inherit;
-  text-align: left;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__name,
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__mark,
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine {
-  min-width: 0;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__name {
-  overflow: hidden;
-  color: var(--color-section-styles);
-  font-size: 12px;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__mark {
-  text-align: center;
-  font-size: 17px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine {
-  overflow: hidden;
-  text-align: right;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine ruby {
-  display: inline-flex;
-  max-width: 100%;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  line-height: 1.05;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine strong {
-  max-width: 100%;
-  overflow: hidden;
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine rt {
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--color-muted);
-  font-size: 7px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-body[data-page="sheet-mobile.html"] .mobile-style-editor-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-editor-grid > label {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-  font-size: 12px;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-editor-grid :is(select,input) {
-  width: 100%;
-  min-width: 0;
-  min-height: 44px;
-  padding: 8px 10px;
-  border: 1px solid var(--color-border-muted);
-  background: var(--color-surface);
-  color: inherit;
-  font-size: 16px;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-divine,
-body[data-page="sheet-mobile.html"] .mobile-style-baseline-preview {
-  padding: 10px;
-  border: 1px solid color-mix(in srgb, var(--color-section-styles) 34%, var(--color-border-muted));
-}
-body[data-page="sheet-mobile.html"] .mobile-style-divine {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 3px 10px;
-}
-body[data-page="sheet-mobile.html"] .mobile-style-divine > span { grid-row: 1 / 3; color: var(--color-muted); font-size: 10px; }
-body[data-page="sheet-mobile.html"] .mobile-style-divine > strong { color: var(--color-section-styles); }
-body[data-page="sheet-mobile.html"] .mobile-style-divine > small { font-size: 10px; opacity: .66; }
-body[data-page="sheet-mobile.html"] .mobile-style-baseline-preview h3 {
-  margin: 0 0 8px;
-  color: var(--color-section-styles);
-  font-size: 12px;
-}
-body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 5px;
-}
-body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview > div {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-  padding: 6px 3px;
-  border: 1px solid color-mix(in srgb, var(--color-section-styles) 22%, var(--color-border-muted));
-  text-align: center;
-}
-body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview span { font-size: 10px; }
-body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview strong { font-size: 16px; }
-body[data-page="sheet-mobile.html"] #mobile-style-baseline-preview small { font-size: 9px; color: var(--color-muted); }
+body[data-page="sheet-mobile.html"] #mobile-style-summary.mobile-style-summary-list{display:grid;grid-template-columns:1fr;gap:5px}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:10px;min-width:0;min-height:50px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--color-section-styles) 44%,var(--color-border-muted));background:color-mix(in srgb,var(--color-surface) 92%,var(--color-section-styles) 4%);color:inherit;text-align:left}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__style{display:flex;align-items:center;min-width:0;gap:.4em;overflow:hidden}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__style strong{min-width:0;overflow:hidden;color:var(--color-section-styles);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__style b{flex:0 0 auto;font-size:17px;line-height:1}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine{min-width:0;overflow:hidden;text-align:right}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine ruby{display:inline-flex;max-width:100%;flex-direction:column-reverse;align-items:flex-end;line-height:1.05}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine strong{max-width:100%;overflow:hidden;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine rt{max-width:100%;overflow:hidden;color:var(--color-muted);font-size:7px;text-overflow:ellipsis;white-space:nowrap}
+body[data-page="sheet-mobile.html"] .mobile-style-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body[data-page="sheet-mobile.html"] .mobile-style-editor-main{display:grid;grid-template-columns:1fr;gap:12px;padding:12px;border:1px solid color-mix(in srgb,var(--color-section-styles) 34%,var(--color-border-muted));background:color-mix(in srgb,var(--color-surface) 95%,transparent)}
+body[data-page="sheet-mobile.html"] .mobile-style-editor-main>label{display:grid;gap:5px;font-size:12px}
+body[data-page="sheet-mobile.html"] .mobile-style-editor-main select{width:100%;min-height:46px;padding:8px 10px;border:1px solid var(--color-border-muted);background:var(--color-surface);color:inherit;font-size:16px}
+body[data-page="sheet-mobile.html"] .mobile-style-role{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0;padding:10px;border:1px solid color-mix(in srgb,var(--color-section-styles) 28%,var(--color-border-muted))}
+body[data-page="sheet-mobile.html"] .mobile-style-role legend{padding:0 5px;color:var(--color-section-styles);font-size:10px;font-weight:800;letter-spacing:.08em}
+body[data-page="sheet-mobile.html"] .mobile-style-role label{display:grid;min-height:44px;place-items:center;border:1px solid var(--color-border-muted);font-size:11px;cursor:pointer}
+body[data-page="sheet-mobile.html"] .mobile-style-role input{position:absolute;opacity:0;pointer-events:none}
+body[data-page="sheet-mobile.html"] .mobile-style-role label:has(input:checked){border-color:var(--color-section-styles);background:color-mix(in srgb,var(--color-section-styles) 12%,transparent);font-weight:800}
+body[data-page="sheet-mobile.html"] .mobile-style-divine{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;padding:12px;border:1px solid color-mix(in srgb,var(--color-section-styles) 34%,var(--color-border-muted))}
+body[data-page="sheet-mobile.html"] .mobile-style-divine>span{color:var(--color-muted);font-size:10px}
+body[data-page="sheet-mobile.html"] .mobile-style-divine ruby{display:flex;flex-direction:column-reverse;align-items:flex-start}
+body[data-page="sheet-mobile.html"] .mobile-style-divine strong{color:var(--color-section-styles);font-size:16px}
+body[data-page="sheet-mobile.html"] .mobile-style-divine rt{font-size:9px;color:var(--color-muted)}
