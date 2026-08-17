@@ -1,35 +1,40 @@
-body[data-page="sheet-mobile.html"] #mobile-style-summary.mobile-style-summary-row {
+body[data-page="sheet-mobile.html"] #mobile-style-summary.mobile-style-summary-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: 1fr;
+  gap: 5px;
 }
-body[data-page="sheet-mobile.html"] .mobile-style-summary-cell {
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row {
   display: grid;
+  grid-template-columns: minmax(0, 1.25fr) 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  min-height: 88px;
-  align-content: center;
-  gap: 4px;
-  padding: 8px 5px;
+  min-height: 48px;
+  padding: 7px 10px;
   border: 1px solid color-mix(in srgb, var(--color-section-styles) 44%, var(--color-border-muted));
   background: color-mix(in srgb, var(--color-surface) 92%, var(--color-section-styles) 4%);
   color: inherit;
-  text-align: center;
+  text-align: left;
 }
-body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > span,
-body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > strong,
-body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > small {
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row > * {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > span {
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row > strong {
   color: var(--color-section-styles);
   font-size: 12px;
+}
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__mark {
+  text-align: center;
+  font-size: 16px;
   font-weight: 800;
 }
-body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > strong { font-size: 11px; }
-body[data-page="sheet-mobile.html"] .mobile-style-summary-cell > small { color: var(--color-muted); font-size: 9px; }
+body[data-page="sheet-mobile.html"] .mobile-style-summary-row__divine {
+  font-size: 11px;
+  text-align: right;
+}
 
 body[data-page="sheet-mobile.html"] .mobile-style-editor-grid {
   display: grid;
