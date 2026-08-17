@@ -37,9 +37,13 @@ function ensureStyleSheet() {
   if (document.querySelector('link[data-mobile-profile-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/sheet-mobile-profile.css?v=5";
+  link.href = "./css-next/pages/sheet-mobile-profile.css?v=6";
   link.dataset.mobileProfileStyle = "1";
   document.head.append(link);
+}
+
+function removeSectionTopActions() {
+  document.querySelectorAll(".mobile-section-top").forEach(element => element.remove());
 }
 
 function source(field) {
@@ -251,6 +255,7 @@ function bind() {
 
 function init() {
   ensureStyleSheet();
+  removeSectionTopActions();
   injectSummaryUi();
   injectDialog();
   injectGlobalActions();
