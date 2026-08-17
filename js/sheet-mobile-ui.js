@@ -4,7 +4,9 @@ const $ = selector => document.querySelector(selector);
 function ensureCommonStyles() {
   const styles = [
     ["mobile-theme", "./css-next/pages/sheet-mobile-theme.css?v=1"],
-    ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=1"]
+    ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=1"],
+    ["mobile-profile-current", "./css-next/pages/sheet-mobile-profile.css?v=9"],
+    ["mobile-ability-current", "./css-next/pages/sheet-mobile-ability.css?v=3"]
   ];
   for (const [key, href] of styles) {
     if (document.querySelector(`link[data-${key}-style]`)) continue;
