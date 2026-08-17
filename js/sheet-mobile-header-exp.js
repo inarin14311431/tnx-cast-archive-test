@@ -1,0 +1,22 @@
+import { supabase } from "./supabase-client.js";
+import { requireAuth } from "./auth-state.js?v=4";
+import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
+const ABILITIES=["reason","passion","life","mundane"];
+const STYLE_COST={none:0,normal:10,secret:20,ultimate:50,direction:2};
+const KIND_FROM_LABEL={なし:"none",通常:"normal",秘技:"secret",奥義:"ultimate",演出:"direction"};
+const INITIAL_SKILL_COST=165,CREATION_ALLOWANCE=170;
+const $=selector=>document.querySelector(selector);
+const num=value=>Number(value||0);
+let character=null;
+
+function inject(){if($("#mobile-exp-total"))return;const title=$(".mobile-sheet-header__title");if(!title)return;const row=document.createElement("span");row.className="mobile-header-exp";row.innerHTML=`<span>消費経験点</span><strong id="mobile-exp-total">0</strong>`;title.append(row);}
+function styleRecord(name,attribute=""){if(name==="ウツワ")return UTSUWA_ATTRIBUTES.find(item=>item.name===attribute)||null;return STYLE_DATA.find(item=>item.name===name)||null;}
+function baseline(key,control=false){let total=0;for(let i=1;i<=3;i++){const record=styleRecord(character?.[`style_${i}`]||"",character?.[`style_${i}_attribute`]||"");if(record)total+=num(record[key]?.[control?1:0]);}return total;}
+function steppedCost(base,current,threshold){let total=0;for(let value=base+1;value<=Math.max(base,current);value++)total+=value<=threshold?20:40;return total;}
+function generalSkillCost(){let total=0;document.querySelectorAll('[data-mobile-general-skill]').forEach(row=>{const name=row.querySelector('[data-mobile-general-field="name"]')?.value?.trim()||"";if(!name)return;const level=Math.max(0,num(row.querySelector('[data-mobile-general-field="level"]')?.value));const category=row.closest('.mobile-general-group')?.querySelector('h3')?.textContent||"";const proper=/社会|コネ/.test(category);total+=level*(proper?5:10);});return Math.max(0,total-INITIAL_SKILL_COST);}
+function styleSkillCost(){let total=0;document.querySelectorAll('#mobile-style-skills [data-mobile-style-skill]').forEach(card=>{const level=Math.max(0,num((card.querySelector('.mobile-edit-card__level')?.textContent||'').replace(/[^0-9.-]/g,'')));const label=card.querySelector('.mobile-edit-card__meta span')?.textContent?.trim()||"通常";total+=level*(STYLE_COST[KIND_FROM_LABEL[label]||"normal"]??10);});return total;}
+function outfitCost(){let total=0;document.querySelectorAll('#mobile-outfits [data-mobile-outfit] small').forEach(node=>{const match=node.textContent.match(/常備化\s*(-?\d+(?:\.\d+)?)/);if(match)total+=Math.max(0,num(match[1]));});return total;}
+function syncOpenAbility(){if(!character||!$("#mobile-ability-dialog")?.open)return;const title=$("#mobile-ability-dialog-title")?.textContent||"";const key=title.includes("理性")?"reason":title.includes("感情")?"passion":title.includes("生命")?"life":title.includes("外界")?"mundane":"";if(!key)return;character[`${key}_growth`]=Math.max(0,num(document.querySelector('[data-mobile-ability-input="ability-growth"]')?.value));character[`${key}_control_growth`]=Math.max(0,num(document.querySelector('[data-mobile-ability-input="control-growth"]')?.value));}
+function calculate(){if(!character)return;syncOpenAbility();let ability=0,control=0;for(const key of ABILITIES){const base=baseline(key,false),controlBase=baseline(key,true);ability+=steppedCost(base,base+Math.max(0,num(character[`${key}_growth`])),10);control+=steppedCost(controlBase,controlBase+Math.max(0,num(character[`${key}_control_growth`])),16);}const total=ability+control+generalSkillCost()+styleSkillCost()+outfitCost()-CREATION_ALLOWANCE;const output=$("#mobile-exp-total");if(output)output.textContent=String(total);}
+async function init(){inject();const user=await requireAuth();if(!user)return;const publicId=new URLSearchParams(location.search).get("id");if(!publicId)return;const{data,error}=await supabase.from("characters").select("*").eq("public_id",publicId).eq("owner_id",user.id).maybeSingle();if(error||!data)return;character=data;calculate();window.addEventListener("tnx:mobile-style-patch",event=>{Object.assign(character,event.detail||{});calculate();});document.addEventListener("input",()=>requestAnimationFrame(calculate),true);document.addEventListener("change",()=>requestAnimationFrame(calculate),true);new MutationObserver(()=>requestAnimationFrame(calculate)).observe(document.body,{childList:true,subtree:true});}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
