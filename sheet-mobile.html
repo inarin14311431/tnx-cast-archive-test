@@ -135,42 +135,19 @@
             <label><input id="mobile-style-suit-life" type="checkbox"><span>♥</span></label>
             <label><input id="mobile-style-suit-mundane" type="checkbox"><span>♦</span></label>
           </div>
-          <label>技能<input list="mobile-style-skill-options" data-mobile-style-detail="skill" autocomplete="off"></label>
-          <label>上限<input list="mobile-style-limit-options" data-mobile-style-detail="limit" autocomplete="off"></label>
-          <label>タイミング<input list="mobile-style-timing-options" data-mobile-style-detail="timing" autocomplete="off"></label>
-          <label>対象<input list="mobile-style-target-options" data-mobile-style-detail="target" autocomplete="off"></label>
-          <label>射程<input list="mobile-style-range-options" data-mobile-style-detail="range" autocomplete="off"></label>
-          <label>目標値<input list="mobile-style-difficulty-options" data-mobile-style-detail="difficulty" autocomplete="off"></label>
-          <label>対決<input list="mobile-style-confrontation-options" data-mobile-style-detail="confrontation" autocomplete="off"></label>
+          <label>技能<select data-mobile-style-detail="skill"><option value=""></option><option>なし</option><option>単独</option><option>宣言</option><option>任意</option><option>解説参照</option><option>白兵</option><option>射撃</option><option>白兵,射撃</option><option>心理</option><option>交渉</option><option>知覚</option><option>自我</option><option>回避</option><option>運動</option><option>操縦</option><option>電脳</option><option>製作</option><option>社会</option><option>社会,コネ</option><option>コネ</option><option>芸術</option><option>元力</option><option>隠密</option><option>医療</option><option>圧力</option><option>信用</option></select></label>
+          <label>上限<select data-mobile-style-detail="limit"><option value=""></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>SL</option><option>解説参照</option><option>なし</option><option>―</option></select></label>
+          <label>タイミング<select data-mobile-style-detail="timing"><option value=""></option><option>常時</option><option>常時（選択）</option><option>セットアッププロセス</option><option>イニシアチブプロセス</option><option>ムーブ</option><option>マイナー</option><option>メジャー</option><option>リアクション</option><option>オートアクション</option><option>クリンナッププロセス</option><option>舞台裏判定</option><option>登場判定</option><option>判定の直前</option><option>判定の直後</option><option>ダメージ算出</option><option>ダメージ算出の直前</option><option>ダメージ適用の直前</option><option>ダメージ適用の直後</option><option>神業</option><option>解説参照</option><option>任意</option><option>―</option></select></label>
+          <label>対象<select data-mobile-style-detail="target"><option value=""></option><option>自身</option><option>単体</option><option>単体※</option><option>範囲</option><option>範囲（選択）</option><option>シーン</option><option>シーン（選択）</option><option>チーム</option><option>解説参照</option><option>なし</option><option>―</option></select></label>
+          <label>射程<select data-mobile-style-detail="range"><option value=""></option><option>なし</option><option>至近</option><option>至近※</option><option>近</option><option>中</option><option>遠</option><option>超遠</option><option>武器</option><option>解説参照</option><option>―</option></select></label>
+          <label>目標値<select data-mobile-style-detail="difficulty"><option value=""></option><option>なし</option><option>10</option><option>15</option><option>20</option><option>21</option><option>制御値</option><option>達成値</option><option>登場</option><option>登場目標値</option><option>購入値</option><option>肉体ダメージ</option><option>精神ダメージ</option><option>社会ダメージ</option><option>解説参照</option><option>不可</option><option>―</option></select></label>
+          <label>対決<select data-mobile-style-detail="confrontation"><option value=""></option><option>なし</option><option>＜回避＞</option><option>＜自我＞</option><option>＜知覚＞</option><option>＜隠密＞</option><option>＜交渉＞</option><option>＜信用＞</option><option>＜電脳＞</option><option>＜白兵＞</option><option>＜芸術＞※</option><option>不可</option><option>解説参照</option><option>―</option></select></label>
           <label>参照P<input data-mobile-style-detail="page"></label>
           <label class="mobile-span-2">解説<textarea rows="8" data-mobile-style-detail="description"></textarea></label>
         </div>
       </div>
     </form>
   </dialog>
-
-  <datalist id="mobile-style-skill-options">
-    <option value="なし"><option value="単独"><option value="宣言"><option value="任意"><option value="解説参照">
-    <option value="白兵"><option value="射撃"><option value="白兵,射撃"><option value="心理"><option value="交渉"><option value="知覚"><option value="自我"><option value="回避"><option value="運動"><option value="操縦"><option value="電脳"><option value="製作"><option value="社会"><option value="社会,コネ"><option value="コネ"><option value="芸術"><option value="元力"><option value="隠密"><option value="医療"><option value="圧力"><option value="信用">
-  </datalist>
-  <datalist id="mobile-style-limit-options">
-    <option value="1"><option value="2"><option value="3"><option value="4"><option value="5"><option value="SL"><option value="解説参照"><option value="なし"><option value="―">
-  </datalist>
-  <datalist id="mobile-style-timing-options">
-    <option value="常時"><option value="常時（選択）"><option value="セットアッププロセス"><option value="イニシアチブプロセス"><option value="ムーブ"><option value="マイナー"><option value="メジャー"><option value="リアクション"><option value="オートアクション"><option value="クリンナッププロセス"><option value="舞台裏判定"><option value="登場判定"><option value="判定の直前"><option value="判定の直後"><option value="ダメージ算出"><option value="ダメージ算出の直前"><option value="ダメージ適用の直前"><option value="ダメージ適用の直後"><option value="神業"><option value="解説参照"><option value="任意"><option value="―">
-  </datalist>
-  <datalist id="mobile-style-target-options">
-    <option value="自身"><option value="単体"><option value="単体※"><option value="範囲"><option value="範囲（選択）"><option value="シーン"><option value="シーン（選択）"><option value="チーム"><option value="解説参照"><option value="なし"><option value="―">
-  </datalist>
-  <datalist id="mobile-style-range-options">
-    <option value="なし"><option value="至近"><option value="至近※"><option value="近"><option value="中"><option value="遠"><option value="超遠"><option value="武器"><option value="解説参照"><option value="―">
-  </datalist>
-  <datalist id="mobile-style-difficulty-options">
-    <option value="なし"><option value="10"><option value="15"><option value="20"><option value="21"><option value="制御値"><option value="達成値"><option value="登場"><option value="登場目標値"><option value="購入値"><option value="肉体ダメージ"><option value="精神ダメージ"><option value="社会ダメージ"><option value="解説参照"><option value="不可"><option value="―">
-  </datalist>
-  <datalist id="mobile-style-confrontation-options">
-    <option value="なし"><option value="＜回避＞"><option value="＜自我＞"><option value="＜知覚＞"><option value="＜隠密＞"><option value="＜交渉＞"><option value="＜信用＞"><option value="＜電脳＞"><option value="＜白兵＞"><option value="＜芸術＞※"><option value="不可"><option value="解説参照"><option value="―">
-  </datalist>
 
   <script type="module" src="./js/sheet-mobile.js?v=2"></script>
 </body>
