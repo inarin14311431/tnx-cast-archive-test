@@ -1,7 +1,8 @@
-import "./sheet-mobile-ui.js";
-import "./sheet-mobile-profile.js";
-import "./sheet-mobile-style.js";
-import "./sheet-mobile-outfit.js";
+import "./sheet-mobile-ui.js?v=20260818-1";
+import "./sheet-mobile-profile.js?v=20260818-1";
+import "./sheet-mobile-style.js?v=20260818-1";
+import "./sheet-mobile-outfit.js?v=20260818-1";
+import "./sheet-mobile-style-skill-ui.js?v=20260818-1";
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 const ABILITIES=[["reason","理性","REASON"],["passion","感情","PASSION"],["life","生命","LIFE"],["mundane","外界","MUNDANE"]];
