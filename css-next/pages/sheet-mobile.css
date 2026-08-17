@@ -9,6 +9,7 @@ body[data-page="sheet-mobile.html"] {
 body[data-page="sheet-mobile.html"] * { box-sizing: border-box; }
 body[data-page="sheet-mobile.html"] :is(button, input, select, textarea, a) { font: inherit; }
 body[data-page="sheet-mobile.html"] :is(button, input, select) { min-height: 44px; }
+body[data-page="sheet-mobile.html"] :is(input, select, textarea) { font-size: 16px; }
 body[data-page="sheet-mobile.html"] textarea { min-height: 96px; resize: vertical; }
 
 .mobile-sheet-header {
@@ -338,16 +339,12 @@ body[data-page="sheet-mobile.html"] textarea { min-height: 96px; resize: vertica
 
 @media (max-width: 420px) {
   .mobile-form-grid--two:not(.mobile-style-detail-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .mobile-profile-group .mobile-span-2 { grid-column: 1 / -1; }
+  .mobile-form-grid--two:not(.mobile-style-detail-grid) .mobile-span-2 { grid-column: 1 / -1; }
+  .mobile-form-grid--two:not(.mobile-style-detail-grid) :is(input, select, textarea) { padding-inline: 8px; }
   .mobile-style-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .mobile-style-detail-grid :is(input, select, textarea),
-  .mobile-profile-group :is(input, select, textarea) { padding-inline: 8px; }
+  .mobile-style-detail-grid :is(input, select, textarea) { padding-inline: 8px; }
   .mobile-sheet-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mobile-theme-panel label { grid-template-columns: 1fr; }
   .mobile-general-row { grid-template-columns: minmax(0, 1fr) 40px repeat(4, 34px); gap: 2px; }
   .mobile-general-suit { min-height: 42px; }
-  .mobile-ability-grid { gap: 5px; }
-  .mobile-ability-grid .mobile-readonly-card { padding-inline: 3px; }
-  .mobile-ability-grid .mobile-readonly-card strong { font-size: 11px; }
-  .mobile-ability-grid .mobile-readonly-card small { font-size: 9px; }
 }
