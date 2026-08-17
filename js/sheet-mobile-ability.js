@@ -1,4 +1,5 @@
 import "./sheet-mobile-profile.js";
+import "./sheet-mobile-style.js";
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 
@@ -76,6 +77,13 @@ function bind() {
   });
   ["base", "mod"].forEach(name => {
     $(`[data-mobile-cs-input="${name}"]`)?.addEventListener("input", refreshCsPreview);
+  });
+
+  window.addEventListener("tnx:mobile-style-patch", event => {
+    if (!character || !event.detail) return;
+    Object.assign(character, event.detail);
+    markAbilityDirty();
+    renderSummary();
   });
 
   $("#mobile-save")?.addEventListener("click", interceptSave, true);
@@ -246,7 +254,7 @@ async function interceptSave(event) {
     const status = $("#mobile-save-status");
     if (status) {
       status.dataset.state = "error";
-      status.textContent = `能力値の保存に失敗しました：${error?.message || "不明なエラー"}`;
+      status.textContent = `能力値・スタイルの保存に失敗しました：${error?.message || "不明なエラー"}`;
     }
     const button = $("#mobile-save");
     if (button) {
@@ -270,6 +278,13 @@ function collectAbilityPayload() {
   payload.cs_gear = num(character.cs_gear);
   payload.cs_manual = num(character.cs_manual);
   payload.cs = num(character.cs);
+  for (let i = 1; i <= 3; i++) {
+    payload[`style_${i}`] = character[`style_${i}`] || "";
+    payload[`style_${i}_mark`] = character[`style_${i}_mark`] || "";
+    payload[`style_${i}_attribute`] = character[`style_${i}_attribute`] || "";
+    payload[`divine_${i}`] = character[`divine_${i}`] || "";
+    payload[`divine_${i}_yomi`] = character[`divine_${i}_yomi`] || "";
+  }
   return payload;
 }
 
