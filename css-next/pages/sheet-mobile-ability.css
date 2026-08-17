@@ -1,15 +1,13 @@
 body[data-page="sheet-mobile.html"] .mobile-ability-grid{gap:8px}
-body[data-page="sheet-mobile.html"] .mobile-ability-matrix{display:grid;grid-template-columns:58px repeat(4,minmax(0,1fr));gap:1px;overflow:hidden;border:1px solid color-mix(in srgb,var(--color-section-ability) 45%,var(--color-border-muted));background:color-mix(in srgb,var(--color-section-ability) 28%,var(--color-border-muted))}
-body[data-page="sheet-mobile.html"] .mobile-ability-matrix>*{min-width:0;min-height:38px;border:0;background:var(--color-surface);color:inherit}
+body[data-page="sheet-mobile.html"] .mobile-ability-matrix{display:grid;grid-template-columns:52px repeat(4,minmax(0,1fr));gap:6px;padding:7px;border:1px solid color-mix(in srgb,var(--color-section-ability) 34%,var(--color-border-muted));background:color-mix(in srgb,var(--color-surface) 96%,var(--color-section-ability) 3%);border-radius:8px}
+body[data-page="sheet-mobile.html"] .mobile-ability-matrix>*{min-width:0;min-height:32px;border:0;background:transparent;color:inherit}
 body[data-page="sheet-mobile.html"] .mobile-ability-matrix__corner{display:block}
-body[data-page="sheet-mobile.html"] .mobile-ability-matrix__head,
-body[data-page="sheet-mobile.html"] .mobile-ability-matrix__value{display:grid;place-items:center;padding:5px 2px;text-align:center;cursor:pointer}
-body[data-page="sheet-mobile.html"] .mobile-ability-matrix__head{color:var(--color-section-ability);font-size:11px;font-weight:800}
-body[data-page="sheet-mobile.html"] .mobile-ability-matrix__value{font:800 1.05rem/1 var(--font-data,inherit)}
-body[data-page="sheet-mobile.html"] .mobile-ability-matrix__rowlabel{display:grid;place-items:center start;padding:5px 7px;color:var(--color-section-ability);font-size:10px;font-weight:800;white-space:nowrap}
-body[data-page="sheet-mobile.html"] .mobile-cs-cell{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;width:100%;min-height:50px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--color-section-ability) 45%,var(--color-border-muted));background:color-mix(in srgb,var(--color-surface) 92%,var(--color-section-ability) 4%);color:inherit;text-align:left}
-body[data-page="sheet-mobile.html"] .mobile-cs-cell>span{color:var(--color-section-ability);font-weight:800}
-body[data-page="sheet-mobile.html"] .mobile-cs-cell small{display:block;font-size:8px;letter-spacing:.08em;opacity:.62}
+body[data-page="sheet-mobile.html"] .mobile-ability-matrix__head{display:grid;place-items:end center;padding:2px;color:var(--color-section-ability);font-size:10px;font-weight:800}
+body[data-page="sheet-mobile.html"] .mobile-ability-matrix__value{display:grid;place-items:center;min-height:40px;padding:5px 2px;border-radius:7px;background:color-mix(in srgb,var(--color-section-ability) 7%,var(--color-surface));font:800 1rem/1 var(--font-data,inherit);cursor:pointer}
+body[data-page="sheet-mobile.html"] .mobile-ability-matrix__rowlabel{display:grid;place-items:center start;padding:3px 2px;color:var(--color-muted);font-size:9px;font-weight:800;white-space:nowrap}
+body[data-page="sheet-mobile.html"] .mobile-cs-cell{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-height:46px;padding:7px 10px;border:1px solid color-mix(in srgb,var(--color-section-ability) 34%,var(--color-border-muted));border-radius:8px;background:color-mix(in srgb,var(--color-surface) 95%,var(--color-section-ability) 4%);color:inherit;text-align:left}
+body[data-page="sheet-mobile.html"] .mobile-cs-cell>span{display:flex;align-items:baseline;gap:6px;color:var(--color-section-ability);font-weight:800}
+body[data-page="sheet-mobile.html"] .mobile-cs-cell small{font-size:8px;letter-spacing:.08em;opacity:.62}
 body[data-page="sheet-mobile.html"] .mobile-cs-cell strong{font:800 1.3rem/1 var(--font-data,inherit)}
 body[data-page="sheet-mobile.html"] .mobile-cs-cell em{font-size:10px;font-style:normal;opacity:.55}
 
@@ -25,10 +23,8 @@ body[data-page="sheet-mobile.html"] .mobile-ability-preview strong{font:800 1.35
 body[data-page="sheet-mobile.html"] .mobile-cs-editor{max-width:420px;margin:0 auto}
 
 @media(max-width:390px){
-  body[data-page="sheet-mobile.html"] .mobile-ability-matrix{grid-template-columns:50px repeat(4,minmax(0,1fr))}
-  body[data-page="sheet-mobile.html"] .mobile-ability-matrix__head{font-size:10px}
-  body[data-page="sheet-mobile.html"] .mobile-ability-matrix__value{font-size:.95rem}
-  body[data-page="sheet-mobile.html"] .mobile-ability-matrix__rowlabel{padding-inline:5px;font-size:9px}
-  body[data-page="sheet-mobile.html"] .mobile-cs-cell{grid-template-columns:minmax(0,1fr) auto}
-  body[data-page="sheet-mobile.html"] .mobile-cs-cell em{display:none}
+  body[data-page="sheet-mobile.html"] .mobile-ability-matrix{grid-template-columns:46px repeat(4,minmax(0,1fr));gap:4px;padding:6px}
+  body[data-page="sheet-mobile.html"] .mobile-ability-matrix__head{font-size:9px}
+  body[data-page="sheet-mobile.html"] .mobile-ability-matrix__value{font-size:.92rem}
+  body[data-page="sheet-mobile.html"] .mobile-ability-matrix__rowlabel{font-size:8px}
 }
