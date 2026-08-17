@@ -1,18 +1,12 @@
 const GROUPS = {
   identity: {
     title: "基本情報",
-    wide: false,
+    wide: true,
     fields: [
-      ["character_name", "キャスト名", "text"], ["character_kana", "名前ルビ", "text"],
-      ["handle", "ハンドル", "text"], ["handle_kana", "ハンドルルビ", "text"]
-    ]
-  },
-  management: {
-    title: "管理情報",
-    wide: false,
-    fields: [
+      ["handle", "ハンドル", "text"], ["character_name", "キャスト名", "text"],
+      ["handle_kana", "ハンドルルビ", "text"], ["character_kana", "キャスト名ルビ", "text"],
       ["player_name", "プレイヤー名", "text"], ["affiliation", "所属", "text"],
-      ["citizen_rank", "市民ランク", "text"], ["visibility", "公開状態", "visibility"]
+      ["citizen_rank", "市民ランク", "text"]
     ]
   },
   personal: {
@@ -23,49 +17,79 @@ const GROUPS = {
       ["eyes", "瞳", "text"], ["hair", "髪", "text"], ["skin", "肌", "text"]
     ]
   },
-  lifepath: {
-    title: "ライフパス",
-    wide: false,
-    fields: [
-      ["life_path_origin", "出自", "text"], ["life_path_experience", "経験", "text"], ["life_path_encounter", "邂逅", "text"]
-    ]
-  },
-  summary: { title: "概要", wide: true, fields: [["summary", "概要", "textarea-short"]] },
-  profile: { title: "プロフィール", wide: true, fields: [["profile", "プロフィール", "textarea-long"]] }
+  lifepath: { title: "ライフパス", wide: true, fields: [] },
+  summary: { title: "概要", wide: false, fields: [["summary", "概要", "textarea-short"]] },
+  profile: { title: "プロフィール", wide: false, fields: [["profile", "プロフィール", "textarea-long"]] }
 };
+
+const LIFE_PATHS = [
+  ["life_path_origin", "出自"],
+  ["life_path_experience", "経験"],
+  ["life_path_encounter", "邂逅"]
+];
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+const quote = value => value ? `“${value}”` : "—";
 let activeGroup = null;
+
+function ensureStyleSheet() {
+  if (document.querySelector('link[data-mobile-profile-style]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "./css-next/pages/sheet-mobile-profile.css?v=3";
+  link.dataset.mobileProfileStyle = "1";
+  document.head.append(link);
+}
 
 function source(field) {
   return document.querySelector(`[data-mobile-character-field="${field}"]`);
 }
 
+function splitLifePath(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^(.*?)[（(]([^（）()]*)[）)]\s*$/);
+  return match ? { name: match[1].trim(), skill: match[2].trim() } : { name: text, skill: "" };
+}
+
+function joinLifePath(name, skill) {
+  const left = String(name || "").trim();
+  const right = String(skill || "").trim();
+  return right ? `${left}（${right}）` : left;
+}
+
+function basicSummaryHtml() {
+  const handle = source("handle")?.value || "";
+  const name = source("character_name")?.value || "名称未設定";
+  const handleKana = source("handle_kana")?.value || "";
+  const nameKana = source("character_kana")?.value || "—";
+  const player = source("player_name")?.value || "—";
+  const affiliation = source("affiliation")?.value || "—";
+  const rank = source("citizen_rank")?.value || "—";
+  return `<div class="mobile-basic-summary-grid"><span>${esc(quote(handle))}</span><span>${esc(name)}</span><span>${esc(quote(handleKana))}</span><span>${esc(nameKana)}</span></div><div class="mobile-basic-summary-meta">PL ${esc(player)} / ${esc(affiliation)} / ${esc(rank)}</div>`;
+}
+
+function lifePathSummaryHtml() {
+  return `<div class="mobile-lifepath-summary">${LIFE_PATHS.map(([field, label]) => {
+    const detail = splitLifePath(source(field)?.value);
+    return `<div class="mobile-lifepath-row"><b>${label}</b><span>${esc(detail.name || "—")}</span><span>${esc(detail.skill || "取得技能なし")}</span></div>`;
+  }).join("")}</div>`;
+}
+
 function summaryText(groupKey) {
-  const group = GROUPS[groupKey];
-  if (!group) return "未設定";
-  if (groupKey === "identity") {
-    const name = source("character_name")?.value || "名称未設定";
-    const handle = source("handle")?.value || "NO HANDLE";
-    return `${name} / ${handle}`;
-  }
-  if (groupKey === "management") {
-    const player = source("player_name")?.value || "—";
-    const affiliation = source("affiliation")?.value || "—";
-    return `${player} / ${affiliation}`;
-  }
   if (groupKey === "personal") {
-    const age = source("age")?.value || "—";
-    const gender = source("gender")?.value || "—";
-    const height = source("height")?.value || "—";
-    return `${age} / ${gender} / ${height}`;
+    return ["age", "gender", "height", "weight", "eyes", "hair", "skin"].map(field => source(field)?.value || "—").join(" / ");
   }
-  if (groupKey === "lifepath") {
-    return group.fields.map(([field]) => source(field)?.value || "—").join(" / ");
-  }
-  const value = source(group.fields[0][0])?.value?.trim() || "未入力";
+  const group = GROUPS[groupKey];
+  const field = group?.fields?.[0]?.[0];
+  const value = field ? source(field)?.value?.trim() || "未入力" : "";
   return value.replace(/\s+/g, " ").slice(0, 56) + (value.length > 56 ? "…" : "");
+}
+
+function cardInnerHtml(key, group) {
+  if (key === "identity") return `<strong>${group.title}</strong>${basicSummaryHtml()}`;
+  if (key === "lifepath") return `<strong>${group.title}</strong>${lifePathSummaryHtml()}`;
+  return `<strong>${group.title}</strong><span data-mobile-profile-summary>${esc(summaryText(key))}</span>`;
 }
 
 function injectSummaryUi() {
@@ -77,8 +101,7 @@ function injectSummaryUi() {
   grid.className = "mobile-profile-summary-grid";
   grid.innerHTML = Object.entries(GROUPS).map(([key, group]) => `
     <button type="button" class="mobile-profile-summary-card${group.wide ? " mobile-profile-summary-card--wide" : ""}" data-mobile-profile-group="${key}">
-      <strong>${group.title}</strong>
-      <span data-mobile-profile-summary>${summaryText(key)}</span>
+      ${cardInnerHtml(key, group)}
     </button>`).join("");
   form.before(grid);
 }
@@ -95,43 +118,66 @@ function injectDialog() {
         <strong id="mobile-profile-dialog-title">基本情報編集</strong>
         <button id="mobile-profile-dialog-apply" type="submit">反映</button>
       </header>
-      <div class="mobile-editor-dialog__body">
-        <div id="mobile-profile-dialog-fields" class="mobile-form-grid mobile-form-grid--two"></div>
-      </div>
+      <div class="mobile-editor-dialog__body"><div id="mobile-profile-dialog-fields" class="mobile-form-grid mobile-form-grid--two"></div></div>
     </form>`;
   document.body.append(dialog);
 }
 
-function injectTopAction() {
+function injectGlobalActions() {
   const actions = $(".mobile-sheet-actions");
-  if (!actions || actions.querySelector("[data-mobile-fixed-top]")) return;
-  const top = document.createElement("a");
-  top.href = "#mobile-sheet-top";
-  top.dataset.mobileFixedTop = "1";
-  top.textContent = "↑ TOP";
-  top.setAttribute("aria-label", "ページ上部へ戻る");
-  actions.prepend(top);
-  actions.classList.add("mobile-sheet-actions--three");
+  if (!actions) return;
+
+  if (!actions.querySelector("[data-mobile-fixed-top]")) {
+    const top = document.createElement("a");
+    top.href = "#mobile-sheet-top";
+    top.className = "mobile-global-top";
+    top.dataset.mobileFixedTop = "1";
+    top.textContent = "↑ TOP";
+    top.setAttribute("aria-label", "ページ上部へ戻る");
+    actions.prepend(top);
+  }
+
+  if (!$("#mobile-global-visibility")) {
+    const wrap = document.createElement("label");
+    wrap.className = "mobile-global-visibility";
+    wrap.innerHTML = `<span>公開状態</span><select id="mobile-global-visibility" aria-label="公開状態"><option value="public">公開</option><option value="private">非公開</option></select>`;
+    const save = $("#mobile-save");
+    actions.insertBefore(wrap, save || null);
+  }
+}
+
+function syncGlobalVisibility() {
+  const original = source("visibility");
+  const global = $("#mobile-global-visibility");
+  if (original && global && document.activeElement !== global) global.value = original.value === "public" ? "public" : "private";
 }
 
 function renderSummaries() {
-  document.querySelectorAll("[data-mobile-profile-group]").forEach(button => {
-    const key = button.dataset.mobileProfileGroup;
-    const summary = button.querySelector("[data-mobile-profile-summary]");
+  const identity = document.querySelector('[data-mobile-profile-group="identity"]');
+  if (identity) identity.innerHTML = cardInnerHtml("identity", GROUPS.identity);
+  const lifepath = document.querySelector('[data-mobile-profile-group="lifepath"]');
+  if (lifepath) lifepath.innerHTML = cardInnerHtml("lifepath", GROUPS.lifepath);
+  ["personal", "summary", "profile"].forEach(key => {
+    const summary = document.querySelector(`[data-mobile-profile-group="${key}"] [data-mobile-profile-summary]`);
     if (summary) summary.textContent = summaryText(key);
   });
+  syncGlobalVisibility();
 }
 
 function buildControl(field, label, type) {
   const current = source(field)?.value || "";
-  if (type === "visibility") {
-    return `<label>${label}<select data-mobile-profile-modal-field="${field}"><option value="public" ${current === "public" ? "selected" : ""}>公開 / PUBLIC</option><option value="private" ${current !== "public" ? "selected" : ""}>非公開 / PRIVATE</option></select></label>`;
-  }
   if (type.startsWith("textarea")) {
     const rows = type === "textarea-long" ? 12 : 5;
     return `<label class="mobile-span-2">${label}<textarea rows="${rows}" data-mobile-profile-modal-field="${field}">${esc(current)}</textarea></label>`;
   }
   return `<label>${label}<input data-mobile-profile-modal-field="${field}" value="${esc(current)}"></label>`;
+}
+
+function buildLifePathEditor() {
+  return LIFE_PATHS.map(([field, label]) => {
+    const detail = splitLifePath(source(field)?.value);
+    return `<section class="mobile-lifepath-editor" data-mobile-lifepath-editor="${field}"><h3>${label}</h3><label>${label}<input data-mobile-lifepath-name value="${esc(detail.name)}"></label><label>取得技能<input data-mobile-lifepath-skill value="${esc(detail.skill)}"></label></section>`;
+  }).join("");
 }
 
 function openGroup(key) {
@@ -141,19 +187,35 @@ function openGroup(key) {
   if (!group || !dialog || !body) return;
   activeGroup = key;
   $("#mobile-profile-dialog-title").textContent = group.title;
-  body.innerHTML = group.fields.map(args => buildControl(...args)).join("");
+  body.innerHTML = key === "lifepath" ? buildLifePathEditor() : group.fields.map(args => buildControl(...args)).join("");
   dialog.showModal();
+}
+
+function applyLifePath() {
+  let changed = false;
+  document.querySelectorAll("[data-mobile-lifepath-editor]").forEach(editor => {
+    const original = source(editor.dataset.mobileLifepathEditor);
+    if (!original) return;
+    const next = joinLifePath(editor.querySelector("[data-mobile-lifepath-name]")?.value, editor.querySelector("[data-mobile-lifepath-skill]")?.value);
+    if (original.value !== next) {
+      original.value = next;
+      changed = true;
+    }
+  });
+  return changed;
 }
 
 function applyGroup() {
   if (!activeGroup) return;
-  let changed = false;
-  document.querySelectorAll("[data-mobile-profile-modal-field]").forEach(control => {
-    const original = source(control.dataset.mobileProfileModalField);
-    if (!original || original.value === control.value) return;
-    original.value = control.value;
-    changed = true;
-  });
+  let changed = activeGroup === "lifepath" ? applyLifePath() : false;
+  if (activeGroup !== "lifepath") {
+    document.querySelectorAll("[data-mobile-profile-modal-field]").forEach(control => {
+      const original = source(control.dataset.mobileProfileModalField);
+      if (!original || original.value === control.value) return;
+      original.value = control.value;
+      changed = true;
+    });
+  }
   if (changed) {
     const form = $("#mobile-profile-form");
     form?.dispatchEvent(new Event("input", { bubbles: true }));
@@ -169,25 +231,26 @@ function bind() {
     if (button) openGroup(button.dataset.mobileProfileGroup);
   });
   $("#mobile-profile-dialog-close")?.addEventListener("click", () => $("#mobile-profile-dialog")?.close());
-  $("#mobile-profile-dialog-apply")?.addEventListener("click", event => {
-    event.preventDefault();
-    applyGroup();
-  });
-  $("#mobile-profile-dialog")?.addEventListener("cancel", event => {
-    event.preventDefault();
-    $("#mobile-profile-dialog")?.close();
+  $("#mobile-profile-dialog-apply")?.addEventListener("click", event => { event.preventDefault(); applyGroup(); });
+  $("#mobile-profile-dialog")?.addEventListener("cancel", event => { event.preventDefault(); $("#mobile-profile-dialog")?.close(); });
+
+  $("#mobile-global-visibility")?.addEventListener("change", event => {
+    const original = source("visibility");
+    if (!original || original.value === event.target.value) return;
+    original.value = event.target.value;
+    const form = $("#mobile-profile-form");
+    form?.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
   const status = $("#mobile-save-status");
-  if (status) {
-    new MutationObserver(renderSummaries).observe(status, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state"] });
-  }
+  if (status) new MutationObserver(renderSummaries).observe(status, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state"] });
 }
 
 function init() {
+  ensureStyleSheet();
   injectSummaryUi();
   injectDialog();
-  injectTopAction();
+  injectGlobalActions();
   bind();
   setTimeout(renderSummaries, 0);
 }
