@@ -28,11 +28,15 @@ function install() {
 }
 
 function init() {
-  if (install()) return;
   const status = $("#mobile-save-status");
   if (!status) return;
+  const tryAfterBaseBinding = () => {
+    if (status.textContent?.trim() === "初期化中…") return false;
+    return install();
+  };
+  if (tryAfterBaseBinding()) return;
   const observer = new MutationObserver(() => {
-    if (install()) observer.disconnect();
+    if (tryAfterBaseBinding()) observer.disconnect();
   });
   observer.observe(status, { childList: true, subtree: true, attributes: true });
 }
