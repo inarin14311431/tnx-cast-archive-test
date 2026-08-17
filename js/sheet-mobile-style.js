@@ -34,7 +34,7 @@ function ensureStyleSheet() {
   if (document.querySelector('link[data-mobile-style-editor-style]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/sheet-mobile-style.css?v=1";
+  link.href = "./css-next/pages/sheet-mobile-style.css?v=2";
   link.dataset.mobileStyleEditorStyle = "1";
   document.head.append(link);
 }
@@ -111,13 +111,14 @@ function baselineFor(source) {
 function renderSummary() {
   const root = $("#mobile-style-summary");
   if (!root || !character) return;
-  root.classList.add("mobile-style-summary-row");
+  root.classList.add("mobile-style-summary-list");
   root.innerHTML = [1,2,3].map(index => {
     const name = character[`style_${index}`] || "未設定";
     const mark = character[`style_${index}_mark`] || "";
     const divine = styleDefinition(name)?.divine || character[`divine_${index}`] || "—";
-    const attribute = name === "ウツワ" && character[`style_${index}_attribute`] ? `<small>${esc(character[`style_${index}_attribute`])}</small>` : "";
-    return `<button type="button" class="mobile-style-summary-cell" data-mobile-style-slot="${index}"><span>${esc(mark)}${esc(name)}</span>${attribute}<strong>${esc(divine)}</strong></button>`;
+    return `<button type="button" class="mobile-style-summary-row" data-mobile-style-slot="${index}">
+      <strong>${esc(name)}</strong><span class="mobile-style-summary-row__mark">${esc(mark)}</span><span class="mobile-style-summary-row__divine">${esc(divine)}</span>
+    </button>`;
   }).join("");
 }
 
@@ -183,18 +184,17 @@ function applyDialog() {
 }
 
 function adjustBaseline(key, oldBaseline, nextBaseline) {
-  const baseField = key.endsWith("_control") ? `${key}_base` : `${key}_base`;
-  const valueField = key.endsWith("_control") ? key.replace(/_control$/, "_control") : `${key}_value`;
-  const growthField = key.endsWith("_control") ? `${key}_growth` : `${key}_growth`;
-  const gearField = key.endsWith("_control") ? `${key}_gear` : `${key}_gear`;
-  const manualField = key.endsWith("_control") ? `${key}_manual` : `${key}_manual`;
+  const baseField = `${key}_base`;
+  const valueField = key.endsWith("_control") ? key : `${key}_value`;
+  const growthField = `${key}_growth`;
+  const gearField = `${key}_gear`;
+  const manualField = `${key}_manual`;
   const currentBase = num(character[baseField] ?? (key.endsWith("_control") ? character[key] : character[`${key}_value`]));
   if (currentBase === num(oldBaseline) || currentBase === 0) character[baseField] = num(nextBaseline);
   const base = num(character[baseField]);
   character[growthField] = Math.max(0, base - num(nextBaseline));
   const final = base + num(character[gearField]) + num(character[manualField]);
-  if (key.endsWith("_control")) character[valueField] = final;
-  else character[valueField] = final;
+  character[valueField] = final;
 }
 
 function collectPatch() {
