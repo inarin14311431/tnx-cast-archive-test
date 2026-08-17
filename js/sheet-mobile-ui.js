@@ -1,5 +1,20 @@
-import "./sheet-mobile-style-skill-ui.js";
+import "./sheet-mobile-style-skill-ui.js?v=20260818-2";
 const $ = selector => document.querySelector(selector);
+
+function ensureCommonStyles() {
+  const styles = [
+    ["mobile-theme", "./css-next/pages/sheet-mobile-theme.css?v=1"],
+    ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=1"]
+  ];
+  for (const [key, href] of styles) {
+    if (document.querySelector(`link[data-${key}-style]`)) continue;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.setAttribute(`data-${key}-style`, "1");
+    document.head.append(link);
+  }
+}
 
 function removeObsoleteControls() {
   document.querySelectorAll(".mobile-section-top").forEach(node => node.remove());
@@ -21,6 +36,7 @@ function addEditNotice() {
 }
 
 function init() {
+  ensureCommonStyles();
   removeObsoleteControls();
   addEditNotice();
 }
