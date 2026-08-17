@@ -3,13 +3,13 @@
 <head>
   <script src="./js/css-next-theme.js"></script>
   <link rel="stylesheet" href="./css-next/index.css?v=43" data-css-system="next">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile.css?v=1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile.css?v=2">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
   <title>モバイル編集 // N◎VA ARCHIVE</title>
 </head>
-<body data-page="sheet-mobile.html">
+<body id="mobile-sheet-top" data-page="sheet-mobile.html">
   <div class="background-grid"></div><div class="scanlines"></div>
 
   <header class="mobile-sheet-header">
@@ -25,6 +25,10 @@
       <p id="mobile-character-handle" class="mobile-sheet-identity__handle">NO HANDLE</p>
       <h1 id="mobile-character-name">CAST DATA</h1>
       <div id="mobile-character-meta" class="mobile-sheet-identity__meta"><span>SCANNING...</span></div>
+    </section>
+
+    <section class="mobile-theme-panel" aria-label="表示テーマ">
+      <label><span>表示テーマ <small>COLOR THEME</small></span><select id="mobile-theme-select" aria-label="表示テーマ"></select></label>
     </section>
 
     <nav class="mobile-sheet-nav" aria-label="編集セクション">
@@ -60,6 +64,7 @@
           <label class="mobile-span-2">プロフィール<textarea rows="10" data-mobile-character-field="profile"></textarea></label>
         </form>
       </div>
+      <a class="mobile-section-top" href="#mobile-sheet-top">↑ TOP</a>
     </section>
 
     <section class="mobile-sheet-section">
@@ -68,6 +73,7 @@
         <div id="mobile-style-summary" class="mobile-card-list"></div>
         <p class="mobile-sheet-section__note">試作段階では参照のみ。スタイル変更と能力値再計算はPC版に残しています。</p>
       </div>
+      <a class="mobile-section-top" href="#mobile-sheet-top">↑ TOP</a>
     </section>
 
     <section class="mobile-sheet-section">
@@ -75,22 +81,25 @@
       <div class="mobile-sheet-section__body">
         <div id="mobile-ability-summary" class="mobile-card-list"></div>
       </div>
+      <a class="mobile-section-top" href="#mobile-sheet-top">↑ TOP</a>
     </section>
 
     <section id="mobile-general" class="mobile-sheet-section">
-      <header><h2>04 一般技能・社会・コネ</h2><small>NEXT PHASE</small></header>
+      <header><h2>04 一般技能・社会・コネ</h2><small>DIRECT EDIT</small></header>
       <div class="mobile-sheet-section__body">
-        <div id="mobile-general-skills" class="mobile-card-list"></div>
-        <p class="mobile-sheet-section__note">この試作では一覧確認のみ。スタイル技能と同じ「タップ→全画面編集」方式へ拡張できます。</p>
+        <div id="mobile-general-skills" class="mobile-general-editor"></div>
+        <p class="mobile-sheet-section__note">名称・LV・スートを一覧のまま直接編集します。一般技能／社会／コネを分類ごとに表示します。</p>
       </div>
+      <a class="mobile-section-top" href="#mobile-sheet-top">↑ TOP</a>
     </section>
 
     <section id="mobile-style-skills-section" class="mobile-sheet-section">
       <header><h2>05 スタイル技能</h2><small>TAP TO EDIT</small></header>
       <div class="mobile-sheet-section__body">
         <div id="mobile-style-skills" class="mobile-card-list"></div>
-        <p class="mobile-sheet-section__note">技能をタップすると、その1件だけを全画面ダイアログで編集します。PC版の横長テーブルには触れません。</p>
+        <p class="mobile-sheet-section__note">技能をタップすると、その1件だけを全画面ダイアログで編集します。LVは取得スート数を下回らないようリアルタイム連動します。</p>
       </div>
+      <a class="mobile-section-top" href="#mobile-sheet-top">↑ TOP</a>
     </section>
 
     <section id="mobile-outfits-section" class="mobile-sheet-section">
@@ -99,6 +108,7 @@
         <div id="mobile-outfits" class="mobile-card-list"></div>
         <p class="mobile-sheet-section__note">この試作では一覧確認のみ。OFC固有項目を保持したまま編集する設計を次段階で追加します。</p>
       </div>
+      <a class="mobile-section-top" href="#mobile-sheet-top">↑ TOP</a>
     </section>
   </main>
 
@@ -139,6 +149,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="./js/sheet-mobile.js?v=1"></script>
+  <script type="module" src="./js/sheet-mobile.js?v=2"></script>
 </body>
 </html>
