@@ -2,18 +2,22 @@ import "./sheet-mobile-style-skill-ui.js?v=20260818-2";
 import "./sheet-mobile-skill-rules.js?v=20260818-1";
 import "./sheet-mobile-summary-text.js?v=20260818-1";
 import "./sheet-mobile-header-exp.js?v=20260818-1";
-import "./sheet-mobile-additions.js?v=20260818-1";
+import "./sheet-mobile-additions.js?v=20260818-2";
 const $ = selector => document.querySelector(selector);
 
 function ensureCommonStyles() {
   const styles = [
     ["mobile-theme", "./css-next/pages/sheet-mobile-theme.css?v=1"],
-    ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=2"],
+    ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=3"],
     ["mobile-profile-current", "./css-next/pages/sheet-mobile-profile.css?v=10"],
     ["mobile-ability-current", "./css-next/pages/sheet-mobile-ability.css?v=4"]
   ];
   for (const [key, href] of styles) {
-    if (document.querySelector(`link[data-${key}-style]`)) continue;
+    const current = document.querySelector(`link[data-${key}-style]`);
+    if (current) {
+      if (!current.getAttribute("href")?.endsWith(href.replace("./", "")) && current.getAttribute("href") !== href) current.href = href;
+      continue;
+    }
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = href;
