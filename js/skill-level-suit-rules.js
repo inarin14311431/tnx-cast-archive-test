@@ -91,16 +91,20 @@
     });
   }
 
-  function initialize(){
+  function initializeSkillLevelSuitRules(){
     const roots=[...document.querySelectorAll(ROOT_SELECTOR)];
     if(!roots.length){
-      setTimeout(initialize,100);
+      setTimeout(initializeSkillLevelSuitRules,100);
       return;
     }
-    roots.forEach(root=>new MutationObserver(queue).observe(root,{childList:true,subtree:true}));
+    roots.forEach(root=>{
+      if(root.dataset.levelSuitRulesObserver==="1")return;
+      root.dataset.levelSuitRulesObserver="1";
+      new MutationObserver(queue).observe(root,{childList:true,subtree:true});
+    });
     queue();
   }
 
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initialize,{once:true});
-  else initialize();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initializeSkillLevelSuitRules,{once:true});
+  else initializeSkillLevelSuitRules();
 })();
