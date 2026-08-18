@@ -2,7 +2,8 @@ import "./sheet-mobile-style-skill-ui.js?v=20260818-2";
 import "./sheet-mobile-skill-rules.js?v=20260818-1";
 import "./sheet-mobile-summary-text.js?v=20260818-1";
 import "./sheet-mobile-header-exp.js?v=20260818-1";
-import "./sheet-mobile-additions.js?v=20260818-2";
+import "./sheet-mobile-crud.js?v=20260818-1";
+import "./sheet-mobile-combos.js?v=20260818-1";
 const $ = selector => document.querySelector(selector);
 
 function ensureCommonStyles() {
@@ -10,7 +11,8 @@ function ensureCommonStyles() {
     ["mobile-theme", "./css-next/pages/sheet-mobile-theme.css?v=1"],
     ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=3"],
     ["mobile-profile-current", "./css-next/pages/sheet-mobile-profile.css?v=10"],
-    ["mobile-ability-current", "./css-next/pages/sheet-mobile-ability.css?v=4"]
+    ["mobile-ability-current", "./css-next/pages/sheet-mobile-ability.css?v=4"],
+    ["mobile-crud", "./css-next/pages/sheet-mobile-crud.css?v=1"]
   ];
   for (const [key, href] of styles) {
     const current = document.querySelector(`link[data-${key}-style]`);
