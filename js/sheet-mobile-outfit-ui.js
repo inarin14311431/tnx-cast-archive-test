@@ -52,13 +52,11 @@ export function renderOutfitCards({ root, outfits, deletedIds, dirtyIds }) {
   }).join("") : '<p class="mobile-sheet-section__note">登録なし</p>';
 }
 
-function datalist(id, values) {
-  const items = [...new Set((values || []).map(value => String(value ?? "")).filter(Boolean))];
-  return `<datalist id="${id}">${items.map(value => `<option value="${esc(value)}"></option>`).join("")}</datalist>`;
-}
-
-function editableChoice({ label, value, listId, values, attrs = "" }) {
-  return `<label>${label}<input ${attrs} list="${listId}" value="${esc(value ?? "")}">${datalist(listId, values)}</label>`;
+function optionList(values, current = "", { blankLabel = "選択" } = {}) {
+  const options = [...values].map(value => String(value ?? ""));
+  const currentValue = String(current ?? "");
+  if (currentValue && !options.includes(currentValue)) options.push(currentValue);
+  return options.map(value => `<option value="${esc(value)}" ${value === currentValue ? "selected" : ""}>${value ? esc(value) : blankLabel}</option>`).join("");
 }
 
 const detailValue = (item, field) => item.ofc_details?.[field] ?? "";
@@ -87,13 +85,7 @@ function commonOfcFields(item) {
 
 function concealFields(item) {
   parseConcealment(item);
-  return `<label>隠匿値<input data-outfit-transient="conceal-value" value="${esc(item._concealValue || "")}"></label>${editableChoice({
-    label: "隠匿修正",
-    value: item._concealMod || "",
-    listId: "mobile-outfit-conceal-mod-options",
-    values: CONCEALMENT_PENALTY_OPTIONS,
-    attrs: 'data-outfit-transient="conceal-mod"'
-  })}`;
+  return `<label>隠匿値<input data-outfit-transient="conceal-value" value="${esc(item._concealValue || "")}"></label><label>隠匿修正<select data-outfit-transient="conceal-mod">${optionList(CONCEALMENT_PENALTY_OPTIONS, item._concealMod || "")}</select></label>`;
 }
 
 function defenseFields(item) {
@@ -101,30 +93,9 @@ function defenseFields(item) {
   return `<div class="mobile-outfit-defense mobile-span-2"><span>防御値</span><label>S<input data-outfit-transient="def-s" type="number" step="1" inputmode="numeric" value="${esc(item._defS || "")}"></label><label>P<input data-outfit-transient="def-p" type="number" step="1" inputmode="numeric" value="${esc(item._defP || "")}"></label><label>I<input data-outfit-transient="def-i" type="number" step="1" inputmode="numeric" value="${esc(item._defI || "")}"></label></div>`;
 }
 
-const slotField = item => editableChoice({
-  label: "部位",
-  value: item.slot || "",
-  listId: "mobile-outfit-slot-options",
-  values: SLOT_OPTIONS,
-  attrs: 'data-outfit-field="slot"'
-});
-
-const rangeField = item => editableChoice({
-  label: "射程",
-  value: item.range || "",
-  listId: "mobile-outfit-range-options",
-  values: RANGE_OPTIONS,
-  attrs: 'data-outfit-field="range"'
-});
-
-const controlField = item => editableChoice({
-  label: "制御値",
-  value: item.control_modifier,
-  listId: "mobile-outfit-control-options",
-  values: CONTROL_OPTIONS.map(value => value > 0 ? `+${value}` : String(value)),
-  attrs: 'data-outfit-field="control_modifier" inputmode="numeric"'
-});
-
+const slotField = item => `<label>部位<select data-outfit-field="slot">${optionList(SLOT_OPTIONS, item.slot || "")}</select></label>`;
+const rangeField = item => `<label>射程<select data-outfit-field="range">${optionList(RANGE_OPTIONS, item.range || "")}</select></label>`;
+const controlField = item => `<label>制御値<select data-outfit-field="control_modifier">${optionList(CONTROL_OPTIONS.map(value => String(value)), String(item.control_modifier ?? 0))}</select></label>`;
 const csModifierField = item => `<label>CS修正<input data-outfit-field="cs_modifier" type="number" step="1" inputmode="numeric" value="${esc(item.cs_modifier ?? 0)}"></label>`;
 const electronicControlField = item => detailField(item, "electronic_control", "電制");
 
