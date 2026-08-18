@@ -37,8 +37,8 @@ const FIELD_DEFINITIONS = {
   residence_area: ["住宅 ア", "RESIDENCE AREA"]
 };
 
-// UI fields only. Deprecated/legacy keys remain in FIELD_DEFINITIONS so existing
-// ofc_details values survive save/reload, but they are no longer generated.
+// Only fields meaningful to the current UI are generated. Deprecated keys stay
+// known for persistence compatibility, but are not exposed as controls.
 const COMMON_FIELDS = ["manufacturer", "page_number", "concealment_penalty"];
 const CATEGORY_FIELDS = {
   weapon: [...COMMON_FIELDS, "parry", "speed", "electronic_control"],
@@ -56,6 +56,14 @@ let restoreQueues = null;
 let enhanceQueued = false;
 let suppressDirty = false;
 let detailsReady = false;
+
+globalThis.TNXOutfitOFCState = {
+  getDetails(row) {
+    const key = row?.dataset?.outfitKey || "";
+    const details = key ? stateByKey.get(key) : null;
+    return details ? { ...details } : {};
+  }
+};
 
 initialize();
 
@@ -288,9 +296,9 @@ function parseLegacyDescription(text) {
 
 function normalizeDetails(value) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  const output = {};
+  const output = Object.fromEntries(Object.entries(source).map(([key, item]) => [key, String(item ?? "")]));
   for (const key of [...Object.keys(FIELD_DEFINITIONS), "site_category", "purchase_target", "permanent_cost", "concealment", "attack", "range_text", "slot", "description"]) {
-    output[key] = String(source[key] ?? "");
+    if (!(key in output)) output[key] = "";
   }
   return output;
 }
