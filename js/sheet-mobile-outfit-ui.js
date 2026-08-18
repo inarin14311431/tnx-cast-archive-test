@@ -6,7 +6,7 @@ import {
   parseConcealment,
   parseDefense,
   normalizeNumber
-} from "./sheet-mobile-outfit-model.js?v=1";
+} from "./sheet-mobile-outfit-model.js?v=2";
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -99,9 +99,8 @@ function defenseFields(item) {
 
 const slotField = item => `<label>部位<select data-outfit-field="slot">${optionList(SLOT_OPTIONS, item.slot || "")}</select></label>`;
 const rangeField = item => `<label>射程<select data-outfit-field="range">${optionList(RANGE_OPTIONS, item.range || "")}</select></label>`;
-const controlModifierField = item => `<label>制御修正<select data-outfit-field="control_modifier">${controlOptions(item.control_modifier)}</select></label>`;
+const controlField = item => `<label>制御<select data-outfit-field="control_modifier">${controlOptions(item.control_modifier)}</select></label>`;
 const csModifierField = item => `<label>CS修正<input data-outfit-field="cs_modifier" type="number" step="1" inputmode="numeric" value="${esc(item.cs_modifier ?? 0)}"></label>`;
-const mundaneModifierField = item => `<label>外界修正<input data-outfit-field="mundane_modifier" type="number" step="1" inputmode="numeric" value="${esc(item.mundane_modifier ?? 0)}"></label>`;
 
 function performanceFields(item) {
   let fields = "";
@@ -110,22 +109,22 @@ function performanceFields(item) {
       fields = `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${rangeField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}${detailField(item, "electronic_control", "電制")}`;
       break;
     case "armor":
-      fields = `${defenseFields(item)}${controlModifierField(item)}${detailField(item, "electronic_control", "電制")}`;
+      fields = `${defenseFields(item)}${controlField(item)}${detailField(item, "electronic_control", "電制")}`;
       break;
     case "cyberware":
-      fields = `${controlModifierField(item)}${csModifierField(item)}${mundaneModifierField(item)}${detailField(item, "control_value", "制御値")}${detailField(item, "electronic_control", "電制")}${detailField(item, "ianus_surface", "IANUS 表")}${detailField(item, "ianus_deep", "IANUS 深")}${detailField(item, "ianus_none", "IANUS 無")}`;
+      fields = `${controlField(item)}${csModifierField(item)}${detailField(item, "electronic_control", "電制")}${detailField(item, "ianus_surface", "IANUS 表")}${detailField(item, "ianus_deep", "IANUS 深")}${detailField(item, "ianus_none", "IANUS 無")}`;
       break;
     case "tron":
-      fields = `${controlModifierField(item)}${csModifierField(item)}${mundaneModifierField(item)}${detailField(item, "control_value", "制御値")}${detailField(item, "electronic_control", "電制")}${detailField(item, "tron_software", "ソフトウェア")}${detailField(item, "tron_support", "サポート")}${detailField(item, "tron_hardware", "ハードウェア")}`;
+      fields = `${controlField(item)}${csModifierField(item)}${detailField(item, "electronic_control", "電制")}${detailField(item, "tron_software", "ソフトウェア")}${detailField(item, "tron_support", "サポート")}${detailField(item, "tron_hardware", "ハードウェア")}`;
       break;
     case "vehicle":
-      fields = `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${defenseFields(item)}${controlModifierField(item)}${csModifierField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}${detailField(item, "control_value", "制御値")}${detailField(item, "electronic_control", "電制")}${detailField(item, "cs_value", "CS値")}${detailField(item, "crew", "乗員")}${detailField(item, "sf", "SF")}`;
+      fields = `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${defenseFields(item)}${controlField(item)}${csModifierField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}${detailField(item, "electronic_control", "電制")}${detailField(item, "cs_value", "CS値")}${detailField(item, "crew", "乗員")}${detailField(item, "sf", "SF")}`;
       break;
     case "residence":
-      fields = `${mundaneModifierField(item)}${detailField(item, "electronic_control", "電制")}${detailField(item, "residence_entry", "登場")}${detailField(item, "residence_electric", "電力")}${detailField(item, "residence_area", "エリア")}`;
+      fields = `${detailField(item, "electronic_control", "電制")}${detailField(item, "residence_entry", "登場")}${detailField(item, "residence_electric", "電力")}${detailField(item, "residence_area", "エリア")}`;
       break;
     case "other":
-      fields = `${controlModifierField(item)}${csModifierField(item)}${mundaneModifierField(item)}${detailField(item, "control_value", "制御値")}${detailField(item, "electronic_control", "電制")}${detailField(item, "cs_value", "CS値")}`;
+      fields = `${controlField(item)}${csModifierField(item)}${detailField(item, "electronic_control", "電制")}${detailField(item, "cs_value", "CS値")}`;
       break;
     default:
       return "";
