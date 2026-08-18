@@ -60,6 +60,7 @@ export function blankOutfit() {
     purchase_value: "",
     experience_cost: 0,
     concealment: "",
+    electronic_control: "",
     attack: "",
     defense: "",
     range: "",
@@ -84,9 +85,7 @@ export function parseConcealment(item) {
   const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
   item._concealValue = match ? String(match[1] || "").trim() : text;
   item._concealMod = match ? String(match[2] || match[3] || "").trim() : "";
-  if (!item._concealMod && item.ofc_details?.concealment_penalty) {
-    item._concealMod = String(item.ofc_details.concealment_penalty);
-  }
+  if (!item._concealMod && item.ofc_details?.concealment_penalty) item._concealMod = String(item.ofc_details.concealment_penalty);
   item._concealParsed = true;
   return item;
 }
@@ -118,10 +117,9 @@ export function composeDefense(item) {
 }
 
 export function cloneOutfit(item) {
-  const draft = {
-    ...item,
-    ofc_details: normalizeDetails(item?.ofc_details || {})
-  };
+  const details = normalizeDetails(item?.ofc_details || {});
+  if (!details.electronic_control && item?.electronic_control) details.electronic_control = String(item.electronic_control);
+  const draft = { ...item, ofc_details: details };
   parseConcealment(draft);
   parseDefense(draft);
   return draft;
@@ -153,6 +151,7 @@ export function collectOutfitRecord(item, character) {
     purchase_value: String(item.purchase_value ?? ""),
     experience_cost: normalizeNumber(item.experience_cost),
     concealment,
+    electronic_control: String(details.electronic_control || ""),
     attack: item.attack || "",
     defense,
     range: item.range || "",
