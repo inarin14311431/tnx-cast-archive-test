@@ -12,13 +12,19 @@ const THEME_OPTIONS = [
 ];
 const THEME_VALUES = new Set(THEME_OPTIONS.map(([value]) => value));
 const PROFILE_FIELDS = [
-  "character_name", "character_kana", "handle", "handle_kana", "player_name", "affiliation", "citizen_rank",
+  "character_name", "character_kana", "handle", "handle_kana", "player_name", "affiliation", "citizen_rank", "birthplace",
   "age", "gender", "height", "weight", "eyes", "hair", "skin",
   "life_path_origin", "life_path_experience", "life_path_encounter", "summary", "profile", "visibility"
 ];
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+const quoteHandle = value => {
+  const text = String(value || "").trim();
+  if (!text) return "NO HANDLE";
+  if (/^(?:“.*”|”.*”|".*"|「.*」|『.*』)$/.test(text)) return text;
+  return `“${text}”`;
+};
 
 let user = null;
 let character = null;
@@ -68,7 +74,7 @@ function bindThemePicker() {
 function renderIdentity() {
   if (!character) return;
   $("#mobile-character-name").textContent = character.character_name || "名称未設定";
-  $("#mobile-character-handle").textContent = character.handle ? `“${character.handle}”` : "NO HANDLE";
+  $("#mobile-character-handle").textContent = quoteHandle(character.handle);
   const styles = [1, 2, 3]
     .map(index => [character[`style_${index}`], character[`style_${index}_mark`]])
     .filter(([name]) => name)
@@ -82,7 +88,9 @@ function fillProfile() {
   for (const field of PROFILE_FIELDS) {
     const input = document.querySelector(`[data-mobile-character-field="${field}"]`);
     if (!input) continue;
-    input.value = character[field] ?? (field === "visibility" ? "private" : "");
+    const fallback = field === "visibility" ? "private" : field === "birthplace" ? "Ｎ◎ＶＡ" : "";
+    input.value = character[field] ?? fallback;
+    if (field === "birthplace" && !String(input.value || "").trim()) input.value = "Ｎ◎ＶＡ";
   }
 }
 
@@ -92,9 +100,10 @@ function collectProfileUpdate() {
     const input = document.querySelector(`[data-mobile-character-field="${field}"]`);
     if (input) payload[field] = input.value;
   }
-  for (const field of ["character_name","player_name","character_kana","handle","handle_kana","affiliation","citizen_rank"]) {
+  for (const field of ["character_name","player_name","character_kana","handle","handle_kana","affiliation","citizen_rank","birthplace"]) {
     payload[field] = String(payload[field] || "").trim();
   }
+  if (!payload.birthplace) payload.birthplace = "Ｎ◎ＶＡ";
   payload.visibility = payload.visibility === "public" ? "public" : "private";
   return payload;
 }
