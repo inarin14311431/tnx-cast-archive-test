@@ -7,6 +7,7 @@ import {
   parseDefense,
   normalizeNumber
 } from "./sheet-mobile-outfit-model.js?v=2";
+import { MANUFACTURER_OPTIONS } from "./sheet-mobile-outfit-manufacturers.js?v=1";
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -68,10 +69,9 @@ const detailField = (item, field, label, options = {}) => {
   return `<label>${label}<input data-outfit-detail="${field}"${attrs} value="${esc(value)}"></label>`;
 };
 
-function manufacturerField(item, manufacturers) {
+function manufacturerField(item) {
   const current = String(detailValue(item, "manufacturer") || "").trim();
-  const values = [...new Set((manufacturers || []).map(value => String(value || "").trim()).filter(Boolean))];
-  values.sort((a, b) => a.localeCompare(b, "ja"));
+  const values = [...MANUFACTURER_OPTIONS];
   if (current && !values.includes(current)) values.unshift(current);
   return `<label>メーカー<select data-outfit-detail="manufacturer"><option value="">選択</option>${values.map(value => `<option value="${esc(value)}" ${value === current ? "selected" : ""}>${esc(value)}</option>`).join("")}</select></label>`;
 }
@@ -86,9 +86,9 @@ function commonBaseFields(item) {
   </div></fieldset>`;
 }
 
-function commonOfcFields(item, manufacturers) {
+function commonOfcFields(item) {
   return `<fieldset class="mobile-outfit-group"><legend>OFC情報</legend><div class="mobile-outfit-group__grid">
-    ${manufacturerField(item, manufacturers)}
+    ${manufacturerField(item)}
     ${detailField(item, "page_number", "参照P")}
   </div></fieldset>`;
 }
@@ -143,11 +143,11 @@ function deleteAction() {
   return `<button type="button" class="mobile-danger-action" data-outfit-delete>このアウトフィットを削除</button>`;
 }
 
-export function buildOutfitEditor(item, { manufacturers = [] } = {}) {
+export function buildOutfitEditor(item) {
   const categories = `<option value="">分類を選択</option>${Object.entries(LABELS).map(([value, label]) => `<option value="${value}" ${item.category === value ? "selected" : ""}>${label}</option>`).join("")}`;
   return `<div class="mobile-outfit-editor__grid">
     <label class="mobile-outfit-editor__category">分類<select data-outfit-field="category">${categories}</select></label>
-    ${item.category ? `${commonBaseFields(item)}${commonOfcFields(item, manufacturers)}${performanceFields(item)}<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid"><label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label></div></fieldset>` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
+    ${item.category ? `${commonBaseFields(item)}${commonOfcFields(item)}${performanceFields(item)}<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid"><label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label></div></fieldset>` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
     ${deleteAction()}
   </div>`;
 }
