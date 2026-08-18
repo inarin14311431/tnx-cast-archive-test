@@ -7,12 +7,14 @@ import "./sheet-mobile-combos.js?v=20260818-6";
 const $ = selector => document.querySelector(selector);
 
 function ensureCommonStyles() {
+  const base = document.querySelector('link[href*="/sheet-mobile.css"],link[href^="./css-next/pages/sheet-mobile.css"]');
+  if (base) base.href = "./css-next/pages/sheet-mobile.css?v=5";
   const styles = [
     ["mobile-theme", "./css-next/pages/sheet-mobile-theme.css?v=1"],
     ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=3"],
     ["mobile-profile-current", "./css-next/pages/sheet-mobile-profile.css?v=10"],
     ["mobile-ability-current", "./css-next/pages/sheet-mobile-ability.css?v=4"],
-    ["mobile-skills", "./css-next/pages/sheet-mobile-skills.css?v=1"]
+    ["mobile-skills", "./css-next/pages/sheet-mobile-skills.css?v=2"]
   ];
   for (const [key, href] of styles) {
     const current = document.querySelector(`link[data-${key}-style]`);
