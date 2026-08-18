@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { requireAuth } from "./auth-state.js?v=4";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 
 const PREFIX="@@TNX_STYLE_DETAIL_V1@@";
 const LABELS=[
@@ -24,6 +24,6 @@ function hydrate(id){const row=rows.get(String(id));if(!row)return;const detail=
 function patchCard(card,row){const detail=parse(row);const cells=card.querySelectorAll(".mobile-style-skill-card__secondary > span");const values=[null,detail.skill||"—",detail.timing||"—",detail.target||"—"];for(let i=1;i<values.length;i++)if(cells[i]&&cells[i].textContent!==values[i])cells[i].textContent=values[i];}
 function patchCards(){document.querySelectorAll("#mobile-style-skills [data-style-id]").forEach(card=>{const row=rows.get(String(card.dataset.styleId||""));if(row)patchCard(card,row);});}
 function bind(){document.addEventListener("click",event=>{const card=event.target.closest?.("#mobile-style-skills [data-style-id]");if(!card)return;requestAnimationFrame(()=>hydrate(card.dataset.styleId));});const root=document.querySelector("#mobile-style-skills");if(root)new MutationObserver(()=>requestAnimationFrame(patchCards)).observe(root,{childList:true,subtree:true});document.addEventListener("tnx:mobile-skills-saved",load);}
-async function load(){const user=await requireAuth();if(!user)return;const publicId=new URLSearchParams(location.search).get("id");if(!publicId)return;const{data:character,error}=await supabase.from("characters").select("id").eq("public_id",publicId).eq("owner_id",user.id).maybeSingle();if(error||!character)return;const result=await supabase.from("character_skills").select("*").eq("character_id",character.id).eq("category","style");if(result.error){console.error(result.error);return;}rows=new Map((result.data||[]).map(row=>[String(row.id),row]));patchCards();}
+async function load(){const { character }=await getMobileEditorContext();if(!character)return;const result=await supabase.from("character_skills").select("*").eq("character_id",character.id).eq("category","style");if(result.error){console.error(result.error);return;}rows=new Map((result.data||[]).map(row=>[String(row.id),row]));patchCards();}
 function init(){bind();load();}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
