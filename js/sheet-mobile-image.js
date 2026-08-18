@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { requireAuth } from "./auth-state.js?v=4";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 import { getImageFocusX,getImageFocusY,getImageZoom,setImageFocusX,setImageFocusY,setImageZoom } from "./image-focus.js?v=3";
 
 const $=s=>document.querySelector(s);
@@ -28,5 +28,5 @@ function storagePath(url){const marker=`/storage/v1/object/public/${BUCKET}/`,i=
 async function removeOwned(url){const path=storagePath(url);if(path&&path.startsWith(`${user.id}/`))await supabase.storage.from(BUCKET).remove([path]);}
 async function clearImage(){if(!character||(!currentUrl()&&!optimizedFile))return;if(!confirm("キャスト画像を解除しますか？"))return;busy=true;syncDisabled();try{const previous=currentUrl();const result=await supabase.from("characters").update({image_url:""}).eq("id",character.id).eq("owner_id",user.id);if(result.error)throw result.error;character.image_url="";await removeOwned(previous);releaseObjectUrl();selectedFile=null;optimizedFile=null;$("#mobile-image-file").value="";syncView();message("キャスト画像を解除しました。","saved");}catch(error){console.error(error);message("画像の解除に失敗しました。","error");}finally{busy=false;syncDisabled();}}
 function bind(){$("#mobile-image-open")?.addEventListener("click",open);$("#mobile-image-close")?.addEventListener("click",close);$("#mobile-image-dialog")?.addEventListener("cancel",e=>{e.preventDefault();close();});$("#mobile-image-file")?.addEventListener("change",selectFile);$("#mobile-image-upload")?.addEventListener("click",upload);$("#mobile-image-focus-save")?.addEventListener("click",saveFocus);$("#mobile-image-clear")?.addEventListener("click",clearImage);for(const id of ["#mobile-image-x","#mobile-image-y","#mobile-image-zoom"])$(id)?.addEventListener("input",syncOutputs);}
-async function init(){injectCss();injectSection();injectDialog();bind();user=await requireAuth();if(!user)return;const publicId=new URLSearchParams(location.search).get("id");if(!publicId)return;const result=await supabase.from("characters").select("id,public_id,owner_id,image_url").eq("public_id",publicId).eq("owner_id",user.id).maybeSingle();if(result.error||!result.data){if(result.error)console.error(result.error);return;}character=result.data;syncView();}
+async function init(){injectCss();injectSection();injectDialog();bind();try{const context=await getMobileEditorContext();user=context.user;character=context.character;if(!user||!character)return;syncView();}catch(error){console.error(error);}}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
