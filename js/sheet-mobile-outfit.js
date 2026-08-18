@@ -49,6 +49,18 @@ function hasChanges() {
   return dirtyIds.size > 0 || deletedIds.size > 0;
 }
 
+function normalizeConfrontationOptionLabels() {
+  const select = document.querySelector('[data-mobile-style-detail="confrontation"]');
+  if (!select) return;
+  for (const option of select.options) {
+    const originalValue = option.value;
+    const match = String(option.textContent || "").match(/^＜(.+)＞$/);
+    if (!match) continue;
+    option.value = originalValue;
+    option.textContent = match[1];
+  }
+}
+
 function openEditor(id) {
   const item = outfits.find(row => String(row.id) === String(id));
   if (!item) return;
@@ -206,6 +218,7 @@ async function init() {
   ensureOutfitStylesheet();
   ensureOutfitToolbar();
   ensureOutfitDialog();
+  normalizeConfrontationOptionLabels();
   bindEvents();
   try {
     const context = await getMobileEditorContext();
