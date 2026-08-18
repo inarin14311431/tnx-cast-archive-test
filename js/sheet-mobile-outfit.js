@@ -17,7 +17,7 @@ import {
   ensureOutfitStylesheet,
   ensureOutfitToolbar,
   renderOutfitCards
-} from "./sheet-mobile-outfit-ui.js?v=7";
+} from "./sheet-mobile-outfit-ui.js?v=8";
 
 const $ = selector => document.querySelector(selector);
 
