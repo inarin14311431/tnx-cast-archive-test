@@ -46,6 +46,10 @@ function markDirty() {
   setSaveState("dirty");
 }
 
+function notifyLoaded() {
+  document.dispatchEvent(new CustomEvent("tnx:mobile-profile-loaded", { detail: { character } }));
+}
+
 function fillProfile() {
   if (!character) return;
   ensureProfileSourceFields();
@@ -56,6 +60,7 @@ function fillProfile() {
     input.value = character[field] ?? fallback;
     if (field === "birthplace" && !String(input.value || "").trim()) input.value = "Ｎ◎ＶＡ";
   }
+  notifyLoaded();
 }
 
 function collectProfileUpdate() {
@@ -95,6 +100,7 @@ async function saveProfile() {
     dirtyProfile = false;
     setStatus("保存済み", "saved");
     setSaveState("saved");
+    notifyLoaded();
   } catch (error) {
     console.error(error);
     setStatus(`保存に失敗しました：${error?.message || "不明なエラー"}`, "error");
