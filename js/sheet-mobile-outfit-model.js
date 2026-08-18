@@ -39,6 +39,8 @@ export const DETAIL_FIELDS = [
   "attack", "range_text", "slot", "description"
 ];
 
+const USES_CONTROL_MODIFIER = new Set(["armor", "vehicle"]);
+
 export function normalizeNumber(value) {
   const result = Number(value || 0);
   return Number.isFinite(result) ? result : 0;
@@ -47,7 +49,8 @@ export function normalizeNumber(value) {
 export function normalizeDetails(value) {
   const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   const output = {};
-  for (const key of DETAIL_FIELDS) output[key] = String(source[key] ?? "");
+  for (const [key, raw] of Object.entries(source)) output[key] = raw == null ? "" : String(raw);
+  for (const key of DETAIL_FIELDS) if (!(key in output)) output[key] = "";
   return output;
 }
 
@@ -124,8 +127,9 @@ export function composeDefense(item) {
 export function cloneOutfit(item) {
   const details = normalizeDetails(item?.ofc_details || {});
   if (!details.electronic_control && item?.electronic_control) details.electronic_control = String(item.electronic_control);
-  const control = details.control_value !== "" ? normalizeNumber(details.control_value) : normalizeNumber(item?.control_modifier);
-  details.control_value = String(control);
+  let control = normalizeNumber(item?.control_modifier);
+  if (USES_CONTROL_MODIFIER.has(item?.category) && details.control_value !== "") control = normalizeNumber(details.control_value);
+  if (USES_CONTROL_MODIFIER.has(item?.category)) details.control_value = String(control);
   const draft = { ...item, control_modifier: control, ofc_details: details };
   parseConcealment(draft);
   parseDefense(draft);
@@ -136,7 +140,7 @@ export function collectOutfitRecord(item, character) {
   const concealment = composeConcealment(item);
   const defense = composeDefense(item);
   const control = normalizeNumber(item.control_modifier);
-  const details = compactDetails({
+  const detailsSource = {
     ...normalizeDetails(item.ofc_details || {}),
     site_category: item.category || "other",
     purchase_target: String(item.purchase_value ?? ""),
@@ -147,11 +151,12 @@ export function collectOutfitRecord(item, character) {
     range_text: item.range || "",
     slot: item.slot || "",
     description: item.description || "",
-    control_value: String(control),
     defense_s: String(item._defS ?? "").trim(),
     defense_p: String(item._defP ?? "").trim(),
     defense_i: String(item._defI ?? "").trim()
-  });
+  };
+  if (USES_CONTROL_MODIFIER.has(item.category)) detailsSource.control_value = String(control);
+  const details = compactDetails(detailsSource);
 
   return {
     character_id: character?.id,
