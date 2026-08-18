@@ -5,7 +5,8 @@ import { readFile } from "node:fs/promises";
 const source = await readFile(new URL("../js/archive.js", import.meta.url), "utf8");
 
 test("archive chooses cast view mode from current viewport", () => {
-  assert.match(source, /matchMedia\([^\n]*max-width:\s*900px/);
+  assert.match(source, /const\s+MOBILE_VIEW_QUERY\s*=\s*["']\(max-width:\s*900px\)["']/);
+  assert.match(source, /matchMedia\(MOBILE_VIEW_QUERY\)/);
   assert.match(source, /searchParams\.set\(["']mobile["']/);
 });
 
