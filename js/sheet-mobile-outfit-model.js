@@ -137,7 +137,7 @@ export function cloneOutfit(item) {
 }
 
 export function collectOutfitRecord(item, character) {
-  const concealment = composeConcealment(item);
+  const concealment = String(item._concealValue ?? "").trim();
   const defense = composeDefense(item);
   const control = normalizeNumber(item.control_modifier);
   const detailsSource = {
@@ -145,7 +145,7 @@ export function collectOutfitRecord(item, character) {
     site_category: item.category || "other",
     purchase_target: String(item.purchase_value ?? ""),
     permanent_cost: String(normalizeNumber(item.experience_cost)),
-    concealment: String(item._concealValue ?? "").trim(),
+    concealment,
     concealment_penalty: String(item._concealMod ?? "").trim(),
     attack: item.attack || "",
     range_text: item.range || "",
