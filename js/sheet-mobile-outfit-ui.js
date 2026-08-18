@@ -77,7 +77,7 @@ function commonBaseFields(item) {
 }
 
 function commonOfcFields(item) {
-  return `<fieldset class="mobile-outfit-group"><legend>OFC情報</legend><div class="mobile-outfit-group__grid">
+  return `<fieldset class="mobile-outfit-group"><legend>追加情報</legend><div class="mobile-outfit-group__grid">
     ${detailField(item, "manufacturer", "メーカー")}
     ${detailField(item, "page_number", "参照P")}
   </div></fieldset>`;
