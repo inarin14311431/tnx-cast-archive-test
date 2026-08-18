@@ -5,15 +5,15 @@
   <link rel="stylesheet" href="./css-next/index.css?v=43" data-css-system="next">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile.css?v=5">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-theme.css?v=2" data-mobile-theme-style="1">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ui.css?v=4" data-mobile-ui-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ui.css?v=5" data-mobile-ui-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-profile.css?v=11" data-mobile-profile-style="1" data-mobile-profile-current-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-style.css?v=6" data-mobile-style-editor-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ability.css?v=4" data-mobile-ability-current-style="1">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-skills.css?v=3" data-mobile-skills-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-skills.css?v=4" data-mobile-skills-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-outfit.css?v=5" data-mobile-outfit-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-combos.css?v=5" data-mobile-combo-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-snapshots.css?v=2" data-mobile-snapshots-style="1">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-image.css?v=1" data-mobile-image-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-image.css?v=2" data-mobile-image-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-import.css?v=2" data-mobile-import-style="1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -28,16 +28,7 @@
     <a id="mobile-pc-link" class="mobile-sheet-header__pc" href="./sheet.html" aria-label="PC版編集画面を開く">PC</a>
   </header>
   <main class="mobile-sheet-shell">
-    <p id="mobile-save-status" class="mobile-sheet-status" data-state="loading" aria-live="polite">初期化中…</p>
     <p id="mobile-edit-notice" class="mobile-edit-notice">各項目はタップすると編集できます。モーダルは閉じると編集内容を反映し、画面下部の保存ボタンで確定します。</p>
-    <section class="mobile-sheet-identity">
-      <p id="mobile-character-handle" class="mobile-sheet-identity__handle">NO HANDLE</p>
-      <h1 id="mobile-character-name">CAST DATA</h1>
-      <div id="mobile-character-meta" class="mobile-sheet-identity__meta"><span>SCANNING...</span></div>
-    </section>
-    <section class="mobile-theme-panel" aria-label="表示テーマ">
-      <label><span>表示テーマ <small>COLOR THEME</small></span><select id="mobile-theme-select" aria-label="表示テーマ"></select></label>
-    </section>
     <nav class="mobile-sheet-nav" aria-label="編集セクション">
       <a href="#mobile-profile">01 基本情報</a><a href="#mobile-styles-section">02 スタイル</a><a href="#mobile-ability-section">03 能力値</a><a href="#mobile-general">04 一般技能</a><a href="#mobile-style-skills-section">05 スタイル技能</a><a href="#mobile-outfits-section">06 アウトフィット</a>
     </nav>
@@ -84,6 +75,6 @@
     <label>対決<select data-mobile-style-detail="confrontation"><option value="">選択</option><option>なし</option><option>＜回避＞</option><option>＜自我＞</option><option>＜知覚＞</option><option>＜隠密＞</option><option>＜交渉＞</option><option>＜信用＞</option><option>＜電脳＞</option><option>＜白兵＞</option><option>＜芸術＞※</option><option>不可</option><option>解説参照</option><option>―</option></select></label>
     <label>参照P<input data-mobile-style-detail="page"></label><label class="mobile-span-2">解説<textarea rows="8" data-mobile-style-detail="description"></textarea></label>
   </div></div></form></dialog>
-  <script type="module" src="./js/sheet-mobile-app.js?v=1"></script>
+  <script type="module" src="./js/sheet-mobile-app.js?v=2"></script>
 </body>
 </html>
