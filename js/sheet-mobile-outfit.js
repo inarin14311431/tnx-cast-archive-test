@@ -17,13 +17,12 @@ import {
   ensureOutfitStylesheet,
   ensureOutfitToolbar,
   renderOutfitCards
-} from "./sheet-mobile-outfit-ui.js?v=5";
+} from "./sheet-mobile-outfit-ui.js?v=6";
 
 const $ = selector => document.querySelector(selector);
 
 let character = null;
 let outfits = [];
-let manufacturers = [];
 let activeId = "";
 let activeDraft = null;
 const dirtyIds = new Set();
@@ -50,28 +49,6 @@ function hasChanges() {
   return dirtyIds.size > 0 || deletedIds.size > 0;
 }
 
-async function loadManufacturers() {
-  const values = new Set();
-  const pageSize = 1000;
-  for (let from = 0; ; from += pageSize) {
-    const { data, error } = await supabase
-      .from("ofc_master")
-      .select("manufacturer")
-      .not("manufacturer", "is", null)
-      .range(from, from + pageSize - 1);
-    if (error) {
-      console.warn("OFCメーカー一覧の読込に失敗しました。", error);
-      break;
-    }
-    for (const row of data || []) {
-      const value = String(row.manufacturer || "").trim();
-      if (value) values.add(value);
-    }
-    if (!data || data.length < pageSize) break;
-  }
-  manufacturers = [...values].sort((a, b) => a.localeCompare(b, "ja"));
-}
-
 function openEditor(id) {
   const item = outfits.find(row => String(row.id) === String(id));
   if (!item) return;
@@ -88,7 +65,7 @@ function renderEditor() {
   const title = $("#mobile-outfit-title");
   if (title) title.textContent = activeDraft.name || (activeDraft._new ? "アウトフィット追加" : "アウトフィット編集");
   const root = $("#mobile-outfit-fields");
-  if (root) root.innerHTML = buildOutfitEditor(activeDraft, { manufacturers });
+  if (root) root.innerHTML = buildOutfitEditor(activeDraft);
 }
 
 function addOutfit() {
@@ -234,10 +211,7 @@ async function init() {
     const context = await getMobileEditorContext();
     if (!context.character) return;
     character = context.character;
-    const [, rows] = await Promise.all([
-      loadManufacturers(),
-      supabase.from("character_outfits").select("*").eq("character_id", character.id).order("sort_order")
-    ]);
+    const rows = await supabase.from("character_outfits").select("*").eq("character_id", character.id).order("sort_order");
     if (rows.error) throw rows.error;
     outfits = (rows.data || []).map(item => cloneOutfit({ ...item, _new: false }));
     render();
