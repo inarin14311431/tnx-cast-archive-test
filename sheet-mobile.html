@@ -9,7 +9,8 @@
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-profile.css?v=10" data-mobile-profile-style="1" data-mobile-profile-current-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-style.css?v=6" data-mobile-style-editor-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ability.css?v=4" data-mobile-ability-current-style="1">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-outfit.css?v=1" data-mobile-outfit-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-skills.css?v=1" data-mobile-skills-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-outfit.css?v=4" data-mobile-outfit-style="1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
@@ -67,7 +68,7 @@
     <section class="mobile-ability-editor-panel"><h3>制御値</h3><div class="mobile-ability-fixed"><span>基本値</span><strong data-mobile-ability-fixed="control">0</strong></div><label>成長分<select data-mobile-ability-input="control-growth"></select></label><label>補正値<select data-mobile-ability-input="control-mod"></select></label><div class="mobile-ability-preview"><span>最終値</span><strong id="mobile-control-final">0</strong></div></section>
   </div></div></form></dialog>
   <dialog id="mobile-cs-dialog" class="mobile-editor-dialog"><form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--close-only"><button id="mobile-cs-dialog-cancel" type="button">閉じる</button><strong>CS編集</strong></header><div class="mobile-editor-dialog__body"><section class="mobile-ability-editor-panel mobile-cs-editor"><h3>CS / CONTROL SPEED</h3><label>現在値<input data-mobile-cs-input="base" type="number" inputmode="numeric"></label><label>補正値<input data-mobile-cs-input="mod" type="number" inputmode="numeric"></label><div class="mobile-ability-preview"><span>最終値</span><strong id="mobile-cs-final">0</strong></div></section></div></form></dialog>
-  <dialog id="style-skill-dialog" class="mobile-editor-dialog"><form method="dialog"><header class="mobile-editor-dialog__header"><button id="style-skill-dialog-cancel" type="button">閉じる</button><strong id="style-skill-dialog-title">スタイル技能編集</strong><button id="style-skill-dialog-apply" type="submit">反映</button></header><div class="mobile-editor-dialog__body"><div class="mobile-form-grid mobile-form-grid--two mobile-style-detail-grid">
+  <dialog id="style-skill-dialog" class="mobile-editor-dialog"><form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--close-only"><button id="style-skill-dialog-cancel" type="button">閉じる</button><strong id="style-skill-dialog-title">スタイル技能編集</strong></header><div class="mobile-editor-dialog__body"><div class="mobile-form-grid mobile-form-grid--two mobile-style-detail-grid">
     <label class="mobile-span-2">名称<input id="mobile-style-name"></label><label>種別<select id="mobile-style-kind"><option value="normal">通常</option><option value="secret">秘技</option><option value="ultimate">奥義</option><option value="direction">演出</option></select></label><label>レベル<input id="mobile-style-level" type="number" min="0" inputmode="numeric"></label>
     <div class="mobile-span-2 mobile-suit-grid" aria-label="取得スート"><label><input id="mobile-style-suit-reason" type="checkbox"><span>♠</span></label><label><input id="mobile-style-suit-passion" type="checkbox"><span>♣</span></label><label><input id="mobile-style-suit-life" type="checkbox"><span>♥</span></label><label><input id="mobile-style-suit-mundane" type="checkbox"><span>♦</span></label></div>
     <label>技能<select data-mobile-style-detail="skill"><option value="">選択</option><option>なし</option><option>単独</option><option>宣言</option><option>任意</option><option>解説参照</option><option>白兵</option><option>射撃</option><option>白兵,射撃</option><option>心理</option><option>交渉</option><option>知覚</option><option>自我</option><option>回避</option><option>運動</option><option>操縦</option><option>電脳</option><option>製作</option><option>社会</option><option>社会,コネ</option><option>コネ</option><option>芸術</option><option>元力</option><option>隠密</option><option>医療</option><option>圧力</option><option>信用</option></select></label>
@@ -79,8 +80,8 @@
     <label>対決<select data-mobile-style-detail="confrontation"><option value="">選択</option><option>なし</option><option>＜回避＞</option><option>＜自我＞</option><option>＜知覚＞</option><option>＜隠密＞</option><option>＜交渉＞</option><option>＜信用＞</option><option>＜電脳＞</option><option>＜白兵＞</option><option>＜芸術＞※</option><option>不可</option><option>解説参照</option><option>―</option></select></label>
     <label>参照P<input data-mobile-style-detail="page"></label><label class="mobile-span-2">解説<textarea rows="8" data-mobile-style-detail="description"></textarea></label>
   </div></div></form></dialog>
-  <script type="module" src="./js/sheet-mobile.js?v=2"></script>
-  <script type="module" src="./js/sheet-mobile-ui.js?v=20260818-7"></script>
-  <script type="module" src="./js/sheet-mobile-ability.js?v=8"></script>
+  <script type="module" src="./js/sheet-mobile.js?v=3"></script>
+  <script type="module" src="./js/sheet-mobile-ui.js?v=20260818-8"></script>
+  <script type="module" src="./js/sheet-mobile-ability.js?v=9"></script>
 </body>
 </html>
