@@ -20,8 +20,8 @@ function setError(error) {
   status.textContent = `保存に失敗しました：${error?.message || "不明なエラー"}`;
 }
 
-function settleSavedIfIdle(button) {
-  if (!button || button.dataset.state === "saving") return;
+function markSaved(button) {
+  if (!button) return;
   button.disabled = false;
   button.dataset.state = "saved";
   button.textContent = "保存済み";
@@ -48,12 +48,12 @@ async function handleSave(event) {
   try {
     await Promise.all(tasks);
     replaying = true;
-    setBusy(false);
+    markSaved(button);
     button.click();
-    settleSavedIfIdle(button);
+    if (button.dataset.state !== "saving") markSaved(button);
   } catch (error) {
     console.error(error);
-    setBusy(false);
+    button.disabled = false;
     button.dataset.state = "dirty";
     button.textContent = "変更を保存";
     setError(error);
