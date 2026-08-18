@@ -41,13 +41,13 @@ async function applyMasterRowsAfterBaseAdd(ids, before) {
 }
 
 function applyDetailsToRow(row, details) {
+  const category = row.closest("table")?.dataset.outfitSchema || row.querySelector('[data-o="category"]')?.value || "other";
   for (const [field, value] of Object.entries(details)) {
+    if (field === "control_value" && category !== "armor" && category !== "vehicle") continue;
+
     let input = row.querySelector(`[data-ofc="${cssEscape(field)}"]`);
-    // Armor already has a native control field (control_modifier). OFC calls
-    // the same value control_value, so bridge it instead of dropping the value.
-    if (!input && field === "control_value") {
-      input = row.querySelector('[data-o="control_modifier"]');
-    }
+    if (field === "control_value") input = row.querySelector('[data-o="control_modifier"]') || input;
+    if (field === "cs_modifier") input = row.querySelector('[data-o="cs_modifier"]');
     if (!input) continue;
     input.value = String(value ?? "");
     input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -104,7 +104,7 @@ function masterRowDetails(row) {
     tron_software: raw["ソ"],
     tron_support: raw["サ"],
     tron_hardware: raw["ハ"],
-    cs_value: raw.CS,
+    cs_modifier: raw.CS,
     crew: raw["乗員"],
     sf: raw.SF,
     residence_entry: raw["登"],
