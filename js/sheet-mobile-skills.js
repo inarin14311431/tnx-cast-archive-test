@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { requireAuth } from "./auth-state.js?v=4";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -13,7 +13,7 @@ const MUTABLE_GENERAL_PREFIXES = ["製作：","芸術：","操縦："];
 const CATEGORY_LABELS = {general:"一般技能",social:"社会",connection:"コネ"};
 const KIND_LABELS = {normal:"通常",secret:"秘技",ultimate:"奥義",direction:"演出",none:"なし"};
 const PC_GENERAL_ORDER = ["医療","芸術：","射撃","運動","知覚","回避","電脳","白兵","製作：","操縦：","心理","信用","自我","圧力","交渉","隠密"];
-let user=null,character=null,skills=[],activeGeneralId="",activeStyleId="",activeSeparatorId="",orderDirty=false;
+let character=null,skills=[],activeGeneralId="",activeStyleId="",activeSeparatorId="",orderDirty=false;
 const dirtyIds=new Set(),deletedIds=new Set();
 
 function markDirty(){const button=$("#mobile-save");if(button){button.dataset.state="dirty";button.textContent="変更を保存";}const status=$("#mobile-save-status");if(status){status.dataset.state="dirty";status.textContent="未保存の変更があります";}}
@@ -74,5 +74,5 @@ const styleDialog=$("#style-skill-dialog");$("#style-skill-dialog-apply")?.remov
 $("#mobile-separator-close")?.addEventListener("click",closeSeparator);$("#mobile-separator-delete")?.addEventListener("click",()=>deleteSeparator());$("#mobile-separator-dialog")?.addEventListener("cancel",event=>{event.preventDefault();closeSeparator();});
 document.addEventListener("tnx:mobile-before-save",event=>{if(hasChanges())event.detail.add(flush());});window.addEventListener("beforeunload",event=>{if(!hasChanges())return;event.preventDefault();event.returnValue="";});}
 async function load(){const result=await supabase.from("character_skills").select("*").eq("character_id",character.id).order("sort_order");if(result.error)throw result.error;skills=(result.data||[]).map(item=>({...item,_new:false,_separator:isSeparator(item)}));renderGeneral();renderStyle();}
-async function init(){installGeneralDialog();installSeparatorDialog();installToolbars();bind();user=await requireAuth();if(!user)return;const publicId=new URLSearchParams(location.search).get("id");if(!publicId)return;const{data,error}=await supabase.from("characters").select("id").eq("public_id",publicId).eq("owner_id",user.id).maybeSingle();if(error||!data){if(error)console.error(error);return;}character=data;try{await load();}catch(error){console.error(error);}}
+async function init(){installGeneralDialog();installSeparatorDialog();installToolbars();bind();try{const context=await getMobileEditorContext();if(!context.character)return;character=context.character;await load();}catch(error){console.error(error);}}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
