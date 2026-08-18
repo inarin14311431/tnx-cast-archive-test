@@ -1,11 +1,10 @@
-import { supabase } from "./supabase-client.js";
-import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 const ABILITIES=["reason","passion","life","mundane"],MARKS=["","◎","●","◎●"];
 const $=selector=>document.querySelector(selector);const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));const num=value=>Number(value||0);
 let user=null,character=null,draft=null,repairingSummary=false;
 init();
-async function init(){user=await requireAuth();if(!user)return;const publicId=new URLSearchParams(location.search).get("id");if(!publicId)return;ensureStyleSheet();injectDialog();bind();const{data,error}=await supabase.from("characters").select("*").eq("public_id",publicId).eq("owner_id",user.id).maybeSingle();if(error||!data){if(error)console.error(error);return;}character=data;normalizeLoadedMarks(character);renderSummary();observeSummaryOwner();}
+async function init(){const context=await getMobileEditorContext();user=context.user;character=context.character;if(!user||!character)return;ensureStyleSheet();injectDialog();bind();normalizeLoadedMarks(character);renderSummary();observeSummaryOwner();}
 function ensureStyleSheet(){if(document.querySelector('link[data-mobile-style-editor-style]'))return;const link=document.createElement("link");link.rel="stylesheet";link.href="./css-next/pages/sheet-mobile-style.css?v=6";link.dataset.mobileStyleEditorStyle="1";document.head.append(link);}
 function styleOptions(selected=""){return['<option value="">選択</option>',...STYLE_DATA.map(item=>`<option value="${esc(item.name)}" ${item.name===selected?"selected":""}>${esc(item.name)}</option>`)].join("");}
 function attributeOptions(selected=""){return['<option value="">属性を選択</option>',...UTSUWA_ATTRIBUTES.map(item=>`<option value="${esc(item.name)}" ${item.name===selected?"selected":""}>${esc(item.name)}</option>`)].join("");}
