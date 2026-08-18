@@ -7,6 +7,7 @@ const app = await readFile(new URL("../js/sheet-mobile-app.js", import.meta.url)
 const runtime = await readFile(new URL("../js/sheet-mobile-runtime.js", import.meta.url), "utf8");
 const profile = await readFile(new URL("../js/sheet-mobile.js", import.meta.url), "utf8");
 const style = await readFile(new URL("../js/sheet-mobile-style.js", import.meta.url), "utf8");
+const ability = await readFile(new URL("../js/sheet-mobile-ability.js", import.meta.url), "utf8");
 const styleCompat = await readFile(new URL("../js/sheet-mobile-style-existing-values.js", import.meta.url), "utf8");
 const outfit = await readFile(new URL("../js/sheet-mobile-outfit.js", import.meta.url), "utf8");
 const combos = await readFile(new URL("../js/sheet-mobile-combos.js", import.meta.url), "utf8");
@@ -31,6 +32,7 @@ test("mobile editor keeps one application entry point", () => {
   assert.match(app, /sheet-mobile-save-coordinator\.js/);
   assert.match(app, /sheet-mobile\.js/);
   assert.match(app, /sheet-mobile-style\.js/);
+  assert.match(app, /sheet-mobile-ability\.js/);
   assert.match(app, /sheet-mobile-skills\.js/);
   assert.match(app, /sheet-mobile-outfit\.js/);
   assert.match(app, /sheet-mobile-combos\.js/);
@@ -42,7 +44,7 @@ test("shared mobile context owns authentication and character lookup", () => {
   assert.match(runtime, /requireAuth\(\)/);
   assert.match(runtime, /from\("characters"\)/);
   assert.match(runtime, /contextPromise/);
-  for (const source of [profile, style, styleCompat, outfit, combos, snapshots, image, exp]) {
+  for (const source of [profile, style, ability, styleCompat, outfit, combos, snapshots, image, exp]) {
     assert.match(source, /getMobileEditorContext/);
     assert.doesNotMatch(source, /requireAuth/);
     assert.doesNotMatch(source, /from\(["']characters["']\)\.select/);
@@ -55,6 +57,17 @@ test("style feature keeps persona-key exclusivity, Utsuwa attributes and ability
   assert.match(style, /normalizeLoadedMarks/);
   assert.match(style, /tnx:mobile-style-patch/);
   assert.match(style, /adjustBaseline/);
+});
+
+test("ability feature keeps style baselines, breakdown display, CS and coordinated save", () => {
+  assert.match(ability, /styleBaseline/);
+  assert.match(ability, /displayBreakdown/);
+  assert.match(ability, /growthOptions/);
+  assert.match(ability, /modifierOptions/);
+  assert.match(ability, /tnx:mobile-style-patch/);
+  assert.match(ability, /tnx:mobile-before-save/);
+  assert.match(ability, /collectAbilityPayload/);
+  assert.match(ability, /cs_base/);
 });
 
 test("snapshot feature keeps create, restore, delete and dirty-state safeguards", () => {
