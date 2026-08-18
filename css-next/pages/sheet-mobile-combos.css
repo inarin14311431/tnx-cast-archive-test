@@ -1,0 +1,21 @@
+body[data-page="sheet-mobile.html"] .mobile-sheet-section--combos{--mobile-section-accent:var(--color-section-combos,var(--color-accent))}
+body[data-page="sheet-mobile.html"] .mobile-combo-list{display:grid;gap:6px}
+body[data-page="sheet-mobile.html"] .mobile-combo-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 8px;width:100%;min-width:0;padding:9px 10px;border:1px solid color-mix(in srgb,var(--mobile-section-accent) 38%,var(--color-border-muted));background:color-mix(in srgb,var(--color-surface) 94%,transparent);color:inherit;text-align:left}
+body[data-page="sheet-mobile.html"] .mobile-combo-card>span{align-self:center;color:var(--mobile-section-accent);font-size:8px;font-weight:800;letter-spacing:.08em}
+body[data-page="sheet-mobile.html"] .mobile-combo-card>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+body[data-page="sheet-mobile.html"] .mobile-combo-card>small,body[data-page="sheet-mobile.html"] .mobile-combo-card>em{grid-column:1/-1;min-width:0;overflow:hidden;color:var(--color-muted);font-size:10px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}
+body[data-page="sheet-mobile.html"] .mobile-combo-card.is-counter{border-style:dashed}
+body[data-page="sheet-mobile.html"] .mobile-combo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+body[data-page="sheet-mobile.html"] .mobile-combo-grid label{display:grid;gap:4px;min-width:0;color:var(--color-muted);font-size:10px;font-weight:700}
+body[data-page="sheet-mobile.html"] .mobile-combo-grid :is(input,select,textarea){width:100%;min-width:0;min-height:44px;padding:8px 9px;border:1px solid var(--color-border-muted);background:var(--color-field);color:inherit;font-size:16px}
+body[data-page="sheet-mobile.html"] .mobile-combo-field-label{display:block;margin-bottom:4px;color:var(--color-muted);font-size:10px;font-weight:700}
+body[data-page="sheet-mobile.html"] .mobile-combo-suits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+body[data-page="sheet-mobile.html"] .mobile-combo-suits label{display:flex;align-items:center;gap:5px;min-height:40px;padding:5px 7px;border:1px solid var(--color-border-muted);background:var(--color-surface)}
+body[data-page="sheet-mobile.html"] .mobile-combo-suits input{width:auto;min-height:0}
+body[data-page="sheet-mobile.html"] .mobile-combo-skill-picker{display:grid;gap:7px}
+body[data-page="sheet-mobile.html"] .mobile-combo-skill-group{margin:0;padding:7px;border:1px solid var(--color-border-muted)}
+body[data-page="sheet-mobile.html"] .mobile-combo-skill-group legend{padding:0 4px;color:var(--mobile-section-accent);font-size:10px;font-weight:800}
+body[data-page="sheet-mobile.html"] .mobile-combo-skill-group label{display:flex;align-items:center;gap:5px;min-height:32px;font-size:11px}
+body[data-page="sheet-mobile.html"] .mobile-combo-skill-group input{width:auto;min-height:0}
+body[data-page="sheet-mobile.html"] .mobile-combo-message{min-height:1.4em;margin:8px 0 0;color:#d85b5b;font-size:11px}
+@media(max-width:390px){body[data-page="sheet-mobile.html"] .mobile-combo-grid{gap:7px}body[data-page="sheet-mobile.html"] .mobile-combo-suits{grid-template-columns:1fr 1fr}}
