@@ -5,6 +5,10 @@ body[data-page="sheet-mobile.html"] .mobile-outfit-card>*{min-width:0;overflow:h
 body[data-page="sheet-mobile.html"] .mobile-outfit-card strong{color:var(--color-section-outfits);font-size:12px}
 body[data-page="sheet-mobile.html"] .mobile-outfit-card span{font-size:10px;color:var(--color-muted)}
 body[data-page="sheet-mobile.html"] .mobile-outfit-card small{font-size:9px;color:var(--color-muted)}
+body[data-page="sheet-mobile.html"] #mobile-outfit-dialog{max-width:min(680px,100vw);max-height:100dvh;padding:0;overflow:hidden}
+body[data-page="sheet-mobile.html"] #mobile-outfit-dialog>form{display:grid;grid-template-rows:auto minmax(0,1fr);width:min(680px,100vw);max-width:100%;height:min(92dvh,900px);max-height:100dvh;overflow:hidden}
+body[data-page="sheet-mobile.html"] #mobile-outfit-dialog .mobile-editor-dialog__header{position:relative;z-index:2}
+body[data-page="sheet-mobile.html"] #mobile-outfit-dialog .mobile-editor-dialog__body{min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;padding-bottom:max(24px,env(safe-area-inset-bottom))}
 body[data-page="sheet-mobile.html"] .mobile-outfit-editor{display:grid;gap:10px}
 body[data-page="sheet-mobile.html"] .mobile-outfit-editor__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 body[data-page="sheet-mobile.html"] .mobile-outfit-editor__grid>label{display:grid;gap:5px;min-width:0;font-size:11px}
@@ -25,4 +29,4 @@ body[data-page="sheet-mobile.html"] .mobile-outfit-defense>span{align-self:cente
 body[data-page="sheet-mobile.html"] .mobile-outfit-defense label{display:grid;gap:3px;font-size:10px;text-align:center}
 body[data-page="sheet-mobile.html"] .mobile-outfit-defense input{text-align:center}
 body[data-page="sheet-mobile.html"] .mobile-outfit-category-hint{margin:0;padding:14px;border:1px dashed var(--color-border-muted);color:var(--color-muted);font-size:12px;line-height:1.6}
-@media(max-width:390px){body[data-page="sheet-mobile.html"] .mobile-outfit-editor__grid,body[data-page="sheet-mobile.html"] .mobile-outfit-group__grid{gap:7px}body[data-page="sheet-mobile.html"] .mobile-outfit-defense{grid-template-columns:1fr 1fr 1fr}body[data-page="sheet-mobile.html"] .mobile-outfit-defense>span{grid-column:1/-1}}
+@media(max-width:390px){body[data-page="sheet-mobile.html"] #mobile-outfit-dialog>form{height:100dvh}body[data-page="sheet-mobile.html"] .mobile-outfit-editor__grid,body[data-page="sheet-mobile.html"] .mobile-outfit-group__grid{gap:7px}body[data-page="sheet-mobile.html"] .mobile-outfit-defense{grid-template-columns:1fr 1fr 1fr}body[data-page="sheet-mobile.html"] .mobile-outfit-defense>span{grid-column:1/-1}}
