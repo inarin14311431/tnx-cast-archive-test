@@ -9,6 +9,7 @@ const profile = await readFile(new URL("../js/sheet-mobile.js", import.meta.url)
 const styleCompat = await readFile(new URL("../js/sheet-mobile-style-existing-values.js", import.meta.url), "utf8");
 const outfit = await readFile(new URL("../js/sheet-mobile-outfit.js", import.meta.url), "utf8");
 const combos = await readFile(new URL("../js/sheet-mobile-combos.js", import.meta.url), "utf8");
+const snapshots = await readFile(new URL("../js/sheet-mobile-snapshots.js", import.meta.url), "utf8");
 const exp = await readFile(new URL("../js/sheet-mobile-header-exp.js", import.meta.url), "utf8");
 const uiCss = await readFile(new URL("../css-next/pages/sheet-mobile-ui.css", import.meta.url), "utf8");
 const skillsCss = await readFile(new URL("../css-next/pages/sheet-mobile-skills.css", import.meta.url), "utf8");
@@ -30,17 +31,26 @@ test("mobile editor keeps one application entry point", () => {
   assert.match(app, /sheet-mobile-skills\.js/);
   assert.match(app, /sheet-mobile-outfit\.js/);
   assert.match(app, /sheet-mobile-combos\.js/);
+  assert.match(app, /sheet-mobile-snapshots\.js/);
 });
 
 test("shared mobile context owns authentication and character lookup", () => {
   assert.match(runtime, /requireAuth\(\)/);
   assert.match(runtime, /from\("characters"\)/);
   assert.match(runtime, /contextPromise/);
-  for (const source of [profile, styleCompat, outfit, combos, exp]) {
+  for (const source of [profile, styleCompat, outfit, combos, snapshots, exp]) {
     assert.match(source, /getMobileEditorContext/);
     assert.doesNotMatch(source, /requireAuth/);
     assert.doesNotMatch(source, /from\(["']characters["']\)/);
   }
+});
+
+test("snapshot feature keeps create, restore, delete and dirty-state safeguards", () => {
+  assert.match(snapshots, /MAX_SNAPSHOTS=10/);
+  assert.match(snapshots, /create_character_snapshot/);
+  assert.match(snapshots, /restore_character_snapshot/);
+  assert.match(snapshots, /from\("character_snapshots"\)\.delete\(\)/);
+  assert.match(snapshots, /if\(dirty\(\)\)/);
 });
 
 test("common editor component styles stay in UI stylesheet", () => {
