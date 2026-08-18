@@ -119,7 +119,9 @@ export function composeDefense(item) {
 export function cloneOutfit(item) {
   const details = normalizeDetails(item?.ofc_details || {});
   if (!details.electronic_control && item?.electronic_control) details.electronic_control = String(item.electronic_control);
-  const draft = { ...item, ofc_details: details };
+  const control = details.control_value !== "" ? normalizeNumber(details.control_value) : normalizeNumber(item?.control_modifier);
+  details.control_value = String(control);
+  const draft = { ...item, control_modifier: control, ofc_details: details };
   parseConcealment(draft);
   parseDefense(draft);
   return draft;
@@ -128,6 +130,7 @@ export function cloneOutfit(item) {
 export function collectOutfitRecord(item, character) {
   const concealment = composeConcealment(item);
   const defense = composeDefense(item);
+  const control = normalizeNumber(item.control_modifier);
   const details = compactDetails({
     ...normalizeDetails(item.ofc_details || {}),
     site_category: item.category || "other",
@@ -139,6 +142,7 @@ export function collectOutfitRecord(item, character) {
     range_text: item.range || "",
     slot: item.slot || "",
     description: item.description || "",
+    control_value: String(control),
     defense_s: String(item._defS ?? "").trim(),
     defense_p: String(item._defP ?? "").trim(),
     defense_i: String(item._defI ?? "").trim()
@@ -157,7 +161,7 @@ export function collectOutfitRecord(item, character) {
     range: item.range || "",
     slot: item.slot || "",
     description: item.description || "",
-    control_modifier: normalizeNumber(item.control_modifier),
+    control_modifier: control,
     cs_modifier: normalizeNumber(item.cs_modifier),
     mundane_modifier: normalizeNumber(item.mundane_modifier),
     sort_order: normalizeNumber(item.sort_order),
