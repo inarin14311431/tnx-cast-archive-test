@@ -20,7 +20,7 @@ export function ensureOutfitStylesheet() {
     link.dataset.mobileOutfitStyle = "1";
     document.head.append(link);
   }
-  link.href = "./css-next/pages/sheet-mobile-outfit.css?v=7";
+  link.href = "./css-next/pages/sheet-mobile-outfit.css?v=8";
 }
 
 export function ensureOutfitToolbar() {
@@ -68,6 +68,14 @@ const detailField = (item, field, label, options = {}) => {
   return `<label>${label}<input data-outfit-detail="${field}"${attrs} value="${esc(value)}"></label>`;
 };
 
+function manufacturerField(item, manufacturers) {
+  const current = String(detailValue(item, "manufacturer") || "").trim();
+  const values = [...new Set((manufacturers || []).map(value => String(value || "").trim()).filter(Boolean))];
+  values.sort((a, b) => a.localeCompare(b, "ja"));
+  if (current && !values.includes(current)) values.unshift(current);
+  return `<label>メーカー<select data-outfit-detail="manufacturer"><option value="">選択</option>${values.map(value => `<option value="${esc(value)}" ${value === current ? "selected" : ""}>${esc(value)}</option>`).join("")}</select></label>`;
+}
+
 function commonBaseFields(item) {
   return `<fieldset class="mobile-outfit-group"><legend>基本</legend><div class="mobile-outfit-group__grid">
     <label class="mobile-outfit-editor__name">名称<input data-outfit-field="name" value="${esc(item.name || "")}"></label>
@@ -78,11 +86,9 @@ function commonBaseFields(item) {
   </div></fieldset>`;
 }
 
-function commonOfcFields(item) {
+function commonOfcFields(item, manufacturers) {
   return `<fieldset class="mobile-outfit-group"><legend>OFC情報</legend><div class="mobile-outfit-group__grid">
-    ${detailField(item, "major_category", "OFC大分類")}
-    ${detailField(item, "minor_category", "OFC小分類")}
-    ${detailField(item, "manufacturer", "メーカー")}
+    ${manufacturerField(item, manufacturers)}
     ${detailField(item, "page_number", "参照P")}
   </div></fieldset>`;
 }
@@ -101,30 +107,31 @@ const slotField = item => `<label>部位<select data-outfit-field="slot">${optio
 const rangeField = item => `<label>射程<select data-outfit-field="range">${optionList(RANGE_OPTIONS, item.range || "")}</select></label>`;
 const controlField = item => `<label>制御値<select data-outfit-field="control_modifier">${controlOptions(item.control_modifier)}</select></label>`;
 const csModifierField = item => `<label>CS修正<input data-outfit-field="cs_modifier" type="number" step="1" inputmode="numeric" value="${esc(item.cs_modifier ?? 0)}"></label>`;
+const electronicControlField = item => detailField(item, "electronic_control", "電制");
 
 function performanceFields(item) {
-  let fields = "";
+  let fields = electronicControlField(item);
   switch (item.category) {
     case "weapon":
-      fields = `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${rangeField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}${detailField(item, "electronic_control", "電制")}`;
+      fields += `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${rangeField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}`;
       break;
     case "armor":
-      fields = `${defenseFields(item)}${controlField(item)}${detailField(item, "electronic_control", "電制")}`;
+      fields += `${defenseFields(item)}${controlField(item)}`;
       break;
     case "cyberware":
-      fields = `${controlField(item)}${csModifierField(item)}${detailField(item, "electronic_control", "電制")}${detailField(item, "ianus_surface", "IANUS 表")}${detailField(item, "ianus_deep", "IANUS 深")}${detailField(item, "ianus_none", "IANUS 無")}`;
+      fields += `${controlField(item)}${csModifierField(item)}${detailField(item, "ianus_surface", "IANUS 表")}${detailField(item, "ianus_deep", "IANUS 深")}${detailField(item, "ianus_none", "IANUS 無")}`;
       break;
     case "tron":
-      fields = `${controlField(item)}${csModifierField(item)}${detailField(item, "electronic_control", "電制")}${detailField(item, "tron_software", "ソフトウェア")}${detailField(item, "tron_support", "サポート")}${detailField(item, "tron_hardware", "ハードウェア")}`;
+      fields += `${controlField(item)}${csModifierField(item)}${detailField(item, "tron_software", "ソフトウェア")}${detailField(item, "tron_support", "サポート")}${detailField(item, "tron_hardware", "ハードウェア")}`;
       break;
     case "vehicle":
-      fields = `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${defenseFields(item)}${controlField(item)}${csModifierField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}${detailField(item, "electronic_control", "電制")}${detailField(item, "cs_value", "CS値")}${detailField(item, "crew", "乗員")}${detailField(item, "sf", "SF")}`;
+      fields += `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${defenseFields(item)}${controlField(item)}${csModifierField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}${detailField(item, "cs_value", "CS値")}${detailField(item, "crew", "乗員")}${detailField(item, "sf", "SF")}`;
       break;
     case "residence":
-      fields = `${detailField(item, "electronic_control", "電制")}${detailField(item, "residence_entry", "登場")}${detailField(item, "residence_electric", "電力")}${detailField(item, "residence_area", "エリア")}`;
+      fields += `${detailField(item, "residence_entry", "登場")}${detailField(item, "residence_electric", "電力")}${detailField(item, "residence_area", "エリア")}`;
       break;
     case "other":
-      fields = `${controlField(item)}${csModifierField(item)}${detailField(item, "electronic_control", "電制")}${detailField(item, "cs_value", "CS値")}`;
+      fields += `${controlField(item)}${csModifierField(item)}${detailField(item, "cs_value", "CS値")}`;
       break;
     default:
       return "";
@@ -136,11 +143,11 @@ function deleteAction() {
   return `<button type="button" class="mobile-danger-action" data-outfit-delete>このアウトフィットを削除</button>`;
 }
 
-export function buildOutfitEditor(item) {
+export function buildOutfitEditor(item, { manufacturers = [] } = {}) {
   const categories = `<option value="">分類を選択</option>${Object.entries(LABELS).map(([value, label]) => `<option value="${value}" ${item.category === value ? "selected" : ""}>${label}</option>`).join("")}`;
   return `<div class="mobile-outfit-editor__grid">
     <label class="mobile-outfit-editor__category">分類<select data-outfit-field="category">${categories}</select></label>
-    ${item.category ? `${commonBaseFields(item)}${commonOfcFields(item)}${performanceFields(item)}<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid"><label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label></div></fieldset>` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
+    ${item.category ? `${commonBaseFields(item)}${commonOfcFields(item, manufacturers)}${performanceFields(item)}<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid"><label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label></div></fieldset>` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
     ${deleteAction()}
   </div>`;
 }
