@@ -20,16 +20,24 @@ function setError(error) {
   status.textContent = `保存に失敗しました：${error?.message || "不明なエラー"}`;
 }
 
+function settleSavedIfIdle(button) {
+  if (!button || button.dataset.state === "saving") return;
+  button.disabled = false;
+  button.dataset.state = "saved";
+  button.textContent = "保存済み";
+  const status = $("#mobile-save-status");
+  if (status && status.dataset.state !== "error") {
+    status.dataset.state = "saved";
+    status.textContent = "保存済み";
+  }
+}
+
 async function handleSave(event) {
   const button = event.target.closest?.("#mobile-save");
   if (!button || replaying || saving) return;
 
   const tasks = [];
-  const detail = {
-    add(task) {
-      if (task) tasks.push(Promise.resolve(task));
-    }
-  };
+  const detail = { add(task) { if (task) tasks.push(Promise.resolve(task)); } };
   document.dispatchEvent(new CustomEvent("tnx:mobile-before-save", { detail }));
   if (!tasks.length) return;
 
@@ -42,6 +50,7 @@ async function handleSave(event) {
     replaying = true;
     setBusy(false);
     button.click();
+    settleSavedIfIdle(button);
   } catch (error) {
     console.error(error);
     setBusy(false);
