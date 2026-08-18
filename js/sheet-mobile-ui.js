@@ -1,9 +1,9 @@
-import "./sheet-mobile-style-skill-ui.js?v=20260818-4";
-import "./sheet-mobile-skill-rules.js?v=20260818-2";
+import "./sheet-mobile-save-coordinator.js?v=20260818-1";
+import "./sheet-mobile-skills.js?v=20260818-1";
 import "./sheet-mobile-summary-text.js?v=20260818-1";
 import "./sheet-mobile-header-exp.js?v=20260818-1";
-import "./sheet-mobile-crud.js?v=20260818-2";
-import "./sheet-mobile-combos.js?v=20260818-4";
+import "./sheet-mobile-combos.js?v=20260818-5";
+
 const $ = selector => document.querySelector(selector);
 
 function ensureCommonStyles() {
@@ -12,13 +12,12 @@ function ensureCommonStyles() {
     ["mobile-ui", "./css-next/pages/sheet-mobile-ui.css?v=3"],
     ["mobile-profile-current", "./css-next/pages/sheet-mobile-profile.css?v=10"],
     ["mobile-ability-current", "./css-next/pages/sheet-mobile-ability.css?v=4"],
-    ["mobile-crud", "./css-next/pages/sheet-mobile-crud.css?v=1"],
-    ["mobile-editor-policy", "./css-next/pages/sheet-mobile-editor-policy.css?v=1"]
+    ["mobile-skills", "./css-next/pages/sheet-mobile-skills.css?v=1"]
   ];
   for (const [key, href] of styles) {
     const current = document.querySelector(`link[data-${key}-style]`);
     if (current) {
-      if (!current.getAttribute("href")?.endsWith(href.replace("./", "")) && current.getAttribute("href") !== href) current.href = href;
+      if (current.getAttribute("href") !== href) current.href = href;
       continue;
     }
     const link = document.createElement("link");
@@ -31,10 +30,9 @@ function ensureCommonStyles() {
 
 function removeObsoleteControls() {
   document.querySelectorAll(".mobile-section-top").forEach(node => node.remove());
-  ["#mobile-ability-dialog-apply", "#mobile-cs-dialog-apply"].forEach(selector => $(selector)?.remove());
-  ["#mobile-ability-dialog", "#mobile-cs-dialog"].forEach(selector => $(selector)?.querySelector(".mobile-editor-dialog__header")?.classList.add("mobile-editor-dialog__header--close-only"));
+  ["#mobile-ability-dialog-apply", "#mobile-cs-dialog-apply", "#style-skill-dialog-apply"].forEach(selector => $(selector)?.remove());
+  ["#mobile-ability-dialog", "#mobile-cs-dialog", "#style-skill-dialog"].forEach(selector => $(selector)?.querySelector(".mobile-editor-dialog__header")?.classList.add("mobile-editor-dialog__header--close-only"));
   document.querySelectorAll(".mobile-sheet-section > header > small").forEach(node => node.remove());
-  document.querySelectorAll(".mobile-sheet-section > .mobile-sheet-section__body > .mobile-sheet-section__note").forEach(node => node.remove());
 }
 
 function addEditNotice() {
