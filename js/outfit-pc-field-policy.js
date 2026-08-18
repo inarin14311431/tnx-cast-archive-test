@@ -11,6 +11,17 @@ let storedQueues = new Map();
 
 const signature = (category, name) => `${String(category || "other").trim()}\u0000${String(name || "").trim()}`;
 
+function splitConcealment(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return { value: "", modifier: "" };
+  const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
+  if (!match) return { value: text, modifier: "" };
+  return {
+    value: String(match[1] || "").trim(),
+    modifier: String(match[2] || match[3] || "").trim()
+  };
+}
+
 function storedRecord(row) {
   const category = row.closest("table")?.dataset.outfitSchema || "other";
   const name = row.querySelector('[data-o="name"]')?.value || "";
@@ -40,10 +51,33 @@ function addCell(row, field, label) {
   input.dataset.o = field;
   input.dataset.pcOutfitProxy = field;
   input.setAttribute("aria-label", label);
-  input.value = String(item?.[field] ?? "");
+  const rawValue = String(item?.[field] ?? "");
+  if (field === "concealment") {
+    const parsed = splitConcealment(rawValue);
+    input.value = parsed.value;
+    if (parsed.modifier) row.dataset.pcConcealmentModifier = parsed.modifier;
+  } else {
+    input.value = rawValue;
+  }
   td.append(input);
   const anchor = row.querySelector(".outfit-table-cell--description") || row.querySelector(".outfit-table-cell--actions");
   row.insertBefore(td, anchor || null);
+}
+
+function normalizeConcealmentRow(row) {
+  const field = row.querySelector('[data-o="concealment"]');
+  if (field) {
+    const parsed = splitConcealment(field.value);
+    if (parsed.modifier && !row.dataset.pcConcealmentModifier) row.dataset.pcConcealmentModifier = parsed.modifier;
+    if (field.value !== parsed.value) field.value = parsed.value;
+  }
+
+  const modifier = row.querySelector('[data-ofc="concealment_penalty"]');
+  const legacyModifier = String(row.dataset.pcConcealmentModifier || "").trim();
+  if (modifier && legacyModifier && !String(modifier.value || "").trim()) {
+    modifier.value = legacyModifier;
+    modifier.dispatchEvent(new Event("input", { bubbles: true }));
+  }
 }
 
 function applyTable(table) {
@@ -61,6 +95,8 @@ function applyTable(table) {
     addHeader(table, field, label);
     table.querySelectorAll("tbody .outfit-table-row").forEach(row => addCell(row, field, label));
   }
+
+  table.querySelectorAll("tbody .outfit-table-row").forEach(normalizeConcealmentRow);
 }
 
 function applyPolicy() {
