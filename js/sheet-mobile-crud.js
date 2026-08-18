@@ -1,56 +1,505 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 
-const $=s=>document.querySelector(s);
-const SUITS=[["reason","♠"],["passion","♣"],["life","♥"],["mundane","♦"]];
-const STYLE_PREFIX="@@TNX_STYLE_DETAIL_V1@@";
-const DETAIL_FIELDS=["skill","limit","timing","target","range","difficulty","confrontation","description","page"];
-const OUTFIT_LABELS={weapon:"武器",armor:"防具",cyberware:"サイバーウェア",tron:"トロン",vehicle:"ヴィークル",residence:"住居",other:"その他"};
-const OUTFIT_FIELDS={weapon:[["concealment","隠匿"],["attack","攻撃"],["range","射程"],["slot","部位"]],armor:[["concealment","隠匿"],["defense","防御"],["slot","部位"],["control_modifier","制御","number"]],vehicle:[["attack","攻撃"],["defense","防御"],["control_modifier","制御","number"],["cs_modifier","CS","number"]],residence:[["mundane_modifier","外界","number"],["slot","部位／エリア"]],cyberware:[["concealment","隠匿"],["slot","部位"],["control_modifier","制御","number"],["cs_modifier","CS","number"],["mundane_modifier","外界","number"]],tron:[["concealment","隠匿"],["slot","部位"],["control_modifier","制御","number"],["cs_modifier","CS","number"],["mundane_modifier","外界","number"]],other:[["concealment","隠匿"],["slot","部位"],["control_modifier","制御","number"],["cs_modifier","CS","number"],["mundane_modifier","外界","number"]]};
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const num=v=>Number(v||0);
-const uid=p=>`${p}-${crypto.randomUUID()}`;
+const $ = s => document.querySelector(s);
+const SUITS = [["reason","♠"],["passion","♣"],["life","♥"],["mundane","♦"]];
+const STYLE_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
+const STYLE_SEPARATOR = "[[STYLE_SEPARATOR]]";
+const DETAIL_FIELDS = ["skill","limit","timing","target","range","difficulty","confrontation","description","page"];
+const MUTABLE_GENERAL_PREFIXES = ["製作：","芸術：","操縦："];
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => Number(v || 0);
+const uid = p => `${p}-${crypto.randomUUID()}`;
 
-let user=null,character=null,saving=false,replay=false;
-let activeGeneral=null,activeNewStyle=null,activeNewOutfit=null,existingStyleId="",existingOutfitId="";
-const newSkills=[],newOutfits=[],deleteSkills=new Set(),deleteOutfits=new Set();
+let user = null;
+let character = null;
+let saving = false;
+let replaying = false;
+let activeGeneral = null;
+let activeNewStyle = null;
+let existingStyleId = "";
+let styleRows = [];
+let styleOrderDirty = false;
+const newSkills = [];
+const deleteSkills = new Set();
 
-function markDirty(){const b=$("#mobile-save");if(b){b.dataset.state="dirty";b.textContent="変更を保存";}const s=$("#mobile-save-status");if(s){s.dataset.state="dirty";s.textContent="未保存の変更があります";}}
-function queued(){return newSkills.length||newOutfits.length||deleteSkills.size||deleteOutfits.size;}
-function addButton(text,type){return `<button type="button" class="mobile-section-add" data-mobile-queued-add="${type}">${text}</button>`;}
-function installBars(){document.querySelectorAll('[data-mobile-add-toolbar],[data-mobile-stage-toolbar]').forEach(n=>n.remove());const g=$("#mobile-general .mobile-sheet-section__body");if(g){const bar=document.createElement("div");bar.className="mobile-section-addbar mobile-section-addbar--three";bar.innerHTML=addButton("＋ 一般技能","general")+addButton("＋ 社会","social")+addButton("＋ コネ","connection");g.prepend(bar);}const s=$("#mobile-style-skills-section .mobile-sheet-section__body");if(s){const bar=document.createElement("div");bar.className="mobile-section-addbar";bar.innerHTML=addButton("＋ スタイル技能","style");s.prepend(bar);}const o=$("#mobile-outfits-section .mobile-sheet-section__body");if(o){const bar=document.createElement("div");bar.className="mobile-section-addbar";bar.innerHTML=addButton("＋ アウトフィット","outfit");o.prepend(bar);}}
+function markDirty() {
+  const button = $("#mobile-save");
+  if (button) { button.dataset.state = "dirty"; button.textContent = "変更を保存"; }
+  const status = $("#mobile-save-status");
+  if (status) { status.dataset.state = "dirty"; status.textContent = "未保存の変更があります"; }
+}
 
-function installGeneralDialog(){if($("#mobile-queued-general-dialog"))return;const d=document.createElement("dialog");d.id="mobile-queued-general-dialog";d.className="mobile-editor-dialog";d.innerHTML=`<form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--close-only"><button type="button" id="mobile-queued-general-close">閉じる</button><strong id="mobile-queued-general-title">技能編集</strong></header><div class="mobile-editor-dialog__body"><div class="mobile-form-grid mobile-form-grid--two"><label class="mobile-span-2">名称<input id="mobile-queued-general-name"></label><label>レベル<input id="mobile-queued-general-level" type="number" min="0" inputmode="numeric"></label><div class="mobile-span-2 mobile-suit-grid">${SUITS.map(([k,m])=>`<label><input type="checkbox" data-mobile-queued-suit="${k}"><span>${m}</span></label>`).join("")}</div><button type="button" id="mobile-queued-general-delete" class="mobile-danger-action mobile-span-2">この技能を削除</button></div></div></form>`;document.body.append(d);$("#mobile-queued-general-close").onclick=()=>d.close();d.addEventListener("cancel",e=>{e.preventDefault();d.close();});d.addEventListener("input",syncGeneral);d.addEventListener("change",syncGeneral);$("#mobile-queued-general-delete").onclick=deleteGeneral;}
-function skillBlank(category){return {_temp:uid("skill"),category,name:"",level:category==="general"?0:1,free_level:0,skill_kind:category==="style"?"normal":"proper",reason:false,passion:false,life:false,mundane:false,timing:"",target:"",range:"",difficulty:"",confrontation:"",description:"",sort_order:9999};}
-function openGeneral(item,row=null){activeGeneral={item,row};const label={general:"一般技能",social:"社会",connection:"コネ"}[item.category]||"技能";$("#mobile-queued-general-title").textContent=`${label}編集`;$("#mobile-queued-general-name").value=item.name||"";$("#mobile-queued-general-level").value=num(item.level);for(const[k]of SUITS)$(`[data-mobile-queued-suit="${k}"]`).checked=Boolean(item[k]);$("#mobile-queued-general-dialog").showModal();requestAnimationFrame(()=>$("#mobile-queued-general-name")?.focus());}
-function syncGeneral(e){if(!activeGeneral)return;const {item,row}=activeGeneral;if(e.target.id==="mobile-queued-general-name")item.name=e.target.value;else if(e.target.id==="mobile-queued-general-level")item.level=Math.max(0,num(e.target.value));else if(e.target.matches('[data-mobile-queued-suit]'))item[e.target.dataset.mobileQueuedSuit]=e.target.checked;else return;const count=SUITS.reduce((n,[k])=>n+(item[k]?1:0),0);if(e.target.matches('[data-mobile-queued-suit]')){if(e.target.checked&&item.level<count)item.level=count;else if(!e.target.checked)item.level=count;}if(e.target.id==="mobile-queued-general-level"&&item.level>=4)for(const[k]of SUITS)item[k]=true;$("#mobile-queued-general-level").value=item.level;for(const[k]of SUITS)$(`[data-mobile-queued-suit="${k}"]`).checked=Boolean(item[k]);if(row){const name=row.querySelector('[data-mobile-general-field="name"]'),level=row.querySelector('[data-mobile-general-field="level"]');if(name){name.value=item.name;name.dispatchEvent(new Event("input",{bubbles:true}));}if(level){level.value=item.level;level.dispatchEvent(new Event("change",{bubbles:true}));}for(const[k]of SUITS){const box=row.querySelector(`[data-mobile-general-field="${k}"]`);if(box){box.checked=Boolean(item[k]);box.dispatchEvent(new Event("change",{bubbles:true}));}}}else renderPendingGeneral();markDirty();}
-function deleteGeneral(){if(!activeGeneral)return;const {item,row}=activeGeneral;if(!confirm(`「${item.name||"名称未入力"}」を削除しますか？`))return;if(item._temp)newSkills.splice(newSkills.indexOf(item),1);else{deleteSkills.add(String(item.id));row?.remove();}activeGeneral=null;$("#mobile-queued-general-dialog").close();renderPendingGeneral();markDirty();}
-function enhanceGeneral(){document.querySelectorAll('[data-mobile-general-skill]').forEach(row=>{if(row.dataset.queuedDeleteReady)return;row.dataset.queuedDeleteReady="1";const edit=document.createElement("button");edit.type="button";edit.className="mobile-general-edit-trigger";edit.textContent="…";edit.onclick=()=>{const h=row.closest('.mobile-general-group')?.querySelector('h3')?.textContent||"";const category=h.includes("社会")?"social":h.includes("コネ")?"connection":"general";const item={id:row.dataset.mobileGeneralSkill,category,name:row.querySelector('[data-mobile-general-field="name"]')?.value||"",level:num(row.querySelector('[data-mobile-general-field="level"]')?.value),free_level:0,skill_kind:"proper"};for(const[k]of SUITS)item[k]=Boolean(row.querySelector(`[data-mobile-general-field="${k}"]`)?.checked);openGeneral(item,row);};row.append(edit);});}
-function groupFor(category){return [...document.querySelectorAll('.mobile-general-group')].find(n=>{const h=n.querySelector('h3')?.textContent||"";return category==="social"?h.includes("社会"):category==="connection"?h.includes("コネ"):h.includes("一般技能")&&!h.includes("社会");});}
-function renderPendingGeneral(){document.querySelectorAll('[data-mobile-pending-general]').forEach(n=>n.remove());for(const item of newSkills.filter(x=>x.category!=="style")){const g=groupFor(item.category);if(!g)continue;const b=document.createElement("button");b.type="button";b.className="mobile-pending-general";b.dataset.mobilePendingGeneral=item._temp;b.innerHTML=`<strong>${esc(item.name||"名称未入力")}</strong><span>LV ${num(item.level)} / ${SUITS.filter(([k])=>item[k]).map(([,m])=>m).join("")||"—"}</span>`;b.onclick=()=>openGeneral(item);g.append(b);}}
+function hasQueued() {
+  return newSkills.length > 0 || deleteSkills.size > 0 || styleOrderDirty;
+}
 
-function styleCard(item){const outline={"♠":"♤","♣":"♧","♥":"♡","♦":"♢"};const suits=SUITS.map(([k,m])=>item[k]?m:outline[m]).join("");return `<button type="button" class="mobile-edit-card is-pending" data-mobile-pending-style="${item._temp}"><span class="mobile-edit-card__top"><span class="mobile-edit-card__name">${esc(item.name||"名称未入力")}</span><span class="mobile-edit-card__level">LV ${num(item.level)}</span></span><span class="mobile-edit-card__meta"><span>未保存</span><span class="mobile-edit-card__suits">${suits}</span></span></button>`;}
-function renderPendingStyle(){document.querySelectorAll('[data-mobile-pending-style]').forEach(n=>n.remove());const root=$("#mobile-style-skills");if(root)root.insertAdjacentHTML("beforeend",newSkills.filter(x=>x.category==="style").map(styleCard).join(""));}
-function styleDetail(item){if(!String(item.description||"").startsWith(STYLE_PREFIX))return {};try{return JSON.parse(String(item.description).slice(STYLE_PREFIX.length).trim());}catch{return {};}}
-function openNewStyle(item){activeNewStyle=item;$("#style-skill-dialog-title").textContent=item.name||"スタイル技能追加";$("#mobile-style-name").value=item.name||"";$("#mobile-style-kind").value=item.skill_kind||"normal";$("#mobile-style-level").value=num(item.level);for(const[k]of SUITS)$("#mobile-style-suit-"+k).checked=Boolean(item[k]);const detail=styleDetail(item);for(const k of DETAIL_FIELDS){const c=document.querySelector(`[data-mobile-style-detail="${k}"]`);if(c)c.value=detail[k]||"";}$("#style-skill-dialog").showModal();requestAnimationFrame(()=>$("#mobile-style-name")?.focus());}
-function applyNewStyle(){const item=activeNewStyle;if(!item)return;item.name=$("#mobile-style-name").value;item.skill_kind=$("#mobile-style-kind").value;item.level=Math.max(0,num($("#mobile-style-level").value));for(const[k]of SUITS)item[k]=$("#mobile-style-suit-"+k).checked;const count=SUITS.reduce((n,[k])=>n+(item[k]?1:0),0);item.level=Math.max(item.level,count);const detail={};for(const k of DETAIL_FIELDS)detail[k]=document.querySelector(`[data-mobile-style-detail="${k}"]`)?.value||"";item.description=STYLE_PREFIX+"\n"+JSON.stringify(detail);activeNewStyle=null;$("#style-skill-dialog").close();renderPendingStyle();markDirty();}
-function installStyleDelete(){const d=$("#style-skill-dialog");if(!d||$("#mobile-queued-style-delete"))return;const b=document.createElement("button");b.id="mobile-queued-style-delete";b.type="button";b.className="mobile-danger-action";b.textContent="このスタイル技能を削除";d.querySelector('.mobile-editor-dialog__body')?.append(b);b.onclick=()=>{const id=activeNewStyle?._temp||existingStyleId;if(!id)return;if(!confirm(`「${$("#mobile-style-name")?.value||"名称未入力"}」を削除しますか？`))return;if(activeNewStyle)newSkills.splice(newSkills.indexOf(activeNewStyle),1);else{deleteSkills.add(String(id));document.querySelector(`[data-mobile-style-skill="${CSS.escape(String(id))}"]`)?.remove();}activeNewStyle=null;d.close();renderPendingStyle();markDirty();};}
+function addButton(text, type) {
+  return `<button type="button" class="mobile-section-add" data-mobile-queued-add="${type}">${text}</button>`;
+}
 
-function outfitBlank(){return {_temp:uid("outfit"),category:"other",name:"",purchase_value:"",experience_cost:0,concealment:"",attack:"",defense:"",range:"",slot:"",description:"",control_modifier:0,cs_modifier:0,mundane_modifier:0,sort_order:9999};}
-function outfitInput([k,l,t="text"],item){return `<label>${l}<input data-mobile-new-outfit-field="${k}" type="${t}" value="${esc(item[k]??(t==="number"?0:""))}"></label>`;}
-function outfitEditor(item){const opts=Object.entries(OUTFIT_LABELS).map(([k,l])=>`<option value="${k}" ${item.category===k?"selected":""}>${l}</option>`).join("");return `<div class="mobile-outfit-editor__grid"><label class="mobile-outfit-editor__name">名称<input data-mobile-new-outfit-field="name" value="${esc(item.name||"")}"></label><label>分類<select data-mobile-new-outfit-field="category">${opts}</select></label>${[["purchase_value","購入"],["experience_cost","常備化","number"],...(OUTFIT_FIELDS[item.category]||OUTFIT_FIELDS.other)].map(f=>outfitInput(f,item)).join("")}<label class="mobile-outfit-editor__description">解説<textarea rows="7" data-mobile-new-outfit-field="description">${esc(item.description||"")}</textarea></label><button type="button" class="mobile-danger-action mobile-outfit-editor__description" data-mobile-new-outfit-delete>このアウトフィットを削除</button></div>`;}
-function openNewOutfit(item){activeNewOutfit=item;existingOutfitId="";$("#mobile-outfit-title").textContent=item.name||"アウトフィット追加";$("#mobile-outfit-fields").innerHTML=outfitEditor(item);$("#mobile-outfit-dialog").showModal();requestAnimationFrame(()=>document.querySelector('[data-mobile-new-outfit-field="name"]')?.focus());}
-function renderPendingOutfit(){document.querySelectorAll('[data-mobile-pending-outfit]').forEach(n=>n.remove());const root=$("#mobile-outfits");if(!root)return;for(const item of newOutfits){const b=document.createElement("button");b.type="button";b.className="mobile-outfit-card is-pending";b.dataset.mobilePendingOutfit=item._temp;b.innerHTML=`<strong>${esc(item.name||"名称未入力")}</strong><span>${esc(OUTFIT_LABELS[item.category]||"その他")}</span><small>常備化 ${num(item.experience_cost)} / 未保存</small>`;b.onclick=()=>openNewOutfit(item);root.append(b);}}
-function installOutfitDelete(){const d=$("#mobile-outfit-dialog");if(!d||$("#mobile-existing-outfit-delete"))return;const b=document.createElement("button");b.id="mobile-existing-outfit-delete";b.type="button";b.className="mobile-danger-action";b.textContent="このアウトフィットを削除";d.querySelector('.mobile-editor-dialog__body')?.append(b);b.onclick=()=>{if(activeNewOutfit)return;const id=existingOutfitId;if(!id)return;if(!confirm(`「${$("#mobile-outfit-title")?.textContent||"登録データ"}」を削除しますか？`))return;deleteOutfits.add(String(id));document.querySelector(`[data-mobile-outfit="${CSS.escape(String(id))}"]`)?.remove();d.close();markDirty();};}
-function bindOutfit(){const fields=$("#mobile-outfit-fields");fields?.addEventListener("input",e=>{if(!activeNewOutfit)return;const c=e.target.closest('[data-mobile-new-outfit-field]');if(!c)return;activeNewOutfit[c.dataset.mobileNewOutfitField]=c.type==="number"?num(c.value):c.value;if(c.dataset.mobileNewOutfitField==="name")$("#mobile-outfit-title").textContent=activeNewOutfit.name||"アウトフィット追加";renderPendingOutfit();markDirty();});fields?.addEventListener("change",e=>{if(!activeNewOutfit)return;const c=e.target.closest('[data-mobile-new-outfit-field]');if(!c)return;activeNewOutfit[c.dataset.mobileNewOutfitField]=c.type==="number"?num(c.value):c.value;if(c.dataset.mobileNewOutfitField==="category")fields.innerHTML=outfitEditor(activeNewOutfit);renderPendingOutfit();markDirty();});fields?.addEventListener("click",e=>{if(!e.target.closest('[data-mobile-new-outfit-delete]')||!activeNewOutfit)return;if(!confirm(`「${activeNewOutfit.name||"名称未入力"}」を削除しますか？`))return;newOutfits.splice(newOutfits.indexOf(activeNewOutfit),1);activeNewOutfit=null;$("#mobile-outfit-dialog").close();renderPendingOutfit();markDirty();});}
+function installBars() {
+  document.querySelectorAll('[data-mobile-add-toolbar],[data-mobile-stage-toolbar]').forEach(node => node.remove());
+  const general = $("#mobile-general .mobile-sheet-section__body");
+  if (general) {
+    const bar = document.createElement("div");
+    bar.className = "mobile-section-addbar mobile-section-addbar--three";
+    bar.innerHTML = addButton("＋ 一般技能","general") + addButton("＋ 社会","social") + addButton("＋ コネ","connection");
+    general.prepend(bar);
+  }
+  const style = $("#mobile-style-skills-section .mobile-sheet-section__body");
+  if (style) {
+    const bar = document.createElement("div");
+    bar.className = "mobile-section-addbar mobile-section-addbar--two";
+    bar.innerHTML = addButton("＋ スタイル技能","style") + addButton("＋ 区切り","separator");
+    style.prepend(bar);
+  }
+}
 
-function skillPayload(x){return {character_id:character.id,category:x.category,name:x.name||"",level:num(x.level),free_level:Math.min(num(x.free_level),num(x.level)),skill_kind:x.skill_kind||"proper",reason:Boolean(x.reason),passion:Boolean(x.passion),life:Boolean(x.life),mundane:Boolean(x.mundane),timing:x.timing||"",target:x.target||"",range:x.range||"",difficulty:x.difficulty||"",confrontation:x.confrontation||"",description:x.description||"",sort_order:num(x.sort_order)};}
-function outfitPayload(x){return {character_id:character.id,category:x.category||"other",name:x.name||"",purchase_value:x.purchase_value||"",experience_cost:num(x.experience_cost),concealment:x.concealment||"",attack:x.attack||"",defense:x.defense||"",range:x.range||"",slot:x.slot||"",description:x.description||"",control_modifier:num(x.control_modifier),cs_modifier:num(x.cs_modifier),mundane_modifier:num(x.mundane_modifier),sort_order:num(x.sort_order)};}
-async function flush(){for(const id of deleteSkills){const{error}=await supabase.from("character_skills").delete().eq("id",id).eq("character_id",character.id);if(error)throw error;}for(const id of deleteOutfits){const{error}=await supabase.from("character_outfits").delete().eq("id",id).eq("character_id",character.id);if(error)throw error;}for(const x of [...newSkills]){if(!x.name.trim())continue;const{error}=await supabase.from("character_skills").insert(skillPayload(x));if(error)throw error;}for(const x of [...newOutfits]){if(!x.name.trim())continue;const{error}=await supabase.from("character_outfits").insert(outfitPayload(x));if(error)throw error;}newSkills.length=0;newOutfits.length=0;deleteSkills.clear();deleteOutfits.clear();renderPendingGeneral();renderPendingStyle();renderPendingOutfit();}
-async function saveCapture(e){if(!e.target.closest?.("#mobile-save")||replay||saving||!queued()||!character)return;e.preventDefault();e.stopImmediatePropagation();saving=true;const b=$("#mobile-save");if(b)b.disabled=true;try{await flush();replay=true;if(b){b.disabled=false;b.click();}}catch(error){console.error(error);if(b)b.disabled=false;const s=$("#mobile-save-status");if(s){s.dataset.state="error";s.textContent=`保存に失敗しました：${error?.message||"不明なエラー"}`;}}finally{replay=false;saving=false;}}
+function installGeneralDialog() {
+  if ($("#mobile-queued-general-dialog")) return;
+  const dialog = document.createElement("dialog");
+  dialog.id = "mobile-queued-general-dialog";
+  dialog.className = "mobile-editor-dialog";
+  dialog.innerHTML = `<form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--close-only"><button type="button" id="mobile-queued-general-close">閉じる</button><strong id="mobile-queued-general-title">技能編集</strong></header><div class="mobile-editor-dialog__body"><div class="mobile-form-grid mobile-form-grid--two"><label class="mobile-span-2">名称<input id="mobile-queued-general-name"></label><label>レベル<input id="mobile-queued-general-level" type="number" min="0" inputmode="numeric"></label><div class="mobile-span-2 mobile-suit-grid">${SUITS.map(([key,mark]) => `<label><input type="checkbox" data-mobile-queued-suit="${key}"><span>${mark}</span></label>`).join("")}</div><p id="mobile-queued-general-note" class="mobile-span-2 mobile-editor-policy-note"></p><button type="button" id="mobile-queued-general-delete" class="mobile-danger-action mobile-span-2">この技能を削除</button></div></div></form>`;
+  document.body.append(dialog);
+  $("#mobile-queued-general-close").onclick = () => dialog.close();
+  dialog.addEventListener("cancel", event => { event.preventDefault(); dialog.close(); });
+  dialog.addEventListener("input", syncGeneral);
+  dialog.addEventListener("change", syncGeneral);
+  $("#mobile-queued-general-delete").onclick = deleteGeneral;
+}
 
-function add(type){if(type==="outfit"){const x=outfitBlank();newOutfits.push(x);renderPendingOutfit();markDirty();openNewOutfit(x);return;}const x=skillBlank(type);newSkills.push(x);markDirty();if(type==="style"){renderPendingStyle();openNewStyle(x);}else{renderPendingGeneral();openGeneral(x);}}
-function delegates(){document.addEventListener("click",e=>{const a=e.target.closest('[data-mobile-queued-add]');if(a){add(a.dataset.mobileQueuedAdd);return;}const p=e.target.closest('[data-mobile-pending-style]');if(p){const x=newSkills.find(v=>v._temp===p.dataset.mobilePendingStyle);if(x)openNewStyle(x);return;}const style=e.target.closest('[data-mobile-style-skill]');if(style)existingStyleId=style.dataset.mobileStyleSkill;const outfit=e.target.closest('[data-mobile-outfit]');if(outfit&&!outfit.matches('[data-mobile-pending-outfit]')){existingOutfitId=outfit.dataset.mobileOutfit;activeNewOutfit=null;}},true);document.addEventListener("click",e=>{if(e.target.closest("#style-skill-dialog-apply")&&activeNewStyle){e.preventDefault();e.stopImmediatePropagation();applyNewStyle();}},true);document.addEventListener("click",saveCapture,true);}
+function skillBlank(category) {
+  return {
+    _temp: uid("skill"), category, name:"", level: category === "general" ? 0 : 1, free_level:0,
+    skill_kind: category === "style" ? "normal" : "proper",
+    reason:false, passion:false, life:false, mundane:false,
+    timing:"", target:"", range:"", difficulty:"", confrontation:"", description:"", sort_order:9999
+  };
+}
 
-async function init(){installBars();installGeneralDialog();installStyleDelete();installOutfitDelete();bindOutfit();delegates();user=await requireAuth();if(!user)return;const id=new URLSearchParams(location.search).get("id");if(!id)return;const{data}=await supabase.from("characters").select("id").eq("public_id",id).eq("owner_id",user.id).maybeSingle();character=data||null;enhanceGeneral();new MutationObserver(enhanceGeneral).observe($("#mobile-general-skills")||document.body,{childList:true,subtree:true});renderPendingGeneral();renderPendingStyle();renderPendingOutfit();}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+function isMutableGeneralName(item) {
+  if (item.category !== "general") return true;
+  return MUTABLE_GENERAL_PREFIXES.some(prefix => String(item.name || "").startsWith(prefix));
+}
+
+function minLevel(item) {
+  if (item._temp) return item.category === "general" ? 0 : 1;
+  if (item.category === "general" && isMutableGeneralName(item)) return 0;
+  return 1;
+}
+
+function openGeneral(item, row = null) {
+  activeGeneral = { item, row };
+  const label = {general:"一般技能",social:"社会",connection:"コネ"}[item.category] || "技能";
+  const nameInput = $("#mobile-queued-general-name");
+  const levelInput = $("#mobile-queued-general-level");
+  const canRename = Boolean(item._temp) || item.category !== "general" || isMutableGeneralName(item);
+  const canDelete = Boolean(item._temp);
+  const floor = minLevel(item);
+  $("#mobile-queued-general-title").textContent = `${label}編集`;
+  nameInput.value = item.name || "";
+  nameInput.readOnly = !canRename;
+  nameInput.classList.toggle("is-readonly", !canRename);
+  levelInput.min = String(floor);
+  levelInput.value = Math.max(floor, num(item.level));
+  for (const [key] of SUITS) $(`[data-mobile-queued-suit="${key}"]`).checked = Boolean(item[key]);
+  $("#mobile-queued-general-delete").hidden = !canDelete;
+  $("#mobile-queued-general-note").textContent = !canRename
+    ? "名称は基本技能のため固定です。レベルとスートのみ編集できます。"
+    : (floor > 0 ? `この技能の最低レベルはLV${floor}です。` : "");
+  $("#mobile-queued-general-dialog").showModal();
+  requestAnimationFrame(() => (canRename ? nameInput : levelInput)?.focus());
+}
+
+function syncGeneral(event) {
+  if (!activeGeneral) return;
+  const { item, row } = activeGeneral;
+  const floor = minLevel(item);
+  if (event.target.id === "mobile-queued-general-name") {
+    if (event.target.readOnly) return;
+    item.name = event.target.value;
+  } else if (event.target.id === "mobile-queued-general-level") {
+    item.level = Math.max(floor, num(event.target.value));
+  } else if (event.target.matches('[data-mobile-queued-suit]')) {
+    item[event.target.dataset.mobileQueuedSuit] = event.target.checked;
+  } else return;
+
+  const suitCount = SUITS.reduce((count,[key]) => count + (item[key] ? 1 : 0), 0);
+  if (event.target.matches('[data-mobile-queued-suit]')) {
+    if (event.target.checked && item.level < suitCount) item.level = suitCount;
+    if (!event.target.checked) item.level = Math.max(floor, suitCount);
+  }
+  if (event.target.id === "mobile-queued-general-level" && item.level >= 4) {
+    for (const [key] of SUITS) item[key] = true;
+  }
+  item.level = Math.max(floor, num(item.level));
+  $("#mobile-queued-general-level").value = item.level;
+  for (const [key] of SUITS) $(`[data-mobile-queued-suit="${key}"]`).checked = Boolean(item[key]);
+
+  if (row) {
+    const name = row.querySelector('[data-mobile-general-field="name"]');
+    const level = row.querySelector('[data-mobile-general-field="level"]');
+    if (name && !name.readOnly && name.value !== item.name) { name.value = item.name; name.dispatchEvent(new Event("input", {bubbles:true})); }
+    if (level && Number(level.value) !== item.level) { level.value = String(item.level); level.dispatchEvent(new Event("change", {bubbles:true})); }
+    for (const [key] of SUITS) {
+      const box = row.querySelector(`[data-mobile-general-field="${key}"]`);
+      if (box && box.checked !== Boolean(item[key])) { box.checked = Boolean(item[key]); box.dispatchEvent(new Event("change", {bubbles:true})); }
+    }
+  } else renderPendingGeneral();
+  markDirty();
+}
+
+function deleteGeneral() {
+  if (!activeGeneral?.item?._temp) return;
+  const { item } = activeGeneral;
+  if (!confirm(`「${item.name || "名称未入力"}」を削除しますか？`)) return;
+  const index = newSkills.indexOf(item);
+  if (index >= 0) newSkills.splice(index, 1);
+  activeGeneral = null;
+  $("#mobile-queued-general-dialog").close();
+  renderPendingGeneral();
+  markDirty();
+}
+
+function enhanceGeneral() {
+  document.querySelectorAll('[data-mobile-general-skill]').forEach(row => {
+    if (row.dataset.mobilePolicyReady === "1") return;
+    row.dataset.mobilePolicyReady = "1";
+    const heading = row.closest('.mobile-general-group')?.querySelector('h3')?.textContent || "";
+    const category = heading.includes("社会") ? "social" : heading.includes("コネ") ? "connection" : "general";
+    const nameControl = row.querySelector('[data-mobile-general-field="name"]');
+    const levelControl = row.querySelector('[data-mobile-general-field="level"]');
+    const currentName = nameControl?.value || "";
+    const canRename = category !== "general" || MUTABLE_GENERAL_PREFIXES.some(prefix => currentName.startsWith(prefix));
+    if (nameControl && !canRename) {
+      nameControl.readOnly = true;
+      nameControl.tabIndex = -1;
+      nameControl.classList.add("is-readonly");
+    }
+    const floor = category === "general" && canRename ? 0 : 1;
+    if (levelControl) levelControl.min = String(floor);
+    row.addEventListener("input", event => clampExistingRow(event, row, floor), true);
+    row.addEventListener("change", event => clampExistingRow(event, row, floor), true);
+
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "mobile-general-edit-trigger";
+    edit.textContent = "…";
+    edit.setAttribute("aria-label", "技能を編集");
+    edit.onclick = () => {
+      const item = {id:row.dataset.mobileGeneralSkill, category, name:nameControl?.value || "", level:num(levelControl?.value), free_level:0, skill_kind:"proper"};
+      for (const [key] of SUITS) item[key] = Boolean(row.querySelector(`[data-mobile-general-field="${key}"]`)?.checked);
+      openGeneral(item, row);
+    };
+    row.append(edit);
+  });
+}
+
+function clampExistingRow(event, row, floor) {
+  const level = row.querySelector('[data-mobile-general-field="level"]');
+  if (!level) return;
+  const suits = SUITS.map(([key]) => row.querySelector(`[data-mobile-general-field="${key}"]`));
+  let current = Math.max(floor, num(level.value));
+  const count = suits.filter(box => box?.checked).length;
+  if (event.target.matches('[data-mobile-general-field="level"]')) {
+    if (current >= 4) suits.forEach(box => { if (box) box.checked = true; });
+  } else if (event.target.matches('[type="checkbox"]')) {
+    current = event.target.checked ? Math.max(current, count) : Math.max(floor, count);
+  }
+  if (Number(level.value) !== current) level.value = String(current);
+}
+
+function groupFor(category) {
+  return [...document.querySelectorAll('.mobile-general-group')].find(node => {
+    const h = node.querySelector('h3')?.textContent || "";
+    return category === "social" ? h.includes("社会") : category === "connection" ? h.includes("コネ") : h.includes("一般技能") && !h.includes("社会");
+  });
+}
+
+function renderPendingGeneral() {
+  document.querySelectorAll('[data-mobile-pending-general]').forEach(node => node.remove());
+  for (const item of newSkills.filter(x => !["style","separator"].includes(x._kind || x.category))) {
+    const group = groupFor(item.category);
+    if (!group) continue;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "mobile-pending-general";
+    button.dataset.mobilePendingGeneral = item._temp;
+    button.innerHTML = `<strong>${esc(item.name || "名称未入力")}</strong><span>LV ${num(item.level)} / ${SUITS.filter(([key]) => item[key]).map(([,mark]) => mark).join("") || "—"}</span>`;
+    button.onclick = () => openGeneral(item);
+    group.append(button);
+  }
+}
+
+function styleDetail(item) {
+  if (!String(item.description || "").startsWith(STYLE_PREFIX)) return {};
+  try { return JSON.parse(String(item.description).slice(STYLE_PREFIX.length).trim()); } catch { return {}; }
+}
+
+function styleCard(item) {
+  const outline = {"♠":"♤","♣":"♧","♥":"♡","♦":"♢"};
+  const suits = SUITS.map(([key,mark]) => item[key] ? mark : outline[mark]).join("");
+  return `<button type="button" class="mobile-edit-card is-pending" data-mobile-pending-style="${item._temp}" data-style-order-key="temp:${item._temp}"><span class="mobile-edit-card__top"><span class="mobile-edit-card__name">${esc(item.name || "名称未入力")}</span><span class="mobile-edit-card__level">LV ${num(item.level)}</span></span><span class="mobile-edit-card__meta"><span>未保存</span><span class="mobile-edit-card__suits">${suits}</span></span></button>`;
+}
+
+function separatorCard(item, existing = false) {
+  const key = existing ? `id:${item.id}` : `temp:${item._temp}`;
+  return `<div class="mobile-style-separator" data-style-separator="${esc(key)}" data-style-order-key="${esc(key)}"><span>区切り</span><div><button type="button" data-separator-move="up" aria-label="区切りを上へ">↑</button><button type="button" data-separator-move="down" aria-label="区切りを下へ">↓</button>${existing?"":`<button type="button" data-separator-remove aria-label="区切りを削除">×</button>`}</div></div>`;
+}
+
+function renderPendingStyle() {
+  document.querySelectorAll('[data-mobile-pending-style],[data-style-separator^="temp:"]').forEach(node => node.remove());
+  const root = $("#mobile-style-skills");
+  if (!root) return;
+  for (const item of newSkills.filter(x => x.category === "style")) {
+    root.insertAdjacentHTML("beforeend", item._separator ? separatorCard(item) : styleCard(item));
+  }
+  decorateExistingStyleOrder();
+}
+
+function openNewStyle(item) {
+  activeNewStyle = item;
+  $("#style-skill-dialog-title").textContent = item.name || "スタイル技能追加";
+  $("#mobile-style-name").value = item.name || "";
+  $("#mobile-style-kind").value = item.skill_kind || "normal";
+  $("#mobile-style-level").value = num(item.level);
+  for (const [key] of SUITS) $("#mobile-style-suit-" + key).checked = Boolean(item[key]);
+  const detail = styleDetail(item);
+  for (const key of DETAIL_FIELDS) {
+    const control = document.querySelector(`[data-mobile-style-detail="${key}"]`);
+    if (control) control.value = detail[key] || "";
+  }
+  $("#style-skill-dialog").showModal();
+  requestAnimationFrame(() => $("#mobile-style-name")?.focus());
+}
+
+function commitNewStyle() {
+  const item = activeNewStyle;
+  if (!item) return;
+  item.name = $("#mobile-style-name").value;
+  item.skill_kind = $("#mobile-style-kind").value;
+  item.level = Math.max(0, num($("#mobile-style-level").value));
+  for (const [key] of SUITS) item[key] = $("#mobile-style-suit-" + key).checked;
+  const count = SUITS.reduce((n,[key]) => n + (item[key] ? 1 : 0), 0);
+  item.level = Math.max(item.level, count);
+  const detail = {};
+  for (const key of DETAIL_FIELDS) detail[key] = document.querySelector(`[data-mobile-style-detail="${key}"]`)?.value || "";
+  item.description = STYLE_PREFIX + "\n" + JSON.stringify(detail);
+  activeNewStyle = null;
+  renderPendingStyle();
+  markDirty();
+}
+
+function installStyleDelete() {
+  const dialog = $("#style-skill-dialog");
+  if (!dialog || $("#mobile-queued-style-delete")) return;
+  const button = document.createElement("button");
+  button.id = "mobile-queued-style-delete";
+  button.type = "button";
+  button.className = "mobile-danger-action";
+  button.textContent = "このスタイル技能を削除";
+  dialog.querySelector('.mobile-editor-dialog__body')?.append(button);
+  button.onclick = () => {
+    const id = activeNewStyle?._temp || existingStyleId;
+    if (!id) return;
+    if (!confirm(`「${$("#mobile-style-name")?.value || "名称未入力"}」を削除しますか？`)) return;
+    if (activeNewStyle) {
+      const index = newSkills.indexOf(activeNewStyle);
+      if (index >= 0) newSkills.splice(index, 1);
+      activeNewStyle = null;
+    } else {
+      deleteSkills.add(String(id));
+      document.querySelector(`[data-mobile-style-skill="${CSS.escape(String(id))}"]`)?.remove();
+    }
+    dialog.close();
+    renderPendingStyle();
+    markDirty();
+  };
+}
+
+async function loadStyleRows() {
+  if (!character) return;
+  const { data, error } = await supabase.from("character_skills").select("id,category,name,description,sort_order").eq("character_id", character.id).eq("category", "style").order("sort_order");
+  if (error) { console.error(error); return; }
+  styleRows = data || [];
+  decorateExistingStyleOrder();
+}
+
+function isSeparatorData(item) {
+  const text = String(item?.description || "");
+  if (text.startsWith(STYLE_SEPARATOR)) return true;
+  if (!text.startsWith(STYLE_PREFIX)) return false;
+  try { return String(JSON.parse(text.slice(STYLE_PREFIX.length).trim())?.description || "").startsWith(STYLE_SEPARATOR); } catch { return false; }
+}
+
+function decorateExistingStyleOrder() {
+  const root = $("#mobile-style-skills");
+  if (!root || !styleRows.length) return;
+  const normalButtons = [...root.querySelectorAll('[data-mobile-style-skill]')];
+  normalButtons.forEach(button => button.dataset.styleOrderKey = `id:${button.dataset.mobileStyleSkill}`);
+  const separatorData = styleRows.filter(isSeparatorData);
+  const rawSeparators = [...root.querySelectorAll('.mobile-readonly-card')].filter(node => !node.dataset.styleSeparatorDecorated);
+  rawSeparators.forEach((node, index) => {
+    const item = separatorData[index];
+    if (!item) return;
+    const replacement = document.createElement("div");
+    replacement.innerHTML = separatorCard(item, true);
+    node.replaceWith(replacement.firstElementChild);
+  });
+}
+
+function moveSeparator(button, direction) {
+  const separator = button.closest('[data-style-separator]');
+  const root = $("#mobile-style-skills");
+  if (!separator || !root) return;
+  const siblings = [...root.children].filter(node => node.matches('[data-style-order-key]'));
+  const index = siblings.indexOf(separator);
+  const other = direction === "up" ? siblings[index - 1] : siblings[index + 1];
+  if (!other) return;
+  if (direction === "up") root.insertBefore(separator, other);
+  else root.insertBefore(other, separator);
+  styleOrderDirty = true;
+  markDirty();
+}
+
+function removePendingSeparator(button) {
+  const separator = button.closest('[data-style-separator^="temp:"]');
+  if (!separator) return;
+  const temp = separator.dataset.styleSeparator.slice(5);
+  const index = newSkills.findIndex(item => item._temp === temp);
+  if (index >= 0) newSkills.splice(index, 1);
+  separator.remove();
+  styleOrderDirty = true;
+  markDirty();
+}
+
+function styleOrderMap() {
+  const root = $("#mobile-style-skills");
+  const map = new Map();
+  if (!root) return map;
+  [...root.children].filter(node => node.matches('[data-style-order-key]')).forEach((node,index) => map.set(node.dataset.styleOrderKey, index * 10));
+  return map;
+}
+
+function skillPayload(item, orderMap) {
+  const order = orderMap.get(item._temp ? `temp:${item._temp}` : `id:${item.id}`);
+  return {
+    character_id:character.id, category:item.category, name:item.name || "", level:num(item.level),
+    free_level:Math.min(num(item.free_level),num(item.level)), skill_kind:item.skill_kind || "proper",
+    reason:Boolean(item.reason), passion:Boolean(item.passion), life:Boolean(item.life), mundane:Boolean(item.mundane),
+    timing:item.timing || "", target:item.target || "", range:item.range || "", difficulty:item.difficulty || "",
+    confrontation:item.confrontation || "", description:item.description || "", sort_order:Number.isFinite(order) ? order : num(item.sort_order)
+  };
+}
+
+async function flush() {
+  const orderMap = styleOrderMap();
+  for (const id of deleteSkills) {
+    const { error } = await supabase.from("character_skills").delete().eq("id", id).eq("character_id", character.id);
+    if (error) throw error;
+  }
+  for (const item of [...newSkills]) {
+    if (!item._separator && !String(item.name || "").trim()) continue;
+    const { error } = await supabase.from("character_skills").insert(skillPayload(item, orderMap));
+    if (error) throw error;
+  }
+  if (styleOrderDirty) {
+    for (const row of styleRows) {
+      if (deleteSkills.has(String(row.id))) continue;
+      const order = orderMap.get(`id:${row.id}`);
+      if (!Number.isFinite(order) || Number(row.sort_order) === order) continue;
+      const { error } = await supabase.from("character_skills").update({sort_order:order}).eq("id", row.id).eq("character_id", character.id);
+      if (error) throw error;
+    }
+  }
+  newSkills.length = 0;
+  deleteSkills.clear();
+  styleOrderDirty = false;
+  renderPendingGeneral();
+  renderPendingStyle();
+}
+
+async function saveCapture(event) {
+  if (!event.target.closest?.("#mobile-save") || replaying || saving || !hasQueued() || !character) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  saving = true;
+  const button = $("#mobile-save");
+  if (button) button.disabled = true;
+  try {
+    await flush();
+    replaying = true;
+    if (button) { button.disabled = false; button.click(); }
+  } catch (error) {
+    console.error(error);
+    if (button) button.disabled = false;
+    const status = $("#mobile-save-status");
+    if (status) { status.dataset.state = "error"; status.textContent = `技能の保存に失敗しました：${error?.message || "不明なエラー"}`; }
+  } finally {
+    replaying = false;
+    saving = false;
+  }
+}
+
+function add(type) {
+  if (type === "separator") {
+    const item = skillBlank("style");
+    item._separator = true;
+    item.skill_kind = "none";
+    item.level = 1;
+    item.description = STYLE_SEPARATOR;
+    newSkills.push(item);
+    renderPendingStyle();
+    styleOrderDirty = true;
+    markDirty();
+    return;
+  }
+  const item = skillBlank(type);
+  newSkills.push(item);
+  markDirty();
+  if (type === "style") { renderPendingStyle(); openNewStyle(item); }
+  else { renderPendingGeneral(); openGeneral(item); }
+}
+
+function delegates() {
+  document.addEventListener("click", event => {
+    const addButton = event.target.closest('[data-mobile-queued-add]');
+    if (addButton) { add(addButton.dataset.mobileQueuedAdd); return; }
+    const pending = event.target.closest('[data-mobile-pending-style]');
+    if (pending) {
+      const item = newSkills.find(value => value._temp === pending.dataset.mobilePendingStyle);
+      if (item) openNewStyle(item);
+      return;
+    }
+    const style = event.target.closest('[data-mobile-style-skill]');
+    if (style) existingStyleId = style.dataset.mobileStyleSkill;
+    const move = event.target.closest('[data-separator-move]');
+    if (move) { event.preventDefault(); moveSeparator(move, move.dataset.separatorMove); return; }
+    const remove = event.target.closest('[data-separator-remove]');
+    if (remove) { event.preventDefault(); removePendingSeparator(remove); }
+  }, true);
+  document.addEventListener("tnx:mobile-style-dialog-commit", () => commitNewStyle());
+  document.addEventListener("click", saveCapture, true);
+}
+
+async function init() {
+  installBars();
+  installGeneralDialog();
+  installStyleDelete();
+  delegates();
+  user = await requireAuth();
+  if (!user) return;
+  const id = new URLSearchParams(location.search).get("id");
+  if (!id) return;
+  const { data } = await supabase.from("characters").select("id").eq("public_id", id).eq("owner_id", user.id).maybeSingle();
+  character = data || null;
+  enhanceGeneral();
+  new MutationObserver(enhanceGeneral).observe($("#mobile-general-skills") || document.body, {childList:true,subtree:true});
+  renderPendingGeneral();
+  renderPendingStyle();
+  await loadStyleRows();
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true}); else init();
