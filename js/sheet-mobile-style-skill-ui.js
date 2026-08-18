@@ -3,21 +3,15 @@ let applyButton = null;
 let installed = false;
 let suitObserver = null;
 
-const SUIT_DISPLAY = [
-  ["♠", "♤"],
-  ["♣", "♧"],
-  ["♥", "♡"],
-  ["♦", "♢"]
-];
+const SUIT_DISPLAY = [["♠","♤"],["♣","♧"],["♥","♡"],["♦","♢"]];
 
 function renderAllSuits(root = document) {
   root.querySelectorAll?.(".mobile-edit-card__suits").forEach(node => {
     const selected = node.dataset.selectedSuits ?? node.textContent ?? "";
     if (node.dataset.selectedSuits == null) node.dataset.selectedSuits = selected;
-    const display = SUIT_DISPLAY.map(([filled, outline]) => selected.includes(filled) ? filled : outline).join("");
+    const display = SUIT_DISPLAY.map(([filled,outline]) => selected.includes(filled) ? filled : outline).join("");
     if (node.textContent !== display) node.textContent = display;
-    const aria = `取得スート ${display}`;
-    if (node.getAttribute("aria-label") !== aria) node.setAttribute("aria-label", aria);
+    node.setAttribute("aria-label", `取得スート ${display}`);
   });
 }
 
@@ -26,7 +20,13 @@ function observeSuitDisplay() {
   if (!root || suitObserver) return;
   renderAllSuits(root);
   suitObserver = new MutationObserver(() => renderAllSuits(root));
-  suitObserver.observe(root, { childList: true, subtree: true });
+  suitObserver.observe(root, {childList:true,subtree:true});
+}
+
+function commitAndClose(dialog) {
+  document.dispatchEvent(new CustomEvent("tnx:mobile-style-dialog-commit"));
+  applyButton?.click();
+  if (dialog.open) dialog.close();
 }
 
 function install() {
@@ -37,18 +37,22 @@ function install() {
   if (!dialog || !close || !apply) return false;
   applyButton = apply;
   installed = true;
+
   close.addEventListener("click", event => {
     event.preventDefault();
     event.stopImmediatePropagation();
-    applyButton?.click();
-    if (dialog.open) dialog.close();
+    commitAndClose(dialog);
   }, true);
   dialog.addEventListener("cancel", event => {
     event.preventDefault();
     event.stopImmediatePropagation();
-    applyButton?.click();
-    if (dialog.open) dialog.close();
+    commitAndClose(dialog);
   }, true);
+  dialog.addEventListener("close", () => {
+    const body = dialog.querySelector(".mobile-editor-dialog__body");
+    if (body) body.scrollTop = 0;
+  });
+
   apply.remove();
   dialog.querySelector(".mobile-editor-dialog__header")?.classList.add("mobile-editor-dialog__header--close-only");
   observeSuitDisplay();
@@ -68,7 +72,7 @@ function init() {
     observeSuitDisplay();
     if (tryAfterBaseBinding()) observer.disconnect();
   });
-  observer.observe(status, { childList: true, subtree: true, attributes: true });
+  observer.observe(status, {childList:true,subtree:true,attributes:true});
 }
 
 init();
