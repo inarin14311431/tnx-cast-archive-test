@@ -120,8 +120,8 @@
       experience_cost:first(data,"permanent","experienceCost"),
       concealment:[concealA,concealB].filter(value=>String(value??"")!=="").join("/"),
       slot:first(data,"slot","part"),
-      control_modifier:first(data,"control","controlModifier"),
-      cs_modifier:first(data,"sf","speed","csModifier"),
+      control_modifier:["armor","vehicle"].includes(item.category)?first(data,"control","controlModifier"):0,
+      cs_modifier:["tron","vehicle"].includes(item.category)?first(data,"cs","csModifier"):0,
       description:first(data,"notes","description")
     };
   }
@@ -135,8 +135,6 @@
     if(!card)throw new Error(`アウトフィット行を作成できません：${item.name}`);
     const key=card.dataset.outfitKey;
     const values=commonValues(item);
-    // The raw card exists synchronously after #add-outfit. Populate every available field
-    // before category changes, because category input immediately rerenders all outfits.
     for(const [field,value] of Object.entries(values))setValue(card.querySelector(`[data-o="${field}"]`),value);
     setValue(card.querySelector('[data-o="category"]'),item.category);
     return key;
@@ -159,21 +157,20 @@
     const data=item.data;
     const base=(field,value)=>setValue(row.querySelector(`[data-o="${field}"]`),value);
     const ofc=(field,value)=>String(value??"")!==""&&setValue(row.querySelector(`[data-ofc="${field}"]`),value);
-    // Reassert the name after enhancement as a guard against third-party DOM transformations.
     base("name",item.name);
     if(item.category==="weapon"){
       base("attack",first(data,"attack"));base("range",first(data,"range"));base("slot",first(data,"slot","part"));
       ofc("parry",first(data,"parry","defense"));ofc("speed",first(data,"speed"));
     }else if(item.category==="armor"){
       const s=first(data,"protecS","defenseS"),i=first(data,"protecI","defenseI"),p=first(data,"protecP","defenseP");
-      base("defense",[s,i,p].map(value=>String(value??"")).join("/"));base("slot",first(data,"slot","part"));ofc("control_value",first(data,"control","controlValue"));
+      base("defense",[s,i,p].map(value=>String(value??"")).join("/"));base("slot",first(data,"slot","part"));base("control_modifier",first(data,"control","controlModifier","controlValue"));
     }else if(item.category==="cyberware"){
-      base("control_modifier",first(data,"control","controlModifier"));base("slot",first(data,"slot","part"));
+      base("slot",first(data,"slot","part"));
     }else if(item.category==="tron"){
-      base("control_modifier",first(data,"control","controlModifier"));base("slot",first(data,"slot"));ofc("speed",first(data,"speed"));
-      ofc("tron_software",first(data,"software","tron_software"));ofc("tron_support",first(data,"support","tron_support"));ofc("tron_hardware",first(data,"hardware","tron_hardware"));ofc("cs_value",first(data,"cs","csValue"));
+      base("slot",first(data,"slot"));base("cs_modifier",first(data,"cs","csModifier"));ofc("speed",first(data,"speed"));
+      ofc("tron_software",first(data,"software","tron_software"));ofc("tron_support",first(data,"support","tron_support"));ofc("tron_hardware",first(data,"hardware","tron_hardware"));
     }else if(item.category==="vehicle"){
-      base("attack",first(data,"attack"));base("control_modifier",first(data,"control","controlModifier"));
+      base("attack",first(data,"attack"));base("control_modifier",first(data,"control","controlModifier","controlValue"));base("cs_modifier",first(data,"cs","csModifier"));
       ofc("speed",first(data,"slot","speed"));ofc("defense_s",first(data,"protecS","defenseS"));ofc("defense_p",first(data,"protecP","defenseP"));ofc("defense_i",first(data,"protecI","defenseI"));ofc("crew",first(data,"crew","passenger","passengers"));ofc("sf",first(data,"sf","speedFactor"));
     }else if(item.category==="residence"){
       base("slot",first(data,"part","slot"));ofc("speed",first(data,"speed"));ofc("residence_entry",first(data,"entry"));ofc("residence_electric",first(data,"electric","residence_electric"));ofc("residence_area",first(data,"area","residence_area"));
@@ -196,7 +193,6 @@
     const importDialog=document.querySelector(DIALOG);
     lock(importDialog,true);
     progress(3,"JSONを解析中",`アウトフィット${items.length}件を分離して取込みます`);
-    // The base importer runs in the bubbling phase. Give it a copy without outfit data.
     textarea.value=JSON.stringify(baseData);
     const basePromise=waitBaseImport();
 
