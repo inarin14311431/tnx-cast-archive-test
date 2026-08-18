@@ -1,3 +1,4 @@
+import "./outfit-pc-field-policy.js?v=2";
 import { supabase } from "./supabase-client.js";
 import {
   getOutfitRows,
@@ -26,6 +27,14 @@ function install() {
   };
 }
 
+function composeDefense(details, fallback = "") {
+  const s = String(details.defense_s ?? "").trim();
+  const p = String(details.defense_p ?? "").trim();
+  const i = String(details.defense_i ?? "").trim();
+  if (!s && !p && !i) return fallback || "";
+  return `S ${s || 0} / P ${p || 0} / I ${i || 0}`;
+}
+
 function enrichOutfitPayload(items) {
   const rows = getOutfitRows();
   const queues = rowsBySignature(rows);
@@ -38,10 +47,37 @@ function enrichOutfitPayload(items) {
     if (!row) row = rows.find(candidate => !used.has(candidate));
     if (row) used.add(row);
 
+    if (!row) {
+      return {
+        ...item,
+        sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
+        ofc_details: compactDetails(item.ofc_details || {})
+      };
+    }
+
+    const details = collectDetails(row);
+    const category = valueOf(row, "category") || item.category || "other";
+    const proxyConcealment = row.querySelector('[data-pc-outfit-proxy="concealment"]')?.value;
+    const proxySlot = row.querySelector('[data-pc-outfit-proxy="slot"]')?.value;
+    const electronicControl = String(details.electronic_control || item.electronic_control || "");
+    const controlModifier = category === "armor" || category === "vehicle"
+      ? Number(valueOf(row, "control_modifier") || item.control_modifier || 0)
+      : Number(item.control_modifier || 0);
+    const csModifier = category === "tron" || category === "vehicle"
+      ? Number(valueOf(row, "cs_modifier") || item.cs_modifier || 0)
+      : Number(item.cs_modifier || 0);
+
     return {
       ...item,
+      category,
+      concealment: proxyConcealment !== undefined ? String(proxyConcealment) : item.concealment || "",
+      slot: proxySlot !== undefined ? String(proxySlot) : item.slot || "",
+      electronic_control: electronicControl,
+      defense: category === "vehicle" ? composeDefense(details, item.defense) : item.defense || "",
+      control_modifier: controlModifier,
+      cs_modifier: csModifier,
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
-      ofc_details: row ? collectDetails(row) : compactDetails(item.ofc_details || {})
+      ofc_details: details
     };
   });
 }
@@ -53,7 +89,8 @@ function collectDetails(row) {
   });
 
   const category = valueOf(row, "category") || row.closest("table")?.dataset.outfitSchema || "other";
-  const concealParts = String(valueOf(row, "concealment") || "").split(/[\/／]/);
+  const concealmentValue = row.querySelector('[data-pc-outfit-proxy="concealment"]')?.value ?? valueOf(row, "concealment") ?? "";
+  const concealParts = String(concealmentValue || "").split(/[\/／]/);
   const armorDefense = parseDefense(valueOf(row, "defense"));
 
   const defense = {
@@ -61,6 +98,8 @@ function collectDetails(row) {
     defense_p: row.querySelector('[data-armor-defense="P"],[data-armor-defense="p"]')?.value || details.defense_p || armorDefense.defense_p,
     defense_i: row.querySelector('[data-armor-defense="I"],[data-armor-defense="i"]')?.value || details.defense_i || armorDefense.defense_i
   };
+
+  const slotValue = row.querySelector('[data-pc-outfit-proxy="slot"]')?.value ?? valueOf(row, "slot") ?? "";
 
   return compactDetails({
     ...details,
@@ -71,7 +110,7 @@ function collectDetails(row) {
     concealment_penalty: details.concealment_penalty || concealParts[1] || "",
     attack: valueOf(row, "attack"),
     range_text: valueOf(row, "range"),
-    slot: valueOf(row, "slot"),
+    slot: slotValue,
     description: valueOf(row, "description"),
     ...defense
   });
