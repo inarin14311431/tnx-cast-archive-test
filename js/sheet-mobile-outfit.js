@@ -2,9 +2,6 @@ import { supabase } from "./supabase-client.js";
 import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 import {
   LABELS,
-  RANGE_OPTIONS,
-  SLOT_OPTIONS,
-  CONTROL_OPTIONS,
   blankOutfit,
   cloneOutfit,
   collectOutfitRecord,
