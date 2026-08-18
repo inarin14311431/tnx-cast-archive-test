@@ -22,6 +22,11 @@ export const SLOT_OPTIONS = [
 
 export const CONTROL_OPTIONS = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
 
+export const CONCEALMENT_PENALTY_OPTIONS = [
+  "0", "-1", "-2", "-3", "-4", "-5", "-6", "-8", "-10", "-12", "2", "12", "15",
+  "-1（0）", "-2（0）", "－"
+];
+
 export const DETAIL_FIELDS = [
   "page_number", "major_category", "minor_category", "manufacturer", "concealment_penalty",
   "parry", "speed", "control_value", "electronic_control",
