@@ -4,7 +4,7 @@
     if (root.dataset.castViewModeInitialized === "1") return;
     root.dataset.castViewModeInitialized = "1";
 
-    const MOBILE_MAX_WIDTH = 600;
+    const MOBILE_MAX_WIDTH = 900;
     const params = new URLSearchParams(location.search);
     const requestedMode = params.get("mobile");
     const autoMobile = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`).matches;
