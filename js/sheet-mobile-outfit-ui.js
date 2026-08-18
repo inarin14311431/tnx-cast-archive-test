@@ -7,7 +7,7 @@ import {
   parseConcealment,
   parseDefense,
   normalizeNumber
-} from "./sheet-mobile-outfit-model.js?v=4";
+} from "./sheet-mobile-outfit-model.js?v=5";
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -109,19 +109,18 @@ function performanceFields(item) {
       fields += `${defenseFields(item)}${controlField(item)}`;
       break;
     case "cyberware":
-      fields += `${controlField(item)}${csModifierField(item)}${detailField(item, "ianus_surface", "IANUS 表")}${detailField(item, "ianus_deep", "IANUS 深")}${detailField(item, "ianus_none", "IANUS 無")}`;
+      fields += `${detailField(item, "ianus_surface", "IANUS 表")}${detailField(item, "ianus_deep", "IANUS 深")}${detailField(item, "ianus_none", "IANUS 無")}`;
       break;
     case "tron":
-      fields += `${controlField(item)}${csModifierField(item)}${detailField(item, "tron_software", "ソフトウェア")}${detailField(item, "tron_support", "サポート")}${detailField(item, "tron_hardware", "ハードウェア")}`;
+      fields += `${csModifierField(item)}${detailField(item, "speed", "ス")}${detailField(item, "tron_software", "ソフトウェア")}${detailField(item, "tron_support", "サポート")}${detailField(item, "tron_hardware", "ハードウェア")}`;
       break;
     case "vehicle":
-      fields += `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${defenseFields(item)}${controlField(item)}${csModifierField(item)}${detailField(item, "parry", "受")}${detailField(item, "speed", "ス")}${detailField(item, "cs_value", "CS値")}${detailField(item, "crew", "乗員")}${detailField(item, "sf", "SF")}`;
+      fields += `<label>攻撃<input data-outfit-field="attack" value="${esc(item.attack || "")}"></label>${defenseFields(item)}${controlField(item)}${csModifierField(item)}${detailField(item, "speed", "ス")}${detailField(item, "crew", "乗員")}${detailField(item, "sf", "SF")}`;
       break;
     case "residence":
-      fields += `${detailField(item, "residence_entry", "登場")}${detailField(item, "residence_electric", "電力")}${detailField(item, "residence_area", "エリア")}`;
+      fields += `${detailField(item, "speed", "ス")}${detailField(item, "residence_entry", "登場")}${detailField(item, "residence_electric", "電力")}${detailField(item, "residence_area", "エリア")}`;
       break;
     case "other":
-      fields += `${controlField(item)}${csModifierField(item)}${detailField(item, "cs_value", "CS値")}`;
       break;
     default:
       return "";
