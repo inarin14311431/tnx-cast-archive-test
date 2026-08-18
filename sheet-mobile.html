@@ -4,14 +4,16 @@
   <script src="./js/css-next-theme.js"></script>
   <link rel="stylesheet" href="./css-next/index.css?v=43" data-css-system="next">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile.css?v=5">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-theme.css?v=1" data-mobile-theme-style="1">
-  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ui.css?v=3" data-mobile-ui-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-theme.css?v=2" data-mobile-theme-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ui.css?v=4" data-mobile-ui-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-profile.css?v=11" data-mobile-profile-style="1" data-mobile-profile-current-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-style.css?v=6" data-mobile-style-editor-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-ability.css?v=4" data-mobile-ability-current-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-skills.css?v=3" data-mobile-skills-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-outfit.css?v=5" data-mobile-outfit-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-combos.css?v=5" data-mobile-combo-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-snapshots.css?v=2" data-mobile-snapshots-style="1">
+  <link rel="stylesheet" href="./css-next/pages/sheet-mobile-image.css?v=1" data-mobile-image-style="1">
   <link rel="stylesheet" href="./css-next/pages/sheet-mobile-import.css?v=2" data-mobile-import-style="1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -37,14 +39,14 @@
       <label><span>表示テーマ <small>COLOR THEME</small></span><select id="mobile-theme-select" aria-label="表示テーマ"></select></label>
     </section>
     <nav class="mobile-sheet-nav" aria-label="編集セクション">
-      <a href="#mobile-profile">基本情報</a><a href="#mobile-general">一般技能</a><a href="#mobile-style-skills-section">スタイル技能</a><a href="#mobile-outfits-section">装備</a>
+      <a href="#mobile-profile">01 基本情報</a><a href="#mobile-styles-section">02 スタイル</a><a href="#mobile-ability-section">03 能力値</a><a href="#mobile-general">04 一般技能</a><a href="#mobile-style-skills-section">05 スタイル技能</a><a href="#mobile-outfits-section">06 アウトフィット</a>
     </nav>
     <section id="mobile-profile" class="mobile-sheet-section mobile-sheet-section--profile">
       <header><h2>01 基本情報</h2></header>
       <div class="mobile-sheet-section__body">
         <form id="mobile-profile-form" class="mobile-profile-groups">
           <fieldset class="mobile-profile-group"><legend>キャスト情報</legend><div class="mobile-form-grid mobile-form-grid--two">
-            <label>キャスト名<input data-mobile-character-field="character_name" required></label><label>名前ルビ<input data-mobile-character-field="character_kana"></label><label>ハンドル<input data-mobile-character-field="handle"></label><label>ハンドルルビ<input data-mobile-character-field="handle_kana"></label><label>プレイヤー名<input data-mobile-character-field="player_name" required></label><label>所属<input data-mobile-character-field="affiliation"></label><label>市民ランク<input data-mobile-character-field="citizen_rank"></label><label>出身<input data-mobile-character-field="birthplace"></label><label>公開状態<select data-mobile-character-field="visibility"><option value="public">公開 / PUBLIC</option><option value="private">非公開 / PRIVATE</option></select></label>
+            <label>キャスト名<input data-mobile-character-field="character_name" required></label><label>名前ルビ<input data-mobile-character-field="character_kana"></label><label>ハンドル<input data-mobile-character-field="handle"></label><label>ハンドルルビ<input data-mobile-character-field="handle_kana"></label><label>プレイヤー名<input data-mobile-character-field="player_name" required></label><label>所属<input data-mobile-character-field="affiliation"></label><label>市民ランク<input data-mobile-character-field="citizen_rank"></label><label>公開状態<select data-mobile-character-field="visibility"><option value="public">公開 / PUBLIC</option><option value="private">非公開 / PRIVATE</option></select></label>
           </div></fieldset>
           <fieldset class="mobile-profile-group"><legend>パーソナルデータ</legend><div class="mobile-form-grid mobile-form-grid--two">
             <label>年齢<input data-mobile-character-field="age"></label><label>性別<input data-mobile-character-field="gender"></label><label>身長<input data-mobile-character-field="height"></label><label>体重<input data-mobile-character-field="weight"></label><label>瞳<input data-mobile-character-field="eyes"></label><label>髪<input data-mobile-character-field="hair"></label><label>肌<input data-mobile-character-field="skin"></label>
@@ -58,8 +60,8 @@
         </form>
       </div>
     </section>
-    <section class="mobile-sheet-section mobile-sheet-section--styles"><header><h2>02 スタイル</h2></header><div class="mobile-sheet-section__body"><div id="mobile-style-summary" class="mobile-card-list"></div></div></section>
-    <section class="mobile-sheet-section mobile-sheet-section--ability"><header><h2>03 能力値・制御値・CS</h2></header><div class="mobile-sheet-section__body"><div id="mobile-ability-summary" class="mobile-ability-grid"></div></div></section>
+    <section id="mobile-styles-section" class="mobile-sheet-section mobile-sheet-section--styles"><header><h2>02 スタイル</h2></header><div class="mobile-sheet-section__body"><div id="mobile-style-summary" class="mobile-card-list"></div></div></section>
+    <section id="mobile-ability-section" class="mobile-sheet-section mobile-sheet-section--ability"><header><h2>03 能力値・制御値・CS</h2></header><div class="mobile-sheet-section__body"><div id="mobile-ability-summary" class="mobile-ability-grid"></div></div></section>
     <section id="mobile-general" class="mobile-sheet-section mobile-sheet-section--skills"><header><h2>04 一般技能・社会・コネ</h2></header><div class="mobile-sheet-section__body"><div id="mobile-general-skills" class="mobile-general-editor"></div></div></section>
     <section id="mobile-style-skills-section" class="mobile-sheet-section mobile-sheet-section--style-skills"><header><h2>05 スタイル技能</h2></header><div class="mobile-sheet-section__body"><div id="mobile-style-skills" class="mobile-card-list"></div></div></section>
     <section id="mobile-outfits-section" class="mobile-sheet-section mobile-sheet-section--outfits"><header><h2>06 アウトフィット</h2></header><div class="mobile-sheet-section__body"><div id="mobile-outfits" class="mobile-card-list"></div></div></section>
@@ -82,7 +84,7 @@
     <label>対決<select data-mobile-style-detail="confrontation"><option value="">選択</option><option>なし</option><option>＜回避＞</option><option>＜自我＞</option><option>＜知覚＞</option><option>＜隠密＞</option><option>＜交渉＞</option><option>＜信用＞</option><option>＜電脳＞</option><option>＜白兵＞</option><option>＜芸術＞※</option><option>不可</option><option>解説参照</option><option>―</option></select></label>
     <label>参照P<input data-mobile-style-detail="page"></label><label class="mobile-span-2">解説<textarea rows="8" data-mobile-style-detail="description"></textarea></label>
   </div></div></form></dialog>
-  <script type="module" src="./js/sheet-mobile.js?v=4"></script>
+  <script type="module" src="./js/sheet-mobile.js?v=3"></script>
   <script type="module" src="./js/sheet-mobile-ui.js?v=20260818-10"></script>
   <script type="module" src="./js/sheet-mobile-ability.js?v=10"></script>
 </body>
