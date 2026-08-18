@@ -16,8 +16,12 @@ function isImportSource(field){
   return field?.matches?.("#legacy-import-json,#tsv-text");
 }
 
+function isStyleDetailStorage(field){
+  return field?.matches?.('#style-skills textarea[data-f="description"]');
+}
+
 function normalizeTextarea(field){
-  if(!(field instanceof HTMLTextAreaElement)||isImportSource(field))return false;
+  if(!(field instanceof HTMLTextAreaElement)||isImportSource(field)||isStyleDetailStorage(field))return false;
   const value=normalize(field.value);
   if(value===field.value)return false;
   field.value=value;
