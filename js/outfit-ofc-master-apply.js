@@ -44,10 +44,13 @@ function applyDetailsToRow(row, details) {
   const category = row.closest("table")?.dataset.outfitSchema || row.querySelector('[data-o="category"]')?.value || "other";
   for (const [field, value] of Object.entries(details)) {
     if (field === "control_value" && category !== "armor" && category !== "vehicle") continue;
+    if (field === "cs_modifier" && category !== "tron" && category !== "vehicle") continue;
 
     let input = row.querySelector(`[data-ofc="${cssEscape(field)}"]`);
     if (field === "control_value") input = row.querySelector('[data-o="control_modifier"]') || input;
     if (field === "cs_modifier") input = row.querySelector('[data-o="cs_modifier"]');
+    if (field === "concealment") input = row.querySelector('[data-pc-outfit-proxy="concealment"]') || row.querySelector('[data-o="concealment"]') || input;
+    if (field === "slot") input = row.querySelector('[data-pc-outfit-proxy="slot"]') || row.querySelector('[data-o="slot"]') || input;
     if (!input) continue;
     input.value = String(value ?? "");
     input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -135,7 +138,7 @@ async function waitForNewOutfitRows(before, expected, timeout) {
 async function waitForOfcFields(row, timeout) {
   const started = performance.now();
   while (performance.now() - started < timeout) {
-    if (row.querySelector("[data-ofc]")) return true;
+    if (row.querySelector("[data-ofc]") || row.querySelector("[data-pc-outfit-proxy]")) return true;
     await wait(40);
   }
   return false;
