@@ -1,7 +1,7 @@
 import "./sheet-mobile-save-coordinator.js?v=20260818-1";
 import "./sheet-mobile-skills.js?v=20260818-1";
 import "./sheet-mobile-summary-text.js?v=20260818-1";
-import "./sheet-mobile-header-exp.js?v=20260818-1";
+import "./sheet-mobile-header-exp.js?v=20260818-2";
 import "./sheet-mobile-combos.js?v=20260818-6";
 
 const $ = selector => document.querySelector(selector);
