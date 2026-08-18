@@ -1,4 +1,4 @@
-import "./outfit-pc-field-policy.js?v=4";
+import "./outfit-pc-field-policy.js?v=5";
 import { supabase } from "./supabase-client.js";
 import {
   getOutfitRows,
@@ -75,7 +75,7 @@ function enrichOutfitPayload(items) {
     return {
       ...item,
       category,
-      concealment: proxyValue(row, "concealment", item.concealment || ""),
+      concealment: String(valueOf(row, "concealment") || ""),
       slot: proxyValue(row, "slot", item.slot || ""),
       electronic_control: electronicControl,
       defense: category === "vehicle" ? composeDefense(details, item.defense) : item.defense || "",
@@ -94,8 +94,7 @@ function collectDetails(row) {
   });
 
   const category = valueOf(row, "category") || row.closest("table")?.dataset.outfitSchema || "other";
-  const concealmentValue = proxyValue(row, "concealment", valueOf(row, "concealment") || "");
-  const concealParts = String(concealmentValue || "").split(/[\/／]/);
+  const concealmentValue = String(valueOf(row, "concealment") || "");
   const armorDefense = parseDefense(valueOf(row, "defense"));
 
   const defense = {
@@ -109,8 +108,8 @@ function collectDetails(row) {
     site_category: category,
     purchase_target: valueOf(row, "purchase_value"),
     permanent_cost: valueOf(row, "experience_cost"),
-    concealment: concealParts[0] || details.concealment || "",
-    concealment_penalty: details.concealment_penalty || concealParts[1] || "",
+    concealment: concealmentValue,
+    concealment_penalty: details.concealment_penalty || "",
     attack: valueOf(row, "attack"),
     range_text: valueOf(row, "range"),
     slot: proxyValue(row, "slot", valueOf(row, "slot") || ""),
