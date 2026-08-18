@@ -15,7 +15,7 @@ const FIELD_DEFINITIONS = {
   major_category: ["OFC大分類", "MAJOR"],
   minor_category: ["OFC小分類", "MINOR"],
   manufacturer: ["メーカー", "MAKER"],
-  concealment_penalty: ["隠匿ペナ", "CONCEAL PENALTY"],
+  concealment_penalty: ["隠匿修正", "CONCEALMENT MODIFIER"],
   parry: ["受", "PARRY"],
   speed: ["ス", "SPEED"],
   control_value: ["制御値", "CONTROL VALUE"],
@@ -37,17 +37,17 @@ const FIELD_DEFINITIONS = {
   residence_area: ["住宅 ア", "RESIDENCE AREA"]
 };
 
-const COMMON_FIELDS = [
-  "major_category", "minor_category", "manufacturer", "page_number", "concealment_penalty"
-];
+// UI fields only. Deprecated/legacy keys remain in FIELD_DEFINITIONS so existing
+// ofc_details values survive save/reload, but they are no longer generated.
+const COMMON_FIELDS = ["manufacturer", "page_number", "concealment_penalty"];
 const CATEGORY_FIELDS = {
   weapon: [...COMMON_FIELDS, "parry", "speed", "electronic_control"],
   armor: [...COMMON_FIELDS, "electronic_control"],
-  cyberware: [...COMMON_FIELDS, "control_value", "electronic_control", "ianus_surface", "ianus_deep", "ianus_none"],
-  tron: [...COMMON_FIELDS, "control_value", "electronic_control", "tron_software", "tron_support", "tron_hardware"],
-  vehicle: [...COMMON_FIELDS, "parry", "speed", "control_value", "electronic_control", "defense_s", "defense_p", "defense_i", "cs_value", "crew", "sf"],
-  residence: [...COMMON_FIELDS, "electronic_control", "residence_entry", "residence_electric", "residence_area"],
-  other: [...COMMON_FIELDS, "control_value", "electronic_control", "cs_value"]
+  cyberware: [...COMMON_FIELDS, "electronic_control", "ianus_surface", "ianus_deep", "ianus_none"],
+  tron: [...COMMON_FIELDS, "speed", "electronic_control", "tron_software", "tron_support", "tron_hardware"],
+  vehicle: [...COMMON_FIELDS, "speed", "electronic_control", "defense_s", "defense_p", "defense_i", "crew", "sf"],
+  residence: [...COMMON_FIELDS, "speed", "electronic_control", "residence_entry", "residence_electric", "residence_area"],
+  other: [...COMMON_FIELDS, "electronic_control"]
 };
 
 const stateByKey = new Map();
