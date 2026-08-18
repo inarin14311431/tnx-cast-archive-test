@@ -10,7 +10,7 @@ import {
   parseConcealment,
   parseDefense,
   normalizeNumber
-} from "./sheet-mobile-outfit-model.js?v=5";
+} from "./sheet-mobile-outfit-model.js?v=6";
 import {
   buildOutfitEditor,
   ensureOutfitDialog,
