@@ -99,7 +99,7 @@ function defenseFields(item) {
 
 const slotField = item => `<label>部位<select data-outfit-field="slot">${optionList(SLOT_OPTIONS, item.slot || "")}</select></label>`;
 const rangeField = item => `<label>射程<select data-outfit-field="range">${optionList(RANGE_OPTIONS, item.range || "")}</select></label>`;
-const controlField = item => `<label>制御<select data-outfit-field="control_modifier">${controlOptions(item.control_modifier)}</select></label>`;
+const controlField = item => `<label>制御値<select data-outfit-field="control_modifier">${controlOptions(item.control_modifier)}</select></label>`;
 const csModifierField = item => `<label>CS修正<input data-outfit-field="cs_modifier" type="number" step="1" inputmode="numeric" value="${esc(item.cs_modifier ?? 0)}"></label>`;
 
 function performanceFields(item) {
@@ -132,10 +132,15 @@ function performanceFields(item) {
   return `<fieldset class="mobile-outfit-group"><legend>性能</legend><div class="mobile-outfit-group__grid">${fields}</div></fieldset>`;
 }
 
+function deleteAction() {
+  return `<button type="button" class="mobile-danger-action" data-outfit-delete>このアウトフィットを削除</button>`;
+}
+
 export function buildOutfitEditor(item) {
   const categories = `<option value="">分類を選択</option>${Object.entries(LABELS).map(([value, label]) => `<option value="${value}" ${item.category === value ? "selected" : ""}>${label}</option>`).join("")}`;
   return `<div class="mobile-outfit-editor__grid">
     <label class="mobile-outfit-editor__category">分類<select data-outfit-field="category">${categories}</select></label>
-    ${item.category ? `${commonBaseFields(item)}${commonOfcFields(item)}${performanceFields(item)}<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid"><label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label></div></fieldset><button type="button" class="mobile-danger-action mobile-outfit-editor__description" data-outfit-delete>このアウトフィットを削除</button>` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
+    ${item.category ? `${commonBaseFields(item)}${commonOfcFields(item)}${performanceFields(item)}<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid"><label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label></div></fieldset>` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
+    ${deleteAction()}
   </div>`;
 }
