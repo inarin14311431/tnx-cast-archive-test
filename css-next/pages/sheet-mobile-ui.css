@@ -2,8 +2,8 @@
  * Feature-specific profile/style/ability/outfit rules do not belong here.
  */
 body[data-page="sheet-mobile.html"] .mobile-sheet-header{position:sticky;top:0;z-index:120;background:color-mix(in srgb,var(--color-bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-body[data-page="sheet-mobile.html"] .mobile-header-exp{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-top:3px;color:var(--color-muted);font-size:9px;letter-spacing:.04em}
-body[data-page="sheet-mobile.html"] .mobile-header-exp strong{color:var(--color-accent);font:800 13px/1 var(--font-data,inherit)}
+body[data-page="sheet-mobile.html"] .mobile-header-exp{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:5px;padding:4px 9px;border:1px solid color-mix(in srgb,var(--color-accent) 55%,var(--color-border-muted));background:color-mix(in srgb,var(--color-accent) 9%,var(--color-surface));color:var(--color-text);font-size:10px;font-weight:800;letter-spacing:.05em}
+body[data-page="sheet-mobile.html"] .mobile-header-exp strong{min-width:34px;color:var(--color-accent);font:900 17px/1 var(--font-data,inherit);text-align:center}
 body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header{grid-template-columns:minmax(66px,auto) minmax(0,1fr) minmax(66px,auto)}
 body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header--close-only{grid-template-columns:minmax(66px,auto) minmax(0,1fr)}
 body[data-page="sheet-mobile.html"] .mobile-editor-dialog__header button{padding-inline:8px;white-space:nowrap}
