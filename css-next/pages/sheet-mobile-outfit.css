@@ -5,7 +5,6 @@ body[data-page="sheet-mobile.html"] .mobile-outfit-card>*{min-width:0;overflow:h
 body[data-page="sheet-mobile.html"] .mobile-outfit-card strong{color:var(--color-section-outfits);font-size:12px}
 body[data-page="sheet-mobile.html"] .mobile-outfit-card span{font-size:10px;color:var(--color-muted)}
 body[data-page="sheet-mobile.html"] .mobile-outfit-card small{font-size:9px;color:var(--color-muted)}
-body[data-page="sheet-mobile.html"] .mobile-outfit-card .mobile-unsaved-label{color:var(--color-warning,#e0b44c);font-weight:900}
 body[data-page="sheet-mobile.html"] .mobile-outfit-editor{display:grid;gap:10px}
 body[data-page="sheet-mobile.html"] .mobile-outfit-editor__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 body[data-page="sheet-mobile.html"] .mobile-outfit-editor__grid>label{display:grid;gap:5px;min-width:0;font-size:11px}
