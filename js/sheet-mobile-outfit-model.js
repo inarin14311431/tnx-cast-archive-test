@@ -22,9 +22,33 @@ export const SLOT_OPTIONS = [
 
 export const CONTROL_OPTIONS = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
 
+export const DETAIL_FIELDS = [
+  "page_number", "major_category", "minor_category", "manufacturer", "concealment_penalty",
+  "parry", "speed", "control_value", "electronic_control",
+  "defense_s", "defense_p", "defense_i",
+  "ianus_surface", "ianus_deep", "ianus_none",
+  "tron_software", "tron_support", "tron_hardware",
+  "cs_value", "crew", "sf",
+  "residence_entry", "residence_electric", "residence_area",
+  "site_category", "purchase_target", "permanent_cost", "concealment",
+  "attack", "range_text", "slot", "description"
+];
+
 export function normalizeNumber(value) {
   const result = Number(value || 0);
   return Number.isFinite(result) ? result : 0;
+}
+
+export function normalizeDetails(value) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const output = {};
+  for (const key of DETAIL_FIELDS) output[key] = String(source[key] ?? "");
+  return output;
+}
+
+export function compactDetails(value) {
+  const normalized = normalizeDetails(value);
+  return Object.fromEntries(Object.entries(normalized).filter(([, item]) => item !== ""));
 }
 
 export function blankOutfit() {
@@ -45,6 +69,7 @@ export function blankOutfit() {
     cs_modifier: 0,
     mundane_modifier: 0,
     sort_order: 9999,
+    ofc_details: normalizeDetails({}),
     _concealValue: "",
     _concealMod: "",
     _defS: "",
@@ -56,18 +81,21 @@ export function blankOutfit() {
 export function parseConcealment(item) {
   if (item._concealParsed) return item;
   const text = String(item.concealment || "").trim();
-  const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([+-]?\d+)|[（(]\s*([+-]?\d+)\s*[）)])?\s*$/);
+  const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
   item._concealValue = match ? String(match[1] || "").trim() : text;
   item._concealMod = match ? String(match[2] || match[3] || "").trim() : "";
+  if (!item._concealMod && item.ofc_details?.concealment_penalty) {
+    item._concealMod = String(item.ofc_details.concealment_penalty);
+  }
   item._concealParsed = true;
   return item;
 }
 
 export function composeConcealment(item) {
-  return [
-    String(item._concealValue ?? "").trim(),
-    String(item._concealMod ?? "").trim()
-  ].filter(Boolean).join("/");
+  const value = String(item._concealValue ?? "").trim();
+  const mod = String(item._concealMod ?? "").trim();
+  if (!value) return "";
+  return mod ? `${value}/${mod}` : value;
 }
 
 export function parseDefense(item) {
@@ -75,9 +103,9 @@ export function parseDefense(item) {
   const text = String(item.defense || "").trim();
   let match = text.match(/S\s*([+-]?\d+)\s*[\/／, ]+P\s*([+-]?\d+)\s*[\/／, ]+I\s*([+-]?\d+)/i);
   if (!match) match = text.match(/^\s*([+-]?\d+)\s*[\/／,]\s*([+-]?\d+)\s*[\/／,]\s*([+-]?\d+)\s*$/);
-  item._defS = match ? match[1] : "";
-  item._defP = match ? match[2] : "";
-  item._defI = match ? match[3] : "";
+  item._defS = String(item.ofc_details?.defense_s || (match ? match[1] : ""));
+  item._defP = String(item.ofc_details?.defense_p || (match ? match[2] : ""));
+  item._defI = String(item.ofc_details?.defense_i || (match ? match[3] : ""));
   item._defParsed = true;
   return item;
 }
@@ -90,28 +118,50 @@ export function composeDefense(item) {
 }
 
 export function cloneOutfit(item) {
-  const draft = { ...item };
+  const draft = {
+    ...item,
+    ofc_details: normalizeDetails(item?.ofc_details || {})
+  };
   parseConcealment(draft);
   parseDefense(draft);
   return draft;
 }
 
 export function collectOutfitRecord(item, character) {
+  const concealment = composeConcealment(item);
+  const defense = composeDefense(item);
+  const details = compactDetails({
+    ...normalizeDetails(item.ofc_details || {}),
+    site_category: item.category || "other",
+    purchase_target: String(item.purchase_value ?? ""),
+    permanent_cost: String(normalizeNumber(item.experience_cost)),
+    concealment: String(item._concealValue ?? "").trim(),
+    concealment_penalty: String(item._concealMod ?? "").trim(),
+    attack: item.attack || "",
+    range_text: item.range || "",
+    slot: item.slot || "",
+    description: item.description || "",
+    defense_s: String(item._defS ?? "").trim(),
+    defense_p: String(item._defP ?? "").trim(),
+    defense_i: String(item._defI ?? "").trim()
+  });
+
   return {
     character_id: character?.id,
     category: item.category || "other",
     name: item.name || "",
     purchase_value: String(item.purchase_value ?? ""),
     experience_cost: normalizeNumber(item.experience_cost),
-    concealment: composeConcealment(item),
+    concealment,
     attack: item.attack || "",
-    defense: composeDefense(item),
+    defense,
     range: item.range || "",
     slot: item.slot || "",
     description: item.description || "",
     control_modifier: normalizeNumber(item.control_modifier),
     cs_modifier: normalizeNumber(item.cs_modifier),
     mundane_modifier: normalizeNumber(item.mundane_modifier),
-    sort_order: normalizeNumber(item.sort_order)
+    sort_order: normalizeNumber(item.sort_order),
+    ofc_details: details
   };
 }
