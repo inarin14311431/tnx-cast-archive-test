@@ -31,6 +31,17 @@ let character = null;
 let dirtyProfile = false;
 let saving = false;
 
+function ensureProfileSourceFields() {
+  const form = $("#mobile-profile-form");
+  if (!form) return;
+  if (!form.querySelector('[data-mobile-character-field="birthplace"]')) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.dataset.mobileCharacterField = "birthplace";
+    form.append(input);
+  }
+}
+
 function setStatus(message, state = "") {
   const status = $("#mobile-save-status");
   if (!status) return;
@@ -85,6 +96,7 @@ function renderIdentity() {
 
 function fillProfile() {
   if (!character) return;
+  ensureProfileSourceFields();
   for (const field of PROFILE_FIELDS) {
     const input = document.querySelector(`[data-mobile-character-field="${field}"]`);
     if (!input) continue;
@@ -154,6 +166,7 @@ function bind() {
 }
 
 async function init() {
+  ensureProfileSourceFields();
   user = await requireAuth();
   if (!user) return;
   bindThemePicker();
