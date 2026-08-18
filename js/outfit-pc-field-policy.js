@@ -107,6 +107,15 @@ function applyTable(table) {
   for (const field of HIDDEN_OFC_FIELDS) hideOfcField(table, field);
   if (category === "vehicle") hideOfcField(table, "parry");
 
+  if (category === "armor" || category === "vehicle") {
+    const head = table.querySelector(".outfit-table-head--control_modifier");
+    if (head) head.textContent = "制御値";
+  }
+  if (category === "tron" || category === "vehicle") {
+    const head = table.querySelector(".outfit-table-head--cs_modifier");
+    if (head) head.textContent = "CS修正";
+  }
+
   for (const [field, label] of EXTRA_BASE_FIELDS[category] || []) {
     addHeader(table, field, label, "base");
     table.querySelectorAll("tbody .outfit-table-row").forEach(row => addCell(row, field, label, "base"));
