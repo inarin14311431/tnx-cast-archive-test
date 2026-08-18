@@ -8,6 +8,7 @@ const ALLOWED_SORTS = new Set(["updated-desc", "updated-asc", "name-asc", "name-
 const DEFAULT_PAGE_SIZE = 12;
 const DEFAULT_SORT = "updated-desc";
 const ARCHIVE_SCROLL_KEY = "tnx-cast-archive-return-scroll";
+const MOBILE_VIEW_QUERY = "(max-width: 900px)";
 
 const castGrid = document.querySelector("#cast-grid");
 const statusText = document.querySelector("#status-text");
@@ -59,10 +60,18 @@ function setupControls() {
     currentPage = 1; applyFilters();
   });
   castGrid?.addEventListener("click", event => {
-    if (!event.target.closest("a[data-archive-cast-link]")) return;
+    const link = event.target.closest("a[data-archive-cast-link]");
+    if (!link) return;
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    url.searchParams.set("mobile", currentCastViewMode());
+    link.href = url.href;
     rememberArchiveScrollPosition();
   });
+}
+
+function currentCastViewMode() {
+  return window.matchMedia(MOBILE_VIEW_QUERY).matches ? "1" : "0";
 }
 
 async function loadCharacters() {
@@ -189,7 +198,10 @@ function createCharacterCard(character) {
   const imagePosition = getImageObjectPosition(character.image_url);
   const displayId = obfuscatePublicId(character.public_id);
   const archiveReturnUrl = `./index.html${window.location.search}`;
-  const castUrl = `./cast.html?id=${encodeURIComponent(character.public_id)}&mobile=1&return=${encodeURIComponent(archiveReturnUrl)}`;
+  const castUrl = new URL("./cast.html", location.href);
+  castUrl.searchParams.set("id", character.public_id);
+  castUrl.searchParams.set("mobile", currentCastViewMode());
+  castUrl.searchParams.set("return", archiveReturnUrl);
   const styles = [
     [character.style_1, character.style_1_mark],
     [character.style_2, character.style_2_mark],
@@ -200,7 +212,7 @@ function createCharacterCard(character) {
     </span>`).join("");
   return `
     <article class="cast-card">
-      <a href="${escapeAttribute(castUrl)}" data-archive-cast-link>
+      <a href="${escapeAttribute(castUrl.href)}" data-archive-cast-link>
         <div class="cast-card__image">
           <img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(character.character_name)}" loading="lazy" style="object-position:${escapeAttribute(imagePosition)};--tnx-image-scale:${getImageScale(character.image_url)};--tnx-image-origin:${escapeAttribute(getImageTransformOrigin(character.image_url))}">
           <span class="cast-card__scanline"></span>
