@@ -6,7 +6,7 @@ const GROUPS = {
       ["handle", "ハンドル", "text"], ["character_name", "キャスト名", "text"],
       ["handle_kana", "ハンドルルビ", "text"], ["character_kana", "キャスト名ルビ", "text"],
       ["player_name", "プレイヤー名", "text"], ["affiliation", "所属", "text"],
-      ["citizen_rank", "市民ランク", "text"]
+      ["citizen_rank", "市民ランク", "text"], ["birthplace", "出身", "text"]
     ]
   },
   personal: {
@@ -35,7 +35,7 @@ function ensureStyleSheet(){if(document.querySelector('link[data-mobile-profile-
 function source(field){return document.querySelector(`[data-mobile-character-field="${field}"]`);}
 function splitLifePath(value){const text=String(value||"").trim();const match=text.match(/^(.*?)[（(]([^（）()]*)[）)]\s*$/);return match?{name:match[1].trim(),skill:match[2].trim()}:{name:text,skill:""};}
 function joinLifePath(name,skill){const left=String(name||"").trim();const right=String(skill||"").trim();return right?`${left}（${right}）`:left;}
-function basicSummaryHtml(){const handle=quote(source("handle")?.value||"");const name=source("character_name")?.value||"名称未設定";const handleKana=quote(source("handle_kana")?.value||"");const nameKana=source("character_kana")?.value||"—";const player=source("player_name")?.value||"—";const affiliation=source("affiliation")?.value||"—";const rank=source("citizen_rank")?.value||"—";return `<div class="mobile-basic-name-block"><div><b>読み：</b><span>${esc(handleKana)} ${esc(nameKana)}</span></div><div><b>氏名：</b><strong>${esc(handle)} ${esc(name)}</strong></div></div><div class="mobile-basic-meta-grid"><span><b>プレイヤー</b><em>${esc(player)}</em></span><span><b>所属</b><em>${esc(affiliation)}</em></span><span><b>市民ランク</b><em>${esc(rank)}</em></span></div>`;}
+function basicSummaryHtml(){const handle=quote(source("handle")?.value||"");const name=source("character_name")?.value||"名称未設定";const handleKana=quote(source("handle_kana")?.value||"");const nameKana=source("character_kana")?.value||"—";const player=source("player_name")?.value||"—";const affiliation=source("affiliation")?.value||"—";const rank=source("citizen_rank")?.value||"—";const birthplace=source("birthplace")?.value||"Ｎ◎ＶＡ";return `<div class="mobile-basic-name-block"><div><b>読み：</b><span>${esc(handleKana)} ${esc(nameKana)}</span></div><div><b>氏名：</b><strong>${esc(handle)} ${esc(name)}</strong></div></div><div class="mobile-basic-meta-grid"><span><b>プレイヤー</b><em>${esc(player)}</em></span><span><b>所属</b><em>${esc(affiliation)}</em></span><span><b>市民ランク</b><em>${esc(rank)}</em></span><span><b>出身</b><em>${esc(birthplace)}</em></span></div>`;}
 function personalSummaryHtml(){const fields=[["age","年齢"],["gender","性別"],["height","身長"],["weight","体重"],["eyes","瞳"],["hair","髪"],["skin","肌"]];return `<div class="mobile-personal-summary">${fields.map(([field,label])=>`<span><b>${label}</b><em>${esc(source(field)?.value||"—")}</em></span>`).join("")}</div>`;}
 function lifePathSummaryHtml(){return `<div class="mobile-lifepath-summary">${LIFE_PATHS.map(([field,label])=>{const detail=splitLifePath(source(field)?.value);return `<div class="mobile-lifepath-row"><b>${label}</b><span>${esc(detail.name||"—")}</span><span>${esc(detail.skill||"取得技能なし")}</span></div>`;}).join("")}</div>`;}
 function summaryText(groupKey){const group=GROUPS[groupKey];const field=group?.fields?.[0]?.[0];return field ? (source(field)?.value || "未入力") : "";}
