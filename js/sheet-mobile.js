@@ -1,6 +1,6 @@
 import { supabase } from "./supabase-client.js";
-import { requireAuth } from "./auth-state.js?v=4";
 import { SITE_BASE_PATH } from "./config.js?v=2";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 
 const PROFILE_FIELDS = [
   "character_name", "character_kana", "handle", "handle_kana", "player_name", "affiliation", "citizen_rank", "birthplace",
@@ -124,21 +124,19 @@ function bind() {
 
 async function init() {
   ensureProfileSourceFields();
-  user = await requireAuth();
-  if (!user) return;
   bind();
-  const publicId = new URLSearchParams(location.search).get("id");
-  if (!publicId) {
-    setStatus("モバイル編集は既存キャスト専用です。PC版からキャストを作成してください。", "error");
-    if ($("#mobile-save")) $("#mobile-save").disabled = true;
-    return;
-  }
   setStatus("キャストデータを読み込み中…", "loading");
   try {
-    const { data, error } = await supabase.from("characters").select("*").eq("public_id", publicId).eq("owner_id", user.id).maybeSingle();
-    if (error) throw error;
-    if (!data) throw new Error("編集可能なキャストが見つかりませんでした。");
-    character = data;
+    const context = await getMobileEditorContext();
+    user = context.user;
+    if (!user) return;
+    if (!context.publicId) {
+      setStatus("モバイル編集は既存キャスト専用です。PC版からキャストを作成してください。", "error");
+      if ($("#mobile-save")) $("#mobile-save").disabled = true;
+      return;
+    }
+    if (!context.character) throw new Error("編集可能なキャストが見つかりませんでした。");
+    character = context.character;
     fillProfile();
     updateLinks();
     dirtyProfile = false;
