@@ -10,14 +10,14 @@ import {
   parseConcealment,
   parseDefense,
   normalizeNumber
-} from "./sheet-mobile-outfit-model.js?v=4";
+} from "./sheet-mobile-outfit-model.js?v=5";
 import {
   buildOutfitEditor,
   ensureOutfitDialog,
   ensureOutfitStylesheet,
   ensureOutfitToolbar,
   renderOutfitCards
-} from "./sheet-mobile-outfit-ui.js?v=9";
+} from "./sheet-mobile-outfit-ui.js?v=10";
 
 const $ = selector => document.querySelector(selector);
 
@@ -105,7 +105,9 @@ function updateDraft(control) {
     activeDraft[field] = control.type === "number" || field === "control_modifier"
       ? normalizeNumber(control.value)
       : control.value;
-    if (field === "control_modifier") activeDraft.ofc_details.control_value = String(activeDraft.control_modifier);
+    if (field === "control_modifier" && ["armor", "vehicle"].includes(activeDraft.category)) {
+      activeDraft.ofc_details.control_value = String(activeDraft.control_modifier);
+    }
   }
 
   activeDraft.concealment = composeConcealment(activeDraft);
