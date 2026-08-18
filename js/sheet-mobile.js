@@ -2,15 +2,6 @@ import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 import { SITE_BASE_PATH } from "./config.js?v=2";
 
-const THEME_STORAGE_KEY = "tnx-cast-site-theme";
-const THEME_OPTIONS = [
-  ["nova", "トーキョーＮ◎ＶＡ"], ["moon", "オーサカM○●N"], ["star", "カムイST☆R"],
-  ["eden", "ミトラスGARDEN"], ["vlad", "ヴラド・コロニー"], ["lutetia", "ヴィル・ヌーヴ・ルテチア"],
-  ["buena", "ブエナIЯA"], ["canberra", "キャンベラAXYZ"], ["hongkong", "ホンコンHEAVEN"],
-  ["fesler", "フェスラー公国"], ["intron", "イントロン"], ["axleraters", "ニューロ！"],
-  ["inagaki", "稲垣 光平"], ["astral", "アストラル"], ["orbital", "軌道"], ["japanese-army", "日本"]
-];
-const THEME_VALUES = new Set(THEME_OPTIONS.map(([value]) => value));
 const PROFILE_FIELDS = [
   "character_name", "character_kana", "handle", "handle_kana", "player_name", "affiliation", "citizen_rank", "birthplace",
   "age", "gender", "height", "weight", "eyes", "hair", "skin",
@@ -18,14 +9,6 @@ const PROFILE_FIELDS = [
 ];
 
 const $ = selector => document.querySelector(selector);
-const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
-const quoteHandle = value => {
-  const text = String(value || "").trim();
-  if (!text) return "NO HANDLE";
-  if (/^(?:“.*”|”.*”|".*"|「.*」|『.*』)$/.test(text)) return text;
-  return `“${text}”`;
-};
-
 let user = null;
 let character = null;
 let dirtyProfile = false;
@@ -61,37 +44,6 @@ function markDirty() {
   dirtyProfile = true;
   setStatus("未保存の変更があります", "dirty");
   setSaveState("dirty");
-}
-
-function bindThemePicker() {
-  const select = $("#mobile-theme-select");
-  if (!select) return;
-  select.replaceChildren(...THEME_OPTIONS.map(([value, label]) => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = label;
-    return option;
-  }));
-  const current = THEME_VALUES.has(document.documentElement.dataset.theme) ? document.documentElement.dataset.theme : "nova";
-  select.value = current;
-  select.addEventListener("change", () => {
-    const next = THEME_VALUES.has(select.value) ? select.value : "nova";
-    document.documentElement.dataset.theme = next;
-    document.documentElement.style.colorScheme = ["intron", "orbital"].includes(next) ? "light" : "dark";
-    try { localStorage.setItem(THEME_STORAGE_KEY, next); } catch {}
-  });
-}
-
-function renderIdentity() {
-  if (!character) return;
-  $("#mobile-character-name").textContent = character.character_name || "名称未設定";
-  $("#mobile-character-handle").textContent = quoteHandle(character.handle);
-  const styles = [1, 2, 3]
-    .map(index => [character[`style_${index}`], character[`style_${index}_mark`]])
-    .filter(([name]) => name)
-    .map(([name, mark]) => `<span>${esc(mark || "")}${esc(name)}</span>`)
-    .join("");
-  $("#mobile-character-meta").innerHTML = styles || "<span>STYLE NOT SET</span>";
 }
 
 function fillProfile() {
@@ -141,7 +93,6 @@ async function saveProfile() {
     if (error) throw error;
     Object.assign(character, payload);
     dirtyProfile = false;
-    renderIdentity();
     setStatus("保存済み", "saved");
     setSaveState("saved");
   } catch (error) {
@@ -169,7 +120,6 @@ async function init() {
   ensureProfileSourceFields();
   user = await requireAuth();
   if (!user) return;
-  bindThemePicker();
   bind();
   const publicId = new URLSearchParams(location.search).get("id");
   if (!publicId) {
@@ -184,7 +134,6 @@ async function init() {
     if (!data) throw new Error("編集可能なキャストが見つかりませんでした。");
     character = data;
     fillProfile();
-    renderIdentity();
     updateLinks();
     dirtyProfile = false;
     setStatus("保存済み", "saved");
