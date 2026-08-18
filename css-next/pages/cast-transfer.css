@@ -50,7 +50,7 @@
 }
 
 .mobile-cast-topbar {
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
 }
 .mobile-cast-topbar > span {
   min-width: 0;
@@ -59,22 +59,45 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.mobile-cast-topbar .direct-transfer-button--mobile {
+.mobile-cast-topbar .direct-transfer-button--mobile,
+.mobile-cast-topbar [data-mobile-editor-route] {
+  position: relative;
+  display: grid;
+  align-content: center;
   min-width: 64px;
   min-height: 30px;
   padding: 4px 7px 4px 9px;
+  overflow: hidden;
+  border: 1px solid currentColor;
   border-radius: 0;
-  font-size: 9px;
+  background: linear-gradient(135deg, color-mix(in srgb, currentColor 18%, transparent), var(--color-accent-soft));
+  font: 800 9px/1 var(--font-data, monospace);
   letter-spacing: .03em;
+  text-align: left;
+  text-decoration: none;
   white-space: nowrap;
 }
-.mobile-cast-topbar .direct-transfer-button--mobile::before {
+.mobile-cast-topbar .direct-transfer-button--mobile::before,
+.mobile-cast-topbar [data-mobile-editor-route]::before {
+  position: absolute;
+  inset: 0 auto 0 0;
   width: 2px;
+  content: "";
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
 }
 .mobile-cast-topbar .direct-transfer-button--mobile small {
   margin-top: 1px;
   font-size: 6px;
   letter-spacing: .07em;
+}
+.mobile-cast-topbar [data-mobile-editor-route] {
+  color: var(--color-warning, #e0b44c);
+}
+.mobile-cast-topbar [data-mobile-editor-route]:is(:hover,:focus-visible,:active) {
+  background: var(--color-warning, #e0b44c);
+  color: var(--color-surface);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-warning, #e0b44c) 55%, transparent);
 }
 
 .cast-transfer-dialog {
@@ -166,8 +189,9 @@
     gap: 4px;
     padding-inline: 6px;
   }
-  .mobile-cast-topbar .direct-transfer-button--mobile {
-    min-width: 58px;
+  .mobile-cast-topbar .direct-transfer-button--mobile,
+  .mobile-cast-topbar [data-mobile-editor-route] {
+    min-width: 56px;
     padding-inline: 7px 5px;
     font-size: 8px;
   }
