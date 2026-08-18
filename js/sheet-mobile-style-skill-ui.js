@@ -25,7 +25,7 @@ function observeSuitDisplay() {
 
 function commitAndClose(dialog) {
   document.dispatchEvent(new CustomEvent("tnx:mobile-style-dialog-commit"));
-  applyButton?.click();
+  if (dialog.dataset.mobileStagedStyle !== "true") applyButton?.click();
   if (dialog.open) dialog.close();
 }
 
@@ -37,6 +37,11 @@ function install() {
   if (!dialog || !close || !apply) return false;
   applyButton = apply;
   installed = true;
+
+  document.addEventListener("click", event => {
+    if (event.target.closest('[data-mobile-pending-style],[data-mobile-queued-add="style"]')) dialog.dataset.mobileStagedStyle = "true";
+    if (event.target.closest('[data-mobile-style-skill]')) dialog.dataset.mobileStagedStyle = "false";
+  }, true);
 
   close.addEventListener("click", event => {
     event.preventDefault();
@@ -51,6 +56,7 @@ function install() {
   dialog.addEventListener("close", () => {
     const body = dialog.querySelector(".mobile-editor-dialog__body");
     if (body) body.scrollTop = 0;
+    dialog.dataset.mobileStagedStyle = "false";
   });
 
   apply.remove();
