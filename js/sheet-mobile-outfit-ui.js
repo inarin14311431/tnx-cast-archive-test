@@ -7,7 +7,6 @@ import {
   parseDefense,
   normalizeNumber
 } from "./sheet-mobile-outfit-model.js?v=2";
-import { MANUFACTURER_OPTIONS } from "./sheet-mobile-outfit-manufacturers.js?v=2";
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -69,13 +68,6 @@ const detailField = (item, field, label, options = {}) => {
   return `<label>${label}<input data-outfit-detail="${field}"${attrs} value="${esc(value)}"></label>`;
 };
 
-function manufacturerField(item) {
-  const current = String(detailValue(item, "manufacturer") || "").trim();
-  const values = [...MANUFACTURER_OPTIONS];
-  if (current && !values.includes(current)) values.unshift(current);
-  return `<label>メーカー<select data-outfit-detail="manufacturer"><option value="">選択</option>${values.map(value => `<option value="${esc(value)}" ${value === current ? "selected" : ""}>${esc(value)}</option>`).join("")}</select></label>`;
-}
-
 function commonBaseFields(item) {
   return `<fieldset class="mobile-outfit-group"><legend>基本</legend><div class="mobile-outfit-group__grid">
     <label class="mobile-outfit-editor__name">名称<input data-outfit-field="name" value="${esc(item.name || "")}"></label>
@@ -88,7 +80,7 @@ function commonBaseFields(item) {
 
 function commonOfcFields(item) {
   return `<fieldset class="mobile-outfit-group"><legend>OFC情報</legend><div class="mobile-outfit-group__grid">
-    ${manufacturerField(item)}
+    ${detailField(item, "manufacturer", "メーカー")}
     ${detailField(item, "page_number", "参照P")}
   </div></fieldset>`;
 }
