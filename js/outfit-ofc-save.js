@@ -1,4 +1,4 @@
-import "./outfit-pc-field-policy.js?v=3";
+import "./outfit-pc-field-policy.js?v=4";
 import { supabase } from "./supabase-client.js";
 import {
   getOutfitRows,
@@ -72,9 +72,6 @@ function enrichOutfitPayload(items) {
       ? Number(valueOf(row, "cs_modifier") || item.cs_modifier || 0)
       : Number(item.cs_modifier || 0);
 
-    if (category === "armor" || category === "vehicle") details.control_value = String(controlModifier);
-    if (details.cs_value === "") delete details.cs_value;
-
     return {
       ...item,
       category,
@@ -91,7 +88,7 @@ function enrichOutfitPayload(items) {
 }
 
 function collectDetails(row) {
-  const details = {};
+  const details = { ...(globalThis.TNXOutfitOFCState?.getDetails?.(row) || {}) };
   row.querySelectorAll("[data-ofc]").forEach(input => {
     details[input.dataset.ofc] = String(input.value ?? "");
   });
@@ -112,7 +109,7 @@ function collectDetails(row) {
     site_category: category,
     purchase_target: valueOf(row, "purchase_value"),
     permanent_cost: valueOf(row, "experience_cost"),
-    concealment: concealParts[0] || "",
+    concealment: concealParts[0] || details.concealment || "",
     concealment_penalty: details.concealment_penalty || concealParts[1] || "",
     attack: valueOf(row, "attack"),
     range_text: valueOf(row, "range"),
