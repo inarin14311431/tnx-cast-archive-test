@@ -136,7 +136,10 @@ function queue() {
   requestAnimationFrame(() => { queued = false; applyPolicy(); });
 }
 
-function redirectCanonicalFields(event) {
+function handleCanonicalInput(event) {
+  const proxy = event.target.closest?.("[data-pc-outfit-proxy]");
+  if (proxy) proxy.dataset.pcOutfitTouched = "1";
+
   const input = event.target.closest?.("[data-ofc]");
   if (!input) return;
   const row = input.closest(".outfit-table-row");
@@ -186,8 +189,8 @@ async function init() {
   const root = document.querySelector(ROOT);
   if (!root) return;
   await loadStoredRows();
-  document.addEventListener("input", redirectCanonicalFields, true);
-  document.addEventListener("change", redirectCanonicalFields, true);
+  document.addEventListener("input", handleCanonicalInput, true);
+  document.addEventListener("change", handleCanonicalInput, true);
   new MutationObserver(queue).observe(root, { childList: true, subtree: true });
   queue();
 }
