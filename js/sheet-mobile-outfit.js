@@ -28,36 +28,6 @@ let activeDraft = null;
 const dirtyIds = new Set();
 const deletedIds = new Set();
 
-initialize();
-
-async function initialize() {
-  ensureOutfitStylesheet();
-  ensureOutfitToolbar();
-  ensureOutfitDialog();
-  bindEvents();
-  await loadOutfits();
-}
-
-async function loadOutfits() {
-  const context = getMobileEditorContext();
-  character = context?.character || null;
-  if (!character?.id) return;
-
-  const { data, error } = await supabase
-    .from("character_outfits")
-    .select("*")
-    .eq("character_id", character.id)
-    .order("sort_order", { ascending: true });
-
-  if (error) {
-    console.error("モバイル版アウトフィットの読込に失敗しました。", error);
-    return;
-  }
-
-  outfits = Array.isArray(data) ? data.map(cloneOutfit) : [];
-  render();
-}
-
 function render() {
   renderOutfitCards({
     root: $("#mobile-outfits"),
@@ -102,8 +72,11 @@ function openEditor(id) {
 
 function renderEditor() {
   if (!activeDraft) return;
+
   const title = $("#mobile-outfit-title");
-  if (title) title.textContent = activeDraft.name || (activeDraft._new ? "アウトフィット追加" : "アウトフィット編集");
+  if (title) {
+    title.textContent = activeDraft.name || (activeDraft._new ? "アウトフィット追加" : "アウトフィット編集");
+  }
 
   const root = $("#mobile-outfit-fields");
   if (root) root.innerHTML = buildOutfitEditor(activeDraft);
@@ -130,7 +103,7 @@ function updateDraft(control) {
   else if (transient === "def-p") activeDraft._defP = control.value;
   else if (transient === "def-i") activeDraft._defI = control.value;
   else if (field) {
-    activeDraft[field] = control.type === "number" || ["control_modifier", "cs_modifier", "mundane_modifier"].includes(field)
+    activeDraft[field] = control.type === "number" || field === "control_modifier"
       ? normalizeNumber(control.value)
       : control.value;
   }
@@ -141,7 +114,9 @@ function updateDraft(control) {
   if (field === "category") renderEditor();
   if (field === "name") {
     const title = $("#mobile-outfit-title");
-    if (title) title.textContent = activeDraft.name || (activeDraft._new ? "アウトフィット追加" : "アウトフィット編集");
+    if (title) {
+      title.textContent = activeDraft.name || (activeDraft._new ? "アウトフィット追加" : "アウトフィット編集");
+    }
   }
 }
 
@@ -152,9 +127,8 @@ function commitDraft() {
   const before = JSON.stringify(collectOutfitRecord(item, character));
   const meta = { _new: item._new, id: item.id };
   Object.assign(item, activeDraft, meta);
-  const after = JSON.stringify(collectOutfitRecord(item, character));
 
-  if (before !== after || item._new) {
+  if (before !== JSON.stringify(collectOutfitRecord(item, character)) || item._new) {
     dirtyIds.add(String(item.id));
     markDirty();
   }
@@ -187,7 +161,7 @@ function stageDelete() {
 }
 
 async function flush() {
-  if (!character?.id) return;
+  if (!character) return;
 
   for (const id of deletedIds) {
     const { error } = await supabase
@@ -254,16 +228,46 @@ function bindEvents() {
     if (event.target.closest("[data-outfit-delete]")) stageDelete();
   });
 
-  document.addEventListener("mobile-sheet:save", async event => {
-    if (!hasChanges()) return;
-    try {
-      await flush();
-      event.detail?.done?.();
-    } catch (error) {
-      console.error("モバイル版アウトフィットの保存に失敗しました。", error);
-      event.detail?.fail?.(error);
-    }
+  document.addEventListener("tnx:mobile-before-save", event => {
+    if (hasChanges()) event.detail.add(flush());
   });
+
+  window.addEventListener("beforeunload", event => {
+    if (!hasChanges()) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+}
+
+async function init() {
+  ensureOutfitStylesheet();
+  ensureOutfitToolbar();
+  ensureOutfitDialog();
+  bindEvents();
+
+  try {
+    const context = await getMobileEditorContext();
+    if (!context.character) return;
+    character = context.character;
+
+    const rows = await supabase
+      .from("character_outfits")
+      .select("*")
+      .eq("character_id", character.id)
+      .order("sort_order");
+    if (rows.error) throw rows.error;
+
+    outfits = (rows.data || []).map(item => cloneOutfit({ ...item, _new: false }));
+    render();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init, { once: true });
+} else {
+  init();
 }
 
 export { hasChanges, flush, parseConcealment, parseDefense, LABELS };
