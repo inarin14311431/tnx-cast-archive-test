@@ -1,5 +1,5 @@
-import "./sheet-mobile-style-skill-ui.js?v=20260818-3";
-import "./sheet-mobile-skill-rules.js?v=20260818-1";
+import "./sheet-mobile-style-skill-ui.js?v=20260818-4";
+import "./sheet-mobile-skill-rules.js?v=20260818-2";
 import "./sheet-mobile-summary-text.js?v=20260818-1";
 import "./sheet-mobile-header-exp.js?v=20260818-1";
 import "./sheet-mobile-crud.js?v=20260818-2";
