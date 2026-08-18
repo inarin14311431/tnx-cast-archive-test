@@ -10,6 +10,7 @@ const styleCompat = await readFile(new URL("../js/sheet-mobile-style-existing-va
 const outfit = await readFile(new URL("../js/sheet-mobile-outfit.js", import.meta.url), "utf8");
 const combos = await readFile(new URL("../js/sheet-mobile-combos.js", import.meta.url), "utf8");
 const snapshots = await readFile(new URL("../js/sheet-mobile-snapshots.js", import.meta.url), "utf8");
+const image = await readFile(new URL("../js/sheet-mobile-image.js", import.meta.url), "utf8");
 const exp = await readFile(new URL("../js/sheet-mobile-header-exp.js", import.meta.url), "utf8");
 const uiCss = await readFile(new URL("../css-next/pages/sheet-mobile-ui.css", import.meta.url), "utf8");
 const skillsCss = await readFile(new URL("../css-next/pages/sheet-mobile-skills.css", import.meta.url), "utf8");
@@ -32,16 +33,17 @@ test("mobile editor keeps one application entry point", () => {
   assert.match(app, /sheet-mobile-outfit\.js/);
   assert.match(app, /sheet-mobile-combos\.js/);
   assert.match(app, /sheet-mobile-snapshots\.js/);
+  assert.match(app, /sheet-mobile-image\.js/);
 });
 
 test("shared mobile context owns authentication and character lookup", () => {
   assert.match(runtime, /requireAuth\(\)/);
   assert.match(runtime, /from\("characters"\)/);
   assert.match(runtime, /contextPromise/);
-  for (const source of [profile, styleCompat, outfit, combos, snapshots, exp]) {
+  for (const source of [profile, styleCompat, outfit, combos, snapshots, image, exp]) {
     assert.match(source, /getMobileEditorContext/);
     assert.doesNotMatch(source, /requireAuth/);
-    assert.doesNotMatch(source, /from\(["']characters["']\)/);
+    assert.doesNotMatch(source, /from\(["']characters["']\)\.select/);
   }
 });
 
@@ -53,14 +55,20 @@ test("snapshot feature keeps create, restore, delete and dirty-state safeguards"
   assert.match(snapshots, /if\(dirty\(\)\)/);
 });
 
+test("image feature keeps upload, focus save, clear and owned-storage cleanup", () => {
+  assert.match(image, /storage\.from\(BUCKET\)\.upload/);
+  assert.match(image, /update\(\{image_url:next\}\)/);
+  assert.match(image, /update\(\{image_url:""\}\)/);
+  assert.match(image, /removeOwned/);
+  assert.match(image, /MAX_SOURCE=20\*1024\*1024/);
+  assert.match(image, /MAX_OUTPUT=1024\*1024/);
+});
+
 test("common editor component styles stay in UI stylesheet", () => {
   for (const selector of ["mobile-section-add", "mobile-unsaved-label", "mobile-danger-action", "mobile-editor-policy-note"]) {
     assert.match(uiCss, new RegExp(`\\.${selector}`));
   }
 
-  // Feature styles may position or size a shared component in context, e.g.
-  // `.mobile-style-skill-card > .mobile-unsaved-label`, but they must not
-  // redeclare the standalone reusable component itself.
   assert.doesNotMatch(skillsCss, standalonePageSelector("mobile-danger-action"));
   assert.doesNotMatch(skillsCss, standalonePageSelector("mobile-unsaved-label"));
   assert.doesNotMatch(outfitCss, standalonePageSelector("mobile-unsaved-label"));
