@@ -12,6 +12,8 @@ const uiCss = await readFile(new URL("../css-next/pages/sheet-mobile-ui.css", im
 const skillsCss = await readFile(new URL("../css-next/pages/sheet-mobile-skills.css", import.meta.url), "utf8");
 const outfitCss = await readFile(new URL("../css-next/pages/sheet-mobile-outfit.css", import.meta.url), "utf8");
 
+const standalonePageSelector = className => new RegExp(`(?:^|})\\s*body\\[data-page=["']sheet-mobile\\.html["']\\]\\s+\\.${className}\\{`);
+
 test("mobile editor footer always opens explicit mobile cast view", () => {
   assert.match(html, /id="mobile-view-link"[^>]+href="\.\/cast\.html\?mobile=1"/);
   assert.match(profile, /cast\.html\?id=\$\{id\}&mobile=1/);
@@ -41,7 +43,11 @@ test("common editor component styles stay in UI stylesheet", () => {
   for (const selector of ["mobile-section-add", "mobile-unsaved-label", "mobile-danger-action", "mobile-editor-policy-note"]) {
     assert.match(uiCss, new RegExp(`\\.${selector}`));
   }
-  assert.doesNotMatch(skillsCss, /\.mobile-danger-action\{/);
-  assert.doesNotMatch(skillsCss, /\.mobile-unsaved-label\{/);
-  assert.doesNotMatch(outfitCss, /\.mobile-unsaved-label\{/);
+
+  // Feature styles may position or size a shared component in context, e.g.
+  // `.mobile-style-skill-card > .mobile-unsaved-label`, but they must not
+  // redeclare the standalone reusable component itself.
+  assert.doesNotMatch(skillsCss, standalonePageSelector("mobile-danger-action"));
+  assert.doesNotMatch(skillsCss, standalonePageSelector("mobile-unsaved-label"));
+  assert.doesNotMatch(outfitCss, standalonePageSelector("mobile-unsaved-label"));
 });
