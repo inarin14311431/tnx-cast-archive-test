@@ -81,7 +81,7 @@ function updateLinks() {
   if (!character) return;
   const id = encodeURIComponent(character.public_id);
   if ($("#mobile-pc-link")) $("#mobile-pc-link").href = `${SITE_BASE_PATH}sheet.html?id=${id}`;
-  if ($("#mobile-view-link")) $("#mobile-view-link").href = `${SITE_BASE_PATH}cast.html?id=${id}`;
+  if ($("#mobile-view-link")) $("#mobile-view-link").href = `${SITE_BASE_PATH}cast.html?id=${id}&mobile=1`;
 }
 
 async function saveProfile() {
