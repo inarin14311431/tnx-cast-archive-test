@@ -32,6 +32,7 @@ import { calculateStyleBaselines } from "./sheet-style-baseline.js?v=1";
 import { buildStylePresentation } from "./sheet-style-presentation.js?v=1";
 import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
 import { resolveStyleBaselineValue } from "./sheet-baseline-adjustment.js?v=1";
+import { buildNewCharacterSkills } from "./sheet-new-character-state.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -224,20 +225,12 @@ function createNew() {
   loading = true;
   character = { visibility: "private" };
   $("#visibility").value = "private";
-  skills = GENERAL_MASTER.filter(item => item[2] === "general").map(([name, suit]) => ({
-    ...blankSkill("general"), name, level: 1, free_level: 0, [suit]: true, skill_kind: "general"
-  }));
-  ensureGeneralMasterRows();
-  addInitialGeneralBlankSlots();
-  skills.push(
-    { ...blankSkill("social"), name: "社会：N◎VA", level: 1, free_level: 0, skill_kind: "proper" },
-    { ...blankSkill("social"), name: "社会：", level: 1, free_level: 0, skill_kind: "proper" },
-    { ...blankSkill("social"), name: "社会：", level: 1, free_level: 0, skill_kind: "proper" },
-    { ...blankSkill("social"), name: "社会：", level: 1, free_level: 0, skill_kind: "proper" },
-    { ...blankSkill("connection"), name: "コネ：", level: 1, free_level: 0, skill_kind: "proper" },
-    { ...blankSkill("connection"), name: "コネ：", level: 1, free_level: 0, skill_kind: "proper" },
-    { ...blankSkill("connection"), name: "コネ：", level: 1, free_level: 0, skill_kind: "proper" }
-  );
+  skills = buildNewCharacterSkills({
+    masterRows: GENERAL_MASTER,
+    suits: SUITS,
+    blankColumns: GENERAL_BLANK_SLOT_COLUMNS,
+    createBlankSkill
+  });
   renderSkills(); renderOutfits(); recalc();
   loading = false;
   saveCoordinator.markDirty();
