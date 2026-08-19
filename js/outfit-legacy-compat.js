@@ -7,7 +7,7 @@ export function splitLegacyConcealment(value) {
     : { value: text, modifier: "" };
 }
 
-export function parseLegacyDefense(value) {
+export function parseLegacyDefense(value, fallbackOrder = "spi") {
   const text = String(value ?? "").trim();
   const output = { defense_s: "", defense_p: "", defense_i: "" };
   if (!text) return output;
@@ -18,8 +18,7 @@ export function parseLegacyDefense(value) {
   if (Object.values(output).some(Boolean)) return output;
 
   const parts = text.split(/[\/／,，\s]+/).filter(Boolean);
-  output.defense_s = parts[0] || "";
-  output.defense_p = parts[1] || "";
-  output.defense_i = parts[2] || "";
+  const order = String(fallbackOrder || "spi").toLowerCase() === "sip" ? ["s", "i", "p"] : ["s", "p", "i"];
+  order.forEach((key, index) => { output[`defense_${key}`] = parts[index] || ""; });
   return output;
 }
