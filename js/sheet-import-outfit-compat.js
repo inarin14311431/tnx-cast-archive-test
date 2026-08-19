@@ -201,7 +201,7 @@
       ofc("parry",first(data,"parry","defense"));ofc("speed",first(data,"speed"));
     }else if(item.category==="armor"){
       const s=first(data,"protecS","defenseS"),p=first(data,"protecP","defenseP"),i=first(data,"protecI","defenseI");
-      base("defense",[s,p,i].map(value=>String(value??"")).join("/"));base("slot",first(data,"slot","part"));base("control_modifier",modifiers.control_modifier);
+      base("slot",first(data,"slot","part"));base("control_modifier",modifiers.control_modifier);
       ofc("defense_s",s);ofc("defense_p",p);ofc("defense_i",i);
     }else if(item.category==="cyberware"){
       base("slot",first(data,"slot","part"));
