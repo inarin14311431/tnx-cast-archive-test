@@ -44,9 +44,11 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 - `js/outfit-view-model.js` owns shared read normalization for public views and outbound transfer adapters.
 - `js/sheet-mobile-outfit-model.js` owns mobile editor persistence and uses the shared contract.
 - `js/outfit-pc-field-policy.js` derives missing PC base fields and labels from the shared contract; it consumes `tnx:outfit-tables-rendered` rather than observing `#outfit-list` itself.
-- `js/outfit-tables.js` owns raw-card-to-table transport, row ordering, and armor total presentation. It captures the complete raw `[data-o]` card state before controls are moved into presentation cells, so reorder reconstruction no longer depends on which fields are visible in the table.
-- `js/sheet.js` owns the classic editor's in-memory raw outfit model and base bundle payload. New blank outfits no longer seed retired modifier fields, and `collectOutfits()` writes control/CS only for their canonical categories. Meaningful legacy values are emitted only through an explicit compatibility path.
-- `js/outfit-display-rules-v5.js` owns final PC column visibility/order while the classic table transport remains in place.
+- `js/outfit-tables.js` owns raw-card-to-table transport, row ordering, and armor total presentation. Armor totals are calculated directly from canonical `data-ofc="defense_s|p|i"` controls; the table layer no longer synthesizes or mirrors a combined armor `defense` control.
+- `js/sheet.js` owns the classic editor's in-memory raw outfit model and base bundle payload. New blank outfits no longer seed retired modifier fields, and `collectOutfits()` writes control/CS only for their canonical categories. Some legacy raw source fields remain temporarily in this module, but final persistence is constrained by `outfit-ofc-save.js`.
+- `js/outfit-display-rules-v5.js` owns final PC column visibility/order while the classic table transport remains in place. It no longer mirrors armor S/P/I into a legacy defense backing field.
+- `js/outfit-ofc-fields.js` owns active PC armor S/P/I state. A legacy combined armor `defense` value is parsed only when loading a row that has no structured S/P/I values.
+- `js/outfit-ofc-save.js` owns the final PC save enrichment boundary. Armor persists S/P/I in `ofc_details` and clears the retired base `defense` value; vehicle compatibility may still compose the base `defense` column.
 - `js/tnx-direct-transfer-data.js` owns Character Sheets field-name translation only. Concealment splitting, defense S/P/I parsing, category normalization, control constraints, and normalized OFC detail values come from `normalizeOutfitForView()` instead of a transfer-local normalizer.
 - `js/outfit-ofc-adapter.js` owns OFC master/TSV alias normalization and shared category constraints before values are applied to editor controls.
 - `js/sheet-import-outfit-compat.js` is the only legacy outfit reconstruction owner; it delegates control/CS category semantics to `outfit-ofc-adapter.js` rather than maintaining its own category lists.
@@ -59,20 +61,22 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 - `RAW_CARD_SCHEMAS` now lists only base controls that participate in the classic table presentation. It is not a persistence schema or canonical semantic schema.
 - `BASE_LABELS` uses current display terminology for those base controls.
 - Before presentation conversion, `captureCardData()` records every source-card `[data-o]` value. `readRow()` overlays live visible values on that snapshot before a reorder rebuild.
-- Because reorder persistence is independent of visible cells, `mundane_modifier`, category-invalid `control_modifier` / `cs_modifier`, and legacy vehicle `defense` cells are no longer rendered by `RAW_CARD_SCHEMAS`.
-- `sheet.js` still emits hidden raw compatibility controls for retired values so old non-zero/non-empty data can survive a reorder rebuild without becoming user-editable.
+- Because reorder persistence is independent of visible cells, `mundane_modifier`, category-invalid `control_modifier` / `cs_modifier`, vehicle `defense`, and armor defense component cells are not rendered by `RAW_CARD_SCHEMAS`.
+- Armor S/P/I are injected and restored by `outfit-ofc-fields.js`, so reorder reconstruction preserves them through the OFC detail snapshot rather than raw table backing controls.
+- `sheet.js` still emits selected hidden raw compatibility controls for retired values so old non-zero/non-empty data can survive a reorder rebuild without becoming user-editable.
 
-The generic base `defense` field is no longer part of vehicle table presentation. Vehicle defense is canonically represented by `defense_s`, `defense_p`, and `defense_i`. The old `vehicle.defense` value is preserved only when it is meaningful legacy data. Armor still uses its legacy base `defense` backing control internally to split and synchronize S/I/P fields until that armor compatibility path is migrated separately.
+The generic base `defense` field is no longer an active PC armor field. For armor, old combined `defense` is read-only compatibility: it may initialize S/P/I when structured values are absent, but editing, totals, reorder state, and final persistence all use structured S/P/I. Current PC saves clear armor's base `defense` value. Vehicle still has a compatibility use for the base `defense` column and is handled separately.
 
 ## Classic sheet save boundary
 
-`js/sheet.js` now distinguishes current writes from compatibility preservation:
+`js/sheet.js` now distinguishes current writes from compatibility preservation, while `js/outfit-ofc-save.js` enforces the final canonical persistence shape:
 
 - `blankOutfit()` does not seed `defense`, `control_modifier`, `cs_modifier`, or `mundane_modifier`.
 - The raw editor exposes `control_modifier` only for armor/vehicle and `cs_modifier` only for tron/vehicle.
 - Vehicle no longer exposes the generic `defense` field; a hidden compatibility control exists only as transport backing.
-- `collectOutfits()` emits canonical category fields only.
-- `legacyOutfitSaveFields()` carries forward only meaningful legacy values: non-empty vehicle `defense`, non-zero `mundane_modifier`, and non-zero category-invalid control/CS values.
+- The classic source still contains an armor `defense` raw field during this transition, but `outfit-tables.js` no longer renders or reads it as an active armor field.
+- `outfit-ofc-save.js` clears armor `defense` and persists canonical `defense_s`, `defense_p`, and `defense_i` in `ofc_details`.
+- `legacyOutfitSaveFields()` carries forward only meaningful legacy values such as vehicle `defense`, non-zero `mundane_modifier`, and non-zero category-invalid control/CS values.
 - The database schema/RPC still contains legacy columns for compatibility. This phase changes client generation and payload ownership; it does not remove DB columns or bulk-migrate existing records.
 
 ## Transfer adapter boundary
@@ -112,4 +116,5 @@ Legacy formats may be read, but new/current saves must use canonical fields. Com
 8. Migrate outbound transfer normalization to the shared outfit view model.
 9. Consolidate OFC master/TSV semantic normalization in one adapter.
 10. Route legacy Character Sheets outfit modifier constraints through the same adapter.
-11. Retire legacy backing controls only after their save/import compatibility paths have dedicated coverage.
+11. Make armor S/P/I the sole active PC defense fields and retire the table/display backing bridge.
+12. Remove remaining stale classic-source compatibility fields only after final persistence and import coverage is green.
