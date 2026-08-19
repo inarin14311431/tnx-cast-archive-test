@@ -1,5 +1,6 @@
 import "./outfit-pc-field-policy.js?v=5";
 import { supabase } from "./supabase-client.js";
+import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
 import {
   getOutfitRows,
   outfitSignature,
@@ -58,8 +59,9 @@ function enrichOutfitPayload(items) {
       return {
         ...item,
         defense: category === "armor" ? "" : item.defense || "",
+        mundane_modifier: undefined,
         sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
-        ofc_details: compactDetails(item.ofc_details || {})
+        ofc_details: normalizeImportedOutfitDetails(category, item.ofc_details || {})
       };
     }
 
@@ -68,25 +70,27 @@ function enrichOutfitPayload(items) {
     const electronicControl = String(details.electronic_control || item.electronic_control || "");
     const controlModifier = category === "armor" || category === "vehicle"
       ? Number(valueOf(row, "control_modifier") || item.control_modifier || 0)
-      : Number(item.control_modifier || 0);
+      : 0;
     const csModifier = category === "tron" || category === "vehicle"
       ? Number(valueOf(row, "cs_modifier") || item.cs_modifier || 0)
-      : Number(item.cs_modifier || 0);
+      : 0;
 
-    return {
+    const payload = {
       ...item,
       category,
       concealment: String(valueOf(row, "concealment") || ""),
       slot: proxyValue(row, "slot", item.slot || ""),
       electronic_control: electronicControl,
-      // The base defense column is now vehicle compatibility only. Armor S/P/I
-      // persist canonically in ofc_details and clear the retired combined value.
+      // Armor S/P/I persist canonically in ofc_details. The combined base defense
+      // remains vehicle-read compatibility only until that DB column is retired.
       defense: category === "vehicle" ? composeDefense(details, item.defense) : "",
       control_modifier: controlModifier,
       cs_modifier: csModifier,
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
-      ofc_details: compactDetails(details)
+      ofc_details: normalizeImportedOutfitDetails(category, details)
     };
+    delete payload.mundane_modifier;
+    return payload;
   });
 }
 
@@ -104,7 +108,7 @@ function collectDetails(row) {
     defense_i: row.querySelector('[data-ofc="defense_i"]')?.value || details.defense_i || ""
   };
 
-  return compactDetails({
+  return normalizeImportedOutfitDetails(category, {
     ...details,
     site_category: category,
     purchase_target: valueOf(row, "purchase_value"),
@@ -127,13 +131,4 @@ function rowsBySignature(rows) {
     queues.get(signature).push(row);
   }
   return queues;
-}
-
-function compactDetails(value) {
-  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  return Object.fromEntries(
-    Object.entries(source)
-      .map(([key, item]) => [key, String(item ?? "")])
-      .filter(([, item]) => item !== "")
-  );
 }
