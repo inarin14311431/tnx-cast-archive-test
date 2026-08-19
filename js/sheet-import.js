@@ -121,7 +121,7 @@
     while(guard++<250){
       const row=getRows().find(filter);
       if(!row)break;
-      const del=row.querySelector('[data-delete-skill],[data-delete-outfit]');
+      const del=row.querySelector('[data-delete-skill]');
       if(!del)break;
       del.click();
       await wait();
@@ -153,7 +153,6 @@
     await setInput(current?.querySelector('[data-f="name"]'),cleanName(data.name));
     current=locate();
     await setInput(current?.querySelector('[data-f="skill_kind"]'),kind);
-
     const suits=skillSuits(data);
     const level=skillLevel(data);
     current=locate();
@@ -165,7 +164,6 @@
     }
     current=locate();
     await setInput(current?.querySelector('[data-f="level"]'),level);
-
     current=locate();
     const description=current?.querySelector('[data-f="description"]');
     if(description){
@@ -186,7 +184,6 @@
   }
 
   const rowsForImportLabel=label=>label==='__style__'?$$('#style-skills tr[data-skill-key]'):skillRows(label);
-
   async function addSkill(button,label,data,kind){
     const before=new Set(rowsForImportLabel(label).map(row=>row.dataset.skillKey));
     if(!await click(button))return false;
@@ -295,45 +292,6 @@
     }
   }
 
-  async function addOutfit(category,data){
-    const before=new Set($$('#outfit-list [data-outfit-key]').map(card=>card.dataset.outfitKey));
-    if(!await click('#add-outfit'))return false;
-    let card=null;
-    for(let attempt=0;attempt<12&&!card;attempt++){
-      card=$$('#outfit-list [data-outfit-key]').find(candidate=>!before.has(candidate.dataset.outfitKey));
-      if(!card)await wait();
-    }
-    if(!card)return false;
-    const key=card.dataset.outfitKey;
-    const locate=()=>document.querySelector(`[data-outfit-key="${CSS.escape(key)}"]`);
-    let current=locate();await setInput(current?.querySelector('[data-o="category"]'),category);
-    current=locate();await setInput(current?.querySelector('[data-o="name"]'),cleanName(firstDefined(data,'name')));
-    current=locate();await setInput(current?.querySelector('[data-o="purchase_value"]'),number(firstDefined(data,'purchase','purchaseValue')));
-    current=locate();await setInput(current?.querySelector('[data-o="experience_cost"]'),number(firstDefined(data,'permanent','experienceCost')));
-    current=locate();const conceal=[firstDefined(data,'concealA'),firstDefined(data,'concealB')].filter(value=>String(value??'')!=='').join('/');await setInput(current?.querySelector('[data-o="concealment"]'),conceal);
-    current=locate();await setInput(current?.querySelector('[data-o="attack"]'),firstDefined(data,'attack'));
-    current=locate();const defense=[firstDefined(data,'protecS','defenseS'),firstDefined(data,'protecP','defenseP'),firstDefined(data,'protecI','defenseI')].filter(value=>String(value??'')!=='').join('/');await setInput(current?.querySelector('[data-o="defense"]'),defense);
-    current=locate();await setInput(current?.querySelector('[data-o="range"]'),firstDefined(data,'range'));
-    current=locate();await setInput(current?.querySelector('[data-o="slot"]'),firstDefined(data,'part','slot'));
-    current=locate();await setInput(current?.querySelector('[data-o="control_modifier"]'),number(firstDefined(data,'control','controlModifier')));
-    current=locate();await setInput(current?.querySelector('[data-o="cs_modifier"]'),number(firstDefined(data,'sf','speed','csModifier')));
-    current=locate();const description=current?.querySelector('[data-o="description"],textarea[data-description-proxy]');if(description)await setInput(description,firstDefined(data,'notes','description'));
-    return true;
-  }
-
-  async function importOutfits(map,stats){
-    await clearRows(()=>$$('#outfit-list [data-outfit-key]'));
-    const sections=[
-      ['weapon',['weapons']],['armor',['armours','armors']],['other',['outfits','cyberwares','trons']],['vehicle',['vehicles']],['residence',['residences']]
-    ];
-    for(const [category,prefixes] of sections){
-      for(const data of groups(map,prefixes)){
-        if(!cleanName(firstDefined(data,'name')))continue;
-        if(await addOutfit(category,data))stats.outfit++;
-      }
-    }
-  }
-
   open.addEventListener('click',()=>{msg.textContent='';dialog.showModal()});
   copy?.addEventListener('click',async()=>{
     try{await navigator.clipboard.writeText(exporter);msg.textContent='ブックマークレットをコピーしました。'}
@@ -351,7 +309,7 @@
       if(!supportedFields&&!supportedRaw)throw new Error('対応する旧キャラシJSONではありません。ブックマークレットで取得したJSON、または旧サイトの生JSONを貼り付けてください。');
       const map=fieldMap(data);
       if(!map.size)throw new Error('JSON内に取り込める項目がありません。');
-      const stats={general:0,social:0,connection:0,style:0,outfit:0};
+      const stats={general:0,social:0,connection:0,style:0};
 
       msg.textContent='基本情報を反映しています…';
       reportProgress(8,'基本情報を取込中','プロフィールとライフパスを反映しています');
@@ -383,14 +341,11 @@
       reportProgress(36,'技能を取込中',`一般技能${stats.general}件・社会${stats.social}件・コネ${stats.connection}件を反映`);
       await importStyleSkills(map,stats);
       reportProgress(42,'スタイル技能を取込中',`スタイル技能${stats.style}件の取込を完了`);
-      msg.textContent='アウトフィットを反映しています…';
-      reportProgress(44,'アウトフィットを取込中','基本項目を現行シートへ配置しています');
-      await importOutfits(map,stats);
-      reportProgress(50,'基本取込完了',`アウトフィット${stats.outfit}件の基本配置が完了しました`);
+      reportProgress(50,'基本取込完了','プロフィール・技能の基本取込を完了しました');
 
       document.dispatchEvent(new Event('input',{bubbles:true}));
       window.TNXExperience?.queue?.();
-      const summary=`一般技能${stats.general}件、社会${stats.social}件、コネ${stats.connection}件、スタイル技能${stats.style}件、アウトフィット${stats.outfit}件`;
+      const summary=`一般技能${stats.general}件、社会${stats.social}件、コネ${stats.connection}件、スタイル技能${stats.style}件`;
       const finalizing=dialog.getAttribute('data-importing')==='1';
       msg.textContent=finalizing
         ?`基本取込が完了しました（${summary}）。引き続き最終変換を行っています…`
