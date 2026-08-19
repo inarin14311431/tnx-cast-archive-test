@@ -30,6 +30,24 @@ test("mobile outfit prefers structured concealment modifier", () => {
   assert.equal(item._concealMod, "-2");
 });
 
+test("mobile outfit reads legacy combined defense but never saves it again", () => {
+  const item = cloneOutfit({
+    category: "vehicle",
+    name: "LEGACY DEFENSE",
+    defense: "S 12 / P 9 / I 7",
+    ofc_details: {}
+  });
+  assert.equal(item._defS, "12");
+  assert.equal(item._defP, "9");
+  assert.equal(item._defI, "7");
+
+  const record = collectOutfitRecord(item, { id: "character" });
+  assert.equal(record.defense, "");
+  assert.equal(record.ofc_details.defense_s, "12");
+  assert.equal(record.ofc_details.defense_p, "9");
+  assert.equal(record.ofc_details.defense_i, "7");
+});
+
 test("mobile outfit keeps control_modifier canonical without generating deprecated detail keys", () => {
   const item = cloneOutfit({
     category: "vehicle",
