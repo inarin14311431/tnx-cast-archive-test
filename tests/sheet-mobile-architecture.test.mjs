@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const html = await readFile(new URL("../sheet-mobile.html", import.meta.url), "utf8");
 const app = await readFile(new URL("../js/sheet-mobile-app.js", import.meta.url), "utf8");
 const runtime = await readFile(new URL("../js/sheet-mobile-runtime.js", import.meta.url), "utf8");
+const coordinator = await readFile(new URL("../js/sheet-mobile-save-coordinator.js", import.meta.url), "utf8");
 const profile = await readFile(new URL("../js/sheet-mobile.js", import.meta.url), "utf8");
 const style = await readFile(new URL("../js/sheet-mobile-style.js", import.meta.url), "utf8");
 const ability = await readFile(new URL("../js/sheet-mobile-ability.js", import.meta.url), "utf8");
@@ -40,6 +41,15 @@ test("mobile editor keeps one application entry point", () => {
   assert.match(app, /sheet-mobile-image\.js/);
 });
 
+test("shared runtime and save coordinator load before mobile feature modules", () => {
+  const imports = [...app.matchAll(/import\s+["']([^"']+)["']/g)].map(match => match[1].split("?")[0]);
+  const runtimeIndex = imports.findIndex(value => value.endsWith("sheet-mobile-runtime.js"));
+  const coordinatorIndex = imports.findIndex(value => value.endsWith("sheet-mobile-save-coordinator.js"));
+  const firstFeatureIndex = imports.findIndex(value => /sheet-mobile-(?:profile|style|ability|skills|outfit|combos|snapshots|image)\.js$/.test(value));
+  assert.ok(runtimeIndex >= 0 && runtimeIndex < firstFeatureIndex);
+  assert.ok(coordinatorIndex >= 0 && coordinatorIndex < firstFeatureIndex);
+});
+
 test("shared mobile context owns authentication and character lookup", () => {
   assert.match(runtime, /requireAuth\(\)/);
   assert.match(runtime, /from\("characters"\)/);
@@ -49,6 +59,14 @@ test("shared mobile context owns authentication and character lookup", () => {
     assert.doesNotMatch(source, /requireAuth/);
     assert.doesNotMatch(source, /from\(["']characters["']\)\.select/);
   }
+});
+
+test("mobile save coordinator owns cross-feature flush ordering", () => {
+  assert.match(coordinator, /tnx:mobile-before-save/);
+  assert.match(coordinator, /detail = \{ add\(task\)/);
+  assert.match(coordinator, /await Promise\.all\(tasks\)/);
+  assert.match(coordinator, /button\.click\(\)/);
+  assert.doesNotMatch(coordinator, /character_outfits|character_skills|character_combos/);
 });
 
 test("style feature keeps persona-key exclusivity, Utsuwa attributes and ability patching", () => {
