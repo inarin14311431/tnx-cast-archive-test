@@ -13,7 +13,7 @@ function functionBlock(source, name, nextName) {
 }
 
 test("new outfit state no longer seeds retired compatibility fields", () => {
-  const block = functionBlock(sheetSource, "blankOutfit", "normalizeOutfit");
+  const block = functionBlock(sheetSource, "blankOutfit", "outfitFields");
   assert.doesNotMatch(block, /defense:/);
   assert.doesNotMatch(block, /control_modifier:/);
   assert.doesNotMatch(block, /cs_modifier:/);
@@ -54,8 +54,7 @@ test("classic sheet delegates outfit serialization to the payload contract", () 
 });
 
 test("classic OFC TSV fallback no longer seeds combined defense", () => {
-  const block = functionBlock(sheetSource, "applyImport", "jpError");
-  assert.doesNotMatch(block, /defense:\s*row\.defense/);
+  assert.doesNotMatch(sheetSource, /defense:\s*row\.defense/);
 });
 
 test("character control payload remains semantically unchanged by save refactor", () => {
