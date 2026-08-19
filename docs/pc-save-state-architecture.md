@@ -19,6 +19,7 @@ Current consumers:
 - `sheet-image.js` uses `requestSheetSave()` + `waitForSheetSaved()` while bootstrapping the first save before image upload.
 - `sheet-save-diagnostics.js` listens to `tnx:sheet-save-state`; it no longer owns a second `MutationObserver` over `#save-status`.
 - `sheet-features.js` no longer owns a second MutationObserver for save presentation.
-- `sheet-save-watchdog.js` is now manual-save wording compatibility only. The historic 1.2-second autosave timer interception, timer monkey-patching, duplicate unsaved-state parser, and duplicate `beforeunload` listener have been retired.
+
+The former `sheet-save-watchdog.js` has been removed from the repository. Its historic autosave timer interception, timer monkey-patching, duplicate unsaved-state parser, and duplicate `beforeunload` listener are all retired. Manual-save guidance is already present in the editor markup, while the actual dirty guard remains in `sheet.js`.
 
 The remaining ownership seam is the producer side in `sheet.js`: `setStatus()`, save-button click binding, `dirty/saving/pending`, and the transactional `saveAll()` flow still live together there. Future extraction should preserve that transactional behavior and move producer mechanics behind an explicit coordinator API rather than adding another observer or polling layer.
