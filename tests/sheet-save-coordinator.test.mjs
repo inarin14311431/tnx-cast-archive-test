@@ -6,6 +6,7 @@ const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "
 const coordinatorSource = await readFile(new URL("../js/sheet-save-coordinator.js", import.meta.url), "utf8");
 const stateSource = await readFile(new URL("../js/sheet-save-state.js", import.meta.url), "utf8");
 const persistenceSource = await readFile(new URL("../js/sheet-save-persistence.js", import.meta.url), "utf8");
+const payloadSource = await readFile(new URL("../js/sheet-save-payload.js", import.meta.url), "utf8");
 const ofcSaveSource = await readFile(new URL("../js/outfit-ofc-save.js", import.meta.url), "utf8");
 
 test("classic sheet delegates save lifecycle state to the coordinator", () => {
@@ -54,6 +55,16 @@ test("shared save requests call the coordinator directly instead of clicking the
   assert.match(stateSource, /export function registerSheetSaveRequester/);
   assert.match(stateSource, /return saveRequester\(\)/);
   assert.doesNotMatch(stateSource, /button\.click\(\)/);
+});
+
+test("classic editor routes DB-shaped serialization through the payload contract", () => {
+  assert.match(sheetSource, /sheet-save-payload\.js\?v=1/);
+  assert.match(sheetSource, /buildCharacterSavePayload\(/);
+  assert.match(sheetSource, /buildSkillSavePayloads\(skills/);
+  assert.match(sheetSource, /buildOutfitSavePayloads\(outfits\)/);
+  assert.match(payloadSource, /export function buildCharacterSavePayload/);
+  assert.match(payloadSource, /export function buildSkillSavePayloads/);
+  assert.match(payloadSource, /export function buildOutfitSavePayloads/);
 });
 
 test("transactional persistence is isolated behind the classic sheet persistence module", () => {
