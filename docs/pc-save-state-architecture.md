@@ -1,6 +1,6 @@
 # PC editor save-state ownership
 
-The classic PC editor separates editor capture, payload serialization, persistence, save orchestration, and save-state presentation.
+The classic PC editor separates editor capture, load persistence, payload serialization, save persistence, save orchestration, and save-state presentation.
 
 `js/sheet-save-coordinator.js` owns producer-side save lifecycle mechanics:
 
@@ -25,6 +25,15 @@ An edit made while a save request is running must never be cleared by completion
 
 The payload module is DOM-free. `sheet.js` reads the editor state and supplies a plain snapshot to this serializer rather than owning DB field mapping itself.
 
+`js/sheet-load-persistence.js` owns the authenticated database read boundary for the classic editor:
+
+- resolving one owned character by `public_id` + `owner_id`;
+- loading the related `character_skills` and `character_outfits` rows by `character_id`;
+- preserving `sort_order` ordering for both related collections;
+- rejecting missing identity, missing characters, and related-table errors before editor normalization/rendering.
+
+`sheet.js` no longer performs direct `characters`, `character_skills`, or `character_outfits` table reads. It receives the returned plain bundle, then applies editor-specific normalization and rendering.
+
 `js/sheet-save-persistence.js` owns the transactional database save boundary:
 
 - the `save_character_bundle_with_ofc` RPC name;
@@ -35,7 +44,7 @@ The payload module is DOM-free. `sheet.js` reads the editor state and supplies a
 
 `js/outfit-ofc-save.js` is now an explicit outfit enrichment adapter. It no longer imports the Supabase client or monkey-patches `supabase.rpc`.
 
-`js/sheet.js` owns editor interaction and capture plus post-save editor integration. Its `collectCharacter()`, `collectSkills()`, and `collectOutfits()` functions gather current editor state and delegate DB-shaped serialization to `sheet-save-payload.js`. The persistence callback then calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
+`js/sheet.js` owns editor interaction, editor-specific normalization/rendering, and capture plus post-save editor integration. Its `collectCharacter()`, `collectSkills()`, and `collectOutfits()` functions gather current editor state and delegate DB-shaped serialization to `sheet-save-payload.js`. Its load path delegates database access to `loadSheetBundle()`. The save persistence callback calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
 
 `js/sheet-save-state.js` is the single presentation/consumer bridge for save state.
 
@@ -60,7 +69,8 @@ The former `sheet-save-watchdog.js` has been removed from the repository. Its hi
 
 Current ownership boundary:
 
-- `sheet.js`: editor DOM/state capture and post-save URL/event integration;
+- `sheet.js`: editor DOM/state capture, editor-specific normalization/rendering, and post-save URL/event integration;
+- `sheet-load-persistence.js`: authenticated character/skill/outfit database reads;
 - `sheet-save-payload.js`: canonical DB-shaped character/skill/outfit serialization;
 - `sheet-save-coordinator.js`: save lifecycle state, edit-revision tracking, queued save mechanics, structured failure publication, and canonical save-command registration;
 - `sheet-save-persistence.js`: transactional RPC persistence and explicit OFC enrichment;
@@ -68,6 +78,6 @@ Current ownership boundary:
 - `sheet-save-state.js`: explicit state store, presentation, and consumer API;
 - `sheet-save-diagnostics.js`: diagnostic interpretation only, with no persistence interception.
 
-The PC save refactor is now considered ownership-complete. `tests/pc-save-architecture-audit.test.mjs` locks the module boundaries so transactional RPC ownership, DOM-free payload serialization, explicit OFC enrichment, state presentation, diagnostics, and retired compatibility fields cannot silently collapse back into `sheet.js` or one another.
+The PC save refactor is ownership-complete, and the first load boundary is now extracted. `tests/pc-save-architecture-audit.test.mjs` plus `tests/sheet-load-persistence-boundary.test.mjs` lock the database transport boundaries so direct table reads or transactional RPC ownership cannot silently collapse back into `sheet.js`.
 
-Further refactoring should move on from the save pipeline itself. The next useful target is the remaining editor load/render/interaction concentration in `sheet.js`, while preserving the completed save boundaries above.
+Further refactoring should continue with editor-specific normalization/rendering in `sheet.js`. The next useful target is separating loaded-record normalization from DOM rendering while preserving the completed load/save persistence boundaries above.
