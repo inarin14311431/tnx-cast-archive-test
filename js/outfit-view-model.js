@@ -1,13 +1,16 @@
-const CONTROL_CATEGORIES = new Set(["armor", "vehicle"]);
-const CS_CATEGORIES = new Set(["tron", "vehicle"]);
+import {
+  normalizeOutfitCategory,
+  outfitSupportsControl,
+  outfitSupportsCsModifier
+} from "./outfit-contract.js";
 
 export function normalizeOutfitForView(outfit = {}) {
-  const category = String(outfit.category || "other").trim() || "other";
+  const category = normalizeOutfitCategory(outfit.category);
   const details = normalizeDetails(outfit.ofc_details);
   const concealment = splitLegacyConcealment(first(details.concealment, outfit.concealment));
   const defense = parseDefense(outfit.defense);
-  const control = CONTROL_CATEGORIES.has(category) ? first(outfit.control_modifier) : "";
-  const cs = CS_CATEGORIES.has(category) ? first(outfit.cs_modifier) : "";
+  const control = outfitSupportsControl(category) ? first(outfit.control_modifier) : "";
+  const cs = outfitSupportsCsModifier(category) ? first(outfit.cs_modifier) : "";
 
   return {
     ...outfit,
