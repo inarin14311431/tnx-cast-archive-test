@@ -6,6 +6,7 @@ const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "
 const coordinatorSource = await readFile(new URL("../js/sheet-save-coordinator.js", import.meta.url), "utf8");
 const stateSource = await readFile(new URL("../js/sheet-save-state.js", import.meta.url), "utf8");
 const persistenceSource = await readFile(new URL("../js/sheet-save-persistence.js", import.meta.url), "utf8");
+const ofcSaveSource = await readFile(new URL("../js/outfit-ofc-save.js", import.meta.url), "utf8");
 
 test("classic sheet delegates save lifecycle state to the coordinator", () => {
   assert.match(sheetSource, /createSheetSaveCoordinator/);
@@ -61,11 +62,20 @@ test("transactional persistence is isolated behind the classic sheet persistence
   assert.match(sheetSource, /character: collectCharacter\(\)/);
   assert.match(sheetSource, /skills: collectSkills\(\)/);
   assert.match(sheetSource, /outfits: collectOutfits\(\)/);
-  assert.doesNotMatch(sheetSource, /supabase\.rpc\("save_character_bundle"/);
-  assert.match(persistenceSource, /const SAVE_RPC = "save_character_bundle"/);
+  assert.doesNotMatch(sheetSource, /supabase\.rpc\("save_character_bundle/);
+  assert.match(persistenceSource, /const SAVE_RPC = "save_character_bundle_with_ofc"/);
   assert.match(persistenceSource, /supabase\.rpc\(SAVE_RPC/);
   assert.match(persistenceSource, /p_character: character/);
   assert.match(persistenceSource, /p_skills: skills/);
-  assert.match(persistenceSource, /p_outfits: outfits/);
+  assert.match(persistenceSource, /p_outfits: enrichOutfitPayload/);
   assert.match(sheetSource, /tnx:character-saved/);
+});
+
+test("OFC enrichment is an explicit persistence dependency instead of an RPC monkey patch", () => {
+  assert.match(persistenceSource, /import \{ enrichOutfitPayload \} from "\.\/outfit-ofc-save\.js\?v=1"/);
+  assert.match(ofcSaveSource, /export function enrichOutfitPayload/);
+  assert.doesNotMatch(ofcSaveSource, /supabase-client/);
+  assert.doesNotMatch(ofcSaveSource, /supabase\.rpc\s*=/);
+  assert.doesNotMatch(ofcSaveSource, /__tnxOfcSaveWrapped/);
+  assert.doesNotMatch(ofcSaveSource, /function install\(/);
 });
