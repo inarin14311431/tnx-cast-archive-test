@@ -6,7 +6,7 @@ const stateSource = await readFile(new URL("../js/sheet-save-state.js", import.m
 const featureSource = await readFile(new URL("../js/sheet-features.js", import.meta.url), "utf8");
 const snapshotSource = await readFile(new URL("../js/sheet-snapshots.js", import.meta.url), "utf8");
 const diagnosticsSource = await readFile(new URL("../js/sheet-save-diagnostics.js", import.meta.url), "utf8");
-const watchdogSource = await readFile(new URL("../js/sheet-save-watchdog.js", import.meta.url), "utf8");
+const sheetHtmlSource = await readFile(new URL("../sheet.html", import.meta.url), "utf8");
 const ofcSaveSource = await readFile(new URL("../js/outfit-ofc-save.js", import.meta.url), "utf8");
 
 test("PC save presentation has one shared state bridge", () => {
@@ -36,14 +36,8 @@ test("save diagnostics consumes the shared save-state event instead of observing
   assert.doesNotMatch(diagnosticsSource, /querySelector\('#save-status'\)/);
 });
 
-test("legacy manual-save watchdog no longer patches timers or duplicates dirty-state ownership", () => {
-  assert.doesNotMatch(watchdogSource, /window\.setTimeout\s*=/);
-  assert.doesNotMatch(watchdogSource, /window\.clearTimeout\s*=/);
-  assert.doesNotMatch(watchdogSource, /saveAll\s*\(\s*false\s*\)/);
-  assert.doesNotMatch(watchdogSource, /function hasUnsavedChanges/);
-  assert.doesNotMatch(watchdogSource, /addEventListener\(\s*["']beforeunload["']/);
-  assert.doesNotMatch(watchdogSource, /querySelector\(\s*["']#save-status["']/);
-  assert.match(watchdogSource, /applyManualSaveLabels/);
+test("retired manual-save watchdog is not part of the sheet runtime", () => {
+  assert.doesNotMatch(sheetHtmlSource, /sheet-save-watchdog\.js/);
 });
 
 test("PC OFC save derives modifier validity from canonical contract", () => {
