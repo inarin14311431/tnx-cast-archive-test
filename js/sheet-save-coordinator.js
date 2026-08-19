@@ -1,4 +1,4 @@
-const STATUS_SELECTOR = "#save-status";
+import { setSheetSaveState } from "./sheet-save-state.js?v=2";
 
 export function createSheetSaveCoordinator({
   persist,
@@ -10,30 +10,27 @@ export function createSheetSaveCoordinator({
   let saving = false;
   let pending = false;
 
-  function setStatus(text, state = "") {
-    const element = document.querySelector(STATUS_SELECTOR);
-    if (!element) return;
-    element.textContent = text;
-    element.className = state;
+  function publish(state, text = "") {
+    setSheetSaveState(state, text);
   }
 
   function markDirty() {
     dirty = true;
-    setStatus("未保存", "unsaved");
+    publish("unsaved", "未保存");
   }
 
   function markSaved() {
     dirty = false;
-    setStatus("保存済み", "saved");
+    publish("saved", "保存済み");
   }
 
   function markLoading(text = "読込中…") {
-    setStatus(text, "saving");
+    publish("saving", text);
   }
 
   function markLoadError(text) {
     dirty = false;
-    setStatus(text, "error");
+    publish("error", text);
   }
 
   function hasUnsavedChanges() {
@@ -56,26 +53,24 @@ export function createSheetSaveCoordinator({
 
     const validationMessage = typeof validate === "function" ? validate({ force, dirty }) : "";
     if (validationMessage) {
-      if (force) setStatus(validationMessage, "error");
+      if (force) publish("error", validationMessage);
       return false;
     }
 
     saving = true;
-    setStatus("保存中…", "saving");
-    let succeeded = false;
+    publish("saving", "保存中…");
     try {
       const result = await persist?.();
       if (!result) throw new Error("保存結果を確認できませんでした。");
       dirty = false;
-      setStatus("保存済み", "saved");
+      publish("saved", "保存済み");
       onSaved?.(result);
-      succeeded = true;
       return true;
     } catch (error) {
       console.error(error);
       dirty = true;
       const text = onError?.(error) || error?.message || "保存に失敗しました。";
-      setStatus(text, "error");
+      publish("error", text);
       return false;
     } finally {
       saving = false;
