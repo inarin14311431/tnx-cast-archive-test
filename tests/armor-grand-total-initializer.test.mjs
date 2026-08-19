@@ -2,20 +2,18 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const source = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
+const shim = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
+const tables = await readFile(new URL("../js/outfit-tables.js", import.meta.url), "utf8");
 
-test("armor total shim uses an explicit idempotent initializer", () => {
-  assert.match(source, /function initializeArmorGrandTotal\(\)/);
-  assert.match(source, /root\.dataset\.tnxArmorGrandTotalInitialized==='true'/);
-  assert.match(source, /root\.dataset\.tnxArmorGrandTotalInitialized='true'/);
-  assert.match(source, /initializeArmorGrandTotal\(\);/);
+test("armor total compatibility entry no longer owns outfit DOM behavior", () => {
+  assert.match(shim, /Armor defense totals are owned by outfit-tables\.js/);
+  assert.doesNotMatch(shim, /#outfit-list|MutationObserver|addEventListener|data-armor-defense|data-armor-total/);
 });
 
-test("armor total shim preserves defense total synchronization hooks", () => {
-  assert.match(source, /root\.addEventListener\('input'/);
-  assert.match(source, /root\.addEventListener\('change'/);
-  assert.match(source, /\[data-armor-defense\]/);
-  assert.match(source, /\[data-armor-total=/);
-  assert.match(source, /requestAnimationFrame\(updateAll\)/);
-  assert.match(source, /setTimeout\(updateAll,300\)/);
+test("outfit tables owns armor defense total rendering and synchronization", () => {
+  assert.match(tables, /function makeArmorFooter\(\)/);
+  assert.match(tables, /function updateArmorTotals\(section\)/);
+  assert.match(tables, /dataArmorDefense|data\.armorDefense|dataset\.armorDefense/);
+  assert.match(tables, /data\.armorTotal|dataset\.armorTotal|data-armor-total/);
+  assert.match(tables, /updateArmorTotals\(card\.closest\('\.outfit-table-group--armor'\)\)/);
 });
