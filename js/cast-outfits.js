@@ -93,28 +93,32 @@ function createCell(field, item) {
 function normalizedItem(category, item) {
   const details = normalizeDetails(item.ofc_details);
   const defense = parseArmorDefense(item.defense);
+  const concealment = splitLegacyConcealment(details.concealment || item.concealment);
   const residenceElectric = details.residence_electric || "";
   const residenceArea = details.residence_area || "";
   return {
     ...item,
     category: OUTFIT_CATEGORY_LABELS[category] || OUTFIT_CATEGORY_LABELS.other,
+    concealment: concealment.value,
+    concealment_penalty: details.concealment_penalty || concealment.modifier,
     parry: details.parry,
     speed: details.speed,
-    electronic_control: details.electronic_control,
-    // Armor's editor uses control_modifier while OFC stores the same value as
-    // control_value. Prefer the OFC detail, but fall back to the normal field.
-    control_value: details.control_value || item.control_modifier || "",
+    electronic_control: details.electronic_control || item.electronic_control || "",
+    control_modifier: ["armor", "vehicle"].includes(category) ? (item.control_modifier ?? "") : "",
+    cs_modifier: ["tron", "vehicle"].includes(category) ? (item.cs_modifier ?? "") : "",
     defense_s: details.defense_s || defense.s,
-    defense_i: details.defense_i || defense.i,
     defense_p: details.defense_p || defense.p,
+    defense_i: details.defense_i || defense.i,
     tron_software: details.tron_software,
     tron_support: details.tron_support,
     tron_hardware: details.tron_hardware,
-    cs_value: details.cs_value,
     crew: details.crew,
     sf: details.sf,
+    ianus_surface: details.ianus_surface,
+    ianus_deep: details.ianus_deep,
+    ianus_none: details.ianus_none,
     residence_entry: details.residence_entry,
-    residence_electric_area: [residenceElectric, residenceArea].some(Boolean) ? `${residenceElectric}/${residenceArea}` : "",
+    residence_electric_area: [residenceElectric, residenceArea].some(Boolean) ? `${residenceElectric || "—"}/${residenceArea || "—"}` : "",
     page_number: details.page_number
   };
 }
@@ -125,15 +129,24 @@ function normalizeDetails(value) {
     : {};
 }
 
+function splitLegacyConcealment(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return { value: "", modifier: "" };
+  const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
+  return match
+    ? { value: String(match[1] || "").trim(), modifier: String(match[2] || match[3] || "").trim() }
+    : { value: text, modifier: "" };
+}
+
 function createArmorFooter(schema, totals) {
   const first = schema.indexOf("defense_s");
   const tail = schema.length - first - 3;
-  return `<tfoot><tr class="cast-armor-total-row"><th colspan="${first}">防御値合計</th><td class="cast-armor-total">${totals.s}</td><td class="cast-armor-total">${totals.i}</td><td class="cast-armor-total">${totals.p}</td>${tail > 0 ? `<td colspan="${tail}"></td>` : ""}</tr></tfoot>`;
+  return `<tfoot><tr class="cast-armor-total-row"><th colspan="${first}">防御値合計</th><td class="cast-armor-total">${totals.s}</td><td class="cast-armor-total">${totals.p}</td><td class="cast-armor-total">${totals.i}</td>${tail > 0 ? `<td colspan="${tail}"></td>` : ""}</tr></tfoot>`;
 }
 
 function parseArmorDefense(value) {
   const text = String(value ?? "").trim();
-  const result = { s: "", i: "", p: "" };
+  const result = { s: "", p: "", i: "" };
   if (!text) return result;
   const labeled = [...text.matchAll(/(?:^|[\s,，/／])([SPI])\s*[:：]?\s*([+-]?\d+)/gi)];
   if (labeled.length) {
@@ -142,13 +155,13 @@ function parseArmorDefense(value) {
   }
   const parts = text.split(/[\/／,，\s]+/).filter(Boolean);
   result.s = parts[0] || "";
-  result.i = parts[1] || "";
-  result.p = parts[2] || "";
+  result.p = parts[1] || "";
+  result.i = parts[2] || "";
   return result;
 }
 
 function armorTotals(items) {
-  const totals = { s: 0, i: 0, p: 0 };
+  const totals = { s: 0, p: 0, i: 0 };
   for (const item of items) {
     const source = normalizedItem("armor", item);
     for (const key of Object.keys(totals)) totals[key] += numeric(source[`defense_${key}`]);
