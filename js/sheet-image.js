@@ -1,6 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
-import { requestSheetSave, waitForSheetSaved } from "./sheet-save-state.js?v=1";
+import { requestSheetSave, waitForSheetSaved } from "./sheet-save-state.js?v=2";
 import { getImageFocusX, getImageFocusY, getImageObjectPosition, getImageScale, getImageTransformOrigin, getImageZoom, setImageFocusX, setImageFocusY, setImageZoom } from "./image-focus.js?v=3";
 
 const BUCKET_NAME="character-images";
