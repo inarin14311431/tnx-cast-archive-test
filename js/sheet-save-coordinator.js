@@ -1,4 +1,4 @@
-import { setSheetSaveState } from "./sheet-save-state.js?v=2";
+import { registerSheetSaveRequester, setSheetSaveState } from "./sheet-save-state.js?v=2";
 
 const SAVE_ERROR_EVENT = "tnx:sheet-save-error";
 
@@ -89,6 +89,8 @@ export function createSheetSaveCoordinator({
       }
     }
   }
+
+  registerSheetSaveRequester(() => save(true));
 
   return Object.freeze({
     markDirty,
