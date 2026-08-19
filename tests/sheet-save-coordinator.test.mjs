@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
 const coordinatorSource = await readFile(new URL("../js/sheet-save-coordinator.js", import.meta.url), "utf8");
 const stateSource = await readFile(new URL("../js/sheet-save-state.js", import.meta.url), "utf8");
+const persistenceSource = await readFile(new URL("../js/sheet-save-persistence.js", import.meta.url), "utf8");
 
 test("classic sheet delegates save lifecycle state to the coordinator", () => {
   assert.match(sheetSource, /createSheetSaveCoordinator/);
@@ -54,10 +55,17 @@ test("shared save requests call the coordinator directly instead of clicking the
   assert.doesNotMatch(stateSource, /button\.click\(\)/);
 });
 
-test("transactional character persistence stays explicit at the sheet boundary", () => {
-  assert.match(sheetSource, /supabase\.rpc\("save_character_bundle"/);
-  assert.match(sheetSource, /p_character: collectCharacter\(\)/);
-  assert.match(sheetSource, /p_skills: collectSkills\(\)/);
-  assert.match(sheetSource, /p_outfits: collectOutfits\(\)/);
+test("transactional persistence is isolated behind the classic sheet persistence module", () => {
+  assert.match(sheetSource, /sheet-save-persistence\.js\?v=1/);
+  assert.match(sheetSource, /persistSheetBundle\(\{/);
+  assert.match(sheetSource, /character: collectCharacter\(\)/);
+  assert.match(sheetSource, /skills: collectSkills\(\)/);
+  assert.match(sheetSource, /outfits: collectOutfits\(\)/);
+  assert.doesNotMatch(sheetSource, /supabase\.rpc\("save_character_bundle"/);
+  assert.match(persistenceSource, /const SAVE_RPC = "save_character_bundle"/);
+  assert.match(persistenceSource, /supabase\.rpc\(SAVE_RPC/);
+  assert.match(persistenceSource, /p_character: character/);
+  assert.match(persistenceSource, /p_skills: skills/);
+  assert.match(persistenceSource, /p_outfits: outfits/);
   assert.match(sheetSource, /tnx:character-saved/);
 });
