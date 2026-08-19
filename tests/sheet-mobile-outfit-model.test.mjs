@@ -49,6 +49,26 @@ test("mobile outfit keeps control_modifier canonical without generating deprecat
   assert.equal(Object.hasOwn(record.ofc_details, "cs_value"), false);
 });
 
+test("mobile outfit applies category constraints when saving control and CS modifiers", () => {
+  const weapon = collectOutfitRecord(cloneOutfit({
+    category: "weapon", name: "WEAPON", control_modifier: -3, cs_modifier: 2, ofc_details: {}
+  }), { id: "character" });
+  assert.equal(weapon.control_modifier, 0);
+  assert.equal(weapon.cs_modifier, 0);
+
+  const armor = collectOutfitRecord(cloneOutfit({
+    category: "armor", name: "ARMOR", control_modifier: -1, cs_modifier: 2, ofc_details: {}
+  }), { id: "character" });
+  assert.equal(armor.control_modifier, -1);
+  assert.equal(armor.cs_modifier, 0);
+
+  const tron = collectOutfitRecord(cloneOutfit({
+    category: "tron", name: "TRON", control_modifier: -1, cs_modifier: 2, ofc_details: {}
+  }), { id: "character" });
+  assert.equal(tron.control_modifier, 0);
+  assert.equal(tron.cs_modifier, 2);
+});
+
 test("mobile outfit preserves non-empty legacy detail keys without creating new blanks", () => {
   const item = cloneOutfit({
     category: "vehicle",
