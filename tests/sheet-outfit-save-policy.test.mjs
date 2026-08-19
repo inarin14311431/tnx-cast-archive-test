@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { createBlankOutfit } from "../js/sheet-row-factory.js";
 
 const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
 const rendererSource = await readFile(new URL("../js/sheet-outfit-renderer.js", import.meta.url), "utf8");
@@ -20,11 +21,11 @@ function trailingFunctionBlock(source, name) {
 }
 
 test("new outfit state no longer seeds retired compatibility fields", () => {
-  const block = functionBlock(sheetSource, "blankOutfit", "renderOutfits");
-  assert.doesNotMatch(block, /defense:/);
-  assert.doesNotMatch(block, /control_modifier:/);
-  assert.doesNotMatch(block, /cs_modifier:/);
-  assert.doesNotMatch(block, /mundane_modifier:/);
+  const outfit = createBlankOutfit({ key: "policy-test", sortOrder: 0 });
+  assert.equal("defense" in outfit, false);
+  assert.equal("control_modifier" in outfit, false);
+  assert.equal("cs_modifier" in outfit, false);
+  assert.equal("mundane_modifier" in outfit, false);
 });
 
 test("classic raw card no longer emits hidden legacy outfit transport fields", () => {
