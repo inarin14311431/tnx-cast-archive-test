@@ -3,12 +3,21 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../js/sheet-import-outfit-compat.js", import.meta.url), "utf8");
+const base = await readFile(new URL("../js/sheet-import.js", import.meta.url), "utf8");
 
 test("legacy outfit import is the canonical runtime owner", () => {
   assert.match(source, /TNXLegacyOutfitImport=\{owner:"sheet-import-outfit-compat"/);
   assert.match(source, /function stripOutfits\(data\)/);
   assert.match(source, /textarea\.value=JSON\.stringify\(baseData\)/);
   assert.match(source, /only runtime owner of outfit reconstruction/);
+});
+
+test("base legacy importer no longer contains outfit reconstruction", () => {
+  assert.doesNotMatch(base, /function addOutfit\s*\(/);
+  assert.doesNotMatch(base, /function importOutfits\s*\(/);
+  assert.doesNotMatch(base, /stats\.outfit/);
+  assert.doesNotMatch(base, /アウトフィットを取込中|アウトフィットを反映しています/);
+  assert.match(base, /tnx:legacy-import-base-finished/);
 });
 
 test("legacy outfit import creates rows through the current category table UI", () => {
