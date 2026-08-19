@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cloneOutfit, collectOutfitRecord } from "../js/sheet-mobile-outfit-model.js";
+import { blankOutfit, cloneOutfit, collectOutfitRecord } from "../js/sheet-mobile-outfit-model.js";
 
 test("mobile outfit reads legacy combined concealment but saves split fields", () => {
   const item = cloneOutfit({
@@ -69,16 +69,39 @@ test("mobile outfit applies category constraints when saving control and CS modi
   assert.equal(tron.cs_modifier, 2);
 });
 
-test("mobile outfit preserves non-empty legacy detail keys without creating new blanks", () => {
+test("mobile outfit consumes legacy detail aliases into canonical base modifiers", () => {
   const item = cloneOutfit({
     category: "vehicle",
     name: "LEGACY DETAIL",
     ofc_details: { control_value: "-3", cs_value: "2", manufacturer: "TEST" }
   });
-  assert.equal(item.ofc_details.control_value, "-3");
-  assert.equal(item.ofc_details.cs_value, "2");
+  assert.equal(item.control_modifier, -3);
+  assert.equal(item.cs_modifier, 2);
+  assert.equal(Object.hasOwn(item.ofc_details, "control_value"), false);
+  assert.equal(Object.hasOwn(item.ofc_details, "cs_value"), false);
+
   const record = collectOutfitRecord(item, { id: "character" });
-  assert.equal(record.ofc_details.control_value, "-3");
-  assert.equal(record.ofc_details.cs_value, "2");
+  assert.equal(record.control_modifier, -3);
+  assert.equal(record.cs_modifier, 2);
+  assert.equal(Object.hasOwn(record.ofc_details, "control_value"), false);
+  assert.equal(Object.hasOwn(record.ofc_details, "cs_value"), false);
   assert.equal(record.ofc_details.manufacturer, "TEST");
+});
+
+test("mobile editor no longer creates or saves retired mundane_modifier", () => {
+  const blank = blankOutfit();
+  assert.equal(Object.hasOwn(blank, "mundane_modifier"), false);
+
+  const item = cloneOutfit({
+    category: "other",
+    name: "LEGACY MUNDANE",
+    mundane_modifier: 7,
+    ofc_details: { mundane_modifier: "8" }
+  });
+  assert.equal(Object.hasOwn(item, "mundane_modifier"), false);
+  assert.equal(Object.hasOwn(item.ofc_details, "mundane_modifier"), false);
+
+  const record = collectOutfitRecord(item, { id: "character" });
+  assert.equal(Object.hasOwn(record, "mundane_modifier"), false);
+  assert.equal(Object.hasOwn(record.ofc_details, "mundane_modifier"), false);
 });
