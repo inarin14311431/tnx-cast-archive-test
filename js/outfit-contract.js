@@ -12,6 +12,39 @@ export const OUTFIT_LABELS = Object.freeze({
   other: "その他"
 });
 
+export const OUTFIT_FIELD_LABELS = Object.freeze({
+  category: "分類",
+  name: "名称",
+  purchase_value: "購入",
+  experience_cost: "常備化",
+  concealment: "隠匿値",
+  concealment_penalty: "隠匿修正",
+  slot: "部位",
+  attack: "攻撃",
+  parry: "受",
+  range: "射程",
+  speed: "ス",
+  electronic_control: "電制",
+  defense_s: "S",
+  defense_p: "P",
+  defense_i: "I",
+  control_modifier: "制御値",
+  cs_modifier: "CS修正",
+  ianus_surface: "表層",
+  ianus_deep: "深層",
+  ianus_none: "無",
+  tron_software: "ソ",
+  tron_support: "サ",
+  tron_hardware: "ハ",
+  crew: "乗員",
+  sf: "SF",
+  residence_entry: "登",
+  residence_electric: "電",
+  residence_area: "ア",
+  description: "解説",
+  page_number: "参照P"
+});
+
 export const OUTFIT_BASE_FIELDS = Object.freeze([
   "name", "purchase_value", "experience_cost", "concealment", "concealment_penalty", "slot"
 ]);
@@ -48,6 +81,15 @@ export function outfitSupportsCsModifier(category) {
 
 export function outfitPerformanceFields(category) {
   return OUTFIT_PERFORMANCE_FIELDS[normalizeOutfitCategory(category)] || OUTFIT_PERFORMANCE_FIELDS.other;
+}
+
+export function outfitCanonicalFields(category) {
+  return Object.freeze([
+    "category",
+    ...OUTFIT_BASE_FIELDS,
+    ...outfitPerformanceFields(category),
+    ...OUTFIT_DESCRIPTION_FIELDS
+  ]);
 }
 
 // Compatibility policy: legacy detail aliases may be read, but current editors must not create them.
