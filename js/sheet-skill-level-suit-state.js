@@ -2,6 +2,11 @@ export function normalizeSkillLevel(value) {
   return Math.max(0, Number(value || 0));
 }
 
+export function normalizeSkillFreeLevel(freeLevel, level) {
+  const normalizedLevel = normalizeSkillLevel(level);
+  return Math.min(Math.max(0, Number(freeLevel || 0)), normalizedLevel);
+}
+
 export function shouldSelectAllSuits(level) {
   return normalizeSkillLevel(level) >= 4;
 }
