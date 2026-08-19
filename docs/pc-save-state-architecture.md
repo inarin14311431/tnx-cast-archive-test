@@ -68,4 +68,6 @@ Current ownership boundary:
 - `sheet-save-state.js`: explicit state store, presentation, and consumer API;
 - `sheet-save-diagnostics.js`: diagnostic interpretation only, with no persistence interception.
 
-The next safe cleanup is a final ownership audit of `sheet.js` and the surrounding compatibility tests. That audit should remove stale save-era assumptions without moving editor rendering or interaction logic into the persistence/payload layers.
+The PC save refactor is now considered ownership-complete. `tests/pc-save-architecture-audit.test.mjs` locks the module boundaries so transactional RPC ownership, DOM-free payload serialization, explicit OFC enrichment, state presentation, diagnostics, and retired compatibility fields cannot silently collapse back into `sheet.js` or one another.
+
+Further refactoring should move on from the save pipeline itself. The next useful target is the remaining editor load/render/interaction concentration in `sheet.js`, while preserving the completed save boundaries above.
