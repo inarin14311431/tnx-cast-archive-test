@@ -1,6 +1,6 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.3.1 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.4.0 */
 (()=>{
-  const VERSION='1.3.1';
+  const VERSION='1.4.0';
   import('./help-ui.js?v=6').catch(error=>console.error('sheet help failed to load',error));
 
   const dialog=document.querySelector('#legacy-import-dialog');
@@ -15,7 +15,6 @@
   dialog.dataset.urlImportReady='1';
   dialog.dataset.urlImportVersion=VERSION;
 
-  // 旧取込専用HELPは廃止済み。残存DOMだけを初期化時に1回掃除する。
   document.querySelectorAll('#sheet-import-help-button,#sheet-import-bookmarklet-copy,#sheet-import-help-dialog').forEach(node=>node.remove());
   const obsoleteControl=importButton.closest('.sheet-import-control');
   if(obsoleteControl&&obsoleteControl.parentNode){
@@ -69,7 +68,7 @@
 
   function normalizePayload(payload){
     let data=payload;
-    for(let i=0;i<3;i++){
+    for(let i=0;i<4;i++){
       if(typeof data==='string'){
         try{data=JSON.parse(data);continue;}catch{break;}
       }
@@ -87,7 +86,7 @@
     return data;
   }
 
-  function fetchJsonp(key,timeout=15000){
+  function jsonpOnce(url,timeout=12000){
     return new Promise((resolve,reject)=>{
       const callback=`__tnxSheetUrlImport_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const script=document.createElement('script');
@@ -98,14 +97,35 @@
       };
       const finish=(fn,value)=>{
         if(settled)return;
-        settled=true;clearTimeout(timer);cleanup();fn(value);
+        settled=true;
+        clearTimeout(timer);
+        cleanup();
+        fn(value);
       };
-      const timer=setTimeout(()=>finish(reject,new Error('キャラクターシート倉庫からの応答がタイムアウトしました。')),timeout);
+      const timer=setTimeout(()=>finish(reject,new Error('応答がタイムアウトしました。')),timeout);
       window[callback]=payload=>finish(resolve,payload);
-      script.onerror=()=>finish(reject,new Error('キャラクターシート倉庫のデータ取得に失敗しました。'));
-      script.src=`https://character-sheets.appspot.com/tnx/display?ajax=1&key=${encodeURIComponent(key)}&callback=${encodeURIComponent(callback)}`;
+      script.onerror=()=>finish(reject,new Error('データ取得リクエストに失敗しました。'));
+      const request=new URL(url);
+      request.searchParams.set('callback',callback);
+      script.src=request.toString();
       document.head.append(script);
     });
+  }
+
+  async function fetchJsonp(key){
+    const encoded=encodeURIComponent(key);
+    const urls=[
+      `https://character-sheets.appspot.com/tnx/display?ajax=1&key=${encoded}`,
+      `https://character-sheets.appspot.com/tnx/display.html?ajax=1&key=${encoded}`,
+      `https://character-sheets.appspot.com/tnx/display?key=${encoded}&ajax=1`,
+      `https://character-sheets.appspot.com/tnx/display.html?key=${encoded}&ajax=1`
+    ];
+    const failures=[];
+    for(const url of urls){
+      try{return await jsonpOnce(url);}catch(error){failures.push(`${url}: ${error?.message||error}`);}
+    }
+    console.error('character-sheets JSONP endpoints failed',failures);
+    throw new Error('キャラクターシート倉庫のデータ取得に失敗しました。');
   }
 
   function waitUntilFinished(timeout=180000){
