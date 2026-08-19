@@ -1,4 +1,4 @@
-/* Legacy outfit import compatibility: isolate outfit data from the base importer and rebuild deterministically. */
+/* Canonical legacy outfit import owner: strips outfit payloads from the base importer and rebuilds them once. */
 (()=>{
   const APPLY="#legacy-import-apply",TEXT="#legacy-import-json",ROOT="#outfit-list",MESSAGE="#legacy-import-message",DIALOG="#legacy-import-dialog";
   const BASE_IMPORT_EVENT="tnx:legacy-import-base-finished";
@@ -22,11 +22,11 @@
     root.querySelector("[data-import-progress-label]").textContent=label;
     root.querySelector("[data-import-progress-detail]").textContent=detail;
   }
-  window.TNXLegacyImportProgress={update:progress};
 
   function lock(dialog,on){
     if(!dialog)return;
-    if(on)dialog.setAttribute("data-importing","1");else dialog.removeAttribute("data-importing");
+    if(on){dialog.setAttribute("data-importing","1");dialog.dataset.outfitImportOwner="canonical"}
+    else{dialog.removeAttribute("data-importing");delete dialog.dataset.outfitImportOwner}
     const close=dialog.querySelector('[value="cancel"]');if(close)close.disabled=on;
     const apply=dialog.querySelector(APPLY);if(apply){if(on)apply.setAttribute("aria-busy","true");else{apply.removeAttribute("aria-busy");apply.disabled=false}}
   }
@@ -114,12 +114,11 @@
 
   function commonValues(item){
     const data=item.data;
-    const concealA=first(data,"concealA","concealment");
     return {
       name:item.name,
       purchase_value:first(data,"purchase","purchaseValue"),
       experience_cost:first(data,"permanent","experienceCost"),
-      concealment:concealA,
+      concealment:first(data,"concealA","concealment"),
       slot:first(data,"slot","part"),
       control_modifier:["armor","vehicle"].includes(item.category)?first(data,"control","controlModifier"):0,
       cs_modifier:["tron","vehicle"].includes(item.category)?first(data,"cs","csModifier"):0,
@@ -133,6 +132,16 @@
       ||null;
   }
 
+  async function waitForCreatedRow(before,timeout=8000){
+    const root=document.querySelector(ROOT),started=Date.now();
+    while(root&&Date.now()-started<timeout){
+      const row=[...root.querySelectorAll('[data-outfit-key]')].find(candidate=>!before.has(candidate.dataset.outfitKey));
+      if(row)return row;
+      await frame();
+    }
+    return null;
+  }
+
   async function createRaw(item){
     const root=document.querySelector(ROOT);
     if(!root)throw new Error("アウトフィット追加欄を確認できません。");
@@ -143,14 +152,10 @@
     if(!add)throw new Error("アウトフィット追加欄を確認できません。");
     add.click();
 
-    let row=null;
-    for(let attempt=0;attempt<20&&!row;attempt++){
-      await frame();
-      row=[...root.querySelectorAll('[data-outfit-key]')].find(candidate=>!before.has(candidate.dataset.outfitKey))||null;
-    }
+    let row=await waitForCreatedRow(before);
     if(!row)throw new Error(`アウトフィット行を作成できません：${item.name}`);
-
     const key=row.dataset.outfitKey;
+
     if(!categoryAdd){
       setValue(fieldControl(row,"category"),item.category);
       await frame();
@@ -184,22 +189,27 @@
       base("attack",first(data,"attack"));base("range",first(data,"range"));base("slot",first(data,"slot","part"));
       ofc("parry",first(data,"parry","defense"));ofc("speed",first(data,"speed"));
     }else if(item.category==="armor"){
-      const s=first(data,"protecS","defenseS"),i=first(data,"protecI","defenseI"),p=first(data,"protecP","defenseP");
-      base("defense",[s,i,p].map(value=>String(value??"")).join("/"));base("slot",first(data,"slot","part"));base("control_modifier",first(data,"control","controlModifier","controlValue"));
+      const s=first(data,"protecS","defenseS"),p=first(data,"protecP","defenseP"),i=first(data,"protecI","defenseI");
+      base("defense",[s,p,i].map(value=>String(value??"")).join("/"));base("slot",first(data,"slot","part"));base("control_modifier",first(data,"control","controlModifier","controlValue"));
+      ofc("defense_s",s);ofc("defense_p",p);ofc("defense_i",i);
     }else if(item.category==="cyberware"){
       base("slot",first(data,"slot","part"));
     }else if(item.category==="tron"){
       base("slot",first(data,"slot"));base("cs_modifier",first(data,"cs","csModifier"));ofc("speed",first(data,"speed"));
       ofc("tron_software",first(data,"software","tron_software"));ofc("tron_support",first(data,"support","tron_support"));ofc("tron_hardware",first(data,"hardware","tron_hardware"));
     }else if(item.category==="vehicle"){
+      const s=first(data,"protecS","defenseS"),p=first(data,"protecP","defenseP"),i=first(data,"protecI","defenseI");
       base("attack",first(data,"attack"));base("control_modifier",first(data,"control","controlModifier","controlValue"));base("cs_modifier",first(data,"cs","csModifier"));
-      ofc("speed",first(data,"speed","slot"));ofc("defense_s",first(data,"protecS","defenseS"));ofc("defense_p",first(data,"protecP","defenseP"));ofc("defense_i",first(data,"protecI","defenseI"));ofc("crew",first(data,"crew","passenger","passengers"));ofc("sf",first(data,"sf","speedFactor"));
+      ofc("speed",first(data,"speed","slot"));ofc("defense_s",s);ofc("defense_p",p);ofc("defense_i",i);ofc("crew",first(data,"crew","passenger","passengers"));ofc("sf",first(data,"sf","speedFactor"));
     }else if(item.category==="residence"){
       base("slot",first(data,"part","slot"));ofc("speed",first(data,"speed"));ofc("residence_entry",first(data,"entry"));ofc("residence_electric",first(data,"electric","residence_electric"));ofc("residence_area",first(data,"area","residence_area"));
     }else base("slot",first(data,"slot","part"));
     ofc("page_number",first(data,"page","pageNumber"));
     ofc("electronic_control",first(data,"electrical_control","electronic_control","electricalControl","electronicControl"));
   }
+
+  window.TNXLegacyOutfitImport={owner:"sheet-import-outfit-compat",sourceOutfits,stripOutfits};
+  window.TNXLegacyImportProgress={update:progress};
 
   const dialog=document.querySelector(DIALOG);
   dialog?.addEventListener("cancel",event=>{if(dialog.getAttribute("data-importing")==="1")event.preventDefault()});
@@ -215,6 +225,8 @@
     const importDialog=document.querySelector(DIALOG);
     lock(importDialog,true);
     progress(3,"JSONを解析中",`アウトフィット${items.length}件を分離して取込みます`);
+
+    /* The base importer receives no outfit payload. This module is the only runtime owner of outfit reconstruction. */
     textarea.value=JSON.stringify(baseData);
     const basePromise=waitBaseImport();
 
