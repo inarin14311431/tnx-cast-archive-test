@@ -51,6 +51,7 @@ function applyDetailsToRow(row, details) {
     if (field === "cs_modifier") input = row.querySelector('[data-o="cs_modifier"]');
     if (field === "concealment") input = row.querySelector('[data-pc-outfit-proxy="concealment"]') || row.querySelector('[data-o="concealment"]') || input;
     if (field === "slot") input = row.querySelector('[data-pc-outfit-proxy="slot"]') || row.querySelector('[data-o="slot"]') || input;
+    if (field === "description") input = row.querySelector('[data-o="description"]') || input;
     if (!input) continue;
     input.value = String(value ?? "");
     input.dispatchEvent(new Event("input", { bubbles: true }));
