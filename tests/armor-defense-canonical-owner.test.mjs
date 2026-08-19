@@ -31,7 +31,9 @@ test("legacy armor defense backing bridge is retired from active editing", () =>
 
 test("legacy combined armor defense is read-only compatibility and current save clears it", () => {
   assert.match(fields, /Object\.assign\(details, parseDefense\(row\?\.defense \|\| ""\)\)/);
-  assert.match(save, /defense: category === "vehicle" \? composeDefense\(details, item\.defense\) : ""/);
+  assert.match(save, /defense:\s*""/);
+  assert.doesNotMatch(save, /composeDefense/);
+  assert.doesNotMatch(save, /category === "vehicle" \? composeDefense/);
   assert.doesNotMatch(save, /data-armor-defense/);
   assert.doesNotMatch(save, /parseDefense/);
 });
