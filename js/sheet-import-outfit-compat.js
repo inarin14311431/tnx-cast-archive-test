@@ -89,6 +89,7 @@
     if(!element||value===undefined||value===null)return false;
     element.value=String(value);
     element.dispatchEvent(new Event("input",{bubbles:true}));
+    element.dispatchEvent(new Event("change",{bubbles:true}));
     return true;
   }
 
@@ -113,12 +114,12 @@
 
   function commonValues(item){
     const data=item.data;
-    const concealA=first(data,"concealA","concealment"),concealB=first(data,"concealB","concealmentPenalty");
+    const concealA=first(data,"concealA","concealment");
     return {
       name:item.name,
       purchase_value:first(data,"purchase","purchaseValue"),
       experience_cost:first(data,"permanent","experienceCost"),
-      concealment:[concealA,concealB].filter(value=>String(value??"")!=="").join("/"),
+      concealment:concealA,
       slot:first(data,"slot","part"),
       control_modifier:["armor","vehicle"].includes(item.category)?first(data,"control","controlModifier"):0,
       cs_modifier:["tron","vehicle"].includes(item.category)?first(data,"cs","csModifier"):0,
@@ -158,6 +159,7 @@
     const base=(field,value)=>setValue(row.querySelector(`[data-o="${field}"]`),value);
     const ofc=(field,value)=>String(value??"")!==""&&setValue(row.querySelector(`[data-ofc="${field}"]`),value);
     base("name",item.name);
+    ofc("concealment_penalty",first(data,"concealB","concealmentPenalty","concealment_penalty"));
     if(item.category==="weapon"){
       base("attack",first(data,"attack"));base("range",first(data,"range"));base("slot",first(data,"slot","part"));
       ofc("parry",first(data,"parry","defense"));ofc("speed",first(data,"speed"));
@@ -171,7 +173,7 @@
       ofc("tron_software",first(data,"software","tron_software"));ofc("tron_support",first(data,"support","tron_support"));ofc("tron_hardware",first(data,"hardware","tron_hardware"));
     }else if(item.category==="vehicle"){
       base("attack",first(data,"attack"));base("control_modifier",first(data,"control","controlModifier","controlValue"));base("cs_modifier",first(data,"cs","csModifier"));
-      ofc("speed",first(data,"slot","speed"));ofc("defense_s",first(data,"protecS","defenseS"));ofc("defense_p",first(data,"protecP","defenseP"));ofc("defense_i",first(data,"protecI","defenseI"));ofc("crew",first(data,"crew","passenger","passengers"));ofc("sf",first(data,"sf","speedFactor"));
+      ofc("speed",first(data,"speed","slot"));ofc("defense_s",first(data,"protecS","defenseS"));ofc("defense_p",first(data,"protecP","defenseP"));ofc("defense_i",first(data,"protecI","defenseI"));ofc("crew",first(data,"crew","passenger","passengers"));ofc("sf",first(data,"sf","speedFactor"));
     }else if(item.category==="residence"){
       base("slot",first(data,"part","slot"));ofc("speed",first(data,"speed"));ofc("residence_entry",first(data,"entry"));ofc("residence_electric",first(data,"electric","residence_electric"));ofc("residence_area",first(data,"area","residence_area"));
     }else base("slot",first(data,"slot","part"));
