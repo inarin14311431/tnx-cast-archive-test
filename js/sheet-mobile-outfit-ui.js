@@ -76,16 +76,16 @@ function commonBaseFields(item) {
   </div></fieldset>`;
 }
 
-function commonOfcFields(item) {
-  return `<fieldset class="mobile-outfit-group"><legend>追加情報</legend><div class="mobile-outfit-group__grid">
-    ${detailField(item, "manufacturer", "メーカー")}
+function descriptionFields(item) {
+  return `<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid">
+    <label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label>
     ${detailField(item, "page_number", "参照P")}
   </div></fieldset>`;
 }
 
 function concealFields(item) {
   parseConcealment(item);
-  return `<label>隠匿値<input data-outfit-transient="conceal-value" value="${esc(item._concealValue || "")}"></label><label>隠匿修正<select data-outfit-transient="conceal-mod">${optionList(CONCEALMENT_PENALTY_OPTIONS, item._concealMod || "")}</select></label>`;
+  return `<label>隠匿<input data-outfit-transient="conceal-value" value="${esc(item._concealValue || "")}"></label><label>隠匿修正<select data-outfit-transient="conceal-mod">${optionList(CONCEALMENT_PENALTY_OPTIONS, item._concealMod || "")}</select></label>`;
 }
 
 function defenseFields(item) {
@@ -136,7 +136,7 @@ export function buildOutfitEditor(item) {
   const categories = `<option value="">分類を選択</option>${Object.entries(LABELS).map(([value, label]) => `<option value="${value}" ${item.category === value ? "selected" : ""}>${label}</option>`).join("")}`;
   return `<div class="mobile-outfit-editor__grid">
     <label class="mobile-outfit-editor__category">分類<select data-outfit-field="category">${categories}</select></label>
-    ${item.category ? `${commonBaseFields(item)}${commonOfcFields(item)}${performanceFields(item)}<fieldset class="mobile-outfit-group"><legend>解説</legend><div class="mobile-outfit-group__grid"><label class="mobile-outfit-editor__description">解説<textarea rows="7" data-outfit-field="description">${esc(item.description || "")}</textarea></label></div></fieldset>` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
+    ${item.category ? `${commonBaseFields(item)}${performanceFields(item)}${descriptionFields(item)}` : '<p class="mobile-outfit-category-hint mobile-span-2">まず分類を選択してください。分類に応じた入力項目を表示します。</p>'}
     ${deleteAction()}
   </div>`;
 }
