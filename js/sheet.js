@@ -518,7 +518,7 @@ function collectCharacter() {
     payload[`${key}_gear`] = Number($(`#${key}-mod`).value || 0); payload[`${key}_manual`] = 0; payload[`${key}_value`] = final(key);
     const controlKey = `${key}-control`;
     payload[`${key}_control_base`] = current(controlKey); payload[`${key}_control_growth`] = Math.max(0, current(controlKey) - Number(styleBaseline[controlKey] || 0));
-    payload[`${key}_control_gear`] = Number($(`#${controlKey}-mod`).value || 0); payload[`${controlKey}_manual`] = 0; payload[`${key}_control`] = final(controlKey);
+    payload[`${key}_control_gear`] = Number($(`#${controlKey}-mod`).value || 0); payload[`${key}_control_manual`] = 0; payload[`${key}_control`] = final(controlKey);
   }
   payload.cs_base = Number($("#cs-base").value || 0); payload.cs_gear = Number($("#cs-mod").value || 0); payload.cs_manual = 0; payload.cs = payload.cs_base + payload.cs_gear;
   return payload;
