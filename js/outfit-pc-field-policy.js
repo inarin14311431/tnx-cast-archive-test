@@ -1,15 +1,25 @@
 import { supabase } from "./supabase-client.js";
+import {
+  OUTFIT_BASE_FIELDS,
+  OUTFIT_FIELD_LABELS,
+  normalizeOutfitCategory
+} from "./outfit-contract.js?v=2";
 
 const ROOT = "#outfit-list";
-const EXTRA_BASE_FIELDS = {
-  vehicle: [["concealment", "隠匿値"], ["slot", "部位"]],
-  residence: [["concealment", "隠匿値"]]
-};
+const TABLE_NATIVE_FIELDS = Object.freeze({
+  weapon: new Set(["name", "purchase_value", "experience_cost", "concealment", "slot"]),
+  armor: new Set(["name", "purchase_value", "experience_cost", "concealment", "slot"]),
+  cyberware: new Set(["name", "purchase_value", "experience_cost", "concealment", "slot"]),
+  tron: new Set(["name", "purchase_value", "experience_cost", "concealment", "slot"]),
+  vehicle: new Set(["name", "purchase_value", "experience_cost"]),
+  residence: new Set(["name", "purchase_value", "experience_cost", "slot"]),
+  other: new Set(["name", "purchase_value", "experience_cost", "concealment", "slot"])
+});
 
 let queued = false;
 let storedQueues = new Map();
 
-const signature = (category, name) => `${String(category || "other").trim()}\u0000${String(name || "").trim()}`;
+const signature = (category, name) => `${normalizeOutfitCategory(category)}\u0000${String(name || "").trim()}`;
 
 function splitConcealment(value) {
   const text = String(value ?? "").trim();
@@ -23,24 +33,29 @@ function splitConcealment(value) {
 }
 
 function storedRecord(row) {
-  const category = row.closest("table")?.dataset.outfitSchema || "other";
+  const category = normalizeOutfitCategory(row.closest("table")?.dataset.outfitSchema);
   const name = row.querySelector('[data-o="name"]')?.value || "";
   const queue = storedQueues.get(signature(category, name));
   return queue?.[Number(row.dataset.pcProxyOccurrence || 0)] || null;
 }
 
-function addHeader(table, field, label) {
+function extraBaseFields(category) {
+  const native = TABLE_NATIVE_FIELDS[normalizeOutfitCategory(category)] || TABLE_NATIVE_FIELDS.other;
+  return OUTFIT_BASE_FIELDS.filter(field => field !== "concealment_penalty" && !native.has(field));
+}
+
+function addHeader(table, field) {
   const header = table.querySelector("thead tr");
   if (!header || header.querySelector(`[data-pc-outfit-head="${CSS.escape(field)}"]`)) return;
   const th = document.createElement("th");
   th.className = `outfit-table-head outfit-table-head--${field}`;
   th.dataset.pcOutfitHead = field;
-  th.textContent = label;
+  th.textContent = OUTFIT_FIELD_LABELS[field] || field;
   const anchor = header.querySelector(".outfit-table-head--description") || header.querySelector(".outfit-table-head--actions");
   header.insertBefore(th, anchor || null);
 }
 
-function addCell(row, field, label) {
+function addCell(row, field) {
   if (row.querySelector(`[data-pc-outfit-proxy="${CSS.escape(field)}"]`) || row.querySelector(`[data-o="${CSS.escape(field)}"]`)) return;
   const item = storedRecord(row);
   const td = document.createElement("td");
@@ -50,7 +65,7 @@ function addCell(row, field, label) {
   input.autocomplete = "off";
   input.dataset.o = field;
   input.dataset.pcOutfitProxy = field;
-  input.setAttribute("aria-label", label);
+  input.setAttribute("aria-label", OUTFIT_FIELD_LABELS[field] || field);
   const rawValue = String(item?.[field] ?? "");
   if (field === "concealment") {
     const parsed = splitConcealment(rawValue);
@@ -81,7 +96,7 @@ function normalizeConcealmentRow(row) {
 }
 
 function applyTable(table) {
-  const category = table.dataset.outfitSchema || "other";
+  const category = normalizeOutfitCategory(table.dataset.outfitSchema);
   const occurrence = new Map();
   table.querySelectorAll("tbody .outfit-table-row").forEach(row => {
     const name = row.querySelector('[data-o="name"]')?.value || "";
@@ -91,9 +106,9 @@ function applyTable(table) {
     occurrence.set(key, index + 1);
   });
 
-  for (const [field, label] of EXTRA_BASE_FIELDS[category] || []) {
-    addHeader(table, field, label);
-    table.querySelectorAll("tbody .outfit-table-row").forEach(row => addCell(row, field, label));
+  for (const field of extraBaseFields(category)) {
+    addHeader(table, field);
+    table.querySelectorAll("tbody .outfit-table-row").forEach(row => addCell(row, field));
   }
 
   table.querySelectorAll("tbody .outfit-table-row").forEach(normalizeConcealmentRow);
@@ -135,7 +150,7 @@ async function init() {
   const root = document.querySelector(ROOT);
   if (!root) return;
   await loadStoredRows();
-  new MutationObserver(queue).observe(root, { childList: true, subtree: true });
+  root.addEventListener("tnx:outfit-tables-rendered", queue);
   queue();
 }
 
