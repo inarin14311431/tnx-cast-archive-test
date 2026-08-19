@@ -48,8 +48,8 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 - `js/sheet.js` owns the classic editor's in-memory raw outfit model and base bundle payload. New blank outfits no longer seed retired modifier fields, and `collectOutfits()` writes control/CS only for their canonical categories. Meaningful legacy values are emitted only through an explicit compatibility path.
 - `js/outfit-display-rules-v5.js` owns final PC column visibility/order while the classic table transport remains in place.
 - `js/tnx-direct-transfer-data.js` owns Character Sheets field-name translation only. Concealment splitting, defense S/P/I parsing, category normalization, control constraints, and normalized OFC detail values come from `normalizeOutfitForView()` instead of a transfer-local normalizer.
-- `js/outfit-ofc-adapter.js` owns OFC master/TSV alias normalization and category constraints before values are applied to editor controls.
-- `js/sheet-import-outfit-compat.js` is the only legacy outfit reconstruction owner.
+- `js/outfit-ofc-adapter.js` owns OFC master/TSV alias normalization and shared category constraints before values are applied to editor controls.
+- `js/sheet-import-outfit-compat.js` is the only legacy outfit reconstruction owner; it delegates control/CS category semantics to `outfit-ofc-adapter.js` rather than maintaining its own category lists.
 - `js/sheet-import.js` imports profile, styles, abilities, and skills only; it must not reconstruct outfits.
 
 ## Raw table compatibility boundary
@@ -87,12 +87,13 @@ The generic base `defense` field is no longer part of vehicle table presentation
 
 ## OFC import adapter boundary
 
-`js/outfit-ofc-adapter.js` is the shared semantic boundary for OFC master rows and OFC TSV rows before editor application.
+`js/outfit-ofc-adapter.js` is the shared semantic boundary for OFC master rows, OFC TSV rows, and legacy Character Sheets outfit reconstruction before editor application.
 
 - The OFC database may still expose `control_value`; the adapter converts it to canonical `control_modifier`.
 - Old TSVs may still contain `control_value` or `cs_value`; the adapter accepts them as read compatibility and removes those aliases from the normalized result.
 - Control is retained only for armor/vehicle; CS修正 is retained only for tron/vehicle.
 - `js/outfit-ofc-master-apply.js` and `js/outfit-ofc-tsv.js` no longer each own duplicate master-row semantic mapping.
+- `js/sheet-import-outfit-compat.js` maps legacy field names to canonical modifier names, then delegates category validity to the same adapter. It no longer hardcodes armor/vehicle and tron/vehicle category lists for control/CS.
 - The external TSV header `control_value` is retained for existing copied TSV compatibility. Internally it is immediately normalized to `control_modifier`.
 
 ## Compatibility rule
@@ -110,5 +111,5 @@ Legacy formats may be read, but new/current saves must use canonical fields. Com
 7. Separate `sheet.js` current outfit writes from legacy compatibility preservation.
 8. Migrate outbound transfer normalization to the shared outfit view model.
 9. Consolidate OFC master/TSV semantic normalization in one adapter.
-10. Reduce remaining legacy import compatibility duplication.
+10. Route legacy Character Sheets outfit modifier constraints through the same adapter.
 11. Retire legacy backing controls only after their save/import compatibility paths have dedicated coverage.
