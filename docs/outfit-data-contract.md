@@ -19,7 +19,7 @@ Legacy combined concealment such as `12/-1` may be read for compatibility. Curre
 
 ## Category-specific performance fields
 
-The authoritative field list is `js/outfit-contract.js`.
+The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 
 - weapon: attack, parry, range, speed, electronic_control
 - armor: defense_s, defense_p, defense_i, control_modifier, electronic_control
@@ -29,18 +29,22 @@ The authoritative field list is `js/outfit-contract.js`.
 - residence: speed, electronic_control, residence_entry, residence_electric, residence_area
 - other: electronic_control
 
+`outfitCanonicalFields(category)` composes category + common base fields + category-specific performance fields + description fields. Consumers should derive from this contract rather than recreate semantic field lists where practical.
+
 ## Control and CS
 
 - `control_modifier` is the canonical stored field displayed as 制御値 and is valid only for armor and vehicle.
 - `cs_modifier` is the canonical stored field displayed as CS修正 and is valid only for tron and vehicle.
 - `ofc_details.control_value` and `ofc_details.cs_value` are legacy read-only compatibility aliases. Current editors must not create blank/new copies of them.
-- `mundane_modifier` is not a user-facing outfit field.
+- `mundane_modifier` is not a user-facing outfit field and is intentionally absent from canonical field labels.
 
 ## Ownership
 
-- `js/outfit-contract.js` owns category/field semantics.
+- `js/outfit-contract.js` owns category semantics, canonical field grouping, and canonical user-facing field labels.
 - `js/outfit-view-model.js` owns normalization for read-only public views.
 - `js/sheet-mobile-outfit-model.js` owns mobile editor persistence and uses the shared contract.
+- `js/outfit-pc-field-policy.js` now derives missing PC base fields and labels from the shared contract; it consumes `tnx:outfit-tables-rendered` rather than observing `#outfit-list` itself.
+- `js/outfit-tables.js` still owns the legacy/classic-script PC table structure and remains the next schema migration target.
 - `js/sheet-import-outfit-compat.js` is the only legacy outfit reconstruction owner.
 - `js/sheet-import.js` imports profile, styles, abilities, and skills only; it must not reconstruct outfits.
 
@@ -52,6 +56,7 @@ Legacy formats may be read, but new/current saves must use canonical fields. Com
 
 1. Keep Regression and Playwright green.
 2. Remove duplicate legacy outfit reconstruction from the base importer.
-3. Move category and field semantics into `js/outfit-contract.js`.
+3. Move category, field semantics, and labels into `js/outfit-contract.js`.
 4. Migrate one consumer at a time to the shared contract with dedicated regression coverage.
-5. Only then reduce remaining compatibility duplication in transfer/import adapters.
+5. Migrate the classic `outfit-tables.js` table schema without changing save timing or row lifecycle.
+6. Only then reduce remaining compatibility duplication in transfer/import adapters.
