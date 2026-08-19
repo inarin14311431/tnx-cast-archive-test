@@ -37,10 +37,15 @@ test("snapshot unsaved guard consumes shared save state instead of parsing save 
   assert.doesNotMatch(snapshotSource, /querySelector\("#save-button"\)\?\.focus/);
 });
 
-test("save diagnostics consumes the shared save-state event instead of observing status DOM", () => {
+test("save diagnostics consumes shared lifecycle and structured error events without patching Supabase", () => {
   assert.match(diagnosticsSource, /tnx:sheet-save-state/);
+  assert.match(diagnosticsSource, /tnx:sheet-save-error/);
+  assert.match(diagnosticsSource, /observeSaveError/);
   assert.match(diagnosticsSource, /refreshFromState/);
-  assert.doesNotMatch(diagnosticsSource, /function observeSaveStatus/);
+  assert.doesNotMatch(diagnosticsSource, /function patchSaveRpc/);
+  assert.doesNotMatch(diagnosticsSource, /supabase-client\.js/);
+  assert.doesNotMatch(diagnosticsSource, /supabase\.rpc\s*=/);
+  assert.doesNotMatch(diagnosticsSource, /__tnxSaveDiagnosticsPatched/);
   assert.doesNotMatch(diagnosticsSource, /new MutationObserver/);
   assert.doesNotMatch(diagnosticsSource, /querySelector\('#save-status'\)/);
 });
