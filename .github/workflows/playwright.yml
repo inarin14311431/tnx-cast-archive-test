@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Run public and smoke tests
         run: >-
           npx playwright test
@@ -54,7 +54,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Run authenticated editor tests
         run: >-
           npx playwright test
