@@ -34,6 +34,20 @@ test("save coordinator owns dirty, saving and queued-save mechanics", () => {
   assert.match(coordinatorSource, /queueMicrotask\(\(\) => save\(false\)\)/);
 });
 
+test("edits made during an in-flight save stay dirty and queue a follow-up save", () => {
+  assert.match(coordinatorSource, /let changeRevision = 0/);
+  assert.match(coordinatorSource, /changeRevision \+= 1/);
+  assert.match(coordinatorSource, /if \(saving\) \{[\s\S]*pending = true;[\s\S]*return;/);
+  assert.match(coordinatorSource, /const revisionAtStart = changeRevision/);
+  assert.match(coordinatorSource, /const changedWhileSaving = changeRevision !== revisionAtStart/);
+  assert.match(coordinatorSource, /dirty = changedWhileSaving/);
+  assert.match(coordinatorSource, /if \(changedWhileSaving\) pending = true/);
+});
+
+test("clean queued saves do not perform a redundant persistence call", () => {
+  assert.match(coordinatorSource, /if \(!dirty\) \{[\s\S]*if \(force\) markSaved\(\);[\s\S]*return true;/);
+});
+
 test("save coordinator publishes lifecycle through the shared state store", () => {
   assert.match(coordinatorSource, /sheet-save-state\.js\?v=2/);
   assert.match(coordinatorSource, /setSheetSaveState/);
