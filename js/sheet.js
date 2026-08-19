@@ -14,6 +14,7 @@ import {
 } from "./sheet-load-normalization.js?v=1";
 import { formatSheetPersistenceError } from "./sheet-error-message.js?v=1";
 import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
+import { renderSkillEditorSections } from "./sheet-skill-renderer.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -26,7 +27,6 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
 }[char]));
 
 const SUITS = ["reason", "passion", "life", "mundane"];
-const MARKS = ["♠", "♣", "♥", "♦"];
 const ABILITIES = [
   ["reason", "理性", "REASON"],
   ["passion", "感情", "PASSION"],
@@ -403,56 +403,16 @@ function mergedGeneral() {
 }
 
 function renderSkills() {
-  const general = mergedGeneral();
-  const splitIndex = general.findIndex(item => item.name === "交渉") + 1;
-  const firstGeneral = splitIndex > 0 ? general.slice(0, splitIndex) : general;
-  const secondGeneral = splitIndex > 0 ? general.slice(splitIndex) : [];
-  $("#general-skills").innerHTML = `
-    <div class="general-skill-columns">${skillTable("一般技能", "GENERAL SKILLS", firstGeneral, false, "general general-skill-column general-skill-column--first")}${skillTable("一般技能", "GENERAL SKILLS", secondGeneral, false, "general general-skill-column general-skill-column--second")}</div>
-    ${skillTable("社会", "SOCIAL", skills.filter(item => item.category === "social"), false, "social skill-group--ordered")}
-    ${skillTable("コネクション", "CONNECTIONS", skills.filter(item => item.category === "connection"), false, "connection skill-group--ordered")}`;
-  $("#style-skills").innerHTML = skillTable("スタイル技能", "STYLE SKILLS", skills.filter(item => item.category === "style"), true, "style");
-}
-
-function skillTable(jp, en, rows, detail, category = "") {
-  if (!rows.length && !category.startsWith("general")) return "";
-  return `<section class="skill-group ${esc(category)}" data-skill-category="${esc(category.split(" ")[0])}"><h3 class="skill-group-title">${jp} <small>${en}</small></h3>
-    <table class="skill-table ${detail ? "has-detail" : "no-detail"}"><thead><tr><th class="name-col">名称</th><th class="type-col">種別</th><th class="lv-col">LV</th>${MARKS.map(mark => `<th class="suit-col">${mark}</th>`).join("")}${detail ? "<th>詳細</th>" : ""}<th></th></tr></thead><tbody>${rows.map(item => skillRow(item, detail)).join("")}</tbody></table></section>`;
-}
-
-function rowActions(skill, ordered) {
-  const categoryRows = ordered ? skills.filter(item => item.category === skill.category) : [];
-  const categoryIndex = ordered ? categoryRows.findIndex(item => item._key === skill._key) : -1;
-  return `<div class="row-actions skill-row-actions">${ordered ? `<button class="row-action row-action--up" data-action="move-up" data-skill-move="up" data-skill-key="${skill._key}" type="button" aria-label="上へ移動" ${categoryIndex === 0 ? "disabled" : ""}>▲</button><button class="row-action row-action--down" data-action="move-down" data-skill-move="down" data-skill-key="${skill._key}" type="button" aria-label="下へ移動" ${categoryIndex === categoryRows.length - 1 ? "disabled" : ""}>▼</button>` : ""}<button class="row-action row-action--delete" data-action="delete" data-delete-skill="${skill._key}" type="button" aria-label="削除">×</button></div>`;
-}
-
-function styleSeparatorRow(skill) {
-  return `<tr class="style-skill-separator-row" data-style-separator="1" data-style-separator-structure="2cell" data-skill-key="${skill._key}">
-    <td class="style-separator-main"><textarea data-f="name" rows="1" placeholder="スタイル名を入力（例：アヤカシ）" aria-label="スタイル技能の区切り名">${esc(skill.name)}</textarea></td>
-    <td class="style-separator-actions">${rowActions(skill, true)}</td>
-  </tr>`;
-}
-
-function skillRow(skill, detail) {
-  if (isStyleSeparator(skill)) return styleSeparatorRow(skill);
-  let kinds;
-  if (skill.category === "style") kinds = ["none", "normal", "secret", "ultimate", "direction"];
-  else if (skill.category === "general") kinds = ["general", "proper"];
-  else kinds = ["proper"];
-  const labels = { general: "一般", proper: "固有名詞", none: "なし", normal: "通常", secret: "秘技", ultimate: "奥義", direction: "演出", ...(window.TNXStyleSkillKinds?.labels || {}) };
-  const slotAttribute = skill._blankSlot ? ` data-general-slot-column="${esc(skill._slotColumn || "right")}"` : "";
-  const ordered = skill.category === "social" || skill.category === "connection" || skill.category === "style";
-  const nameControl = skill.category === "style"
-    ? `<textarea data-f="name" rows="1" aria-label="名称">${esc(skill.name)}</textarea>`
-    : `<input data-f="name" value="${esc(skill.name)}">`;
-  return `<tr data-skill-key="${skill._key}"${slotAttribute}>
-    <td>${nameControl}</td>
-    <td><select data-f="skill_kind">${kinds.map(value => `<option value="${value}" ${skill.skill_kind === value ? "selected" : ""}>${labels[value]}</option>`).join("")}</select></td>
-    <td><input data-f="level" type="number" min="0" value="${Number(skill.level) || 0}"></td>
-    ${SUITS.map((suit, index) => `<td class="suit-cell"><label class="suit-check"><input data-f="${suit}" type="checkbox" ${skill[suit] ? "checked" : ""}><span>${MARKS[index]}</span></label></td>`).join("")}
-    ${detail ? `<td><textarea data-f="description" rows="2">${esc(skill.description || skill.timing || "")}</textarea></td>` : ""}
-    <td>${rowActions(skill, ordered)}</td>
-  </tr>`;
+  const rendered = renderSkillEditorSections({
+    generalRows: mergedGeneral(),
+    socialRows: skills.filter(item => item.category === "social"),
+    connectionRows: skills.filter(item => item.category === "connection"),
+    styleRows: skills.filter(item => item.category === "style"),
+    isStyleSeparator,
+    styleKindLabels: window.TNXStyleSkillKinds?.labels || {}
+  });
+  $("#general-skills").innerHTML = rendered.generalHtml;
+  $("#style-skills").innerHTML = rendered.styleHtml;
 }
 
 function blankOutfit() {
