@@ -6,6 +6,13 @@ import { createSheetSaveCoordinator } from "./sheet-save-coordinator.js?v=1";
 import { persistSheetBundle } from "./sheet-save-persistence.js?v=1";
 import { loadSheetBundle } from "./sheet-load-persistence.js?v=1";
 import { buildCharacterSavePayload, buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=1";
+import {
+  STYLE_SEPARATOR_MARKER,
+  isStyleSeparatorRecord as isStyleSeparator,
+  normalizeLoadedSkill,
+  normalizeLoadedOutfit
+} from "./sheet-load-normalization.js?v=1";
+import { formatSheetPersistenceError } from "./sheet-error-message.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -19,8 +26,6 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
 
 const SUITS = ["reason", "passion", "life", "mundane"];
 const MARKS = ["♠", "♣", "♥", "♦"];
-const STYLE_SEPARATOR_MARKER = "[[STYLE_SEPARATOR]]";
-const STYLE_DETAIL_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const ABILITIES = [
   ["reason", "理性", "REASON"],
   ["passion", "感情", "PASSION"],
@@ -76,7 +81,7 @@ const saveCoordinator = createSheetSaveCoordinator({
     return data;
   },
   onError(error) {
-    return jpError(error?.message);
+    return formatSheetPersistenceError(error?.message, { operation: "save" });
   }
 });
 
@@ -155,22 +160,6 @@ function addSkill(category, kind, name) {
   renderSkills(); recalc(); markDirty();
 }
 
-function isStyleSeparatorDescription(value) {
-  const text = String(value || "");
-  if (text.startsWith(STYLE_SEPARATOR_MARKER)) return true;
-  if (!text.startsWith(STYLE_DETAIL_PREFIX)) return false;
-  try {
-    const detail = JSON.parse(text.slice(STYLE_DETAIL_PREFIX.length).trim());
-    return String(detail?.description || "").startsWith(STYLE_SEPARATOR_MARKER);
-  } catch {
-    return false;
-  }
-}
-
-function isStyleSeparator(skill) {
-  return skill?.category === "style" && (skill._rowType === "separator" || isStyleSeparatorDescription(skill.description));
-}
-
 function addStyleSeparator() {
   const skill = {
     ...blankSkill("style"),
@@ -235,15 +224,18 @@ async function loadCharacter(publicId) {
   try {
     const bundle = await loadSheetBundle({ publicId, ownerId: user.id });
     character = bundle.character; fillCharacter(character);
-    skills = bundle.skills.map(normalizeSkill);
+    skills = bundle.skills.map(skill => normalizeLoadedSkill(skill, {
+      styleKindFromLabel: label => window.TNXStyleSkillKinds?.fromLabel(label)
+    }));
     ensureGeneralMasterRows(); addInitialGeneralBlankSlots();
-    outfits = bundle.outfits.map(normalizeOutfit);
+    outfits = bundle.outfits.map(normalizeLoadedOutfit);
     renderSkills(); renderOutfits(); recalc();
     saveCoordinator.markSaved();
   } catch (error) {
     console.error(error); character = null; skills = []; outfits = [];
     renderSkills(); renderOutfits();
-    saveCoordinator.markLoadError(`読込に失敗しました。保存は行われません：${jpError(error?.message)}`);
+    const detail = formatSheetPersistenceError(error?.message, { operation: "load" });
+    saveCoordinator.markLoadError(`${detail} 保存は行われません。`);
   } finally { loading = false; }
 }
 
@@ -350,22 +342,6 @@ function blankSkill(category) {
     reason: false, passion: false, life: false, mundane: false,
     timing: "", target: "", range: "", difficulty: "", confrontation: "", description: "", sort_order: skills.length
   };
-}
-
-function normalizeSkill(skill) {
-  const result = { ...blankSkill(skill.category), ...skill, _key: skill.id || crypto.randomUUID(), level: Number(skill.level || 0), free_level: Number(skill.free_level || 0), skill_kind: skill.skill_kind || inferKind(skill) };
-  if (result.name === "初期取得") result.name = result.category === "connection" ? "コネ：" : "社会：";
-  if (result.name === "社会：初期取得") result.name = "社会：";
-  if (result.name === "コネ：初期取得") result.name = "コネ：";
-  if (isStyleSeparatorDescription(result.description)) { result._rowType = "separator"; result.skill_kind = "none"; }
-  return result;
-}
-
-function inferKind(skill) {
-  if (skill.category === "style") {
-    return window.TNXStyleSkillKinds?.fromLabel(skill.type || skill.kind) || (/演出|方向/.test(skill.type || "") ? "direction" : /奥義/.test(skill.type || "") ? "ultimate" : /秘技/.test(skill.type || "") ? "secret" : /なし/i.test(skill.type || "") ? "none" : "normal");
-  }
-  return String(skill.name || "").includes("：") ? "proper" : "general";
 }
 
 function ensureGeneralMasterRows() {
@@ -481,8 +457,6 @@ function blankOutfit() {
   return { _key: crypto.randomUUID(), category: "other", name: "", purchase_value: "", experience_cost: 0, concealment: "", attack: "", range: "", slot: "", description: "", sort_order: outfits.length };
 }
 
-function normalizeOutfit(outfit) { return { ...blankOutfit(), ...outfit, _key: outfit.id || crypto.randomUUID(), experience_cost: Number(outfit.experience_cost || 0) }; }
-
 function outfitFields(outfit) {
   const common = `<label>名称<input data-o="name" value="${esc(outfit.name)}"></label><label>購入<input data-o="purchase_value" value="${esc(outfit.purchase_value)}"></label><label>常備化<input data-o="experience_cost" type="number" value="${Number(outfit.experience_cost || 0)}"></label>`;
   const description = `<label class="outfit-description">解説<input data-o="description" value="${esc(outfit.description)}"></label>`;
@@ -592,13 +566,4 @@ function applyImport() {
     renderOutfits();
   }
   recalc(); markDirty();
-}
-
-function jpError(message = "") {
-  if (/save_character_bundle|PGRST202|Could not find the function/i.test(message)) return "安全保存機能が未設定です。Supabaseで supabase/10_transactional_character_save.sql を実行してください。";
-  if (/characters_visibility_check/i.test(message)) return "公開状態を保存できません。Supabaseの公開状態制約を更新してください。";
-  if (/row-level security|RLS|42501/i.test(message)) return "保存権限がありません。ログイン状態を確認してください。";
-  if (/schema cache/i.test(message)) return "データベース項目を確認できません。Supabaseのスキーマを再読み込みしてください。";
-  if (/network|fetch/i.test(message)) return "通信に失敗しました。既存データは変更されていません。ネットワーク接続を確認してください。";
-  return message ? `保存に失敗しました。既存データは変更されていません：${message}` : "保存に失敗しました。既存データは変更されていません。";
 }
