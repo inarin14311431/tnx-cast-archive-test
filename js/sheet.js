@@ -17,6 +17,11 @@ import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
 import { renderSkillEditorSections } from "./sheet-skill-renderer.js?v=1";
 import { renderOutfitEditor } from "./sheet-outfit-renderer.js?v=1";
 import { createBlankSkill, createBlankOutfit } from "./sheet-row-factory.js?v=1";
+import {
+  reconcileGeneralMasterRows,
+  appendGeneralBlankSlots,
+  orderGeneralRows
+} from "./sheet-general-skill-state.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -357,37 +362,22 @@ function blankSkill(category) {
 }
 
 function ensureGeneralMasterRows() {
-  for (const [name, , kind] of GENERAL_MASTER) {
-    const matches = skills.filter(item => item.category === "general" && item.name === name);
-    let skill = matches.sort((a, b) => {
-      const levelDiff = Number(b.level || 0) - Number(a.level || 0); if (levelDiff) return levelDiff;
-      return SUITS.filter(suit => b[suit]).length - SUITS.filter(suit => a[suit]).length;
-    })[0];
-    if (skill) {
-      for (const duplicate of matches) {
-        if (duplicate === skill) continue;
-        SUITS.forEach(suit => { skill[suit] = Boolean(skill[suit] || duplicate[suit]); });
-        skill.level = Math.max(Number(skill.level || 0), Number(duplicate.level || 0));
-        skill.free_level = Math.max(Number(skill.free_level || 0), Number(duplicate.free_level || 0));
-      }
-      skill.level = Math.max(Number(skill.level || 0), SUITS.filter(suit => skill[suit]).length);
-      skill.free_level = Math.min(Math.max(Number(skill.free_level || 0), 0), skill.level);
-      skills = skills.filter(item => item === skill || item.category !== "general" || item.name !== name);
-    } else { skill = { ...blankSkill("general"), name, level: 0, free_level: 0, skill_kind: kind }; skills.push(skill); }
-    skill._fixedMaster = true;
-  }
+  skills = reconcileGeneralMasterRows(skills, {
+    masterRows: GENERAL_MASTER,
+    suits: SUITS,
+    createBlankSkill
+  });
 }
 
 function addInitialGeneralBlankSlots() {
-  for (const column of GENERAL_BLANK_SLOT_COLUMNS) skills.push({ ...blankSkill("general"), name: "", level: 0, free_level: 0, skill_kind: "proper", _blankSlot: true, _slotColumn: column });
+  skills = appendGeneralBlankSlots(skills, {
+    columns: GENERAL_BLANK_SLOT_COLUMNS,
+    createBlankSkill
+  });
 }
 
 function mergedGeneral() {
-  const output = skills.filter(item => item.category === "general");
-  return output.sort((a, b) => {
-    const ai = GENERAL_MASTER.findIndex(item => item[0] === a.name), bi = GENERAL_MASTER.findIndex(item => item[0] === b.name);
-    if (ai < 0 && bi < 0) return 0; if (ai < 0) return 1; if (bi < 0) return -1; return ai - bi;
-  });
+  return orderGeneralRows(skills, GENERAL_MASTER);
 }
 
 function renderSkills() {
