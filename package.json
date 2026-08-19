@@ -19,6 +19,6 @@
     "e2e:install": "playwright install chromium webkit"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "1.55.0"
   }
 }
