@@ -34,13 +34,40 @@ for (const dependent of [
   "js/cast-ui.js",
   "js/cast-style-skills.js",
   "js/cast-outfits.js",
-  "js/cast-mobile.js",
-  "js/cast-mobile-combos.js"
+  "js/cast-mobile.js"
 ]) {
   const index = cleanScripts.indexOf(dependent);
   if (index >= 0 && coreIndex >= 0 && index < coreIndex) {
     errors.push(`${dependent} must remain after ${core}`);
   }
+}
+
+for (const retired of ["js/cast-mobile-combos.js", "js/cast-quick-outfit-pairs.js"]) {
+  if (cleanScripts.includes(retired)) errors.push(`retired runtime must not be loaded: ${retired}`);
+  if (fs.existsSync(path.join(root, retired))) errors.push(`retired runtime file must not exist: ${retired}`);
+}
+
+const castSource = fs.readFileSync(path.join(root, "js/cast.js"), "utf8");
+const compactSource = fs.readFileSync(path.join(root, "js/cast-quick-sheet-compact.js"), "utf8");
+const mobileSource = fs.readFileSync(path.join(root, "js/cast-mobile.js"), "utf8");
+
+if (!castSource.includes("formatPurchasePair(outfit)")) {
+  errors.push("cast.js must own quick-sheet purchase pair rendering");
+}
+if (!castSource.includes("formatConcealmentPair(outfit)")) {
+  errors.push("cast.js must own quick-sheet concealment pair rendering");
+}
+if (/\bcs_value\b/.test(castSource)) {
+  errors.push("cast.js must not use legacy cs_value in public rendering");
+}
+if (/cast-quick-outfit-pairs/.test(compactSource)) {
+  errors.push("quick-sheet compaction must not import the retired outfit patch");
+}
+if (/\[\"cs_value\",\"CS\"\]/.test(mobileSource)) {
+  errors.push("mobile cast must not expose legacy cs_value/CS outfit fields");
+}
+if (!mobileSource.includes('["cs_modifier","CS修正"]')) {
+  errors.push("mobile cast must expose canonical CS修正 where applicable");
 }
 
 if (errors.length) {
