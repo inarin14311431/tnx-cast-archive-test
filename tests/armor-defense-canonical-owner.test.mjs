@@ -20,7 +20,7 @@ test("armor detail collection reads canonical OFC S P I only", () => {
   assert.match(fields, /row\.querySelector\('\[data-ofc="defense_s"\]'\)\?\.value \|\| details\.defense_s/);
   assert.match(fields, /row\.querySelector\('\[data-ofc="defense_p"\]'\)\?\.value \|\| details\.defense_p/);
   assert.match(fields, /row\.querySelector\('\[data-ofc="defense_i"\]'\)\?\.value \|\| details\.defense_i/);
-  assert.doesNotMatch(fields, /const armorDefense = parseDefense\(valueOf\(row, "defense"\)\)/);
+  assert.doesNotMatch(fields, /parseDefense/);
 });
 
 test("legacy armor defense backing bridge is retired from active editing", () => {
@@ -29,11 +29,10 @@ test("legacy armor defense backing bridge is retired from active editing", () =>
   assert.match(tables, /\[data-ofc="defense_\$\{key\}"\]/);
 });
 
-test("legacy combined armor defense is read-only compatibility and current save clears it", () => {
-  assert.match(fields, /Object\.assign\(details, parseDefense\(row\?\.defense \|\| ""\)\)/);
-  assert.match(save, /defense:\s*""/);
-  assert.doesNotMatch(save, /composeDefense/);
-  assert.doesNotMatch(save, /category === "vehicle" \? composeDefense/);
-  assert.doesNotMatch(save, /data-armor-defense/);
-  assert.doesNotMatch(save, /parseDefense/);
+test("current DB detail loading no longer reconstructs combined defense", () => {
+  assert.match(fields, /\.select\("category,name,sort_order,ofc_details"\)/);
+  assert.match(fields, /return normalizeDetails\(row\?\.ofc_details \|\| \{\}\)/);
+  assert.doesNotMatch(fields, /row\?\.defense|parseLegacyDescription/);
+  assert.match(save, /defense: ""/);
+  assert.doesNotMatch(save, /composeDefense|data-armor-defense|parseDefense/);
 });
