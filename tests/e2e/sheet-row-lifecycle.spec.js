@@ -60,3 +60,28 @@ test("技能とアウトフィットの新規行は追加・編集・削除ま�
   await namedOutfit.locator("[data-delete-outfit]").click();
   await expect(outfitRows).toHaveCount(outfitBefore);
 });
+
+test("SKD TSV取込は名称・種別・LV・解説を現在のスタイル技能行へ変換する", async ({ page }) => {
+  await openEditor(page);
+
+  const name = `E2E-SKD-${Date.now()}`;
+  const tsv = [
+    ["名称", "種別", "レベル", "解説"].join("\t"),
+    [name, "秘技", "2", "1行目\\n2行目"].join("\t")
+  ].join("\n");
+
+  await page.locator("#import-skd").click();
+  await expect(page.locator("#tsv-dialog")).toBeVisible();
+  await expect(page.locator("#tsv-title")).toContainText("SKD");
+  await page.locator("#tsv-text").fill(tsv);
+  await page.locator("#tsv-apply").click();
+
+  const row = page.locator("#style-skills tr[data-skill-key]").filter({ has: page.getByDisplayValue(name) });
+  await expect(row).toHaveCount(1, { timeout: 10000 });
+  await expect(row.locator('[data-f="skill_kind"]')).toHaveValue("secret");
+  await expect(row.locator('[data-f="level"]')).toHaveValue("2");
+  await expect(row.locator('[data-f="description"]')).toHaveValue("1行目\n2行目");
+
+  await row.locator("[data-delete-skill]").click();
+  await expect(page.locator("#style-skills tr[data-skill-key]").filter({ has: page.getByDisplayValue(name) })).toHaveCount(0);
+});
