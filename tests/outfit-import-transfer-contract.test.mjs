@@ -7,7 +7,7 @@ const tsv = await readFile(new URL("../js/outfit-ofc-tsv.js", import.meta.url), 
 const master = await readFile(new URL("../js/outfit-ofc-master-apply.js", import.meta.url), "utf8");
 
 test("legacy outfit import keeps concealment value and modifier separated", () => {
-  assert.match(legacy, /concealment:concealA/);
+  assert.match(legacy, /concealment:first\(data,"concealA","concealment"\)/);
   assert.match(legacy, /ofc\("concealment_penalty",first\(data,"concealB","concealmentPenalty","concealment_penalty"\)\)/);
   assert.doesNotMatch(legacy, /concealment:\[concealA,concealB\]/);
 });
