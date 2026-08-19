@@ -45,6 +45,7 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 - `js/sheet-mobile-outfit-model.js` owns mobile editor persistence and uses the shared contract.
 - `js/outfit-pc-field-policy.js` derives missing PC base fields and labels from the shared contract; it consumes `tnx:outfit-tables-rendered` rather than observing `#outfit-list` itself.
 - `js/outfit-tables.js` owns raw-card-to-table transport, row ordering, and armor total presentation. It captures the complete raw `[data-o]` card state before controls are moved into presentation cells, so reorder reconstruction no longer depends on which fields are visible in the table.
+- `js/sheet.js` owns the classic editor's in-memory raw outfit model and base bundle payload. New blank outfits no longer seed retired modifier fields, and `collectOutfits()` writes control/CS only for their canonical categories. Meaningful legacy values are emitted only through an explicit compatibility path.
 - `js/outfit-display-rules-v5.js` owns final PC column visibility/order while the classic table transport remains in place.
 - `js/sheet-import-outfit-compat.js` is the only legacy outfit reconstruction owner.
 - `js/sheet-import.js` imports profile, styles, abilities, and skills only; it must not reconstruct outfits.
@@ -57,9 +58,20 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 - `BASE_LABELS` uses current display terminology for those base controls.
 - Before presentation conversion, `captureCardData()` records every source-card `[data-o]` value. `readRow()` overlays live visible values on that snapshot before a reorder rebuild.
 - Because reorder persistence is independent of visible cells, `mundane_modifier`, category-invalid `control_modifier` / `cs_modifier`, and legacy vehicle `defense` cells are no longer rendered by `RAW_CARD_SCHEMAS`.
-- Compatibility values can still survive reorder through the captured raw-card snapshot until the underlying legacy save fields are retired separately.
+- `sheet.js` still emits hidden raw compatibility controls for retired values so old non-zero/non-empty data can survive a reorder rebuild without becoming user-editable.
 
-The generic base `defense` field is no longer part of vehicle table presentation. Vehicle defense is canonically represented by `defense_s`, `defense_p`, and `defense_i`. The old `vehicle.defense` value may still exist in the classic `sheet.js` in-memory/save compatibility model and is preserved during reorder, but it is not exposed as an editable PC column. Armor still uses its legacy base `defense` backing control internally to split and synchronize S/I/P fields until that armor compatibility path is migrated separately.
+The generic base `defense` field is no longer part of vehicle table presentation. Vehicle defense is canonically represented by `defense_s`, `defense_p`, and `defense_i`. The old `vehicle.defense` value is preserved only when it is meaningful legacy data. Armor still uses its legacy base `defense` backing control internally to split and synchronize S/I/P fields until that armor compatibility path is migrated separately.
+
+## Classic sheet save boundary
+
+`js/sheet.js` now distinguishes current writes from compatibility preservation:
+
+- `blankOutfit()` does not seed `defense`, `control_modifier`, `cs_modifier`, or `mundane_modifier`.
+- The raw editor exposes `control_modifier` only for armor/vehicle and `cs_modifier` only for tron/vehicle.
+- Vehicle no longer exposes the generic `defense` field; a hidden compatibility control exists only as transport backing.
+- `collectOutfits()` emits canonical category fields only.
+- `legacyOutfitSaveFields()` carries forward only meaningful legacy values: non-empty vehicle `defense`, non-zero `mundane_modifier`, and non-zero category-invalid control/CS values.
+- The database schema/RPC still contains legacy columns for compatibility. This phase changes client generation and payload ownership; it does not remove DB columns or bulk-migrate existing records.
 
 ## Compatibility rule
 
@@ -73,5 +85,6 @@ Legacy formats may be read, but new/current saves must use canonical fields. Com
 4. Migrate one consumer at a time to the shared contract with dedicated regression coverage.
 5. Distinguish `outfit-tables.js` raw transport schemas from canonical semantics without changing save/reorder behavior.
 6. Decouple reorder reconstruction from visible DOM fields and remove compatibility-only table controls.
-7. Reduce remaining compatibility duplication in transfer/import adapters.
-8. Retire legacy backing controls only after their save/import compatibility paths have dedicated coverage.
+7. Separate `sheet.js` current outfit writes from legacy compatibility preservation.
+8. Reduce remaining compatibility duplication in transfer/import adapters.
+9. Retire legacy backing controls only after their save/import compatibility paths have dedicated coverage.
