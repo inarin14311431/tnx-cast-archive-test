@@ -14,13 +14,17 @@
     ['other','その他','OTHER','ADD OTHER']
   ];
 
-  const LABELS={
-    category:'分類',name:'名称',purchase_value:'購入',experience_cost:'常備化',concealment:'隠匿',
-    attack:'攻撃',defense:'防御',defense_s:'S',defense_i:'I',defense_p:'P',range:'射程',slot:'部位／エリア',
-    control_modifier:'制御',cs_modifier:'CS',mundane_modifier:'外界',description:'解説',actions:''
+  // These labels and schemas describe the raw controls transported from sheet.js.
+  // Canonical outfit semantics are owned by outfit-contract.js; final PC layout is
+  // owned by outfit-display-rules-v5.js. Compatibility-only fields remain here so
+  // reorder rebuilds cannot discard stored values before that transport is retired.
+  const BASE_LABELS={
+    category:'分類',name:'名称',purchase_value:'購入',experience_cost:'常備化',concealment:'隠匿値',
+    attack:'攻撃',defense:'防御',defense_s:'S',defense_i:'I',defense_p:'P',range:'射程',slot:'部位',
+    control_modifier:'制御値',cs_modifier:'CS修正',mundane_modifier:'',description:'解説',actions:''
   };
 
-  const SCHEMAS={
+  const RAW_CARD_SCHEMAS={
     weapon:['category','name','purchase_value','experience_cost','concealment','attack','range','slot','description','actions'],
     armor:['category','name','purchase_value','experience_cost','concealment','defense_s','defense_i','defense_p','slot','control_modifier','description','actions'],
     cyberware:['category','name','purchase_value','experience_cost','concealment','slot','control_modifier','cs_modifier','mundane_modifier','description','actions'],
@@ -175,7 +179,7 @@
     const tr=document.createElement('tr');
     tr.dataset.outfitKey=card.dataset.outfitKey||'';
     tr.className='outfit-table-row';
-    for(const key of SCHEMAS[category])tr.append(makeCell(card,key));
+    for(const key of RAW_CARD_SCHEMAS[category])tr.append(makeCell(card,key));
     return tr;
   }
 
@@ -247,8 +251,8 @@
     const scroll=document.createElement('div'); scroll.className='outfit-table-scroll';
     const table=document.createElement('table'); table.className='outfit-table'; table.dataset.outfitSchema=category;
     const thead=document.createElement('thead'); const headRow=document.createElement('tr');
-    for(const key of SCHEMAS[category]){
-      const th=document.createElement('th'); th.className=`outfit-table-head outfit-table-head--${key}`; th.textContent=LABELS[key]; headRow.append(th);
+    for(const key of RAW_CARD_SCHEMAS[category]){
+      const th=document.createElement('th'); th.className=`outfit-table-head outfit-table-head--${key}`; th.textContent=BASE_LABELS[key]; headRow.append(th);
     }
     thead.append(headRow);
     const tbody=document.createElement('tbody'); cards.forEach(card=>tbody.append(makeRow(card,category)));
