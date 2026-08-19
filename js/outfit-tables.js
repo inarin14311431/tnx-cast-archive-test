@@ -21,7 +21,7 @@
   // compatibility fields no longer need to be rendered as table cells.
   const BASE_LABELS={
     category:'分類',name:'名称',purchase_value:'購入',experience_cost:'常備化',concealment:'隠匿値',
-    attack:'攻撃',defense:'防御',defense_s:'S',defense_i:'I',defense_p:'P',range:'射程',slot:'部位',
+    attack:'攻撃',defense_s:'S',defense_i:'I',defense_p:'P',range:'射程',slot:'部位',
     control_modifier:'制御値',cs_modifier:'CS修正',description:'解説',actions:''
   };
 
@@ -30,7 +30,7 @@
     armor:['category','name','purchase_value','experience_cost','concealment','defense_s','defense_i','defense_p','slot','control_modifier','description','actions'],
     cyberware:['category','name','purchase_value','experience_cost','concealment','slot','description','actions'],
     tron:['category','name','purchase_value','experience_cost','concealment','slot','cs_modifier','description','actions'],
-    vehicle:['category','name','purchase_value','experience_cost','attack','defense','control_modifier','cs_modifier','description','actions'],
+    vehicle:['category','name','purchase_value','experience_cost','attack','control_modifier','cs_modifier','description','actions'],
     residence:['category','name','purchase_value','experience_cost','slot','description','actions'],
     other:['category','name','purchase_value','experience_cost','concealment','slot','description','actions']
   };
