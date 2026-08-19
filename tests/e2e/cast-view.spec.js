@@ -50,9 +50,33 @@ test("モバイル閲覧でも旧CS項目をサイバーウェア・その他に
   await page.locator("#mobile-cast-view .mobile-cast-main").waitFor({ state: "visible" });
 
   for (const category of ["サイバーウェア", "その他"]) {
-    const group = page.locator(".mobile-outfit-group", { has: page.locator(`h3:text-is("${category}")`) });
+    const group = page.locator(".mobile-outfit-group").filter({ has: page.getByRole("heading", { name: category, exact: true }) });
     if (await group.count()) {
       await expect(group).not.toContainText(/\bCS\b|CS修正/);
     }
   }
+});
+
+test("簡易表示は全アウトフィットで購入と隠匿のペア列をコア描画する", async ({ page }) => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+  await page.goto(`/cast.html?id=${getTestCastId()}`);
+  await waitForCastReady(page);
+  await page.getByRole("button", { name: /簡易表示/ }).click();
+  await expect(page.locator("#quick-sheet")).toBeVisible();
+
+  const tables = page.locator(".quick-sheet__outfit-table");
+  if (!(await tables.count())) return;
+
+  for (let index = 0; index < await tables.count(); index += 1) {
+    const table = tables.nth(index);
+    await expect(table.locator("thead .quick-sheet__outfit-purchase")).toHaveText("購入");
+    await expect(table.locator("thead .quick-sheet__outfit-concealment")).toHaveText("隠匿");
+    const firstDataRow = table.locator("tbody tr").first();
+    if (await firstDataRow.count()) {
+      await expect(firstDataRow.locator(".quick-sheet__outfit-purchase")).toContainText("/");
+      await expect(firstDataRow.locator(".quick-sheet__outfit-concealment")).toContainText("/");
+    }
+  }
+
+  await expect(page.locator("#quick-sheet-pages .quick-sheet__outfit-cs-value")).toHaveCount(0);
 });
