@@ -1,6 +1,6 @@
 # PC editor save-state ownership
 
-The classic PC editor separates save orchestration from save-state presentation.
+The classic PC editor separates save orchestration, persistence, and save-state presentation.
 
 `js/sheet-save-coordinator.js` owns producer-side save lifecycle mechanics:
 
@@ -11,7 +11,14 @@ The classic PC editor separates save orchestration from save-state presentation.
 - publishing the raw failed save error through `tnx:sheet-save-error` before the public error-state transition;
 - registering the canonical save command used by shared consumers.
 
-`js/sheet.js` owns editor data collection and the transactional persistence boundary. It supplies the coordinator with a `persist()` callback that calls `save_character_bundle`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
+`js/sheet-save-persistence.js` owns the transactional database save boundary:
+
+- the `save_character_bundle` RPC name;
+- the exact `p_character_id / p_character / p_skills / p_outfits` argument mapping;
+- propagation of Supabase RPC errors;
+- validation that the returned bundle contains both `id` and `public_id`.
+
+`js/sheet.js` owns editor data collection and post-save editor integration. It supplies the coordinator with a `persist()` callback that collects the canonical character/skill/outfit payload, calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`. It no longer calls `save_character_bundle` directly.
 
 `js/sheet-save-state.js` is the single presentation/consumer bridge for save state.
 
@@ -28,8 +35,8 @@ Consumers must not parse `#save-status` text/classes, click the save button as a
 Current consumers:
 
 - `sheet-snapshots.js` uses the shared bridge for its unsaved guard and save-button focus.
-- `sheet-image.js` uses `requestSheetSave()` + `waitForSheetSaved()` while bootstrapping the first save before image upload. The request now reaches the coordinator directly rather than depending on button DOM.
-- `sheet-save-diagnostics.js` listens to `tnx:sheet-save-state` for lifecycle and `tnx:sheet-save-error` for the structured DB error. It no longer observes `#save-status`, imports the Supabase client, or monkey-patches `supabase.rpc`.
+- `sheet-image.js` uses `requestSheetSave()` + `waitForSheetSaved()` while bootstrapping the first save before image upload. The request reaches the coordinator directly rather than depending on button DOM.
+- `sheet-save-diagnostics.js` listens to `tnx:sheet-save-state` for lifecycle and `tnx:sheet-save-error` for the structured DB error. It does not observe `#save-status`, import the Supabase client, or monkey-patch `supabase.rpc`.
 - `sheet-features.js` has no independent save-state observer.
 
 The former `sheet-save-watchdog.js` has been removed from the repository. Its historic autosave timer interception, timer monkey-patching, duplicate unsaved-state parser, and duplicate `beforeunload` listener are retired.
@@ -37,8 +44,9 @@ The former `sheet-save-watchdog.js` has been removed from the repository. Its hi
 Current ownership boundary:
 
 - `sheet-save-coordinator.js`: save lifecycle state, queued save mechanics, structured failure publication, and canonical save-command registration;
-- `sheet.js`: canonical editor payload collection and transactional persistence callback;
+- `sheet-save-persistence.js`: transactional character/skill/outfit RPC persistence;
+- `sheet.js`: canonical editor payload collection plus post-save URL/event integration;
 - `sheet-save-state.js`: explicit state store, presentation, and consumer API;
 - `sheet-save-diagnostics.js`: diagnostic interpretation only, with no persistence interception.
 
-The next extraction target is the persistence callback itself. It can move after this boundary remains green, preserving the transactional character/skill/outfit bundle contract and the `tnx:character-saved` integration event.
+The next safe extraction target is the editor-side payload collection boundary. Any further split should preserve the current canonical character, skill, and outfit payload contracts rather than moving DOM ownership into persistence code.
