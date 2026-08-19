@@ -1,5 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { cssEscape, getOutfitRows, outfitSignature, rowSignature } from "./outfit-ofc-utils.js";
+import { masterRowToOutfitDetails } from "./outfit-ofc-adapter.js?v=1";
 
 const MASTER_TABLE = "ofc_master";
 
@@ -33,7 +34,7 @@ async function applyMasterRowsAfterBaseAdd(ids, before) {
       const row = matchIndex >= 0 ? available.splice(matchIndex, 1)[0] : available.shift();
       if (!row) continue;
       await waitForOfcFields(row, 2000);
-      applyDetailsToRow(row, masterRowDetails(rowData));
+      applyDetailsToRow(row, masterRowToOutfitDetails(rowData));
     }
   } catch (error) {
     console.warn("OFC detail fields could not be applied after master addition.", error);
@@ -41,14 +42,10 @@ async function applyMasterRowsAfterBaseAdd(ids, before) {
 }
 
 function applyDetailsToRow(row, details) {
-  const category = row.closest("table")?.dataset.outfitSchema || row.querySelector('[data-o="category"]')?.value || "other";
   for (const [field, value] of Object.entries(details)) {
-    if (field === "control_value" && category !== "armor" && category !== "vehicle") continue;
-    if (field === "cs_modifier" && category !== "tron" && category !== "vehicle") continue;
-
     let input = row.querySelector(`[data-ofc="${cssEscape(field)}"]`);
-    if (field === "control_value") input = row.querySelector('[data-o="control_modifier"]') || input;
-    if (field === "cs_modifier") input = row.querySelector('[data-o="cs_modifier"]');
+    if (field === "control_modifier") input = row.querySelector('[data-o="control_modifier"]') || input;
+    if (field === "cs_modifier") input = row.querySelector('[data-o="cs_modifier"]') || input;
     if (field === "concealment") input = row.querySelector('[data-pc-outfit-proxy="concealment"]') || row.querySelector('[data-o="concealment"]') || input;
     if (field === "slot") input = row.querySelector('[data-pc-outfit-proxy="slot"]') || row.querySelector('[data-o="slot"]') || input;
     if (field === "description") input = row.querySelector('[data-o="description"]') || input;
@@ -80,50 +77,6 @@ async function fetchMasterRows(ids) {
     .in("id", ids);
   if (error) throw error;
   return data || [];
-}
-
-function masterRowDetails(row) {
-  const raw = row?.raw_data && typeof row.raw_data === "object" ? row.raw_data : {};
-  return compactDetails({
-    page_number: row.page_number || raw["ページ番号"],
-    major_category: row.major_category || raw["大分類"],
-    minor_category: row.minor_category || raw["小分類"],
-    manufacturer: row.manufacturer || raw["メーカー"],
-    purchase_target: row.purchase_target || raw["目標値"],
-    permanent_cost: row.permanent_cost || raw["常備化"],
-    concealment: row.concealment || raw["隠匿値"],
-    concealment_penalty: row.concealment_penalty || raw["ペナ"],
-    attack: row.attack || raw["攻"],
-    parry: row.parry || raw["受"],
-    range_text: row.range_text || raw["射"],
-    speed: row.speed || raw["ス"],
-    control_value: row.control_value || raw["制御値"],
-    electronic_control: row.electronic_control || raw["電制"],
-    defense_s: row.defense_s || raw.S,
-    defense_p: row.defense_p || raw.P,
-    defense_i: row.defense_i || raw.I,
-    ianus_surface: raw["表"],
-    ianus_deep: raw["深"],
-    ianus_none: raw["無"],
-    tron_software: raw["ソ"],
-    tron_support: raw["サ"],
-    tron_hardware: raw["ハ"],
-    cs_modifier: raw.CS,
-    crew: raw["乗員"],
-    sf: raw.SF,
-    residence_entry: raw["登"],
-    residence_electric: raw["電"],
-    residence_area: raw["ア"],
-    slot: row.slot || raw["部位"],
-    description: row.description || raw["解説"]
-  });
-}
-
-function compactDetails(value) {
-  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  return Object.fromEntries(Object.entries(source)
-    .map(([key, item]) => [key, String(item ?? "")])
-    .filter(([, item]) => item !== ""));
 }
 
 async function waitForNewOutfitRows(before, expected, timeout) {
