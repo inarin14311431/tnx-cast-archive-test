@@ -32,13 +32,16 @@ test('viewer-only transfer actions are not part of editor markup', async () => {
 
 test('editor keeps the character load path and ownership filter', async () => {
   const source = await read('js/sheet.js');
+  const load = await read('js/sheet-load-persistence.js');
   assert.match(source, /async function loadCharacter\(publicId\)/);
-  assert.match(source, /\.from\("characters"\)/);
-  assert.match(source, /\.eq\("public_id", publicId\)/);
-  assert.match(source, /\.eq\("owner_id", user\.id\)/);
-  assert.match(source, /Promise\.all\(\[/);
-  assert.match(source, /character_skills/);
-  assert.match(source, /character_outfits/);
+  assert.match(source, /loadSheetBundle\(\{ publicId, ownerId: user\.id \}\)/);
+  assert.doesNotMatch(source, /supabase\.from\s*\(/);
+  assert.match(load, /\.from\("characters"\)/);
+  assert.match(load, /\.eq\("public_id", normalizedPublicId\)/);
+  assert.match(load, /\.eq\("owner_id", normalizedOwnerId\)/);
+  assert.match(load, /Promise\.all\(\[/);
+  assert.match(load, /character_skills/);
+  assert.match(load, /character_outfits/);
 });
 
 test('critical editor modules are still loaded', async () => {
