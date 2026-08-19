@@ -4,6 +4,7 @@ import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
 import { SITE_BASE_PATH } from "./config.js?v=2";
 import { createSheetSaveCoordinator } from "./sheet-save-coordinator.js?v=1";
 import { persistSheetBundle } from "./sheet-save-persistence.js?v=1";
+import { buildCharacterSavePayload, buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -524,56 +525,58 @@ function markDirty() { if (loading) return; saveCoordinator.markDirty(); }
 
 function collectCharacter() {
   const experience = window.TNXExperience?.calculate?.();
-  const payload = {
-    character_name: $("#character-name").value.trim(), character_kana: $("#character-kana").value.trim(), handle: $("#handle").value.trim(),
-    player_name: $("#player-name").value.trim(), affiliation: $("#affiliation").value.trim(), citizen_rank: $("#citizen-rank").value.trim(),
-    summary: $("#summary").value, profile: $("#profile").value, visibility: $("#visibility").value,
-    experience_points: Number(experience?.total ?? $("#exp-total").textContent ?? 0)
-  };
-  for (const [name, selector] of STRUCTURED_FIELDS) { const element = $(selector); payload[name] = element ? element.value.trim() : ""; }
-  for (let i = 1; i <= 3; i++) {
-    const style = STYLE_DATA.find(item => item.name === $(`#style-${i}`).value);
-    payload[`style_${i}`] = $(`#style-${i}`).value; payload[`style_${i}_mark`] = $(`#style-${i}-mark`).value;
-    payload[`style_${i}_attribute`] = $(`#style-${i}-attribute`)?.value || ""; payload[`divine_${i}`] = style?.divine || ""; payload[`divine_${i}_yomi`] = style?.divineYomi || style?.divine || "";
-  }
-  for (const [key] of ABILITIES) {
-    payload[`${key}_base`] = current(key); payload[`${key}_growth`] = Math.max(0, current(key) - Number(styleBaseline[key] || 0));
-    payload[`${key}_gear`] = Number($(`#${key}-mod`).value || 0); payload[`${key}_manual`] = 0; payload[`${key}_value`] = final(key);
+  const structured = Object.fromEntries(STRUCTURED_FIELDS.map(([name, selector]) => [name, $(selector)?.value || ""]));
+  const styles = [1, 2, 3].map(i => {
+    const name = $(`#style-${i}`).value;
+    const style = STYLE_DATA.find(item => item.name === name);
+    return {
+      name,
+      mark: $(`#style-${i}-mark`).value,
+      attribute: $(`#style-${i}-attribute`)?.value || "",
+      divine: style?.divine || "",
+      divineYomi: style?.divineYomi || style?.divine || ""
+    };
+  });
+  const abilities = Object.fromEntries(ABILITIES.map(([key]) => {
     const controlKey = `${key}-control`;
-    payload[`${key}_control_base`] = current(controlKey); payload[`${key}_control_growth`] = Math.max(0, current(controlKey) - Number(styleBaseline[controlKey] || 0));
-    payload[`${key}_control_gear`] = Number($(`#${controlKey}-mod`).value || 0); payload[`${controlKey.replace("-", "_")}_manual`] = 0; payload[`${key}_control`] = final(controlKey);
-  }
-  payload.cs_base = Number($("#cs-base").value || 0); payload.cs_gear = Number($("#cs-mod").value || 0); payload.cs_manual = 0; payload.cs = payload.cs_base + payload.cs_gear;
-  return payload;
+    return [key, {
+      current: current(key),
+      baseline: Number(styleBaseline[key] || 0),
+      modifier: Number($(`#${key}-mod`).value || 0),
+      controlCurrent: current(controlKey),
+      controlBaseline: Number(styleBaseline[controlKey] || 0),
+      controlModifier: Number($(`#${controlKey}-mod`).value || 0)
+    }];
+  }));
+  return buildCharacterSavePayload({
+    base: {
+      character_name: $("#character-name").value,
+      character_kana: $("#character-kana").value,
+      handle: $("#handle").value,
+      player_name: $("#player-name").value,
+      affiliation: $("#affiliation").value,
+      citizen_rank: $("#citizen-rank").value,
+      summary: $("#summary").value,
+      profile: $("#profile").value,
+      visibility: $("#visibility").value,
+      experience_points: Number(experience?.total ?? $("#exp-total").textContent ?? 0)
+    },
+    structured,
+    styles,
+    abilities,
+    cs: {
+      base: Number($("#cs-base").value || 0),
+      modifier: Number($("#cs-mod").value || 0)
+    }
+  });
 }
 
 function collectSkills() {
-  return skills.filter(item => Number(item.level) > 0 && item.name.trim()).map((item, index) => ({
-    category: item.category, name: item.name, level: Number(item.level || 0),
-    free_level: Math.min(Math.max(Number(item.free_level || 0), 0), Math.max(Number(item.level || 0), 0)),
-    skill_kind: item.skill_kind, reason: Boolean(item.reason), passion: Boolean(item.passion), life: Boolean(item.life), mundane: Boolean(item.mundane),
-    timing: item.timing || "", target: item.target || "", range: item.range || "", difficulty: item.difficulty || "", confrontation: item.confrontation || "",
-    description: isStyleSeparator(item) ? STYLE_SEPARATOR_MARKER : item.description || "", sort_order: index
-  }));
+  return buildSkillSavePayloads(skills, { isStyleSeparator, styleSeparatorMarker: STYLE_SEPARATOR_MARKER });
 }
 
 function collectOutfits() {
-  return outfits.filter(item => item.name.trim()).map((item, index) => {
-    const category = item.category || "other";
-    const payload = {
-      category, name: item.name, purchase_value: item.purchase_value || "", experience_cost: Number(item.experience_cost || 0),
-      concealment: item.concealment || "", slot: item.slot || "", description: item.description || "", sort_order: index
-    };
-    if (category === "weapon") { payload.attack = item.attack || ""; payload.range = item.range || ""; }
-    if (category === "armor") payload.control_modifier = Number(item.control_modifier || 0);
-    if (category === "tron") payload.cs_modifier = Number(item.cs_modifier || 0);
-    if (category === "vehicle") {
-      payload.attack = item.attack || "";
-      payload.control_modifier = Number(item.control_modifier || 0);
-      payload.cs_modifier = Number(item.cs_modifier || 0);
-    }
-    return payload;
-  });
+  return buildOutfitSavePayloads(outfits);
 }
 
 function openImport(mode) { importMode = mode; $("#tsv-title").textContent = `${mode.toUpperCase()} TSV取込`; $("#tsv-text").value = ""; $("#tsv-dialog").showModal(); }
