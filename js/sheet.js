@@ -29,6 +29,7 @@ import {
 } from "./sheet-tsv-import.js?v=1";
 import { renderStyleCards, renderAbilityCards } from "./sheet-character-renderer.js?v=1";
 import { calculateStyleBaselines } from "./sheet-style-baseline.js?v=1";
+import { buildStylePresentation } from "./sheet-style-presentation.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -323,12 +324,16 @@ function calculateBaselines() {
 }
 
 function updateDivines(apply) {
-  for (let i = 1; i <= 3; i++) {
-    const style = STYLE_DATA.find(item => item.name === $(`#style-${i}`).value);
-    $(`#divine-${i}`).textContent = style?.divine || "未選択";
-    $(`#divine-${i}-yomi`).textContent = style?.divineYomi || style?.divine || "";
-  }
-  $("#style-warning").textContent = [1, 2, 3].filter(i => $(`#style-${i}`).value).length === 3 ? "" : "3枠すべてのスタイルを選択してください。";
+  const presentation = buildStylePresentation({
+    slots: currentStyleSlots(),
+    styleData: STYLE_DATA
+  });
+  presentation.divines.forEach((divine, index) => {
+    const i = index + 1;
+    $(`#divine-${i}`).textContent = divine.name;
+    $(`#divine-${i}-yomi`).textContent = divine.yomi;
+  });
+  $("#style-warning").textContent = presentation.warning;
   if (!apply || loading) return;
   const old = { ...styleBaseline }; calculateBaselines();
   for (const [key] of ABILITIES) {
