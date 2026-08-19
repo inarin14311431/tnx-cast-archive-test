@@ -7,7 +7,7 @@ import {
   parseConcealment,
   parseDefense,
   normalizeNumber
-} from "./sheet-mobile-outfit-model.js?v=5";
+} from "./sheet-mobile-outfit-model.js?v=7";
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
