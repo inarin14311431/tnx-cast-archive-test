@@ -39,7 +39,7 @@ test("save diagnostics consumes the shared save-state event instead of observing
 test("legacy manual-save watchdog no longer patches timers or duplicates dirty-state ownership", () => {
   assert.doesNotMatch(watchdogSource, /window\.setTimeout\s*=/);
   assert.doesNotMatch(watchdogSource, /window\.clearTimeout\s*=/);
-  assert.doesNotMatch(watchdogSource, /saveAll\\s\*\\/);
+  assert.doesNotMatch(watchdogSource, /saveAll\s*\(\s*false\s*\)/);
   assert.doesNotMatch(watchdogSource, /function hasUnsavedChanges/);
   assert.doesNotMatch(watchdogSource, /beforeunload/);
   assert.doesNotMatch(watchdogSource, /#save-status/);
