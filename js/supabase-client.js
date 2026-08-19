@@ -20,7 +20,10 @@ const rawSupabase = createClient(
  * Keep their identical SELECT chains on one in-page Promise so modules do not
  * issue the same network request independently. Other pages use the raw client.
  */
-const isPublicCastView = document.body?.dataset.page === "cast.html" || /(?:^|\/)cast\.html$/.test(location.pathname);
+const hasDocument = typeof document !== "undefined";
+const hasLocation = typeof location !== "undefined";
+const isPublicCastView = (hasDocument && document.body?.dataset.page === "cast.html")
+  || (hasLocation && /(?:^|\/)cast\.html$/.test(location.pathname));
 const publicReadCache = new Map();
 const WRITE_METHODS = new Set(["insert", "update", "upsert", "delete"]);
 
@@ -86,7 +89,7 @@ export const supabase = isPublicCastView
     })
   : rawSupabase;
 
-if (document.querySelector(".cast-content, .sheet-layout")) {
+if (hasDocument && document.querySelector(".cast-content, .sheet-layout")) {
   import("./cocofolia-export.js?v=2").catch(error => {
     console.error("Cocofolia export could not be loaded.", error);
   });
