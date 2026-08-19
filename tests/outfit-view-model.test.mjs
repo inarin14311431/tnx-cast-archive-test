@@ -25,7 +25,7 @@ test("control and CS modifiers are category constrained", () => {
   const cyberware = normalizeOutfitForView({ category: "cyberware", control_modifier: 4, cs_modifier: 2 });
   assert.equal(cyberware.control_modifier, "");
   assert.equal(cyberware.cs_modifier, "");
-  assert.equal(cyberware.cs_value, "");
+  assert.equal(Object.hasOwn(cyberware, "cs_value"), false);
 
   const armor = normalizeOutfitForView({ category: "armor", control_modifier: -1, cs_modifier: 3 });
   assert.equal(armor.control_modifier, "-1");
@@ -34,7 +34,7 @@ test("control and CS modifiers are category constrained", () => {
   const tron = normalizeOutfitForView({ category: "tron", control_modifier: -3, cs_modifier: 2 });
   assert.equal(tron.control_modifier, "");
   assert.equal(tron.cs_modifier, "2");
-  assert.equal(tron.cs_value, "2");
+  assert.equal(Object.hasOwn(tron, "cs_value"), false);
 
   const vehicle = normalizeOutfitForView({ category: "vehicle", control_modifier: -2, cs_modifier: 1 });
   assert.equal(vehicle.control_modifier, "-2");
