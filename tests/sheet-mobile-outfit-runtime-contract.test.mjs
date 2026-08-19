@@ -53,9 +53,19 @@ test("mobile outfit groups common, performance, and description fields by respon
 test("mobile outfit persists split concealment and consumes legacy modifier aliases", () => {
   assert.match(model, /concealment_penalty:/);
   assert.match(model, /normalizeOutfitDetailCompatibility/);
+  assert.match(model, /splitLegacyConcealment/);
   assert.doesNotMatch(model, /return mod \? `\$\{value\}\/\$\{mod\}` : value/);
   assert.doesNotMatch(source, /ofc_details\.control_value\s*=/);
   assert.doesNotMatch(model, /detailsSource\.control_value\s*=/);
+});
+
+test("mobile outfit reads old combined defense but never re-emits it", () => {
+  assert.match(model, /parseLegacyDefense/);
+  assert.match(model, /defense:\s*""/);
+  assert.doesNotMatch(model, /function composeDefense/);
+  assert.match(model, /defense_s:/);
+  assert.match(model, /defense_p:/);
+  assert.match(model, /defense_i:/);
 });
 
 test("mobile outfit does not generate retired mundane_modifier", () => {
