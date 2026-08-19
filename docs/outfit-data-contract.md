@@ -41,16 +41,27 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 ## Defense
 
 - Armor and vehicle defense values are canonical only as `ofc_details.defense_s`, `ofc_details.defense_p`, and `ofc_details.defense_i`.
-- The old combined base `defense` value is retired from current editor state, current saves, current OFC TSV application, and legacy Character Sheets reconstruction.
-- Existing database rows were converted before the read fallback was retired. Current DB-backed PC editing reads structured `ofc_details` directly.
-- Old external input may still contain a combined defense string. An explicit import adapter may parse it once into S/P/I, but it must not persist or recreate the combined value.
+- The old combined base `defense` value is retired from current PC state, current PC saves, current mobile state writes, current mobile saves, current OFC TSV application, and legacy Character Sheets reconstruction.
+- Existing database rows were converted before the stored-row read fallback was retired. Current DB-backed PC editing reads structured `ofc_details` directly.
+- Mobile and shared view normalization may still read a legacy combined base `defense` string for compatibility with old external/old stored payloads, but they immediately map it into S/P/I and never write the combined value back.
+- Legacy OFC TSV unlabeled defense input historically used a different positional fallback order. `js/outfit-legacy-compat.js` owns the parser and allows the OFC adapter layer to request that legacy order without duplicating parsing code.
+
+## Compatibility parsing
+
+`js/outfit-legacy-compat.js` is the shared parsing boundary for legacy string formats that may still appear at external or historical read boundaries.
+
+- `splitLegacyConcealment()` reads combined concealment strings such as `12/-1` or `10（0）`.
+- `parseLegacyDefense()` reads labeled S/P/I strings and source-specific unlabeled legacy sequences.
+- Current editor modules should consume these helpers rather than define their own concealment or combined-defense regular expressions.
+- Parsing compatibility does not authorize writing the legacy representation back to the database.
 
 ## Ownership
 
 - `js/outfit-contract.js` owns category semantics, canonical field grouping, labels, and legacy-detail normalization rules.
-- `js/outfit-view-model.js` owns shared read normalization for public views and outbound transfer adapters.
-- `js/sheet-mobile-outfit-model.js` owns mobile editor outfit persistence and uses the shared contract.
-- `js/outfit-pc-field-policy.js` derives PC field presentation from the shared contract.
+- `js/outfit-legacy-compat.js` owns legacy concealment/combined-defense string parsing.
+- `js/outfit-view-model.js` owns shared read normalization for public views and outbound transfer adapters and delegates legacy string parsing to `outfit-legacy-compat.js`.
+- `js/sheet-mobile-outfit-model.js` owns mobile editor outfit persistence, delegates legacy string parsing to `outfit-legacy-compat.js`, and always saves base `defense` as empty while persisting S/P/I in `ofc_details`.
+- `js/outfit-pc-field-policy.js` derives PC field presentation from the shared contract and delegates combined concealment parsing to `outfit-legacy-compat.js`.
 - `js/outfit-tables.js` owns raw-card-to-table presentation, row ordering, and armor total presentation. Armor totals read canonical S/P/I controls directly.
 - `js/outfit-ofc-fields.js` owns active PC OFC detail state and loads `ofc_details` without reconstructing data from old stored `description` or combined `defense` fields.
 - `js/sheet.js` owns the classic editor's in-memory raw outfit model and base bundle payload. It no longer emits hidden legacy outfit transport controls, no longer exposes base armor `defense`, and no longer has `legacyOutfitSaveFields()`.
@@ -71,6 +82,16 @@ The classic PC editor now carries only current raw fields needed by its UI and b
 - `collectOutfits()` writes only category-owned current fields. It does not call a legacy-preservation helper and does not write combined `defense` or `mundane_modifier`.
 - The old generic OFC TSV fallback in `sheet.js` no longer seeds `row.defense`; structured details are handled by `outfit-ofc-tsv.js`.
 - Database schema/RPC definitions may still contain historical columns for compatibility. Removing current client generation does not imply those physical columns were dropped.
+
+## Mobile sheet boundary
+
+The mobile outfit editor has the same persistence contract as PC:
+
+- Old combined concealment and defense strings may be read when cloning a historical row.
+- Editing S/P/I changes only the transient/canonical S/P/I state; it does not rebuild `item.defense`.
+- `collectOutfitRecord()` always emits `defense: ""` and writes `defense_s`, `defense_p`, and `defense_i` into `ofc_details`.
+- `control_modifier` and `cs_modifier` are constrained by category through `outfit-contract.js`.
+- Retired aliases and `mundane_modifier` are not emitted.
 
 ## Transfer adapter boundary
 
@@ -104,4 +125,5 @@ Legacy formats may be read only at explicit compatibility boundaries. New/curren
 6. Convert existing DB rows and establish a zero-legacy data boundary.
 7. Retire stored-row reconstruction from legacy columns/descriptions.
 8. Retire classic `sheet.js` hidden compatibility transport and legacy save preservation.
-9. Keep only explicit external-input compatibility adapters until those source formats themselves are retired.
+9. Retire mobile combined-defense regeneration and share legacy string parsers.
+10. Keep only explicit external-input compatibility adapters until those source formats themselves are retired.
