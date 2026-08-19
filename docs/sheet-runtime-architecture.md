@@ -4,13 +4,16 @@ This document defines the safe refactoring boundary for `sheet.html`.
 
 ## Current rule
 
-`js/sheet.js` remains the editor core for state mutation, rendering, load/save integration, and current-state capture. Existing enhancement modules continue to load in their current order. Refactoring must not change data mapping, save timing, DOM ids, or user-visible behavior unless a separate change explicitly requires it.
+`js/sheet.js` remains the editor core for state mutation, load/save integration, and current-state capture. Existing enhancement modules continue to load in their current order. Refactoring must not change data mapping, save timing, DOM ids, or user-visible behavior unless a separate change explicitly requires it.
 
-Dynamic skill/outfit row DOM events are now translated by `js/sheet-row-interactions.js`. That adapter owns delegated `input` / row-action `click` binding and emits semantic callbacks only. It does not own `skills`, `outfits`, recalculation, dirty state, persistence, or rendering. `sheet.js` receives those callbacks and remains the owner of editor-state mutation.
+Dynamic skill/outfit row DOM events are translated by `js/sheet-row-interactions.js`. That adapter owns delegated `input` / row-action `click` binding and emits semantic callbacks only. It does not own `skills`, `outfits`, recalculation, dirty state, persistence, or rendering. `sheet.js` receives those callbacks and remains the owner of editor-state mutation.
+
+Classic skill markup rendering is now delegated to `js/sheet-skill-renderer.js`. The renderer receives explicit row collections plus separator/type-label helpers and returns markup for the general/social/connection and style-skill hosts. It does not own editor collections, event binding, recalculation, dirty state, load/save behavior, or DOM insertion.
 
 ## Responsibility groups
 
-- Core state mutation / rendering / load-save integration: `js/sheet.js`
+- Core state mutation / load-save integration / render orchestration: `js/sheet.js`
+- Classic skill markup generation: `js/sheet-skill-renderer.js`
 - Dynamic skill/outfit row event translation: `js/sheet-row-interactions.js`
 - Editor navigation and sidebar actions: `js/sheet-sidebar-actions.js`
 - Character Sheets URL import: `js/sheet-import-url.js`
@@ -24,7 +27,7 @@ Dynamic skill/outfit row DOM events are now translated by `js/sheet-row-interact
 
 1. Freeze and audit the current script graph.
 2. Identify modules that modify the same DOM nodes or register overlapping handlers.
-3. Move one responsibility at a time behind an explicit initializer without changing output.
+3. Move one responsibility at a time behind an explicit boundary without changing output.
 4. Run regression and Playwright checks after every responsibility move.
 5. Only after behavior is stable, reduce script count or merge modules.
 
@@ -53,7 +56,7 @@ These are not unfinished Phase 5 tasks. They remain explicit future refactor can
 
 ## Post-Phase 5 classic editor extraction
 
-The save/load ownership work established separate persistence, serialization, normalization, and error boundaries. The first interaction-side extraction now moves dynamic row event binding out of `sheet.js`:
+The save/load ownership work established separate persistence, serialization, normalization, and error boundaries. The first interaction-side extraction moved dynamic row event binding out of `sheet.js`:
 
 - `sheet-row-interactions.js` uses one explicit, idempotent initializer per root;
 - skill field edits are emitted as `{ key, field, value, element, row }` callbacks;
@@ -64,6 +67,15 @@ The save/load ownership work established separate persistence, serialization, no
 
 This boundary is locked by `tests/sheet-row-interactions.test.mjs`.
 
+The next extraction moves classic skill HTML generation behind a render-only boundary:
+
+- `sheet-skill-renderer.js` owns general two-column markup, social/connection tables, style-skill rows, separator rows, suit controls, type labels, and row-action markup;
+- `sheet.js` supplies the already ordered/filtered collections, the style-separator predicate, and any runtime style-kind label overrides;
+- `sheet.js` remains responsible for inserting the returned markup into `#general-skills` and `#style-skills` and for all state mutation;
+- the renderer has no access to `skills`, persistence, recalculation, dirty state, or event listeners.
+
+This boundary is locked by `tests/sheet-skill-renderer.test.mjs`.
+
 ## Safety contracts
 
 - `js/sheet.js` is loaded exactly once.
@@ -71,6 +83,7 @@ This boundary is locked by `tests/sheet-row-interactions.test.mjs`.
 - Core-dependent editor modules must not move before `js/sheet.js` without an explicit migration.
 - Existing element ids and persisted data shape are compatibility contracts.
 - Row interaction adapters must not own editor collections, persistence, recalculation, or dirty-state policy.
+- Render-only modules must not mutate editor collections, bind events, publish dirty state, or perform persistence.
 - Refactoring commits should avoid simultaneous CSS/layout changes.
 - A failed runtime audit blocks the refactor before browser deployment.
 - The integrated save/reload E2E is a release guard for future editor-runtime ownership changes.
