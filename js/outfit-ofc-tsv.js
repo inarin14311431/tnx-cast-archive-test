@@ -12,7 +12,7 @@ import {
 import {
   masterRowToOutfitDetails,
   normalizeImportedOutfitDetails
-} from "./outfit-ofc-adapter.js?v=1";
+} from "./outfit-ofc-adapter.js?v=2";
 
 const MASTER_TABLE = "ofc_master";
 const TSV_EXTRA_HEADERS = [
