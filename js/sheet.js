@@ -16,6 +16,7 @@ import { formatSheetPersistenceError } from "./sheet-error-message.js?v=1";
 import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
 import { renderSkillEditorSections } from "./sheet-skill-renderer.js?v=1";
 import { renderOutfitEditor } from "./sheet-outfit-renderer.js?v=1";
+import { createBlankSkill, createBlankOutfit } from "./sheet-row-factory.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -352,12 +353,7 @@ function renderAbilities() {
 }
 
 function blankSkill(category) {
-  return {
-    _key: crypto.randomUUID(), category, name: "", level: 1, free_level: 0,
-    skill_kind: category === "style" ? "normal" : category === "general" ? "general" : "proper",
-    reason: false, passion: false, life: false, mundane: false,
-    timing: "", target: "", range: "", difficulty: "", confrontation: "", description: "", sort_order: skills.length
-  };
+  return createBlankSkill(category, { sortOrder: skills.length });
 }
 
 function ensureGeneralMasterRows() {
@@ -408,7 +404,7 @@ function renderSkills() {
 }
 
 function blankOutfit() {
-  return { _key: crypto.randomUUID(), category: "other", name: "", purchase_value: "", experience_cost: 0, concealment: "", attack: "", range: "", slot: "", description: "", sort_order: outfits.length };
+  return createBlankOutfit({ sortOrder: outfits.length });
 }
 
 function renderOutfits() {
