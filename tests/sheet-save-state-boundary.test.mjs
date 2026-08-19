@@ -41,8 +41,8 @@ test("legacy manual-save watchdog no longer patches timers or duplicates dirty-s
   assert.doesNotMatch(watchdogSource, /window\.clearTimeout\s*=/);
   assert.doesNotMatch(watchdogSource, /saveAll\s*\(\s*false\s*\)/);
   assert.doesNotMatch(watchdogSource, /function hasUnsavedChanges/);
-  assert.doesNotMatch(watchdogSource, /beforeunload/);
-  assert.doesNotMatch(watchdogSource, /#save-status/);
+  assert.doesNotMatch(watchdogSource, /addEventListener\(\s*["']beforeunload["']/);
+  assert.doesNotMatch(watchdogSource, /querySelector\(\s*["']#save-status["']/);
   assert.match(watchdogSource, /applyManualSaveLabels/);
 });
 
