@@ -10,10 +10,11 @@ test("armor total compatibility entry no longer owns outfit DOM behavior", () =>
   assert.doesNotMatch(shim, /#outfit-list|MutationObserver|addEventListener|data-armor-defense|data-armor-total/);
 });
 
-test("outfit tables owns armor defense total rendering and synchronization", () => {
+test("outfit tables owns armor totals from canonical OFC S P I fields", () => {
   assert.match(tables, /function makeArmorFooter\(\)/);
   assert.match(tables, /function updateArmorTotals\(section\)/);
-  assert.match(tables, /dataArmorDefense|data\.armorDefense|dataset\.armorDefense/);
+  assert.match(tables, /\[data-ofc="defense_\$\{key\}"\]/);
   assert.match(tables, /data\.armorTotal|dataset\.armorTotal|data-armor-total/);
-  assert.match(tables, /updateArmorTotals\(card\.closest\('\.outfit-table-group--armor'\)\)/);
+  assert.match(tables, /\[data-ofc="defense_s"\],\[data-ofc="defense_p"\],\[data-ofc="defense_i"\]/);
+  assert.doesNotMatch(tables, /data-armor-defense|dataset\.armorDefense/);
 });
