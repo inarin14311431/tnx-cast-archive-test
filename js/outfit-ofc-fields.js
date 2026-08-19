@@ -17,7 +17,6 @@ const FIELD_DEFINITIONS = {
   concealment_penalty: ["隠匿修正", "CONCEALMENT MODIFIER"],
   parry: ["受", "PARRY"],
   speed: ["ス", "SPEED"],
-  control_value: ["制御値", "CONTROL VALUE"],
   electronic_control: ["電制", "ELECTRONIC CONTROL"],
   defense_s: ["防S", "DEF S"],
   defense_p: ["防P", "DEF P"],
@@ -28,7 +27,6 @@ const FIELD_DEFINITIONS = {
   tron_software: ["トロン ソ", "TRON SOFTWARE"],
   tron_support: ["トロン サ", "TRON SUPPORT"],
   tron_hardware: ["トロン ハ", "TRON HARDWARE"],
-  cs_value: ["CS値", "CS VALUE"],
   crew: ["乗員", "CREW"],
   sf: ["SF", "SF"],
   residence_entry: ["住宅 登", "RESIDENCE ENTRY"],
@@ -36,8 +34,8 @@ const FIELD_DEFINITIONS = {
   residence_area: ["住宅 ア", "RESIDENCE AREA"]
 };
 
-// Only fields meaningful to the current UI are generated. Deprecated keys stay
-// known for persistence compatibility, but are not exposed as controls.
+// Only canonical fields meaningful to the current PC editor are generated.
+// Retired aliases are normalized at explicit import boundaries, not retained in editor state.
 const COMMON_FIELDS = ["manufacturer", "page_number", "concealment_penalty"];
 const CATEGORY_FIELDS = {
   weapon: [...COMMON_FIELDS, "parry", "speed", "electronic_control"],
