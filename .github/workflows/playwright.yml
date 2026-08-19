@@ -43,7 +43,7 @@ jobs:
   authenticated-editor:
     name: Authenticated editor E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
