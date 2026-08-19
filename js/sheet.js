@@ -466,26 +466,15 @@ function blankOutfit() {
 
 function normalizeOutfit(outfit) { return { ...blankOutfit(), ...outfit, _key: outfit.id || crypto.randomUUID(), experience_cost: Number(outfit.experience_cost || 0) }; }
 
-function compatibilityOutfitFields(outfit) {
-  const category = outfit.category || "other";
-  const fields = [];
-  if (category === "vehicle") fields.push(`<input type="hidden" data-o="defense" value="${esc(outfit.defense)}">`);
-  if (category !== "armor" && category !== "vehicle") fields.push(`<input type="hidden" data-o="control_modifier" value="${Number(outfit.control_modifier || 0)}">`);
-  if (category !== "tron" && category !== "vehicle") fields.push(`<input type="hidden" data-o="cs_modifier" value="${Number(outfit.cs_modifier || 0)}">`);
-  fields.push(`<input type="hidden" data-o="mundane_modifier" value="${Number(outfit.mundane_modifier || 0)}">`);
-  return fields.join("");
-}
-
 function outfitFields(outfit) {
   const common = `<label>名称<input data-o="name" value="${esc(outfit.name)}"></label><label>購入<input data-o="purchase_value" value="${esc(outfit.purchase_value)}"></label><label>常備化<input data-o="experience_cost" type="number" value="${Number(outfit.experience_cost || 0)}"></label>`;
   const description = `<label class="outfit-description">解説<input data-o="description" value="${esc(outfit.description)}"></label>`;
-  const compatibility = compatibilityOutfitFields(outfit);
-  if (outfit.category === "weapon") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>攻撃<input data-o="attack" value="${esc(outfit.attack)}"></label><label>射程<input data-o="range" value="${esc(outfit.range)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label>` + compatibility + description;
-  if (outfit.category === "armor") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>防御<input data-o="defense" value="${esc(outfit.defense)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label><label>制御値<input data-o="control_modifier" type="number" value="${Number(outfit.control_modifier || 0)}"></label>` + compatibility + description;
-  if (outfit.category === "tron") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label><label>CS修正<input data-o="cs_modifier" type="number" value="${Number(outfit.cs_modifier || 0)}"></label>` + compatibility + description;
-  if (outfit.category === "vehicle") return common + `<label>攻撃<input data-o="attack" value="${esc(outfit.attack)}"></label><label>制御値<input data-o="control_modifier" type="number" value="${Number(outfit.control_modifier || 0)}"></label><label>CS修正<input data-o="cs_modifier" type="number" value="${Number(outfit.cs_modifier || 0)}"></label>` + compatibility + description;
-  if (outfit.category === "residence") return common + `<label>部位／エリア<input data-o="slot" value="${esc(outfit.slot)}"></label>` + compatibility + description;
-  return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label>` + compatibility + description;
+  if (outfit.category === "weapon") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>攻撃<input data-o="attack" value="${esc(outfit.attack)}"></label><label>射程<input data-o="range" value="${esc(outfit.range)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label>` + description;
+  if (outfit.category === "armor") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label><label>制御値<input data-o="control_modifier" type="number" value="${Number(outfit.control_modifier || 0)}"></label>` + description;
+  if (outfit.category === "tron") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label><label>CS修正<input data-o="cs_modifier" type="number" value="${Number(outfit.cs_modifier || 0)}"></label>` + description;
+  if (outfit.category === "vehicle") return common + `<label>攻撃<input data-o="attack" value="${esc(outfit.attack)}"></label><label>制御値<input data-o="control_modifier" type="number" value="${Number(outfit.control_modifier || 0)}"></label><label>CS修正<input data-o="cs_modifier" type="number" value="${Number(outfit.cs_modifier || 0)}"></label>` + description;
+  if (outfit.category === "residence") return common + `<label>部位／エリア<input data-o="slot" value="${esc(outfit.slot)}"></label>` + description;
+  return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label>` + description;
 }
 
 function renderOutfits() {
@@ -529,7 +518,7 @@ function collectCharacter() {
     payload[`${key}_gear`] = Number($(`#${key}-mod`).value || 0); payload[`${key}_manual`] = 0; payload[`${key}_value`] = final(key);
     const controlKey = `${key}-control`;
     payload[`${key}_control_base`] = current(controlKey); payload[`${key}_control_growth`] = Math.max(0, current(controlKey) - Number(styleBaseline[controlKey] || 0));
-    payload[`${key}_control_gear`] = Number($(`#${controlKey}-mod`).value || 0); payload[`${key}_control_manual`] = 0; payload[`${key}_control`] = final(controlKey);
+    payload[`${key}_control_gear`] = Number($(`#${controlKey}-mod`).value || 0); payload[`${controlKey}_manual`] = 0; payload[`${key}_control`] = final(controlKey);
   }
   payload.cs_base = Number($("#cs-base").value || 0); payload.cs_gear = Number($("#cs-mod").value || 0); payload.cs_manual = 0; payload.cs = payload.cs_base + payload.cs_gear;
   return payload;
@@ -545,20 +534,6 @@ function collectSkills() {
   }));
 }
 
-function legacyOutfitSaveFields(item) {
-  const legacy = {};
-  const category = item.category || "other";
-  const defense = String(item.defense || "").trim();
-  const mundaneModifier = Number(item.mundane_modifier || 0);
-  const controlModifier = Number(item.control_modifier || 0);
-  const csModifier = Number(item.cs_modifier || 0);
-  if (category === "vehicle" && defense) legacy.defense = defense;
-  if (mundaneModifier !== 0) legacy.mundane_modifier = mundaneModifier;
-  if (category !== "armor" && category !== "vehicle" && controlModifier !== 0) legacy.control_modifier = controlModifier;
-  if (category !== "tron" && category !== "vehicle" && csModifier !== 0) legacy.cs_modifier = csModifier;
-  return legacy;
-}
-
 function collectOutfits() {
   return outfits.filter(item => item.name.trim()).map((item, index) => {
     const category = item.category || "other";
@@ -567,14 +542,14 @@ function collectOutfits() {
       concealment: item.concealment || "", slot: item.slot || "", description: item.description || "", sort_order: index
     };
     if (category === "weapon") { payload.attack = item.attack || ""; payload.range = item.range || ""; }
-    if (category === "armor") { payload.defense = item.defense || ""; payload.control_modifier = Number(item.control_modifier || 0); }
+    if (category === "armor") payload.control_modifier = Number(item.control_modifier || 0);
     if (category === "tron") payload.cs_modifier = Number(item.cs_modifier || 0);
     if (category === "vehicle") {
       payload.attack = item.attack || "";
       payload.control_modifier = Number(item.control_modifier || 0);
       payload.cs_modifier = Number(item.cs_modifier || 0);
     }
-    return { ...payload, ...legacyOutfitSaveFields(item) };
+    return payload;
   });
 }
 
@@ -611,7 +586,7 @@ function applyImport() {
     renderSkills();
   } else {
     const map = { weapons: "weapon", armours: "armor", vehicles: "vehicle", residences: "residence", outfits: "other", 武器: "weapon", 防具: "armor", ヴィークル: "vehicle", 住居: "residence", 住宅: "residence", 装備: "other" };
-    for (const row of rows) outfits.push({ ...blankOutfit(), category: map[row.target] || "other", name: row.name || "", purchase_value: row.purchase || "", experience_cost: Number(row.permanent || 0), concealment: [row.concealA, row.concealB].filter(Boolean).join("/"), attack: row.attack || "", defense: row.defense || "", range: row.range || "", slot: row.part || row.slot || "", description: row.notes || "" });
+    for (const row of rows) outfits.push({ ...blankOutfit(), category: map[row.target] || "other", name: row.name || "", purchase_value: row.purchase || "", experience_cost: Number(row.permanent || 0), concealment: [row.concealA, row.concealB].filter(Boolean).join("/"), attack: row.attack || "", range: row.range || "", slot: row.part || row.slot || "", description: row.notes || "" });
     renderOutfits();
   }
   recalc(); markDirty();
