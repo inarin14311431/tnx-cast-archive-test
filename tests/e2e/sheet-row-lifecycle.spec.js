@@ -85,3 +85,28 @@ test("SKD TSV取込は名称・種別・LV・解説を現在のスタイル技�
   await row.locator("[data-delete-skill]").click();
   await expect(page.locator("#style-skills tr[data-skill-key]").filter({ has: page.getByDisplayValue(name) })).toHaveCount(0);
 });
+
+test("スタイル・能力値の静的描画と既存のスタイル変更ハンドラが維持される", async ({ page }) => {
+  await openEditor(page);
+
+  await expect(page.locator("#style-grid .style-card")).toHaveCount(3);
+  for (let i = 1; i <= 3; i++) {
+    await expect(page.locator(`#style-${i}`)).toBeVisible();
+    await expect(page.locator(`#style-${i}-mark`)).toBeVisible();
+    await expect(page.locator(`#divine-${i}`)).toBeVisible();
+  }
+
+  for (const key of ["reason", "passion", "life", "mundane"]) {
+    await expect(page.locator(`#${key}-base`)).toBeVisible();
+    await expect(page.locator(`#${key}-control-base`)).toBeVisible();
+    await expect(page.locator(`#${key}-final`)).toBeVisible();
+    await expect(page.locator(`#${key}-control-final`)).toBeVisible();
+  }
+  await expect(page.locator("#cs-base")).toBeVisible();
+  await expect(page.locator("#cs-mod")).toBeVisible();
+  await expect(page.locator("#cs-final")).toBeVisible();
+
+  await page.locator("#style-1").selectOption({ label: "ウツワ" });
+  await expect(page.locator("#style-1-attribute-wrap")).toBeVisible();
+  await expect(page.locator("#divine-1")).not.toHaveText("未選択");
+});
