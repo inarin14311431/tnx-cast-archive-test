@@ -56,10 +56,10 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 - `RAW_CARD_SCHEMAS` now lists only base controls that participate in the classic table presentation. It is not a persistence schema or canonical semantic schema.
 - `BASE_LABELS` uses current display terminology for those base controls.
 - Before presentation conversion, `captureCardData()` records every source-card `[data-o]` value. `readRow()` overlays live visible values on that snapshot before a reorder rebuild.
-- Because reorder persistence is independent of visible cells, `mundane_modifier` and category-invalid `control_modifier` / `cs_modifier` cells are no longer rendered by `RAW_CARD_SCHEMAS`.
+- Because reorder persistence is independent of visible cells, `mundane_modifier`, category-invalid `control_modifier` / `cs_modifier`, and legacy vehicle `defense` cells are no longer rendered by `RAW_CARD_SCHEMAS`.
 - Compatibility values can still survive reorder through the captured raw-card snapshot until the underlying legacy save fields are retired separately.
 
-The legacy generic `vehicle.defense` backing control remains in the raw table transport for now because it still participates in compatibility/split-defense behavior. It should be removed only after that backing path is independently verified and migrated.
+The generic base `defense` field is no longer part of vehicle table presentation. Vehicle defense is canonically represented by `defense_s`, `defense_p`, and `defense_i`. The old `vehicle.defense` value may still exist in the classic `sheet.js` in-memory/save compatibility model and is preserved during reorder, but it is not exposed as an editable PC column. Armor still uses its legacy base `defense` backing control internally to split and synchronize S/I/P fields until that armor compatibility path is migrated separately.
 
 ## Compatibility rule
 
