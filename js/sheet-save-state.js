@@ -13,6 +13,7 @@ const VALID_STATES = new Set(Object.keys(labels));
 let currentState = "saving";
 let currentText = "初期化中…";
 let installed = false;
+let saveRequester = null;
 
 export function getSheetSaveState() {
   return currentState;
@@ -36,11 +37,16 @@ export function setSheetSaveState(state, text = "") {
   return currentState;
 }
 
+export function registerSheetSaveRequester(requester) {
+  saveRequester = typeof requester === "function" ? requester : null;
+  return () => {
+    if (saveRequester === requester) saveRequester = null;
+  };
+}
+
 export function requestSheetSave() {
-  const button = document.querySelector(BUTTON_SELECTOR);
-  if (!button) return false;
-  button.click();
-  return true;
+  if (!saveRequester) return false;
+  return saveRequester();
 }
 
 export function focusSheetSaveButton() {
@@ -105,6 +111,7 @@ globalThis.TNXSheetSaveState = Object.freeze({
   getText: getSheetSaveText,
   hasUnsavedChanges: hasUnsavedSheetChanges,
   setState: setSheetSaveState,
+  registerRequester: registerSheetSaveRequester,
   requestSave: requestSheetSave,
   waitForSaved: waitForSheetSaved,
   focusButton: focusSheetSaveButton
