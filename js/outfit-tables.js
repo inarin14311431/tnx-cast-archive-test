@@ -2,6 +2,7 @@
 (function(){
   const root=document.querySelector('#outfit-list');
   if(!root)return;
+  const RENDER_EVENT='tnx:outfit-tables-rendered';
 
   const CATEGORIES=[
     ['weapon','武器','WEAPONS','ADD WEAPON'],
@@ -37,6 +38,10 @@
     if(queued||rebuilding)return;
     queued=true;
     requestAnimationFrame(()=>{queued=false;enhance();});
+  }
+
+  function notifyRendered(){
+    root.dispatchEvent(new CustomEvent(RENDER_EVENT,{detail:{rows:root.querySelectorAll('.outfit-table-row[data-outfit-key]').length}}));
   }
 
   function parseArmorDefense(value){
@@ -355,6 +360,7 @@
         fragment.append(makeTable(key,grouped.get(key)||[],label,en,addLabel));
       }
       root.replaceChildren(fragment);
+      notifyRendered();
     }finally{
       observer.observe(root,{childList:true,subtree:true});
     }
