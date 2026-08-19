@@ -13,12 +13,15 @@ The classic PC editor separates save orchestration, persistence, and save-state 
 
 `js/sheet-save-persistence.js` owns the transactional database save boundary:
 
-- the `save_character_bundle` RPC name;
+- the `save_character_bundle_with_ofc` RPC name;
 - the exact `p_character_id / p_character / p_skills / p_outfits` argument mapping;
+- explicit OFC outfit enrichment through `enrichOutfitPayload()` before the RPC call;
 - propagation of Supabase RPC errors;
 - validation that the returned bundle contains both `id` and `public_id`.
 
-`js/sheet.js` owns editor data collection and post-save editor integration. It supplies the coordinator with a `persist()` callback that collects the canonical character/skill/outfit payload, calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`. It no longer calls `save_character_bundle` directly.
+`js/outfit-ofc-save.js` is now an explicit outfit-payload adapter. It owns the PC outfit DOM-to-OFC detail merge and canonical category-specific modifier handling, but it does not import the Supabase client, patch `supabase.rpc`, or install a hidden save interceptor.
+
+`js/sheet.js` owns editor data collection and post-save editor integration. It supplies the coordinator with a `persist()` callback that collects the canonical character/skill/outfit payload, calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`. It no longer calls a save RPC directly.
 
 `js/sheet-save-state.js` is the single presentation/consumer bridge for save state.
 
@@ -44,7 +47,8 @@ The former `sheet-save-watchdog.js` has been removed from the repository. Its hi
 Current ownership boundary:
 
 - `sheet-save-coordinator.js`: save lifecycle state, queued save mechanics, structured failure publication, and canonical save-command registration;
-- `sheet-save-persistence.js`: transactional character/skill/outfit RPC persistence;
+- `sheet-save-persistence.js`: explicit OFC enrichment plus transactional character/skill/outfit RPC persistence;
+- `outfit-ofc-save.js`: canonical PC outfit/OFC payload enrichment only, with no persistence interception;
 - `sheet.js`: canonical editor payload collection plus post-save URL/event integration;
 - `sheet-save-state.js`: explicit state store, presentation, and consumer API;
 - `sheet-save-diagnostics.js`: diagnostic interpretation only, with no persistence interception.
