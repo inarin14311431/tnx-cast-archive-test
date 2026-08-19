@@ -96,3 +96,28 @@ export function outfitCanonicalFields(category) {
 export const OUTFIT_LEGACY_READ_ONLY_DETAIL_FIELDS = Object.freeze([
   "control_value", "cs_value"
 ]);
+
+// Normalize legacy OFC/detail input at the boundary. Legacy aliases are consumed
+// into canonical names, invalid category-specific modifiers are discarded, and
+// the retired outfit-only mundane_modifier is never emitted again.
+export function normalizeOutfitDetailCompatibility(categoryValue, value = {}) {
+  const category = normalizeOutfitCategory(categoryValue);
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const normalized = { ...source };
+
+  if (normalized.control_modifier == null && normalized.control_value != null) {
+    normalized.control_modifier = normalized.control_value;
+  }
+  if (normalized.cs_modifier == null && normalized.cs_value != null) {
+    normalized.cs_modifier = normalized.cs_value;
+  }
+
+  delete normalized.control_value;
+  delete normalized.cs_value;
+  delete normalized.mundane_modifier;
+
+  if (!outfitSupportsControl(category)) delete normalized.control_modifier;
+  if (!outfitSupportsCsModifier(category)) delete normalized.cs_modifier;
+
+  return normalized;
+}
