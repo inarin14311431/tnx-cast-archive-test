@@ -4,6 +4,7 @@ import {
   OUTFIT_FIELD_LABELS,
   normalizeOutfitCategory
 } from "./outfit-contract.js?v=2";
+import { splitLegacyConcealment } from "./outfit-view-model.js?v=2";
 
 const ROOT = "#outfit-list";
 const TABLE_NATIVE_FIELDS = Object.freeze({
@@ -20,17 +21,6 @@ let queued = false;
 let storedQueues = new Map();
 
 const signature = (category, name) => `${normalizeOutfitCategory(category)}\u0000${String(name || "").trim()}`;
-
-function splitConcealment(value) {
-  const text = String(value ?? "").trim();
-  if (!text) return { value: "", modifier: "" };
-  const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
-  if (!match) return { value: text, modifier: "" };
-  return {
-    value: String(match[1] || "").trim(),
-    modifier: String(match[2] || match[3] || "").trim()
-  };
-}
 
 function storedRecord(row) {
   const category = normalizeOutfitCategory(row.closest("table")?.dataset.outfitSchema);
@@ -68,7 +58,7 @@ function addCell(row, field) {
   input.setAttribute("aria-label", OUTFIT_FIELD_LABELS[field] || field);
   const rawValue = String(item?.[field] ?? "");
   if (field === "concealment") {
-    const parsed = splitConcealment(rawValue);
+    const parsed = splitLegacyConcealment(rawValue);
     input.value = parsed.value;
     if (parsed.modifier) row.dataset.pcConcealmentModifier = parsed.modifier;
   } else {
@@ -82,7 +72,7 @@ function addCell(row, field) {
 function normalizeConcealmentRow(row) {
   const field = row.querySelector('[data-o="concealment"]');
   if (field) {
-    const parsed = splitConcealment(field.value);
+    const parsed = splitLegacyConcealment(field.value);
     if (parsed.modifier && !row.dataset.pcConcealmentModifier) row.dataset.pcConcealmentModifier = parsed.modifier;
     if (field.value !== parsed.value) field.value = parsed.value;
   }
