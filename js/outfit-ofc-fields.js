@@ -3,7 +3,6 @@ import {
   cssEscape,
   getOutfitRows,
   outfitSignature,
-  parseDefense,
   rowSignature,
   valueOf
 } from "./outfit-ofc-utils.js";
@@ -97,7 +96,7 @@ async function loadStoredDetails() {
 
   const { data, error } = await supabase
     .from("character_outfits")
-    .select("category,name,sort_order,concealment,attack,defense,range,slot,description,ofc_details")
+    .select("category,name,sort_order,ofc_details")
     .eq("character_id", character.id)
     .order("sort_order");
   if (error) {
@@ -121,17 +120,7 @@ function rowsToDetailQueues(rows) {
 }
 
 function normalizeStoredRecord(row) {
-  const details = normalizeDetails(row?.ofc_details || {});
-  const legacy = parseLegacyDescription(row?.description || "");
-  for (const [key, value] of Object.entries(legacy)) {
-    if (!details[key]) details[key] = value;
-  }
-  // Legacy DB rows may still carry combined defense. Read it once into the
-  // canonical S/P/I detail state; current editing never writes back to it.
-  if (!details.defense_s && !details.defense_p && !details.defense_i) {
-    Object.assign(details, parseDefense(row?.defense || ""));
-  }
-  return details;
+  return normalizeDetails(row?.ofc_details || {});
 }
 
 function queueEnhance() {
@@ -276,23 +265,6 @@ function snapshotDetailQueues() {
     queues.get(signature).push(collectDetails(row));
   }
   return queues;
-}
-
-function parseLegacyDescription(text) {
-  const map = {
-    "メーカー": "manufacturer", "大分類": "major_category", "小分類": "minor_category",
-    "受": "parry", "ス": "speed", "制御値": "control_value", "電制": "electronic_control",
-    "参照P": "page_number"
-  };
-  const details = {};
-  for (const line of String(text || "").split("\n")) {
-    const match = line.match(/^([^：:]+)[：:]\s*(.*)$/);
-    if (!match) continue;
-    const field = map[match[1].trim()];
-    if (field && !details[field]) details[field] = match[2].trim();
-    if (/^防御値$/.test(match[1].trim())) Object.assign(details, parseDefense(match[2]));
-  }
-  return details;
 }
 
 function normalizeDetails(value) {
