@@ -31,10 +31,16 @@ test("mobile outfit keeps category rules in model and UI owners", () => {
 
 test("mobile outfit groups common, performance, and description fields by responsibility", () => {
   const baseBlock = ui.match(/function commonBaseFields[\s\S]*?^}\n/m)?.[0] || "";
+  const concealBlock = ui.match(/function concealFields[\s\S]*?^}\n/m)?.[0] || "";
   const descriptionBlock = ui.match(/function descriptionFields[\s\S]*?^}\n/m)?.[0] || "";
   const performanceBlock = ui.match(/function performanceFields[\s\S]*?^}\n/m)?.[0] || "";
 
-  for (const token of ["名称", "購入", "常備化", "隠匿", "隠匿修正", "部位"]) assert.match(baseBlock, new RegExp(token));
+  for (const token of ["名称", "購入", "常備化"]) assert.match(baseBlock, new RegExp(token));
+  assert.match(baseBlock, /concealFields\(item\)/);
+  assert.match(baseBlock, /slotField\(item\)/);
+  assert.match(concealBlock, /隠匿値/);
+  assert.match(concealBlock, /隠匿修正/);
+  assert.match(ui, /const slotField = item => `<label>部位/);
   assert.match(descriptionBlock, /解説/);
   assert.match(descriptionBlock, /page_number/);
   assert.match(descriptionBlock, /参照P/);
