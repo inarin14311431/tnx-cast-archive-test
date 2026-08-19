@@ -14,9 +14,12 @@ Classic outfit card markup rendering is delegated to `js/sheet-outfit-renderer.j
 
 Classic blank skill/outfit record defaults are delegated to `js/sheet-row-factory.js`. The factory receives explicit key and sort-order inputs and owns only the DOM-free default object shape. `sheet.js` remains responsible for collection length/order and for contextual overrides used by master rows, blank slots, separators, and imports.
 
+General-skill collection rules are delegated to `js/sheet-general-skill-state.js`. The helper owns master-row reconciliation, duplicate merging, initial blank-slot construction, and canonical general-skill ordering as DOM-free collection transforms. `sheet.js` keeps the live `skills` collection, browser-derived left/right placement for newly added blank rows, render invocation, dirty state, and persistence.
+
 ## Responsibility groups
 
 - Core state mutation / load-save integration / render orchestration: `js/sheet.js`
+- General-skill collection normalization and ordering: `js/sheet-general-skill-state.js`
 - Classic skill/outfit blank-record defaults: `js/sheet-row-factory.js`
 - Classic skill markup generation: `js/sheet-skill-renderer.js`
 - Classic outfit raw-card markup generation: `js/sheet-outfit-renderer.js`
@@ -36,6 +39,8 @@ Classic blank skill/outfit record defaults are delegated to `js/sheet-row-factor
 3. Move one responsibility at a time behind an explicit boundary without changing output.
 4. Run regression and Playwright checks after every responsibility move.
 5. Only after behavior is stable, reduce script count or merge modules.
+
+For low-risk extraction work, automated coverage is the primary release gate. Unit/contract tests must characterize the moved rules directly, and authenticated Playwright coverage must exercise representative add/edit/delete browser flows. Manual verification can then be limited to a short smoke pass unless CSS, persistence mappings, imports, or viewer rendering change.
 
 ## Phase 5 completion boundary
 
@@ -91,7 +96,7 @@ The following extraction moved classic outfit raw-card HTML generation behind th
 
 This boundary is locked by `tests/sheet-outfit-renderer.test.mjs`.
 
-The next extraction moves blank skill/outfit defaults behind a DOM-free row-factory boundary:
+The next extraction moved blank skill/outfit defaults behind a DOM-free row-factory boundary:
 
 - `sheet-row-factory.js` owns the default object shape for a new skill and a new outfit, including default skill kind and canonical blank outfit base fields;
 - the factory accepts explicit key and sort-order inputs instead of reading editor collections;
@@ -101,6 +106,16 @@ The next extraction moves blank skill/outfit defaults behind a DOM-free row-fact
 
 This boundary is locked by `tests/sheet-row-factory.test.mjs` and the outfit save-policy regression coverage.
 
+The following extraction moves deterministic general-skill collection rules behind a pure state boundary:
+
+- `sheet-general-skill-state.js` merges duplicate fixed master rows by preserving the strongest row, OR-combining suits, retaining the highest level/free-level values, and clamping free level after suit-count correction;
+- missing fixed master rows are created through the shared row factory and marked `_fixedMaster`;
+- the four initial blank general-skill slots retain their left/left/right/right metadata and sequential sort order;
+- rendering order follows `GENERAL_MASTER` while custom general skills remain stable after fixed rows;
+- `sheet.js` remains responsible for assigning the returned collection to live editor state and for choosing the column of a newly clicked `#add-general` row from current browser layout.
+
+This boundary is locked by `tests/sheet-general-skill-state.test.mjs`. The authenticated browser gate additionally runs `tests/e2e/sheet-row-lifecycle.spec.js`, which exercises unsaved style/general/outfit add -> edit -> delete behavior and outfit category rerendering without writing test mutations to the database.
+
 ## Safety contracts
 
 - `js/sheet.js` is loaded exactly once.
@@ -109,10 +124,11 @@ This boundary is locked by `tests/sheet-row-factory.test.mjs` and the outfit sav
 - Existing element ids and persisted data shape are compatibility contracts.
 - Row interaction adapters must not own editor collections, persistence, recalculation, or dirty-state policy.
 - Row factories must remain DOM-free, collection-free, rendering-free, and persistence-free; contextual sort-order policy remains in `sheet.js`.
+- General-skill state helpers must remain DOM-free and persistence-free; browser-derived placement and live editor ownership remain in `sheet.js`.
 - Render-only modules must not mutate editor collections, bind events, publish dirty state, or perform persistence.
 - Raw outfit renderer output must remain compatible with `outfit-tables.js` category schemas and direct-child card discovery.
 - Refactoring commits should avoid simultaneous CSS/layout changes.
 - A failed runtime audit blocks the refactor before browser deployment.
-- The integrated save/reload E2E is a release guard for future editor-runtime ownership changes.
+- The integrated save/reload E2E and row-lifecycle E2E are release guards for future editor-runtime ownership changes.
 
 The automated baseline for the runtime graph remains `scripts/audit-sheet-runtime.mjs`.
