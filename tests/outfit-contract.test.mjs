@@ -5,6 +5,7 @@ import {
   OUTFIT_DESCRIPTION_FIELDS,
   OUTFIT_FIELD_LABELS,
   OUTFIT_LEGACY_READ_ONLY_DETAIL_FIELDS,
+  normalizeOutfitDetailCompatibility,
   outfitCanonicalFields,
   outfitPerformanceFields,
   outfitSupportsControl,
@@ -53,4 +54,34 @@ test("canonical field list composes category, base, performance, and description
 
 test("legacy control and CS detail aliases are read-only compatibility fields", () => {
   assert.deepEqual(OUTFIT_LEGACY_READ_ONLY_DETAIL_FIELDS, ["control_value", "cs_value"]);
+});
+
+test("shared compatibility normalizer consumes legacy aliases without re-emitting them", () => {
+  const vehicle = normalizeOutfitDetailCompatibility("vehicle", {
+    control_value: "-2",
+    cs_value: "1",
+    mundane_modifier: "99",
+    manufacturer: "TEST"
+  });
+  assert.equal(vehicle.control_modifier, "-2");
+  assert.equal(vehicle.cs_modifier, "1");
+  assert.equal(vehicle.manufacturer, "TEST");
+  assert.equal(Object.hasOwn(vehicle, "control_value"), false);
+  assert.equal(Object.hasOwn(vehicle, "cs_value"), false);
+  assert.equal(Object.hasOwn(vehicle, "mundane_modifier"), false);
+});
+
+test("shared compatibility normalizer drops modifiers outside valid categories", () => {
+  const weapon = normalizeOutfitDetailCompatibility("weapon", {
+    control_value: "-3",
+    cs_value: "2",
+    control_modifier: "-4",
+    cs_modifier: "3"
+  });
+  assert.equal(Object.hasOwn(weapon, "control_modifier"), false);
+  assert.equal(Object.hasOwn(weapon, "cs_modifier"), false);
+
+  const armor = normalizeOutfitDetailCompatibility("armor", { control_value: "-1", cs_value: "2" });
+  assert.equal(armor.control_modifier, "-1");
+  assert.equal(Object.hasOwn(armor, "cs_modifier"), false);
 });
