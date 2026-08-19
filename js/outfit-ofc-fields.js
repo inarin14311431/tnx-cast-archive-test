@@ -42,7 +42,7 @@ const FIELD_DEFINITIONS = {
 const COMMON_FIELDS = ["manufacturer", "page_number", "concealment_penalty"];
 const CATEGORY_FIELDS = {
   weapon: [...COMMON_FIELDS, "parry", "speed", "electronic_control"],
-  armor: [...COMMON_FIELDS, "electronic_control"],
+  armor: [...COMMON_FIELDS, "defense_s", "defense_p", "defense_i", "electronic_control"],
   cyberware: [...COMMON_FIELDS, "electronic_control", "ianus_surface", "ianus_deep", "ianus_none"],
   tron: [...COMMON_FIELDS, "speed", "electronic_control", "tron_software", "tron_support", "tron_hardware"],
   vehicle: [...COMMON_FIELDS, "speed", "electronic_control", "defense_s", "defense_p", "defense_i", "crew", "sf"],
@@ -247,9 +247,9 @@ function collectDetails(row) {
   const concealParts = String(valueOf(row, "concealment") || "").split(/[\/／]/);
   const armorDefense = parseDefense(valueOf(row, "defense"));
   const visibleDefense = {
-    defense_s: row.querySelector('[data-armor-defense="S"]')?.value || details.defense_s || armorDefense.defense_s,
-    defense_p: row.querySelector('[data-armor-defense="P"]')?.value || details.defense_p || armorDefense.defense_p,
-    defense_i: row.querySelector('[data-armor-defense="I"]')?.value || details.defense_i || armorDefense.defense_i
+    defense_s: row.querySelector('[data-ofc="defense_s"]')?.value || details.defense_s || armorDefense.defense_s,
+    defense_p: row.querySelector('[data-ofc="defense_p"]')?.value || details.defense_p || armorDefense.defense_p,
+    defense_i: row.querySelector('[data-ofc="defense_i"]')?.value || details.defense_i || armorDefense.defense_i
   };
 
   return compactDetails({
