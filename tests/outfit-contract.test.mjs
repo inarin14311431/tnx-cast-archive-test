@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import {
   OUTFIT_BASE_FIELDS,
   OUTFIT_DESCRIPTION_FIELDS,
+  OUTFIT_FIELD_LABELS,
   OUTFIT_LEGACY_READ_ONLY_DETAIL_FIELDS,
+  outfitCanonicalFields,
   outfitPerformanceFields,
   outfitSupportsControl,
   outfitSupportsCsModifier
@@ -14,6 +16,15 @@ test("canonical outfit contract fixes common and description groups", () => {
     "name", "purchase_value", "experience_cost", "concealment", "concealment_penalty", "slot"
   ]);
   assert.deepEqual(OUTFIT_DESCRIPTION_FIELDS, ["description", "page_number"]);
+});
+
+test("canonical outfit labels use current terminology", () => {
+  assert.equal(OUTFIT_FIELD_LABELS.concealment, "隠匿値");
+  assert.equal(OUTFIT_FIELD_LABELS.concealment_penalty, "隠匿修正");
+  assert.equal(OUTFIT_FIELD_LABELS.control_modifier, "制御値");
+  assert.equal(OUTFIT_FIELD_LABELS.cs_modifier, "CS修正");
+  assert.equal(OUTFIT_FIELD_LABELS.electronic_control, "電制");
+  assert.equal(Object.hasOwn(OUTFIT_FIELD_LABELS, "mundane_modifier"), false);
 });
 
 test("canonical outfit contract constrains control and CS semantics", () => {
@@ -30,6 +41,14 @@ test("canonical outfit contract keeps category-specific performance fields", () 
   assert.ok(outfitPerformanceFields("tron").includes("cs_modifier"));
   assert.ok(outfitPerformanceFields("vehicle").includes("control_modifier"));
   assert.ok(outfitPerformanceFields("residence").includes("residence_entry"));
+});
+
+test("canonical field list composes category, base, performance, and description fields", () => {
+  const armor = outfitCanonicalFields("armor");
+  assert.deepEqual(armor.slice(0, 7), ["category", ...OUTFIT_BASE_FIELDS]);
+  assert.ok(armor.includes("control_modifier"));
+  assert.equal(armor.includes("cs_modifier"), false);
+  assert.deepEqual(armor.slice(-2), OUTFIT_DESCRIPTION_FIELDS);
 });
 
 test("legacy control and CS detail aliases are read-only compatibility fields", () => {
