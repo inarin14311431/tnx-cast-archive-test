@@ -4,7 +4,7 @@ import {
   OUTFIT_CATEGORY_LABELS,
   OUTFIT_FIELD_LABELS,
   OUTFIT_SCHEMAS
-} from "./cast-view-definitions.js";
+} from "./cast-view-definitions.js?v=2";
 
 const container = document.querySelector("#outfit-container");
 const content = document.querySelector("#cast-content");
