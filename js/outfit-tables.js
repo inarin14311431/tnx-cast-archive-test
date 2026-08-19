@@ -14,24 +14,25 @@
     ['other','その他','OTHER','ADD OTHER']
   ];
 
-  // These labels and schemas describe the raw controls transported from sheet.js.
-  // Canonical outfit semantics are owned by outfit-contract.js; final PC layout is
-  // owned by outfit-display-rules-v5.js. Compatibility-only fields remain here so
-  // reorder rebuilds cannot discard stored values before that transport is retired.
+  // These labels and schemas describe the raw controls rendered by this classic
+  // table adapter. Canonical outfit semantics are owned by outfit-contract.js;
+  // final PC layout is owned by outfit-display-rules-v5.js. Reorder persistence
+  // captures the complete source card before presentation transforms, so hidden
+  // compatibility fields no longer need to be rendered as table cells.
   const BASE_LABELS={
     category:'分類',name:'名称',purchase_value:'購入',experience_cost:'常備化',concealment:'隠匿値',
     attack:'攻撃',defense:'防御',defense_s:'S',defense_i:'I',defense_p:'P',range:'射程',slot:'部位',
-    control_modifier:'制御値',cs_modifier:'CS修正',mundane_modifier:'',description:'解説',actions:''
+    control_modifier:'制御値',cs_modifier:'CS修正',description:'解説',actions:''
   };
 
   const RAW_CARD_SCHEMAS={
     weapon:['category','name','purchase_value','experience_cost','concealment','attack','range','slot','description','actions'],
     armor:['category','name','purchase_value','experience_cost','concealment','defense_s','defense_i','defense_p','slot','control_modifier','description','actions'],
-    cyberware:['category','name','purchase_value','experience_cost','concealment','slot','control_modifier','cs_modifier','mundane_modifier','description','actions'],
-    tron:['category','name','purchase_value','experience_cost','concealment','slot','control_modifier','cs_modifier','mundane_modifier','description','actions'],
+    cyberware:['category','name','purchase_value','experience_cost','concealment','slot','description','actions'],
+    tron:['category','name','purchase_value','experience_cost','concealment','slot','cs_modifier','description','actions'],
     vehicle:['category','name','purchase_value','experience_cost','attack','defense','control_modifier','cs_modifier','description','actions'],
-    residence:['category','name','purchase_value','experience_cost','mundane_modifier','slot','description','actions'],
-    other:['category','name','purchase_value','experience_cost','concealment','slot','control_modifier','cs_modifier','mundane_modifier','description','actions']
+    residence:['category','name','purchase_value','experience_cost','slot','description','actions'],
+    other:['category','name','purchase_value','experience_cost','concealment','slot','description','actions']
   };
 
   let queued=false;
@@ -81,6 +82,18 @@
   function controlFor(card,key){
     if(key==='category')return card.querySelector('[data-o="category"]');
     return card.querySelector(`[data-o="${key}"]`);
+  }
+
+  function readControlValue(control){
+    return control.type==='number'?Number(control.value||0):control.value;
+  }
+
+  function captureCardData(card){
+    const data={};
+    card.querySelectorAll('[data-o]').forEach(control=>{
+      data[control.dataset.o]=readControlValue(control);
+    });
+    return data;
   }
 
   function prepareNumberControl(control){
@@ -179,6 +192,9 @@
     const tr=document.createElement('tr');
     tr.dataset.outfitKey=card.dataset.outfitKey||'';
     tr.className='outfit-table-row';
+    // Capture every raw control before makeCell moves visible controls out of the card.
+    // Visible values are overlaid again by readRow so live edits still win.
+    tr._outfitTransportData=captureCardData(card);
     for(const key of RAW_CARD_SCHEMAS[category])tr.append(makeCell(card,key));
     return tr;
   }
@@ -263,9 +279,9 @@
   }
 
   function readRow(row){
-    const data={};
+    const data={...(row._outfitTransportData||{})};
     row.querySelectorAll('[data-o]').forEach(control=>{
-      data[control.dataset.o]=control.type==='number'?Number(control.value||0):control.value;
+      data[control.dataset.o]=readControlValue(control);
     });
     return {key:row.dataset.outfitKey||'',category:data.category||'other',data};
   }
