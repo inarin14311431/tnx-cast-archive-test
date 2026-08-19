@@ -1,17 +1,15 @@
-/* Skill level / suit synchronization rules.
- *
- * - Level 4 or higher selects all four suits.
- * - Level 0-3 does not automatically add suits.
- * - Adding a suit raises the level only when the suit count exceeds it.
- * - Removing a suit lowers the level to the remaining suit count.
- *
- * Dynamic skill rows now use delegated handlers in sheet-row-interactions.js,
- * so this module also delegates from the skill roots instead of wrapping
- * per-control oninput handlers.
+/* Skill level / suit synchronization DOM adapter.
+ * Pure level/suit decisions live in sheet-skill-level-suit-state.js.
  */
-(function(){
+(async function(){
   const SUITS=["reason","passion","life","mundane"];
   const ROOT_SELECTOR="#general-skills,#style-skills";
+  const stateUrl=new URL("./sheet-skill-level-suit-state.js?v=1",document.currentScript?.src||document.baseURI);
+  const {
+    normalizeSkillLevel,
+    shouldSelectAllSuits,
+    resolveSkillLevelAfterSuitChange
+  }=await import(stateUrl.href);
 
   function suitBoxes(row){
     return SUITS.map(suit=>row.querySelector(`[data-f="${suit}"]`)).filter(Boolean);
@@ -32,9 +30,9 @@
     if(!row)return;
 
     if(control.matches('[data-f="level"]')){
-      const value=Math.max(0,Number(control.value||0));
+      const value=normalizeSkillLevel(control.value);
       control.value=String(value);
-      if(value<4)return;
+      if(!shouldSelectAllSuits(value))return;
 
       for(const box of suitBoxes(row)){
         if(box.checked)continue;
@@ -45,11 +43,16 @@
     }
 
     if(!SUITS.some(suit=>control.matches(`[data-f="${suit}"]`)))return;
-    if(control.checked)return;
-
     const level=row.querySelector('[data-f="level"]');
     if(!level)return;
-    level.value=String(selectedCount(row));
+    const currentLevel=normalizeSkillLevel(level.value);
+    const nextLevel=resolveSkillLevelAfterSuitChange({
+      currentLevel,
+      selectedSuitCount:selectedCount(row),
+      checked:control.checked
+    });
+    if(nextLevel===currentLevel)return;
+    level.value=String(nextLevel);
     dispatchInput(level);
   }
 
@@ -68,4 +71,4 @@
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initializeSkillLevelSuitRules,{once:true});
   else initializeSkillLevelSuitRules();
-})();
+})().catch(error=>console.error("Skill level/suit rules failed to initialize",error));
