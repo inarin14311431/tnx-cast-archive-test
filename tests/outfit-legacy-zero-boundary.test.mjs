@@ -9,6 +9,7 @@ const contract = await readFile(new URL("../js/outfit-contract.js", import.meta.
 const pcSave = await readFile(new URL("../js/outfit-ofc-save.js", import.meta.url), "utf8");
 const pcFields = await readFile(new URL("../js/outfit-ofc-fields.js", import.meta.url), "utf8");
 const mobileModel = await readFile(new URL("../js/sheet-mobile-outfit-model.js", import.meta.url), "utf8");
+const classicSheet = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
 
 test("canonical cleanup removes retired outfit aliases and armor base defense", () => {
   assert.match(cleanup, /set defense = ''/);
@@ -49,4 +50,12 @@ test("PC OFC detail state no longer defines retired aliases", () => {
   assert.doesNotMatch(fieldDefinitions, /cs_value/);
   assert.doesNotMatch(fieldDefinitions, /mundane_modifier/);
   assert.match(pcFields, /Retired aliases are normalized at explicit import boundaries/);
+});
+
+test("classic sheet no longer carries retired outfit transport or save scaffolding", () => {
+  assert.doesNotMatch(classicSheet, /function compatibilityOutfitFields/);
+  assert.doesNotMatch(classicSheet, /function legacyOutfitSaveFields/);
+  assert.doesNotMatch(classicSheet, /data-o="defense"/);
+  assert.doesNotMatch(classicSheet, /data-o="mundane_modifier"/);
+  assert.doesNotMatch(classicSheet, /defense:\s*row\.defense/);
 });
