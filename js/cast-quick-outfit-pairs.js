@@ -49,7 +49,7 @@ function patchSection(section, category, outfits) {
 
   if (category === "tron" || category === "vehicle") {
     const legacyHead = table.querySelector(".quick-sheet__outfit-cs-value");
-    if (legacyHead) legacyHead.textContent = "CS修正";
+    setText(legacyHead, "CS修正");
   } else if (category === "other") {
     removeColumn(table, "cs-value");
   }
@@ -60,8 +60,7 @@ function patchSection(section, category, outfits) {
     setCell(row, "purchase", formatPurchase(outfit));
     setCell(row, "concealment", formatConcealment(outfit));
     if (category === "tron" || category === "vehicle") {
-      const cs = row.querySelector(".quick-sheet__outfit-cs-value");
-      if (cs) cs.textContent = display(outfit.cs_modifier);
+      setText(row.querySelector(".quick-sheet__outfit-cs-value"), display(outfit.cs_modifier));
     }
   });
 }
@@ -77,7 +76,7 @@ function ensureColumn(table, key, label, index) {
     const anchor = headRow.cells[index] || null;
     headRow.insertBefore(head, anchor);
   }
-  head.textContent = label;
+  setText(head, label);
 
   [...table.tBodies[0]?.rows || []].forEach(row => {
     if (row.querySelector(`.${className}`)) return;
@@ -93,8 +92,13 @@ function removeColumn(table, suffix) {
 }
 
 function setCell(row, key, value) {
-  const cell = row.querySelector(`.quick-sheet__outfit-${key}`);
-  if (cell) cell.textContent = value;
+  setText(row.querySelector(`.quick-sheet__outfit-${key}`), value);
+}
+
+function setText(element, value) {
+  if (!element) return;
+  const text = String(value ?? "");
+  if (element.textContent !== text) element.textContent = text;
 }
 
 function detailsOf(outfit) {
