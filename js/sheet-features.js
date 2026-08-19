@@ -1,6 +1,6 @@
 import "./help-ui.js?v=4";
 import "./combo-multi-suit.js?v=1";
-import "./sheet-save-state.js?v=1";
+import "./sheet-save-state.js?v=2";
 
 /* Sheet editor helper features.
  * Keeps only presentation helpers. DB persistence is handled by sheet.js,
