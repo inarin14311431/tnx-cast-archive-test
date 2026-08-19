@@ -8,7 +8,8 @@ const tsv = await readFile(new URL("../js/outfit-ofc-tsv.js", import.meta.url), 
 
 test("PC outfit policy reuses the shared legacy concealment parser", () => {
   assert.match(pcPolicy, /splitLegacyConcealment/);
-  assert.match(pcPolicy, /from "\.\/outfit-view-model\.js\?v=2"/);
+  assert.match(pcPolicy, /outfit-legacy-compat\.js\?v=1/);
+  assert.doesNotMatch(pcPolicy, /outfit-view-model\.js\?v=2/);
   assert.doesNotMatch(pcPolicy, /function splitConcealment\(/);
 });
 
