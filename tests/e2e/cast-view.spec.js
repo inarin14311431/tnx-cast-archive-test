@@ -22,3 +22,37 @@ test("閲覧画面に意図しない横スクロールがない", async ({ page 
   }));
   expect(width.scroll).toBeLessThanOrEqual(width.client + 2);
 });
+
+test("PC閲覧のアウトフィット列は現行ラベルを使う", async ({ page }) => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+  await page.goto(`/cast.html?id=${getTestCastId()}`);
+  await waitForCastReady(page);
+
+  const tables = page.locator(".cast-outfit-table");
+  if (await tables.count()) {
+    await expect(page.locator(".cast-outfit-col--concealment").first()).toBeVisible();
+    await expect(page.locator(".cast-outfit-col--concealment_penalty").first()).toBeVisible();
+    await expect(page.locator(".cast-outfit-col--concealment").first()).toHaveText("隠匿値");
+    await expect(page.locator(".cast-outfit-col--concealment_penalty").first()).toHaveText("隠匿修正");
+  }
+
+  const tronOrVehicle = page.locator('[data-outfit-category="tron"], [data-outfit-category="vehicle"]');
+  if (await tronOrVehicle.count()) {
+    await expect(tronOrVehicle.first().locator(".cast-outfit-col--cs_modifier").first()).toHaveText("CS修正");
+  }
+
+  await expect(page.locator('.cast-outfit-col--control_value, .cast-outfit-col--cs_value')).toHaveCount(0);
+});
+
+test("モバイル閲覧でも旧CS項目をサイバーウェア・その他に表示しない", async ({ page }) => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+  await page.goto(`/cast.html?id=${getTestCastId()}&mobile=1`);
+  await page.locator("#mobile-cast-view .mobile-cast-main").waitFor({ state: "visible" });
+
+  for (const category of ["サイバーウェア", "その他"]) {
+    const group = page.locator(".mobile-outfit-group", { has: page.locator(`h3:text-is("${category}")`) });
+    if (await group.count()) {
+      await expect(group).not.toContainText(/\bCS\b|CS修正/);
+    }
+  }
+});
