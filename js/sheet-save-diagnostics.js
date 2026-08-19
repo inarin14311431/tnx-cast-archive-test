@@ -1,13 +1,16 @@
 import { supabase } from "./supabase-client.js";
+import { getSheetSaveState } from "./sheet-save-state.js?v=1";
 
 const SAVE_RPC = "save_character_bundle";
+const STATE_EVENT = "tnx:sheet-save-state";
 let lastRpcError = null;
 let lastRpcAt = 0;
+let lastStateText = "";
 
 installStyles();
 installPanel();
 patchSaveRpc();
-observeSaveStatus();
+observeSaveState();
 
 function installStyles() {
   if (document.querySelector('#sheet-save-diagnostics-style')) return;
@@ -66,59 +69,50 @@ function patchSaveRpc() {
       if (fn === SAVE_RPC) {
         lastRpcAt = Date.now();
         lastRpcError = result?.error || null;
-        if (lastRpcError) queueMicrotask(refreshFromStatus);
       }
       return result;
     } catch (error) {
       if (fn === SAVE_RPC) {
         lastRpcAt = Date.now();
         lastRpcError = normalizeThrownError(error);
-        queueMicrotask(refreshFromStatus);
       }
       throw error;
     }
   };
 }
 
-function observeSaveStatus() {
-  const status = document.querySelector('#save-status');
-  if (!status) return;
-  new MutationObserver(refreshFromStatus).observe(status, {
-    childList: true,
-    characterData: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class']
+function observeSaveState() {
+  window.addEventListener(STATE_EVENT, event => {
+    refreshFromState(event.detail?.state || getSheetSaveState(), event.detail?.text || "");
   });
-  refreshFromStatus();
+  refreshFromState(getSheetSaveState(), "");
 }
 
-function refreshFromStatus() {
+function refreshFromState(state, text) {
   installPanel();
-  const status = document.querySelector('#save-status');
   const panel = document.querySelector('#save-diagnostics');
-  if (!status || !panel) return;
+  if (!panel) return;
 
-  const state = status.className || '';
-  if (!state.includes('error')) {
+  lastStateText = String(text || lastStateText || '').trim();
+  if (state !== 'error') {
     panel.hidden = true;
-    if (state.includes('saved')) {
+    if (state === 'saved') {
       lastRpcError = null;
       lastRpcAt = 0;
+      lastStateText = '';
     }
     return;
   }
 
-  const statusText = String(status.textContent || '').trim();
   const freshRpcError = Date.now() - lastRpcAt < 10000 ? lastRpcError : null;
-  const diagnosis = diagnose(statusText, freshRpcError);
+  const diagnosis = diagnose(lastStateText, freshRpcError);
 
   setText(panel, '[data-save-diagnostic-summary]', diagnosis.summary);
   setText(panel, '[data-save-diagnostic-stage]', diagnosis.stage);
   setText(panel, '[data-save-diagnostic-cause]', diagnosis.cause);
   setText(panel, '[data-save-diagnostic-action]', diagnosis.action);
   setText(panel, '[data-save-diagnostic-code]', freshRpcError?.code || '—');
-  setText(panel, '[data-save-diagnostic-message]', freshRpcError?.message || statusText || '—');
+  setText(panel, '[data-save-diagnostic-message]', freshRpcError?.message || lastStateText || '—');
   setText(panel, '[data-save-diagnostic-details]', freshRpcError?.details || '—');
   setText(panel, '[data-save-diagnostic-hint]', freshRpcError?.hint || '—');
   panel.hidden = false;
