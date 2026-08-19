@@ -28,3 +28,4 @@ GitHub Pages redeploy trigger
 2026-08-19 fix suit decrease and residence concealment autofill
 2026-08-19 extract classic skill rendering boundary
 2026-08-19 extract classic outfit rendering boundary
+2026-08-19 extract classic sheet row default factory
