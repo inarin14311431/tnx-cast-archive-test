@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { parseLegacyDefense } from '../js/outfit-legacy-compat.js';
 import {
   categoryToTarget,
   defenseText,
@@ -30,6 +31,19 @@ test('OFC defense parsing and formatting preserves S P I values', () => {
     defense_i: '7'
   });
   assert.equal(defenseText({ defense_s: '12', defense_p: '9', defense_i: '7' }), 'S12/P9/I7');
+});
+
+test('shared legacy defense parser keeps source-specific unlabeled order explicit', () => {
+  assert.deepEqual(parseLegacyDefense('12/9/7'), {
+    defense_s: '12',
+    defense_p: '9',
+    defense_i: '7'
+  });
+  assert.deepEqual(parseLegacyDefense('12/7/9', 'sip'), {
+    defense_s: '12',
+    defense_p: '9',
+    defense_i: '7'
+  });
 });
 
 test('OFC row signature distinguishes category and name', () => {
