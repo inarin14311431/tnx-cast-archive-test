@@ -122,3 +122,5 @@
   document.querySelector('#quick-sheet-detail-toggle')?.addEventListener('click', scheduleCompact);
   window.addEventListener('resize', scheduleCompact);
 })();
+
+import('./cast-quick-outfit-pairs.js?v=1').catch(error => console.error('Quick outfit pair display failed', error));
