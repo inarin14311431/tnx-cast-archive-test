@@ -31,7 +31,7 @@ test("raw table labels use current outfit terminology", () => {
   assert.match(labels, /cs_modifier:'CS修正'/);
   assert.match(labels, /slot:'部位'/);
   assert.doesNotMatch(labels, /mundane_modifier/);
-  assert.doesNotMatch(labels, /defense:'防御'/);
+  assert.doesNotMatch(labels, /defense:'防御'|defense_[sip]/);
 });
 
 test("reorder snapshot preserves complete raw card data before visible controls move", () => {
@@ -49,14 +49,13 @@ test("raw table presentation omits retired and category-invalid compatibility ce
   assert.match(schemas, /cyberware:\['category','name','purchase_value','experience_cost','concealment','slot','description','actions'\]/);
   assert.match(schemas, /tron:\['category','name','purchase_value','experience_cost','concealment','slot','cs_modifier','description','actions'\]/);
   assert.match(schemas, /other:\['category','name','purchase_value','experience_cost','concealment','slot','description','actions'\]/);
-  assert.match(schemas, /armor:[^\n]*control_modifier/);
+  assert.match(schemas, /armor:\['category','name','purchase_value','experience_cost','concealment','slot','control_modifier','description','actions'\]/);
   assert.match(schemas, /vehicle:\['category','name','purchase_value','experience_cost','attack','control_modifier','cs_modifier','description','actions'\]/);
-  assert.doesNotMatch(schemas, /vehicle:[^\n]*'defense'/);
+  assert.doesNotMatch(schemas, /defense/);
 });
 
-test("legacy defense remains available only for armor S-I-P compatibility transport", () => {
-  assert.match(source, /card\.querySelector\('\[data-o="defense"\]'\)/);
-  assert.match(source, /function parseArmorDefense\(value\)/);
-  assert.match(source, /function encodeArmorDefense\(values\)/);
-  assert.match(source, /function makeArmorDefenseCell\(card,key\)/);
+test("armor table transport no longer owns legacy defense backing", () => {
+  assert.doesNotMatch(source, /card\.querySelector\('\[data-o="defense"\]'\)/);
+  assert.doesNotMatch(source, /parseArmorDefense|encodeArmorDefense|armorValue|updateArmorDefense|makeArmorDefenseCell|data-armor-defense/);
+  assert.match(source, /section\.querySelectorAll\(`\[data-ofc="defense_\$\{key\}"\]`\)/);
 });
