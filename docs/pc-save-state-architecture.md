@@ -1,6 +1,6 @@
 # PC editor save-state ownership
 
-The classic PC editor separates save orchestration, persistence, and save-state presentation.
+The classic PC editor separates editor capture, payload serialization, persistence, save orchestration, and save-state presentation.
 
 `js/sheet-save-coordinator.js` owns producer-side save lifecycle mechanics:
 
@@ -11,17 +11,27 @@ The classic PC editor separates save orchestration, persistence, and save-state 
 - publishing the raw failed save error through `tnx:sheet-save-error` before the public error-state transition;
 - registering the canonical save command used by shared consumers.
 
+`js/sheet-save-payload.js` owns the DB-shaped serialization contract for the classic editor:
+
+- character base/profile/style/divine fields;
+- ability value, growth, gear, manual-zero, control value, and CS mapping;
+- skill row filtering, suit booleans, free-level clamping, style-separator serialization, and sort order;
+- category-owned outfit base fields, including control only for armor/vehicle and CS modifier only for tron/vehicle;
+- no legacy combined defense or retired mundane modifier emission.
+
+The payload module is DOM-free. `sheet.js` reads the editor state and supplies a plain snapshot to this serializer rather than owning DB field mapping itself.
+
 `js/sheet-save-persistence.js` owns the transactional database save boundary:
 
 - the `save_character_bundle_with_ofc` RPC name;
+- explicit OFC enrichment through `enrichOutfitPayload()` before the RPC call;
 - the exact `p_character_id / p_character / p_skills / p_outfits` argument mapping;
-- explicit OFC outfit enrichment through `enrichOutfitPayload()` before the RPC call;
 - propagation of Supabase RPC errors;
 - validation that the returned bundle contains both `id` and `public_id`.
 
-`js/outfit-ofc-save.js` is now an explicit outfit-payload adapter. It owns the PC outfit DOM-to-OFC detail merge and canonical category-specific modifier handling, but it does not import the Supabase client, patch `supabase.rpc`, or install a hidden save interceptor.
+`js/outfit-ofc-save.js` is now an explicit outfit enrichment adapter. It no longer imports the Supabase client or monkey-patches `supabase.rpc`.
 
-`js/sheet.js` owns editor data collection and post-save editor integration. It supplies the coordinator with a `persist()` callback that collects the canonical character/skill/outfit payload, calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`. It no longer calls a save RPC directly.
+`js/sheet.js` owns editor interaction and capture plus post-save editor integration. Its `collectCharacter()`, `collectSkills()`, and `collectOutfits()` functions now gather current editor state and delegate DB-shaped serialization to `sheet-save-payload.js`. The persistence callback then calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
 
 `js/sheet-save-state.js` is the single presentation/consumer bridge for save state.
 
@@ -46,11 +56,12 @@ The former `sheet-save-watchdog.js` has been removed from the repository. Its hi
 
 Current ownership boundary:
 
+- `sheet.js`: editor DOM/state capture and post-save URL/event integration;
+- `sheet-save-payload.js`: canonical DB-shaped character/skill/outfit serialization;
 - `sheet-save-coordinator.js`: save lifecycle state, queued save mechanics, structured failure publication, and canonical save-command registration;
-- `sheet-save-persistence.js`: explicit OFC enrichment plus transactional character/skill/outfit RPC persistence;
-- `outfit-ofc-save.js`: canonical PC outfit/OFC payload enrichment only, with no persistence interception;
-- `sheet.js`: canonical editor payload collection plus post-save URL/event integration;
+- `sheet-save-persistence.js`: transactional RPC persistence and explicit OFC enrichment;
+- `outfit-ofc-save.js`: OFC detail enrichment only;
 - `sheet-save-state.js`: explicit state store, presentation, and consumer API;
 - `sheet-save-diagnostics.js`: diagnostic interpretation only, with no persistence interception.
 
-The next safe extraction target is the editor-side payload collection boundary. Any further split should preserve the current canonical character, skill, and outfit payload contracts rather than moving DOM ownership into persistence code.
+The next safe cleanup is a final ownership audit of `sheet.js` and the surrounding compatibility tests. That audit should remove stale save-era assumptions without moving editor rendering or interaction logic into the persistence/payload layers.
