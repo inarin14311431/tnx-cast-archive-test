@@ -15,8 +15,8 @@
     ],
     armor: [
       ["base","category","分類"],["base","name","名称"],["base","purchase_value","購入"],["base","experience_cost","常備化"],
-      ["base","concealment","隠匿値"],["ofc","concealment_penalty","隠匿修正"],["base","defense_s","S"],["base","defense_p","P"],
-      ["base","defense_i","I"],["base","control_modifier","制御値"],["ofc","electronic_control","電制"],["base","slot","部位"],
+      ["base","concealment","隠匿値"],["ofc","concealment_penalty","隠匿修正"],["ofc","defense_s","S"],["ofc","defense_p","P"],
+      ["ofc","defense_i","I"],["base","control_modifier","制御値"],["ofc","electronic_control","電制"],["base","slot","部位"],
       ["ofc","manufacturer","メーカー"],["ofc","page_number","参照P"],["base","description","解説"],["base","actions",""]
     ],
     cyberware: [
@@ -84,6 +84,7 @@
       const category = table.dataset.outfitSchema || "other";
       const layout = LAYOUTS[category] || LAYOUTS.other;
       ensureResidenceComposite(table, category);
+      syncArmorDefenseBridge(table, category);
       const allowed = new Set(layout.map(([type,key]) => `${type}:${key}`));
 
       table.querySelectorAll("thead tr > th").forEach(cell => {
@@ -180,6 +181,21 @@
     });
   }
 
+  function syncArmorDefenseBridge(table, category) {
+    if (category !== "armor") return;
+    table.querySelectorAll("tbody > tr[data-outfit-key]").forEach(syncArmorDefenseRow);
+  }
+
+  function syncArmorDefenseRow(row) {
+    for (const key of ["s", "p", "i"]) {
+      const canonical = row.querySelector(`[data-ofc="defense_${key}"]`);
+      const legacy = row.querySelector(`[data-armor-defense="${key.toUpperCase()}"]`);
+      if (!canonical || !legacy || legacy.value === canonical.value) continue;
+      legacy.value = canonical.value;
+      legacy.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+
   function syncResidenceComposite(row) {
     const field = row.querySelector("[data-residence-electric-area]");
     if (!field || document.activeElement === field) return;
@@ -209,6 +225,12 @@
   }
 
   document.addEventListener("input",event => {
+    const armorInput = event.target.closest?.('[data-ofc="defense_s"],[data-ofc="defense_p"],[data-ofc="defense_i"]');
+    if (armorInput) {
+      const row = armorInput.closest('tr[data-outfit-key]');
+      if (row?.closest('table[data-outfit-schema="armor"]')) syncArmorDefenseRow(row);
+    }
+
     const input = event.target.closest?.("[data-residence-electric-area]");
     if (!input) return;
     const row = input.closest("tr[data-outfit-key]");
