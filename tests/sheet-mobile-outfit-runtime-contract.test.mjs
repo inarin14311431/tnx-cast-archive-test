@@ -50,9 +50,18 @@ test("mobile outfit groups common, performance, and description fields by respon
   assert.doesNotMatch(ui, /メーカー/);
 });
 
-test("mobile outfit persists split concealment and does not create legacy control detail", () => {
+test("mobile outfit persists split concealment and consumes legacy modifier aliases", () => {
   assert.match(model, /concealment_penalty:/);
+  assert.match(model, /normalizeOutfitDetailCompatibility/);
   assert.doesNotMatch(model, /return mod \? `\$\{value\}\/\$\{mod\}` : value/);
   assert.doesNotMatch(source, /ofc_details\.control_value\s*=/);
   assert.doesNotMatch(model, /detailsSource\.control_value\s*=/);
+});
+
+test("mobile outfit does not generate retired mundane_modifier", () => {
+  const blankBlock = model.match(/export function blankOutfit\(\)[\s\S]*?^}\n/m)?.[0] || "";
+  const collectBlock = model.match(/export function collectOutfitRecord\([\s\S]*$/m)?.[0] || "";
+  assert.doesNotMatch(blankBlock, /mundane_modifier/);
+  assert.doesNotMatch(collectBlock, /mundane_modifier:/);
+  assert.match(model, /delete draft\.mundane_modifier/);
 });
