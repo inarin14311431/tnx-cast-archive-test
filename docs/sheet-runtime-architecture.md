@@ -8,19 +8,22 @@ This document defines the safe refactoring boundary for `sheet.html`.
 
 Dynamic skill/outfit row DOM events are translated by `js/sheet-row-interactions.js`. That adapter owns delegated `input` / row-action `click` binding and emits semantic callbacks only. It does not own `skills`, `outfits`, recalculation, dirty state, persistence, or rendering. `sheet.js` receives those callbacks and remains the owner of editor-state mutation.
 
-Classic skill markup rendering is now delegated to `js/sheet-skill-renderer.js`. The renderer receives explicit row collections plus separator/type-label helpers and returns markup for the general/social/connection and style-skill hosts. It does not own editor collections, event binding, recalculation, dirty state, load/save behavior, or DOM insertion.
+Classic skill markup rendering is delegated to `js/sheet-skill-renderer.js`. The renderer receives explicit row collections plus separator/type-label helpers and returns markup for the general/social/connection and style-skill hosts. It does not own editor collections, event binding, recalculation, dirty state, load/save behavior, or DOM insertion.
+
+Classic outfit card markup rendering is delegated to `js/sheet-outfit-renderer.js`. The renderer receives the current outfit collection and returns the raw category-specific card/control markup consumed by `outfit-tables.js`. It does not own editor state, event binding, table enhancement, OFC enrichment, recalculation, dirty state, persistence, or DOM insertion.
 
 ## Responsibility groups
 
 - Core state mutation / load-save integration / render orchestration: `js/sheet.js`
 - Classic skill markup generation: `js/sheet-skill-renderer.js`
+- Classic outfit raw-card markup generation: `js/sheet-outfit-renderer.js`
 - Dynamic skill/outfit row event translation: `js/sheet-row-interactions.js`
 - Editor navigation and sidebar actions: `js/sheet-sidebar-actions.js`
 - Character Sheets URL import: `js/sheet-import-url.js`
 - Snapshots / recovery: `js/sheet-snapshots.js`
 - Style skill presentation and compatibility: `js/style-skill-*.js`, `js/sheet-import-style-skill-compat.js`
 - Master search and autofill: `js/sheet-master-search*.js`, `js/sheet-master-autofill.js`
-- Outfit helpers and master data: `js/outfit-*.js`
+- Outfit table/display enhancement and master data: `js/outfit-*.js`
 - Combo / counter editor: sheet combo-related modules
 
 ## Refactoring sequence
@@ -67,7 +70,7 @@ The save/load ownership work established separate persistence, serialization, no
 
 This boundary is locked by `tests/sheet-row-interactions.test.mjs`.
 
-The next extraction moves classic skill HTML generation behind a render-only boundary:
+The next extraction moved classic skill HTML generation behind a render-only boundary:
 
 - `sheet-skill-renderer.js` owns general two-column markup, social/connection tables, style-skill rows, separator rows, suit controls, type labels, and row-action markup;
 - `sheet.js` supplies the already ordered/filtered collections, the style-separator predicate, and any runtime style-kind label overrides;
@@ -75,6 +78,15 @@ The next extraction moves classic skill HTML generation behind a render-only bou
 - the renderer has no access to `skills`, persistence, recalculation, dirty state, or event listeners.
 
 This boundary is locked by `tests/sheet-skill-renderer.test.mjs`.
+
+The following extraction moves classic outfit raw-card HTML generation behind the same render-only pattern:
+
+- `sheet-outfit-renderer.js` owns category labels, raw card markup, category-specific base controls, delete-button markup, and user-value escaping;
+- its output deliberately preserves the raw control schemas expected by `outfit-tables.js` for weapon, armor, cyberware, tron, vehicle, residence, and other categories;
+- `sheet.js` retains the `outfits` collection, blank-record creation, category mutation, delete behavior, render invocation, recalculation, dirty state, imports, and persistence;
+- `outfit-tables.js` remains the sole owner of converting raw cards into the category table UI and is not merged into the renderer.
+
+This boundary is locked by `tests/sheet-outfit-renderer.test.mjs`.
 
 ## Safety contracts
 
@@ -84,6 +96,7 @@ This boundary is locked by `tests/sheet-skill-renderer.test.mjs`.
 - Existing element ids and persisted data shape are compatibility contracts.
 - Row interaction adapters must not own editor collections, persistence, recalculation, or dirty-state policy.
 - Render-only modules must not mutate editor collections, bind events, publish dirty state, or perform persistence.
+- Raw outfit renderer output must remain compatible with `outfit-tables.js` category schemas and direct-child card discovery.
 - Refactoring commits should avoid simultaneous CSS/layout changes.
 - A failed runtime audit blocks the refactor before browser deployment.
 - The integrated save/reload E2E is a release guard for future editor-runtime ownership changes.
