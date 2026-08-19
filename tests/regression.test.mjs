@@ -122,11 +122,13 @@ test('OFC responsibilities keep import compatibility, TSV normalization and disp
 
 test('OFC save enhancement is isolated from field rendering', async () => {
   const save = await read('js/outfit-ofc-save.js');
-  assert.match(save, /save_character_bundle_with_ofc/);
+  const persistence = await read('js/sheet-save-persistence.js');
   assert.match(save, /function enrichOutfitPayload/);
   assert.match(save, /ofc_details/);
   assert.match(save, /outfit-ofc-utils\.js/);
-  assert.doesNotMatch(save, /MutationObserver|master-search-copy|tsv-apply/);
+  assert.doesNotMatch(save, /save_character_bundle_with_ofc|supabase\.rpc|MutationObserver|master-search-copy|tsv-apply/);
+  assert.match(persistence, /save_character_bundle_with_ofc/);
+  assert.match(persistence, /enrichOutfitPayload/);
 
   const access = await read('js/sheet-master-search-access.js');
   assert.match(access, /import "\.\/outfit-ofc-save\.js(?:\?[^\"]+)?"/);
