@@ -1,12 +1,11 @@
-export const LABELS = {
-  weapon: "武器",
-  armor: "防具",
-  cyberware: "サイバーウェア",
-  tron: "トロン",
-  vehicle: "ヴィークル",
-  residence: "住居",
-  other: "その他"
-};
+import {
+  OUTFIT_LABELS,
+  normalizeOutfitCategory,
+  outfitSupportsControl,
+  outfitSupportsCsModifier
+} from "./outfit-contract.js";
+
+export const LABELS = OUTFIT_LABELS;
 
 export const RANGE_OPTIONS = [
   "", "なし", "至近", "至近※", "近", "中", "遠", "超遠", "武器", "解説参照", "―"
@@ -124,20 +123,24 @@ export function composeDefense(item) {
 export function cloneOutfit(item) {
   const details = normalizeDetails(item?.ofc_details || {});
   if (!details.electronic_control && item?.electronic_control) details.electronic_control = String(item.electronic_control);
-  const control = normalizeNumber(item?.control_modifier);
-  const draft = { ...item, control_modifier: control, ofc_details: details };
+  const category = item?.category ? normalizeOutfitCategory(item.category) : "";
+  const control = outfitSupportsControl(category) ? normalizeNumber(item?.control_modifier) : 0;
+  const cs = outfitSupportsCsModifier(category) ? normalizeNumber(item?.cs_modifier) : 0;
+  const draft = { ...item, category, control_modifier: control, cs_modifier: cs, ofc_details: details };
   parseConcealment(draft);
   parseDefense(draft);
   return draft;
 }
 
 export function collectOutfitRecord(item, character) {
+  const category = normalizeOutfitCategory(item.category || "other");
   const concealment = String(item._concealValue ?? "").trim();
   const defense = composeDefense(item);
-  const control = normalizeNumber(item.control_modifier);
+  const control = outfitSupportsControl(category) ? normalizeNumber(item.control_modifier) : 0;
+  const cs = outfitSupportsCsModifier(category) ? normalizeNumber(item.cs_modifier) : 0;
   const detailsSource = {
     ...normalizeDetails(item.ofc_details || {}),
-    site_category: item.category || "other",
+    site_category: category,
     purchase_target: String(item.purchase_value ?? ""),
     permanent_cost: String(normalizeNumber(item.experience_cost)),
     concealment,
@@ -154,7 +157,7 @@ export function collectOutfitRecord(item, character) {
 
   return {
     character_id: character?.id,
-    category: item.category || "other",
+    category,
     name: item.name || "",
     purchase_value: String(item.purchase_value ?? ""),
     experience_cost: normalizeNumber(item.experience_cost),
@@ -166,7 +169,7 @@ export function collectOutfitRecord(item, character) {
     slot: item.slot || "",
     description: item.description || "",
     control_modifier: control,
-    cs_modifier: normalizeNumber(item.cs_modifier),
+    cs_modifier: cs,
     mundane_modifier: normalizeNumber(item.mundane_modifier),
     sort_order: normalizeNumber(item.sort_order),
     ofc_details: details
