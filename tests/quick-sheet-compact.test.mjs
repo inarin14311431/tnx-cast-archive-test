@@ -20,3 +20,13 @@ test('quick sheet hides unregistered sections and can detach page three', async 
   assert.match(source, /detachThirdPageIfUnused/);
   assert.match(source, /pageOverflows\(pageTwo\)/);
 });
+
+test('quick outfit values are rendered in cast core without post-render patching', async () => {
+  const castSource = await read('js/cast.js');
+  const compactSource = await read('js/cast-quick-sheet-compact.js');
+  assert.match(castSource, /formatPurchasePair\(outfit\)/);
+  assert.match(castSource, /formatConcealmentPair\(outfit\)/);
+  assert.match(castSource, /cs_modifier:\s*"CS修正"/);
+  assert.doesNotMatch(castSource, /cs_value/);
+  assert.doesNotMatch(compactSource, /cast-quick-outfit-pairs/);
+});
