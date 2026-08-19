@@ -56,10 +56,39 @@ for (const required of [
   if (!seen.has(required)) problems.push(`sheet-mobile-app.js required module is not imported: ${required}`);
 }
 
-const runtimeIndex = appImports.findIndex(value => localPath(value)?.endsWith("sheet-mobile-runtime.js"));
-const featureIndex = appImports.findIndex(value => /sheet-mobile-(?:profile|style|ability|skills|outfit|combos|snapshots|image)\.js/.test(localPath(value) || ""));
+const normalizedImports = appImports.map(value => {
+  const local = localPath(value);
+  return local ? (local.startsWith("js/") ? local : `js/${local.replace(/^\.\//, "")}`) : "";
+});
+const runtimeIndex = normalizedImports.indexOf("js/sheet-mobile-runtime.js");
+const coordinatorIndex = normalizedImports.indexOf("js/sheet-mobile-save-coordinator.js");
+const featureIndexes = normalizedImports
+  .map((value, index) => ({ value, index }))
+  .filter(({ value }) => /^js\/sheet-mobile-(?:profile|style|ability|skills|outfit|combos|snapshots|image|import|summary-text|header-exp|ui)\.js$/.test(value))
+  .map(({ index }) => index);
+const firstFeatureIndex = featureIndexes.length ? Math.min(...featureIndexes) : -1;
 if (runtimeIndex < 0) problems.push("sheet-mobile-app.js must import sheet-mobile-runtime.js explicitly");
-else if (featureIndex >= 0 && runtimeIndex > featureIndex) problems.push("sheet-mobile-runtime.js must load before feature modules");
+else if (firstFeatureIndex >= 0 && runtimeIndex > firstFeatureIndex) problems.push("sheet-mobile-runtime.js must load before feature modules");
+if (coordinatorIndex < 0) problems.push("sheet-mobile-app.js must import sheet-mobile-save-coordinator.js explicitly");
+else if (firstFeatureIndex >= 0 && coordinatorIndex > firstFeatureIndex) problems.push("sheet-mobile-save-coordinator.js must load before feature modules");
+
+const runtimeSource = await readFile(path.join(root, "js/sheet-mobile-runtime.js"), "utf8");
+if (!/requireAuth\(\)/.test(runtimeSource) || !/from\(["']characters["']\)/.test(runtimeSource)) {
+  problems.push("sheet-mobile-runtime.js must own authentication and character lookup");
+}
+
+for (const modulePath of normalizedImports.filter(value => value && value !== "js/sheet-mobile-runtime.js" && value !== "js/sheet-mobile-save-coordinator.js")) {
+  const target = path.join(root, modulePath);
+  if (!await exists(target)) continue;
+  const source = await readFile(target, "utf8");
+  if (/\brequireAuth\b/.test(source)) problems.push(`${modulePath} must use shared mobile runtime instead of requireAuth`);
+  if (/from\(["']characters["']\)\.select\(/.test(source)) problems.push(`${modulePath} must use shared mobile runtime instead of independent character lookup`);
+}
+
+const coordinatorSource = await readFile(path.join(root, "js/sheet-mobile-save-coordinator.js"), "utf8");
+if (!/tnx:mobile-before-save/.test(coordinatorSource) || !/Promise\.all\(tasks\)/.test(coordinatorSource)) {
+  problems.push("sheet-mobile-save-coordinator.js must own coordinated feature flush before base save replay");
+}
 
 for (const id of [
   "mobile-profile",
@@ -82,4 +111,4 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`Mobile editor runtime audit passed: ${assets.length} HTML assets and ${appImports.length} app imports verified.`);
+console.log(`Mobile editor runtime audit passed: ${assets.length} HTML assets, ${appImports.length} app imports, shared context and save ownership verified.`);
