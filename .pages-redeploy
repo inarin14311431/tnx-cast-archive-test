@@ -9,3 +9,4 @@ GitHub Pages redeploy trigger
 2026-08-19 remove retired OFC aliases from PC editor state
 2026-08-19 retire classic sheet outfit compatibility scaffolding
 2026-08-19 consolidate remaining outfit compatibility boundaries
+2026-08-19 retire mobile combined defense and centralize legacy string parsing
