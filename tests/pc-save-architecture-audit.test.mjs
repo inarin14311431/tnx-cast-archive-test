@@ -8,6 +8,7 @@ const [
   sheet,
   payload,
   persistence,
+  loadPersistence,
   coordinator,
   state,
   diagnostics,
@@ -16,25 +17,32 @@ const [
   read("sheet.js"),
   read("sheet-save-payload.js"),
   read("sheet-save-persistence.js"),
+  read("sheet-load-persistence.js"),
   read("sheet-save-coordinator.js"),
   read("sheet-save-state.js"),
   read("sheet-save-diagnostics.js"),
   read("outfit-ofc-save.js")
 ]);
 
-test("classic editor keeps transactional RPC ownership outside sheet.js", () => {
+test("classic editor keeps database transport ownership outside sheet.js", () => {
   assert.doesNotMatch(sheet, /supabase\.rpc\s*\(/);
+  assert.doesNotMatch(sheet, /supabase\.from\s*\(/);
   assert.match(sheet, /persistSheetBundle\(/);
+  assert.match(sheet, /loadSheetBundle\(/);
   assert.match(persistence, /save_character_bundle_with_ofc/);
   assert.match(persistence, /p_character_id:/);
   assert.match(persistence, /p_character:/);
   assert.match(persistence, /p_skills:/);
   assert.match(persistence, /p_outfits:/);
+  assert.match(loadPersistence, /\.from\("characters"\)/);
+  assert.match(loadPersistence, /\.from\("character_skills"\)/);
+  assert.match(loadPersistence, /\.from\("character_outfits"\)/);
 });
 
 test("DB-shaped serialization remains DOM-free and isolated from persistence", () => {
   assert.doesNotMatch(payload, /document\.|querySelector|window\.|supabase/);
   assert.doesNotMatch(persistence, /document\.|querySelector|#save-/);
+  assert.doesNotMatch(loadPersistence, /document\.|querySelector|#save-/);
   assert.match(sheet, /buildCharacterSavePayload/);
   assert.match(sheet, /buildSkillSavePayloads/);
   assert.match(sheet, /buildOutfitSavePayloads/);
