@@ -6,11 +6,10 @@ import {
   cloneOutfit,
   collectOutfitRecord,
   composeConcealment,
-  composeDefense,
   parseConcealment,
   parseDefense,
   normalizeNumber
-} from "./sheet-mobile-outfit-model.js?v=9";
+} from "./sheet-mobile-outfit-model.js?v=10";
 import {
   buildOutfitEditor,
   ensureOutfitDialog,
@@ -108,7 +107,6 @@ function updateDraft(control) {
   }
 
   activeDraft.concealment = composeConcealment(activeDraft);
-  activeDraft.defense = composeDefense(activeDraft);
 
   if (field === "category") renderEditor();
   if (field === "name") {
