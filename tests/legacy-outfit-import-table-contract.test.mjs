@@ -39,3 +39,13 @@ test("legacy outfit import keeps concealment and defense components canonical", 
   assert.match(source, /ofc\("defense_s",s\);ofc\("defense_p",p\);ofc\("defense_i",i\)/);
   assert.match(source, /base\("defense",\[s,p,i\]/);
 });
+
+test("legacy outfit import delegates control and CS category rules to the shared OFC adapter", () => {
+  assert.match(source, /import\("\.\/outfit-ofc-adapter\.js\?v=1"\)/);
+  assert.match(source, /function canonicalModifiers\(item\)/);
+  assert.match(source, /normalizeImportedOutfitDetails\(item\.category/);
+  assert.doesNotMatch(source, /\["armor","vehicle"\]\.includes\(item\.category\)/);
+  assert.doesNotMatch(source, /\["tron","vehicle"\]\.includes\(item\.category\)/);
+  assert.match(source, /base\("control_modifier",modifiers\.control_modifier\)/);
+  assert.match(source, /base\("cs_modifier",modifiers\.cs_modifier\)/);
+});
