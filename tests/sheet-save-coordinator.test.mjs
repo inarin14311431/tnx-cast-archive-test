@@ -28,7 +28,14 @@ test("save coordinator owns dirty, saving and queued-save mechanics", () => {
   assert.match(coordinatorSource, /async function save\(force = false\)/);
   assert.match(coordinatorSource, /if \(saving\) \{[\s\S]*pending = true/);
   assert.match(coordinatorSource, /queueMicrotask\(\(\) => save\(false\)\)/);
-  assert.match(coordinatorSource, /function setStatus\(/);
+});
+
+test("save coordinator publishes lifecycle through the shared state store", () => {
+  assert.match(coordinatorSource, /sheet-save-state\.js\?v=2/);
+  assert.match(coordinatorSource, /setSheetSaveState/);
+  assert.match(coordinatorSource, /function publish\(state, text = ""\)/);
+  assert.doesNotMatch(coordinatorSource, /querySelector\("#save-status"\)/);
+  assert.doesNotMatch(coordinatorSource, /STATUS_SELECTOR/);
 });
 
 test("transactional character persistence stays explicit at the sheet boundary", () => {
