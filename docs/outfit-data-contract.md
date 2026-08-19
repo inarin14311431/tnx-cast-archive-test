@@ -41,12 +41,13 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 ## Ownership
 
 - `js/outfit-contract.js` owns category semantics, canonical field grouping, and canonical user-facing field labels.
-- `js/outfit-view-model.js` owns normalization for read-only public views.
+- `js/outfit-view-model.js` owns shared read normalization for public views and outbound transfer adapters.
 - `js/sheet-mobile-outfit-model.js` owns mobile editor persistence and uses the shared contract.
 - `js/outfit-pc-field-policy.js` derives missing PC base fields and labels from the shared contract; it consumes `tnx:outfit-tables-rendered` rather than observing `#outfit-list` itself.
 - `js/outfit-tables.js` owns raw-card-to-table transport, row ordering, and armor total presentation. It captures the complete raw `[data-o]` card state before controls are moved into presentation cells, so reorder reconstruction no longer depends on which fields are visible in the table.
 - `js/sheet.js` owns the classic editor's in-memory raw outfit model and base bundle payload. New blank outfits no longer seed retired modifier fields, and `collectOutfits()` writes control/CS only for their canonical categories. Meaningful legacy values are emitted only through an explicit compatibility path.
 - `js/outfit-display-rules-v5.js` owns final PC column visibility/order while the classic table transport remains in place.
+- `js/tnx-direct-transfer-data.js` owns Character Sheets field-name translation only. Concealment splitting, defense S/P/I parsing, category normalization, control constraints, and normalized OFC detail values come from `normalizeOutfitForView()` instead of a transfer-local normalizer.
 - `js/sheet-import-outfit-compat.js` is the only legacy outfit reconstruction owner.
 - `js/sheet-import.js` imports profile, styles, abilities, and skills only; it must not reconstruct outfits.
 
@@ -73,6 +74,16 @@ The generic base `defense` field is no longer part of vehicle table presentation
 - `legacyOutfitSaveFields()` carries forward only meaningful legacy values: non-empty vehicle `defense`, non-zero `mundane_modifier`, and non-zero category-invalid control/CS values.
 - The database schema/RPC still contains legacy columns for compatibility. This phase changes client generation and payload ownership; it does not remove DB columns or bulk-migrate existing records.
 
+## Transfer adapter boundary
+
+`js/tnx-direct-transfer-data.js` now receives canonical normalized outfit data from `js/outfit-view-model.js` before translating it to Character Sheets keys.
+
+- It no longer owns a separate concealment parser.
+- It no longer owns a separate S/P/I defense parser.
+- It no longer owns a separate outfit/category normalizer.
+- Character Sheets-specific keys such as `concealA`, `concealB`, `protecS`, `protecP`, `protecI`, and `electrical_control` remain adapter responsibilities.
+- Parsing old label-prefixed lines from descriptions remains transfer compatibility behavior for now; it is not promoted into the canonical model.
+
 ## Compatibility rule
 
 Legacy formats may be read, but new/current saves must use canonical fields. Compatibility code must not infer nonexistent fields or reintroduce retired aliases into new records.
@@ -86,5 +97,6 @@ Legacy formats may be read, but new/current saves must use canonical fields. Com
 5. Distinguish `outfit-tables.js` raw transport schemas from canonical semantics without changing save/reorder behavior.
 6. Decouple reorder reconstruction from visible DOM fields and remove compatibility-only table controls.
 7. Separate `sheet.js` current outfit writes from legacy compatibility preservation.
-8. Reduce remaining compatibility duplication in transfer/import adapters.
-9. Retire legacy backing controls only after their save/import compatibility paths have dedicated coverage.
+8. Migrate outbound transfer normalization to the shared outfit view model.
+9. Reduce remaining compatibility duplication in import/OFC adapters.
+10. Retire legacy backing controls only after their save/import compatibility paths have dedicated coverage.
