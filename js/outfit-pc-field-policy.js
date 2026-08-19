@@ -4,7 +4,7 @@ import {
   OUTFIT_FIELD_LABELS,
   normalizeOutfitCategory
 } from "./outfit-contract.js?v=2";
-import { splitLegacyConcealment } from "./outfit-view-model.js?v=2";
+import { splitLegacyConcealment } from "./outfit-legacy-compat.js?v=1";
 
 const ROOT = "#outfit-list";
 const TABLE_NATIVE_FIELDS = Object.freeze({
