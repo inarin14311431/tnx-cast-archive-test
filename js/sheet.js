@@ -27,16 +27,10 @@ import {
   buildStyleSkillTsvRow,
   buildOutfitTsvRow
 } from "./sheet-tsv-import.js?v=1";
+import { renderStyleCards, renderAbilityCards } from "./sheet-character-renderer.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
-const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;"
-}[char]));
 
 const SUITS = ["reason", "passion", "life", "mundane"];
 const ABILITIES = [
@@ -292,14 +286,7 @@ function fillCharacter(data) {
 }
 
 function renderStyles() {
-  const options = '<option value="">選択</option>' + STYLE_DATA.map(item => `<option>${esc(item.name)}</option>`).join("");
-  const attributes = '<option value="">属性を選択</option>' + UTSUWA_ATTRIBUTES.map(item => `<option>${esc(item.name)}</option>`).join("");
-  $("#style-grid").innerHTML = [1, 2, 3].map(i => `
-    <article class="style-card"><div class="style-fields">
-      <label>スタイル<select id="style-${i}">${options}</select></label>
-      <label>指定<select id="style-${i}-mark"><option value="">無印</option><option>◎</option><option>●</option><option>◎●</option></select></label>
-      <label id="style-${i}-attribute-wrap" hidden>ウツワ属性<select id="style-${i}-attribute">${attributes}</select></label>
-    </div><section class="divine-field"><ruby><strong id="divine-${i}">未選択</strong><rt id="divine-${i}-yomi"></rt></ruby><span>神業</span></section></article>`).join("");
+  $("#style-grid").innerHTML = renderStyleCards({ styleData: STYLE_DATA, utsuwaAttributes: UTSUWA_ATTRIBUTES });
   $("#style-grid").addEventListener("change", event => {
     if (!event.target.matches('[id^="style-"]')) return;
     for (let i = 1; i <= 3; i++) toggleAttribute(i);
@@ -352,14 +339,7 @@ function adjustBaseline(id, oldBase, newBase) {
 }
 
 function renderAbilities() {
-  $("#ability-grid").innerHTML = ABILITIES.map(([key, jp, en]) => `
-    <article class="ability-card ability-matrix"><h3>${jp} <small>${en}</small></h3>
-      <div class="ability-matrix__header"><span></span><strong>能力値</strong><strong>制御値</strong></div>
-      <div class="ability-matrix__row"><span>現在値</span><input id="${key}-base" type="number" min="0" value="0"><input id="${key}-control-base" type="number" min="0" value="0"></div>
-      <div class="ability-matrix__row"><span>補正値</span><input id="${key}-mod" type="number" value="0"><input id="${key}-control-mod" type="number" value="0"></div>
-      <div class="ability-matrix__row ability-matrix__result"><span>最終値</span><strong id="${key}-final">0</strong><strong id="${key}-control-final">0</strong></div>
-    </article>`).join("") + `
-    <article class="ability-card ability-card--cs"><h3>CS</h3><div class="cs-row"><label>現在値<input id="cs-base" type="number" value="0"></label><label>補正値<input id="cs-mod" type="number" value="0"></label><strong id="cs-final">0</strong></div></article>`;
+  $("#ability-grid").innerHTML = renderAbilityCards(ABILITIES);
 }
 
 function blankSkill(category) {
