@@ -42,6 +42,12 @@ function proxyValue(row, field, fallback) {
   return fallback;
 }
 
+function withoutRetiredModifier(payload) {
+  const current = { ...payload };
+  delete current.mundane_modifier;
+  return current;
+}
+
 function enrichOutfitPayload(items) {
   const rows = getOutfitRows();
   const queues = rowsBySignature(rows);
@@ -56,13 +62,12 @@ function enrichOutfitPayload(items) {
 
     if (!row) {
       const category = item.category || "other";
-      return {
+      return withoutRetiredModifier({
         ...item,
         defense: category === "armor" ? "" : item.defense || "",
-        mundane_modifier: undefined,
         sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
         ofc_details: normalizeImportedOutfitDetails(category, item.ofc_details || {})
-      };
+      });
     }
 
     const details = collectDetails(row);
@@ -75,7 +80,7 @@ function enrichOutfitPayload(items) {
       ? Number(valueOf(row, "cs_modifier") || item.cs_modifier || 0)
       : 0;
 
-    const payload = {
+    return withoutRetiredModifier({
       ...item,
       category,
       concealment: String(valueOf(row, "concealment") || ""),
@@ -88,9 +93,7 @@ function enrichOutfitPayload(items) {
       cs_modifier: csModifier,
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
       ofc_details: normalizeImportedOutfitDetails(category, details)
-    };
-    delete payload.mundane_modifier;
-    return payload;
+    });
   });
 }
 
