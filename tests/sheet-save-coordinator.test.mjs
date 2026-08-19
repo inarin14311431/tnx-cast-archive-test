@@ -38,6 +38,13 @@ test("save coordinator publishes lifecycle through the shared state store", () =
   assert.doesNotMatch(coordinatorSource, /STATUS_SELECTOR/);
 });
 
+test("save coordinator publishes structured errors without diagnostics intercepting RPC", () => {
+  assert.match(coordinatorSource, /const SAVE_ERROR_EVENT = "tnx:sheet-save-error"/);
+  assert.match(coordinatorSource, /function publishError\(error, text\)/);
+  assert.match(coordinatorSource, /detail: \{ error, text: String\(text \|\| ""\) \}/);
+  assert.match(coordinatorSource, /publishError\(error, text\);[\s\S]*publish\("error", text\)/);
+});
+
 test("transactional character persistence stays explicit at the sheet boundary", () => {
   assert.match(sheetSource, /supabase\.rpc\("save_character_bundle"/);
   assert.match(sheetSource, /p_character: collectCharacter\(\)/);
