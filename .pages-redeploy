@@ -10,3 +10,4 @@ GitHub Pages redeploy trigger
 2026-08-19 retire classic sheet outfit compatibility scaffolding
 2026-08-19 consolidate remaining outfit compatibility boundaries
 2026-08-19 retire mobile combined defense and centralize legacy string parsing
+2026-08-19 consolidate diagnostics and manual-save compatibility on shared save state
