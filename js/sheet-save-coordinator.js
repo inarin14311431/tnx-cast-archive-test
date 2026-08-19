@@ -11,6 +11,7 @@ export function createSheetSaveCoordinator({
   let dirty = false;
   let saving = false;
   let pending = false;
+  let changeRevision = 0;
 
   function publish(state, text = "") {
     setSheetSaveState(state, text);
@@ -24,11 +25,17 @@ export function createSheetSaveCoordinator({
 
   function markDirty() {
     dirty = true;
+    changeRevision += 1;
+    if (saving) {
+      pending = true;
+      return;
+    }
     publish("unsaved", "未保存");
   }
 
   function markSaved() {
     dirty = false;
+    pending = false;
     publish("saved", "保存済み");
   }
 
@@ -38,6 +45,7 @@ export function createSheetSaveCoordinator({
 
   function markLoadError(text) {
     dirty = false;
+    pending = false;
     publish("error", text);
   }
 
@@ -54,8 +62,8 @@ export function createSheetSaveCoordinator({
       pending = true;
       return false;
     }
-    if (!dirty && force) {
-      markSaved();
+    if (!dirty) {
+      if (force) markSaved();
       return true;
     }
 
@@ -66,14 +74,17 @@ export function createSheetSaveCoordinator({
     }
 
     saving = true;
+    const revisionAtStart = changeRevision;
     publish("saving", "保存中…");
     try {
       const result = await persist?.();
       if (!result) throw new Error("保存結果を確認できませんでした。");
-      dirty = false;
-      publish("saved", "保存済み");
+      const changedWhileSaving = changeRevision !== revisionAtStart;
+      dirty = changedWhileSaving;
+      if (changedWhileSaving) pending = true;
+      else publish("saved", "保存済み");
       onSaved?.(result);
-      return true;
+      return !changedWhileSaving;
     } catch (error) {
       console.error(error);
       dirty = true;
