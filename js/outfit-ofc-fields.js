@@ -126,6 +126,8 @@ function normalizeStoredRecord(row) {
   for (const [key, value] of Object.entries(legacy)) {
     if (!details[key]) details[key] = value;
   }
+  // Legacy DB rows may still carry combined defense. Read it once into the
+  // canonical S/P/I detail state; current editing never writes back to it.
   if (!details.defense_s && !details.defense_p && !details.defense_i) {
     Object.assign(details, parseDefense(row?.defense || ""));
   }
@@ -245,11 +247,10 @@ function collectDetails(row) {
 
   const category = valueOf(row, "category") || "other";
   const concealParts = String(valueOf(row, "concealment") || "").split(/[\/／]/);
-  const armorDefense = parseDefense(valueOf(row, "defense"));
   const visibleDefense = {
-    defense_s: row.querySelector('[data-ofc="defense_s"]')?.value || details.defense_s || armorDefense.defense_s,
-    defense_p: row.querySelector('[data-ofc="defense_p"]')?.value || details.defense_p || armorDefense.defense_p,
-    defense_i: row.querySelector('[data-ofc="defense_i"]')?.value || details.defense_i || armorDefense.defense_i
+    defense_s: row.querySelector('[data-ofc="defense_s"]')?.value || details.defense_s,
+    defense_p: row.querySelector('[data-ofc="defense_p"]')?.value || details.defense_p,
+    defense_i: row.querySelector('[data-ofc="defense_i"]')?.value || details.defense_i
   };
 
   return compactDetails({
