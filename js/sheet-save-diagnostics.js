@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { getSheetSaveState } from "./sheet-save-state.js?v=1";
+import { getSheetSaveState } from "./sheet-save-state.js?v=2";
 
 const SAVE_RPC = "save_character_bundle";
 const STATE_EVENT = "tnx:sheet-save-state";
