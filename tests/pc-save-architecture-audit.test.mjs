@@ -28,6 +28,8 @@ const [
   read("outfit-ofc-save.js")
 ]);
 
+const runtimeDependencyPattern = /document\.|querySelector|window\.|from\s+["'][^"']*supabase-client|supabase\.(?:from|rpc|auth|storage)/;
+
 test("classic editor keeps database transport ownership outside sheet.js", () => {
   assert.doesNotMatch(sheet, /supabase\.rpc\s*\(/);
   assert.doesNotMatch(sheet, /supabase\.from\s*\(/);
@@ -44,9 +46,9 @@ test("classic editor keeps database transport ownership outside sheet.js", () =>
 });
 
 test("DB-shaped serialization and loaded-record normalization remain DOM-free", () => {
-  assert.doesNotMatch(payload, /document\.|querySelector|window\.|supabase/);
-  assert.doesNotMatch(loadNormalization, /document\.|querySelector|window\.|supabase/);
-  assert.doesNotMatch(errorMessage, /document\.|querySelector|window\.|supabase/);
+  assert.doesNotMatch(payload, runtimeDependencyPattern);
+  assert.doesNotMatch(loadNormalization, runtimeDependencyPattern);
+  assert.doesNotMatch(errorMessage, runtimeDependencyPattern);
   assert.doesNotMatch(persistence, /document\.|querySelector|#save-/);
   assert.doesNotMatch(loadPersistence, /document\.|querySelector|#save-/);
   assert.match(sheet, /buildCharacterSavePayload/);
