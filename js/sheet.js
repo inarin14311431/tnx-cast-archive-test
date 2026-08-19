@@ -2,6 +2,7 @@ import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
 import { SITE_BASE_PATH } from "./config.js?v=2";
+import { createSheetSaveCoordinator } from "./sheet-save-coordinator.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -51,11 +52,32 @@ let character = null;
 let skills = [];
 let outfits = [];
 let loading = false;
-let dirty = false;
-let saving = false;
-let pending = false;
 let importMode = "";
 const styleBaseline = {};
+
+const saveCoordinator = createSheetSaveCoordinator({
+  validate() {
+    if (!$("#character-name")?.value.trim() || !$("#player-name")?.value.trim()) return "キャスト名とプレイヤー名を入力してください。";
+    return "";
+  },
+  async persist() {
+    const { data, error } = await supabase.rpc("save_character_bundle", {
+      p_character_id: character?.id ?? null,
+      p_character: collectCharacter(),
+      p_skills: collectSkills(),
+      p_outfits: collectOutfits()
+    });
+    if (error) throw error;
+    if (!data?.id || !data?.public_id) throw new Error("保存結果を確認できませんでした。");
+    character = data;
+    history.replaceState(null, "", `${SITE_BASE_PATH}sheet.html?id=${encodeURIComponent(character.public_id)}`);
+    window.dispatchEvent(new CustomEvent("tnx:character-saved", { detail: { id: character.id, publicId: character.public_id } }));
+    return data;
+  },
+  onError(error) {
+    return jpError(error?.message);
+  }
+});
 
 init();
 
@@ -73,7 +95,7 @@ function bind() {
   document.addEventListener("input", onEdit);
   document.addEventListener("change", onEdit);
   window.addEventListener("beforeunload", event => {
-    if (!dirty) return;
+    if (!saveCoordinator.hasUnsavedChanges()) return;
     event.preventDefault();
     event.returnValue = "";
   });
@@ -111,7 +133,7 @@ function bind() {
     }
   });
 
-  $("#save-button").onclick = () => saveAll(true);
+  $("#save-button").onclick = () => saveCoordinator.save(true);
   $("#add-general").onclick = addGeneralSkill;
   $("#add-social").onclick = () => addSkill("social", "proper", "社会：");
   $("#add-connection").onclick = () => addSkill("connection", "proper", "コネ：");
@@ -202,11 +224,13 @@ function createNew() {
     { ...blankSkill("connection"), name: "コネ：", level: 1, free_level: 0, skill_kind: "proper" }
   );
   renderSkills(); renderOutfits(); recalc();
-  loading = false; dirty = true; setStatus("未保存", "unsaved");
+  loading = false;
+  saveCoordinator.markDirty();
 }
 
 async function loadCharacter(publicId) {
-  loading = true; setStatus("読込中…", "saving");
+  loading = true;
+  saveCoordinator.markLoading("読込中…");
   try {
     const { data, error } = await supabase.from("characters").select("*").eq("public_id", publicId).eq("owner_id", user.id).maybeSingle();
     if (error) throw error;
@@ -222,11 +246,11 @@ async function loadCharacter(publicId) {
     ensureGeneralMasterRows(); addInitialGeneralBlankSlots();
     outfits = (outfitResult.data ?? []).map(normalizeOutfit);
     renderSkills(); renderOutfits(); recalc();
-    dirty = false; setStatus("保存済み", "saved");
+    saveCoordinator.markSaved();
   } catch (error) {
     console.error(error); character = null; skills = []; outfits = [];
-    renderSkills(); renderOutfits(); dirty = false;
-    setStatus(`読込に失敗しました。保存は行われません：${jpError(error?.message)}`, "error");
+    renderSkills(); renderOutfits();
+    saveCoordinator.markLoadError(`読込に失敗しました。保存は行われません：${jpError(error?.message)}`);
   } finally { loading = false; }
 }
 
@@ -497,7 +521,7 @@ function recalc() {
   $("#cs-final").textContent = Number($("#cs-base").value || 0) + Number($("#cs-mod").value || 0);
   window.TNXExperience?.queue?.();
 }
-function markDirty() { if (loading) return; dirty = true; setStatus("未保存", "unsaved"); }
+function markDirty() { if (loading) return; saveCoordinator.markDirty(); }
 
 function collectCharacter() {
   const experience = window.TNXExperience?.calculate?.();
@@ -518,7 +542,7 @@ function collectCharacter() {
     payload[`${key}_gear`] = Number($(`#${key}-mod`).value || 0); payload[`${key}_manual`] = 0; payload[`${key}_value`] = final(key);
     const controlKey = `${key}-control`;
     payload[`${key}_control_base`] = current(controlKey); payload[`${key}_control_growth`] = Math.max(0, current(controlKey) - Number(styleBaseline[controlKey] || 0));
-    payload[`${key}_control_gear`] = Number($(`#${controlKey}-mod`).value || 0); payload[`${key}_control_manual`] = 0; payload[`${key}_control`] = final(controlKey);
+    payload[`${key}_control_gear`] = Number($(`#${controlKey}-mod`).value || 0); payload[`${controlKey.replace("-", "_")}_manual`] = 0; payload[`${key}_control`] = final(controlKey);
   }
   payload.cs_base = Number($("#cs-base").value || 0); payload.cs_gear = Number($("#cs-mod").value || 0); payload.cs_manual = 0; payload.cs = payload.cs_base + payload.cs_gear;
   return payload;
@@ -553,23 +577,6 @@ function collectOutfits() {
   });
 }
 
-async function saveAll(force) {
-  if (saving) { pending = true; return; }
-  if (!dirty && force) { setStatus("保存済み", "saved"); pulse("saved"); return; }
-  if (!$("#character-name").value.trim() || !$("#player-name").value.trim()) { if (force) setStatus("キャスト名とプレイヤー名を入力してください。", "error"); return; }
-  saving = true; setStatus("保存中…", "saving"); pulse("saving");
-  try {
-    const { data, error } = await supabase.rpc("save_character_bundle", { p_character_id: character?.id ?? null, p_character: collectCharacter(), p_skills: collectSkills(), p_outfits: collectOutfits() });
-    if (error) throw error;
-    if (!data?.id || !data?.public_id) throw new Error("保存結果を確認できませんでした。");
-    character = data; history.replaceState(null, "", `${SITE_BASE_PATH}sheet.html?id=${encodeURIComponent(character.public_id)}`);
-    window.dispatchEvent(new CustomEvent("tnx:character-saved", { detail: { id: character.id, publicId: character.public_id } }));
-    dirty = false; setStatus("保存済み", "saved"); pulse("saved");
-  } catch (error) {
-    console.error(error); dirty = true; setStatus(jpError(error?.message), "error"); pulse("error");
-  } finally { saving = false; if (pending) { pending = false; saveAll(false); } }
-}
-
 function openImport(mode) { importMode = mode; $("#tsv-title").textContent = `${mode.toUpperCase()} TSV取込`; $("#tsv-text").value = ""; $("#tsv-dialog").showModal(); }
 
 function parseTSV(text) {
@@ -600,9 +607,3 @@ function jpError(message = "") {
   if (/network|fetch/i.test(message)) return "通信に失敗しました。既存データは変更されていません。ネットワーク接続を確認してください。";
   return message ? `保存に失敗しました。既存データは変更されていません：${message}` : "保存に失敗しました。既存データは変更されていません。";
 }
-
-function pulse(state) {
-  const button = $("#save-button"); button.classList.remove("is-saving", "is-saved", "is-error"); void button.offsetWidth;
-  button.classList.add(state === "saving" ? "is-saving" : state === "saved" ? "is-saved" : "is-error");
-}
-function setStatus(text, state = "") { const element = $("#save-status"); element.textContent = text; element.className = state; }
