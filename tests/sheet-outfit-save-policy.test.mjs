@@ -44,7 +44,8 @@ test("classic sheet delegates outfit serialization to the payload contract", () 
   assert.doesNotMatch(collect, /payload\.defense/);
   assert.doesNotMatch(collect, /mundane_modifier/);
 
-  const builder = functionBlock(payloadSource, "buildOutfitSavePayloads", "buildSkillSavePayloads");
+  const builder = payloadSource.match(/export function buildOutfitSavePayloads\([\s\S]*$/)?.[0] || "";
+  assert.ok(builder, "buildOutfitSavePayloads block should exist");
   assert.match(builder, /category === "armor"\) payload\.control_modifier/);
   assert.match(builder, /category === "tron"\) payload\.cs_modifier/);
   assert.match(builder, /category === "vehicle"[\s\S]*payload\.control_modifier[\s\S]*payload\.cs_modifier/);
