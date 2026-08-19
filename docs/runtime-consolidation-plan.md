@@ -51,7 +51,7 @@ Evaluation result:
 
 Decision:
 
-Do not merge these files in the current consolidation phase. Keep the new characterization test as a guard for the intentional separation.
+Do not merge these files in the current consolidation phase. Keep the characterization test as a guard for the intentional separation.
 
 ### 3. Quick-sheet presentation pair — keep separate
 
@@ -62,16 +62,29 @@ Files:
 
 Evaluation result:
 
-- characterization coverage now locks the current layout boundary;
+- characterization coverage locks the layout boundary;
 - `cast-quick-sheet-compact.js` owns content compaction, empty-block cleanup, page-2 overflow detection, and page-3 attach/detach behavior;
 - `quick-sheet-paper-layout.js` owns paper-counter conversion and stable page-2 section ordering;
 - both observe the quick-sheet DOM and react to detail-toggle/resize because they recover different timing-sensitive presentation responsibilities;
-- a merge could remove a small amount of duplicated scheduling/listener boilerplate, but it would couple page allocation to paper-only normalization without removing any duplicated data load or rendering pipeline;
-- the benefit is therefore too small relative to the risk of regressions in A4 page allocation, expanded descriptions, and print ordering.
+- a merge would couple page allocation to paper-only normalization without removing a duplicated data load or rendering pipeline.
 
 Decision:
 
-Do not merge these files in the current consolidation phase. Keep the new quick-sheet characterization test as a guard for the intentional separation.
+Do not merge these files. Keep the quick-sheet characterization test as a guard for the intentional separation.
+
+### 4. Quick-sheet outfit post-render patch — retired
+
+The temporary `js/cast-quick-outfit-pairs.js` layer had become a third owner of quick-sheet outfit columns and values. Unlike the two layout modules above, it duplicated a responsibility that belongs to the core renderer.
+
+Result:
+
+- purchase and concealment paired values are rendered directly by `js/cast.js`;
+- canonical outfit data is normalized by `js/outfit-view-model.js`;
+- quick-sheet outfit sizing is owned by CSS;
+- `cast-quick-outfit-pairs.js` and its dynamic import were removed;
+- `cast-quick-sheet-compact.js` and `quick-sheet-paper-layout.js` remain separate and unchanged in responsibility.
+
+This cleanup is not a reversal of the decision to keep the two layout helpers separate. It removes only the redundant third data/schema mutation owner.
 
 ## Explicit non-candidates for this phase
 
@@ -97,10 +110,11 @@ For each candidate:
 
 ## Phase status — complete
 
-The consolidation candidates identified for this phase have now been evaluated.
+The consolidation candidates identified for this phase have been evaluated.
 
 - The mobile cast/mobile combo boundary was consolidated because it removed a duplicate data fetch and delayed enhancement observer.
 - The cast skill presentation pair remains separate because the modules own different data/render responsibilities.
 - The quick-sheet presentation pair remains separate because the modules own different timing-sensitive page-layout responsibilities.
+- The later quick-sheet outfit post-render patch was retired because it duplicated core data/schema rendering rather than providing a distinct recovery responsibility.
 
 No further runtime files should be merged merely to reduce script count. Additional consolidation should start only when a concrete duplicated lifecycle, data load, or rendering responsibility is identified and covered by dedicated regression/E2E characterization first.
