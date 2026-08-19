@@ -24,3 +24,4 @@ GitHub Pages redeploy trigger
 2026-08-19 extract classic sheet load persistence boundary
 2026-08-19 extract classic loaded-record normalization and error wording
 2026-08-19 align regression tests with extracted load and normalization boundaries
+2026-08-19 extract classic sheet row interaction boundary
