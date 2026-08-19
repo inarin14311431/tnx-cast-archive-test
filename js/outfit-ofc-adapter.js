@@ -1,7 +1,6 @@
 import {
   normalizeOutfitCategory,
-  outfitSupportsControl,
-  outfitSupportsCsModifier
+  normalizeOutfitDetailCompatibility
 } from "./outfit-contract.js";
 
 export function masterRowToOutfitDetails(row = {}) {
@@ -43,17 +42,7 @@ export function masterRowToOutfitDetails(row = {}) {
 
 export function normalizeImportedOutfitDetails(categoryValue, value = {}) {
   const category = normalizeOutfitCategory(categoryValue);
-  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  const normalized = compactOutfitDetails({
-    ...source,
-    control_modifier: source.control_modifier ?? source.control_value,
-    cs_modifier: source.cs_modifier ?? source.cs_value
-  });
-  delete normalized.control_value;
-  delete normalized.cs_value;
-  if (!outfitSupportsControl(category)) delete normalized.control_modifier;
-  if (!outfitSupportsCsModifier(category)) delete normalized.cs_modifier;
-  return normalized;
+  return compactOutfitDetails(normalizeOutfitDetailCompatibility(category, value));
 }
 
 export function compactOutfitDetails(value = {}) {
