@@ -31,6 +31,7 @@ import { renderStyleCards, renderAbilityCards } from "./sheet-character-renderer
 import { calculateStyleBaselines } from "./sheet-style-baseline.js?v=1";
 import { buildStylePresentation } from "./sheet-style-presentation.js?v=1";
 import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
+import { resolveStyleBaselineValue } from "./sheet-baseline-adjustment.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -346,7 +347,8 @@ function updateDivines(apply) {
 
 function adjustBaseline(id, oldBase, newBase) {
   const element = $(`#${id}-base`);
-  if (element && (Number(element.value || 0) === oldBase || Number(element.value || 0) === 0)) element.value = newBase;
+  if (!element) return;
+  element.value = String(resolveStyleBaselineValue(element.value, oldBase, newBase));
 }
 
 function renderAbilities() {
