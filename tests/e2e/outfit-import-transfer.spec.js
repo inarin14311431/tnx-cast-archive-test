@@ -140,3 +140,48 @@ test("アウトフィット追加と並べ替え後も複数行フィールド�
   await expect(movedFirst.locator('[data-o="description"]')).toHaveValue("FIRST DESCRIPTION");
   await expect(movedSecond.locator('[data-o="description"]')).toHaveValue("SECOND DESCRIPTION");
 });
+
+test("防具S P Iは正式フィールドで編集し、合計と並べ替え後の値を維持する", async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openEditor(page);
+
+  const suffix = Date.now();
+  const firstName = `E2E-ARMOR-A-${suffix}`;
+  const secondName = `E2E-ARMOR-B-${suffix}`;
+
+  await page.locator('[data-add-outfit-category="armor"]').click();
+  let armorRows = page.locator('#outfit-list .outfit-table-group--armor .outfit-table-row');
+  let first = armorRows.last();
+  await first.locator('[data-o="name"]').fill(firstName);
+  await expect(first.locator('[data-ofc="defense_s"]')).toBeVisible({ timeout: 10000 });
+  await first.locator('[data-ofc="defense_s"]').fill("2");
+  await first.locator('[data-ofc="defense_p"]').fill("3");
+  await first.locator('[data-ofc="defense_i"]').fill("4");
+
+  await page.locator('[data-add-outfit-category="armor"]').click();
+  armorRows = page.locator('#outfit-list .outfit-table-group--armor .outfit-table-row');
+  let second = armorRows.last();
+  await second.locator('[data-o="name"]').fill(secondName);
+  await expect(second.locator('[data-ofc="defense_s"]')).toBeVisible({ timeout: 10000 });
+  await second.locator('[data-ofc="defense_s"]').fill("5");
+  await second.locator('[data-ofc="defense_p"]').fill("6");
+  await second.locator('[data-ofc="defense_i"]').fill("7");
+
+  const armorGroup = page.locator('#outfit-list .outfit-table-group--armor');
+  await expect(armorGroup.locator('[data-armor-total="s"]')).toHaveText("7");
+  await expect(armorGroup.locator('[data-armor-total="p"]')).toHaveText("9");
+  await expect(armorGroup.locator('[data-armor-total="i"]')).toHaveText("11");
+  await expect(armorGroup.locator('[data-armor-defense]')).toHaveCount(0);
+
+  second = outfitRowByName(page, secondName);
+  await second.locator('[data-outfit-move="up"]').click();
+
+  const movedFirst = outfitRowByName(page, firstName);
+  const movedSecond = outfitRowByName(page, secondName);
+  await expect(movedFirst.locator('[data-ofc="defense_s"]')).toHaveValue("2", { timeout: 10000 });
+  await expect(movedFirst.locator('[data-ofc="defense_p"]')).toHaveValue("3");
+  await expect(movedFirst.locator('[data-ofc="defense_i"]')).toHaveValue("4");
+  await expect(movedSecond.locator('[data-ofc="defense_s"]')).toHaveValue("5");
+  await expect(movedSecond.locator('[data-ofc="defense_p"]')).toHaveValue("6");
+  await expect(movedSecond.locator('[data-ofc="defense_i"]')).toHaveValue("7");
+});
