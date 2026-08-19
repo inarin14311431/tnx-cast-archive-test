@@ -18,11 +18,14 @@ General-skill collection rules are delegated to `js/sheet-general-skill-state.js
 
 Classic SKD/OFC TSV parsing and base-row mapping are delegated to `js/sheet-tsv-import.js`. The helper owns tabular text parsing, SKD style-kind/level/name/description mapping, and the legacy OFC target/base-field mapping as DOM-free transforms. `sheet.js` continues to own the import dialog mode, blank-row identity/sort order, live collection mutation, rerendering, recalculation, and dirty state. Legacy Character Sheets JSON compatibility remains owned by its existing dedicated modules and is not part of this boundary.
 
+Static character-editor markup for the three style cards and the four ability/control cards plus CS is delegated to `js/sheet-character-renderer.js`. The renderer receives style records, Utsuwa attributes, and ability descriptors and returns HTML only. `sheet.js` continues to own DOM insertion, the style-grid change listener, Utsuwa visibility, divine display, baseline calculation, recalculation, dirty state, load/save behavior, and all editor state.
+
 ## Responsibility groups
 
 - Core state mutation / load-save integration / render orchestration: `js/sheet.js`
 - General-skill collection normalization and ordering: `js/sheet-general-skill-state.js`
 - Classic SKD/OFC TSV parsing and row mapping: `js/sheet-tsv-import.js`
+- Static style/ability/CS editor markup: `js/sheet-character-renderer.js`
 - Classic skill/outfit blank-record defaults: `js/sheet-row-factory.js`
 - Classic skill markup generation: `js/sheet-skill-renderer.js`
 - Classic outfit raw-card markup generation: `js/sheet-outfit-renderer.js`
@@ -130,6 +133,15 @@ The next extraction moves the classic TSV dialog's deterministic parsing and row
 
 This boundary is locked by `tests/sheet-tsv-import.test.mjs`. `tests/e2e/sheet-row-lifecycle.spec.js` now also exercises an SKD TSV import through the real dialog, while the existing `tests/e2e/outfit-import-transfer.spec.js` continues to exercise OFC TSV conversion through the full enhancement chain.
 
+The following extraction moves only the deterministic character-editor markup out of `sheet.js`:
+
+- `sheet-character-renderer.js` owns the HTML for the three style cards, mark selectors, hidden Utsuwa attribute selectors, divine placeholders, four ability/control matrices, and CS card;
+- style and attribute names are escaped by the renderer before becoming option markup;
+- `sheet.js` inserts the returned markup but retains the `#style-grid` change listener, Utsuwa show/hide behavior, divine lookup, baseline calculation, ability/control recalculation, editor state, persistence, and dirty-state ownership;
+- no style-data semantics or ability/control formulas move into the renderer.
+
+This boundary is locked by `tests/sheet-character-renderer.test.mjs`. The authenticated `tests/e2e/sheet-row-lifecycle.spec.js` additionally verifies all style/ability/CS controls and switches a style to Utsuwa to prove the existing change handler and divine/attribute behavior remain connected after rendering extraction.
+
 ## Safety contracts
 
 - `js/sheet.js` is loaded exactly once.
@@ -140,6 +152,7 @@ This boundary is locked by `tests/sheet-tsv-import.test.mjs`. `tests/e2e/sheet-r
 - Row factories must remain DOM-free, collection-free, rendering-free, and persistence-free; contextual sort-order policy remains in `sheet.js`.
 - General-skill state helpers must remain DOM-free and persistence-free; browser-derived placement and live editor ownership remain in `sheet.js`.
 - TSV import transforms must remain DOM-free, state-mutation-free, and persistence-free; dialog ownership and collection mutation remain in `sheet.js`, and legacy JSON compatibility remains outside this module.
+- Character-editor renderers must remain DOM-free and event-free; style/ability behavior and calculations remain in `sheet.js`.
 - Render-only modules must not mutate editor collections, bind events, publish dirty state, or perform persistence.
 - Raw outfit renderer output must remain compatible with `outfit-tables.js` category schemas and direct-child card discovery.
 - Refactoring commits should avoid simultaneous CSS/layout changes.
