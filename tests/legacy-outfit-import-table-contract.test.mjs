@@ -37,7 +37,7 @@ test("legacy outfit import supports DB-backed proxy fields", () => {
 test("legacy outfit import keeps concealment and defense components canonical", () => {
   assert.match(source, /ofc\("concealment_penalty"/);
   assert.match(source, /ofc\("defense_s",s\);ofc\("defense_p",p\);ofc\("defense_i",i\)/);
-  assert.match(source, /base\("defense",\[s,p,i\]/);
+  assert.doesNotMatch(source, /base\("defense",\[s,p,i\]/);
 });
 
 test("legacy outfit import delegates control and CS category rules to the shared OFC adapter", () => {
