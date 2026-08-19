@@ -4,6 +4,7 @@ import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
 import { SITE_BASE_PATH } from "./config.js?v=2";
 import { createSheetSaveCoordinator } from "./sheet-save-coordinator.js?v=1";
 import { persistSheetBundle } from "./sheet-save-persistence.js?v=1";
+import { loadSheetBundle } from "./sheet-load-persistence.js?v=1";
 import { buildCharacterSavePayload, buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=1";
 
 const $ = selector => document.querySelector(selector);
@@ -232,19 +233,11 @@ async function loadCharacter(publicId) {
   loading = true;
   saveCoordinator.markLoading("読込中…");
   try {
-    const { data, error } = await supabase.from("characters").select("*").eq("public_id", publicId).eq("owner_id", user.id).maybeSingle();
-    if (error) throw error;
-    if (!data) throw new Error("キャストを読み込めませんでした。");
-    const [skillResult, outfitResult] = await Promise.all([
-      supabase.from("character_skills").select("*").eq("character_id", data.id).order("sort_order"),
-      supabase.from("character_outfits").select("*").eq("character_id", data.id).order("sort_order")
-    ]);
-    const relatedError = skillResult.error || outfitResult.error;
-    if (relatedError) throw relatedError;
-    character = data; fillCharacter(data);
-    skills = (skillResult.data ?? []).map(normalizeSkill);
+    const bundle = await loadSheetBundle({ publicId, ownerId: user.id });
+    character = bundle.character; fillCharacter(character);
+    skills = bundle.skills.map(normalizeSkill);
     ensureGeneralMasterRows(); addInitialGeneralBlankSlots();
-    outfits = (outfitResult.data ?? []).map(normalizeOutfit);
+    outfits = bundle.outfits.map(normalizeOutfit);
     renderSkills(); renderOutfits(); recalc();
     saveCoordinator.markSaved();
   } catch (error) {
