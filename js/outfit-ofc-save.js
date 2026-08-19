@@ -3,7 +3,6 @@ import { supabase } from "./supabase-client.js";
 import {
   getOutfitRows,
   outfitSignature,
-  parseDefense,
   rowSignature,
   valueOf
 } from "./outfit-ofc-utils.js";
@@ -55,8 +54,10 @@ function enrichOutfitPayload(items) {
     if (row) used.add(row);
 
     if (!row) {
+      const category = item.category || "other";
       return {
         ...item,
+        defense: category === "armor" ? "" : item.defense || "",
         sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
         ofc_details: compactDetails(item.ofc_details || {})
       };
@@ -78,7 +79,9 @@ function enrichOutfitPayload(items) {
       concealment: String(valueOf(row, "concealment") || ""),
       slot: proxyValue(row, "slot", item.slot || ""),
       electronic_control: electronicControl,
-      defense: category === "vehicle" ? composeDefense(details, item.defense) : item.defense || "",
+      // The base defense column is now vehicle compatibility only. Armor S/P/I
+      // persist canonically in ofc_details and clear the retired combined value.
+      defense: category === "vehicle" ? composeDefense(details, item.defense) : "",
       control_modifier: controlModifier,
       cs_modifier: csModifier,
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
@@ -95,12 +98,10 @@ function collectDetails(row) {
 
   const category = valueOf(row, "category") || row.closest("table")?.dataset.outfitSchema || "other";
   const concealmentValue = String(valueOf(row, "concealment") || "");
-  const armorDefense = parseDefense(valueOf(row, "defense"));
-
   const defense = {
-    defense_s: row.querySelector('[data-armor-defense="S"],[data-armor-defense="s"]')?.value || details.defense_s || armorDefense.defense_s,
-    defense_p: row.querySelector('[data-armor-defense="P"],[data-armor-defense="p"]')?.value || details.defense_p || armorDefense.defense_p,
-    defense_i: row.querySelector('[data-armor-defense="I"],[data-armor-defense="i"]')?.value || details.defense_i || armorDefense.defense_i
+    defense_s: row.querySelector('[data-ofc="defense_s"]')?.value || details.defense_s || "",
+    defense_p: row.querySelector('[data-ofc="defense_p"]')?.value || details.defense_p || "",
+    defense_i: row.querySelector('[data-ofc="defense_i"]')?.value || details.defense_i || ""
   };
 
   return compactDetails({
