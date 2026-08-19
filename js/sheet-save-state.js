@@ -9,16 +9,31 @@ const labels = Object.freeze({
   error: ["保存失敗", "SAVE ERROR"]
 });
 
-let currentState = "unsaved";
-let currentText = "";
+const VALID_STATES = new Set(Object.keys(labels));
+let currentState = "saving";
+let currentText = "初期化中…";
 let installed = false;
 
 export function getSheetSaveState() {
   return currentState;
 }
 
+export function getSheetSaveText() {
+  return currentText;
+}
+
 export function hasUnsavedSheetChanges() {
   return currentState === "unsaved" || currentState === "error";
+}
+
+export function setSheetSaveState(state, text = "") {
+  const nextState = VALID_STATES.has(state) ? state : "unsaved";
+  const nextText = String(text || labels[nextState][0]);
+  currentState = nextState;
+  currentText = nextText;
+  renderSheetSaveState();
+  window.dispatchEvent(new CustomEvent(STATE_EVENT, { detail: { state: currentState, text: currentText } }));
+  return currentState;
 }
 
 export function requestSheetSave() {
@@ -55,51 +70,41 @@ export function waitForSheetSaved(timeout = 20000) {
   });
 }
 
-export function installSheetSaveState() {
-  if (installed) return;
+function renderSheetSaveState() {
   const status = document.querySelector(STATUS_SELECTOR);
   const button = document.querySelector(BUTTON_SELECTOR);
-  if (!status || !button) return;
+
+  if (status) {
+    status.textContent = currentText;
+    status.className = currentState;
+  }
+
+  if (!button) return;
+  button.classList.remove("is-unsaved", "is-saving", "is-saved", "is-error");
+  button.classList.add(`is-${currentState}`);
+  button.dataset.saveState = currentState;
+
+  const [jp, en] = labels[currentState];
+  button.replaceChildren(document.createTextNode(jp + " "));
+  const small = document.createElement("small");
+  small.textContent = en;
+  button.append(small);
+  button.setAttribute("aria-label", jp);
+}
+
+export function installSheetSaveState() {
+  if (installed) return;
   installed = true;
-
-  const sync = () => {
-    const text = status.textContent || "";
-    let state = "unsaved";
-    if (status.classList.contains("error") || /エラー|失敗/.test(text)) state = "error";
-    else if (status.classList.contains("saving") || /保存中|読込中|初期化中/.test(text)) state = "saving";
-    else if (status.classList.contains("saved") || /保存済み/.test(text)) state = "saved";
-
-    currentState = state;
-    currentText = text;
-    button.classList.remove("is-unsaved", "is-saving", "is-saved", "is-error");
-    button.classList.add(`is-${state}`);
-    button.dataset.saveState = state;
-
-    const [jp, en] = labels[state];
-    button.replaceChildren(document.createTextNode(jp + " "));
-    const small = document.createElement("small");
-    small.textContent = en;
-    button.append(small);
-    button.setAttribute("aria-label", jp);
-
-    window.dispatchEvent(new CustomEvent(STATE_EVENT, { detail: { state, text } }));
-  };
-
-  new MutationObserver(sync).observe(status, {
-    attributes: true,
-    attributeFilter: ["class"],
-    childList: true,
-    subtree: true,
-    characterData: true
-  });
-  sync();
+  renderSheetSaveState();
 }
 
 installSheetSaveState();
 
 globalThis.TNXSheetSaveState = Object.freeze({
   getState: getSheetSaveState,
+  getText: getSheetSaveText,
   hasUnsavedChanges: hasUnsavedSheetChanges,
+  setState: setSheetSaveState,
   requestSave: requestSheetSave,
   waitForSaved: waitForSheetSaved,
   focusButton: focusSheetSaveButton
