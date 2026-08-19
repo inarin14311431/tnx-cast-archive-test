@@ -7,6 +7,7 @@ const cleanup = await readFile(new URL("../supabase/12_outfit_canonical_cleanup.
 const adapter = await readFile(new URL("../js/outfit-ofc-adapter.js", import.meta.url), "utf8");
 const contract = await readFile(new URL("../js/outfit-contract.js", import.meta.url), "utf8");
 const pcSave = await readFile(new URL("../js/outfit-ofc-save.js", import.meta.url), "utf8");
+const pcFields = await readFile(new URL("../js/outfit-ofc-fields.js", import.meta.url), "utf8");
 const mobileModel = await readFile(new URL("../js/sheet-mobile-outfit-model.js", import.meta.url), "utf8");
 
 test("canonical cleanup removes retired outfit aliases and armor base defense", () => {
@@ -40,4 +41,12 @@ test("current import and save boundaries do not re-emit retired aliases", () => 
   assert.doesNotMatch(pcSave, /ofc_details\s*:\s*\{[^}]*cs_value/s);
   assert.doesNotMatch(mobileModel, /ofc_details\s*:\s*\{[^}]*control_value/s);
   assert.doesNotMatch(mobileModel, /ofc_details\s*:\s*\{[^}]*cs_value/s);
+});
+
+test("PC OFC detail state no longer defines retired aliases", () => {
+  const fieldDefinitions = pcFields.match(/const FIELD_DEFINITIONS = \{([\s\S]*?)\n\};/)?.[1] || "";
+  assert.doesNotMatch(fieldDefinitions, /control_value/);
+  assert.doesNotMatch(fieldDefinitions, /cs_value/);
+  assert.doesNotMatch(fieldDefinitions, /mundane_modifier/);
+  assert.match(pcFields, /Retired aliases are normalized at explicit import boundaries/);
 });
