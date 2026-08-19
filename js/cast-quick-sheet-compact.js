@@ -123,4 +123,4 @@
   window.addEventListener('resize', scheduleCompact);
 })();
 
-import('./cast-quick-outfit-pairs.js?v=3').catch(error => console.error('Quick outfit pair display failed', error));
+import('./cast-quick-outfit-pairs.js?v=4').catch(error => console.error('Quick outfit pair display failed', error));
