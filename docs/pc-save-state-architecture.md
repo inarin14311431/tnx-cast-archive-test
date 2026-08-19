@@ -5,11 +5,15 @@ The classic PC editor separates editor capture, payload serialization, persisten
 `js/sheet-save-coordinator.js` owns producer-side save lifecycle mechanics:
 
 - dirty / saving / pending state;
-- queued repeat-save handling while a save is already running;
+- a monotonic edit revision used to distinguish the snapshot currently being persisted from edits made while that request is in flight;
+- queued follow-up save handling when the editor changes during an active save;
+- suppression of redundant persistence calls when a queued request reaches an already-clean editor;
 - validation gating;
 - publishing explicit `unsaved`, `saving`, `saved`, and `error` transitions through `sheet-save-state.js`;
 - publishing the raw failed save error through `tnx:sheet-save-error` before the public error-state transition;
 - registering the canonical save command used by shared consumers.
+
+An edit made while a save request is running must never be cleared by completion of the older request. `markDirty()` advances the revision and queues a follow-up save; the active save only clears dirty state when no newer revision exists.
 
 `js/sheet-save-payload.js` owns the DB-shaped serialization contract for the classic editor:
 
@@ -31,7 +35,7 @@ The payload module is DOM-free. `sheet.js` reads the editor state and supplies a
 
 `js/outfit-ofc-save.js` is now an explicit outfit enrichment adapter. It no longer imports the Supabase client or monkey-patches `supabase.rpc`.
 
-`js/sheet.js` owns editor interaction and capture plus post-save editor integration. Its `collectCharacter()`, `collectSkills()`, and `collectOutfits()` functions now gather current editor state and delegate DB-shaped serialization to `sheet-save-payload.js`. The persistence callback then calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
+`js/sheet.js` owns editor interaction and capture plus post-save editor integration. Its `collectCharacter()`, `collectSkills()`, and `collectOutfits()` functions gather current editor state and delegate DB-shaped serialization to `sheet-save-payload.js`. The persistence callback then calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
 
 `js/sheet-save-state.js` is the single presentation/consumer bridge for save state.
 
@@ -58,7 +62,7 @@ Current ownership boundary:
 
 - `sheet.js`: editor DOM/state capture and post-save URL/event integration;
 - `sheet-save-payload.js`: canonical DB-shaped character/skill/outfit serialization;
-- `sheet-save-coordinator.js`: save lifecycle state, queued save mechanics, structured failure publication, and canonical save-command registration;
+- `sheet-save-coordinator.js`: save lifecycle state, edit-revision tracking, queued save mechanics, structured failure publication, and canonical save-command registration;
 - `sheet-save-persistence.js`: transactional RPC persistence and explicit OFC enrichment;
 - `outfit-ofc-save.js`: OFC detail enrichment only;
 - `sheet-save-state.js`: explicit state store, presentation, and consumer API;
