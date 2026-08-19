@@ -44,7 +44,7 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 - `js/outfit-view-model.js` owns normalization for read-only public views.
 - `js/sheet-mobile-outfit-model.js` owns mobile editor persistence and uses the shared contract.
 - `js/outfit-pc-field-policy.js` derives missing PC base fields and labels from the shared contract; it consumes `tnx:outfit-tables-rendered` rather than observing `#outfit-list` itself.
-- `js/outfit-tables.js` owns raw-card-to-table transport, row ordering, and armor total presentation. Its `RAW_CARD_SCHEMAS` are compatibility transport schemas, not canonical semantic schemas. Compatibility-only controls may remain there temporarily so reorder rebuilds do not discard stored values.
+- `js/outfit-tables.js` owns raw-card-to-table transport, row ordering, and armor total presentation. It captures the complete raw `[data-o]` card state before controls are moved into presentation cells, so reorder reconstruction no longer depends on which fields are visible in the table.
 - `js/outfit-display-rules-v5.js` owns final PC column visibility/order while the classic table transport remains in place.
 - `js/sheet-import-outfit-compat.js` is the only legacy outfit reconstruction owner.
 - `js/sheet-import.js` imports profile, styles, abilities, and skills only; it must not reconstruct outfits.
@@ -53,11 +53,13 @@ The authoritative field list and user-facing labels are `js/outfit-contract.js`.
 
 `js/outfit-tables.js` is still a classic script and therefore does not yet import `outfit-contract.js` directly. Its local names intentionally distinguish transport from semantics:
 
-- `RAW_CARD_SCHEMAS` lists controls that must survive raw-card transformation and reorder rebuilds.
-- `BASE_LABELS` uses current display terminology for any base control that can become visible before the final layout controller runs.
-- `mundane_modifier` may remain in `RAW_CARD_SCHEMAS` only as hidden compatibility transport; it has no user-facing label and is not part of the canonical outfit contract.
+- `RAW_CARD_SCHEMAS` now lists only base controls that participate in the classic table presentation. It is not a persistence schema or canonical semantic schema.
+- `BASE_LABELS` uses current display terminology for those base controls.
+- Before presentation conversion, `captureCardData()` records every source-card `[data-o]` value. `readRow()` overlays live visible values on that snapshot before a reorder rebuild.
+- Because reorder persistence is independent of visible cells, `mundane_modifier` and category-invalid `control_modifier` / `cs_modifier` cells are no longer rendered by `RAW_CARD_SCHEMAS`.
+- Compatibility values can still survive reorder through the captured raw-card snapshot until the underlying legacy save fields are retired separately.
 
-The next cleanup must first decouple reorder snapshots from visible table cells. Only after row rebuild can preserve complete model data independently may compatibility-only fields be removed from `RAW_CARD_SCHEMAS`.
+The legacy generic `vehicle.defense` backing control remains in the raw table transport for now because it still participates in compatibility/split-defense behavior. It should be removed only after that backing path is independently verified and migrated.
 
 ## Compatibility rule
 
@@ -70,5 +72,6 @@ Legacy formats may be read, but new/current saves must use canonical fields. Com
 3. Move category, field semantics, and labels into `js/outfit-contract.js`.
 4. Migrate one consumer at a time to the shared contract with dedicated regression coverage.
 5. Distinguish `outfit-tables.js` raw transport schemas from canonical semantics without changing save/reorder behavior.
-6. Decouple reorder reconstruction from visible DOM fields, then remove compatibility-only table controls.
-7. Only then reduce remaining compatibility duplication in transfer/import adapters.
+6. Decouple reorder reconstruction from visible DOM fields and remove compatibility-only table controls.
+7. Reduce remaining compatibility duplication in transfer/import adapters.
+8. Retire legacy backing controls only after their save/import compatibility paths have dedicated coverage.
