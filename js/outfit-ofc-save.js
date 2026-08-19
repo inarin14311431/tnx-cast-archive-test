@@ -1,6 +1,7 @@
 import "./outfit-pc-field-policy.js?v=5";
 import { supabase } from "./supabase-client.js";
 import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
+import { outfitSupportsControl, outfitSupportsCsModifier } from "./outfit-contract.js?v=3";
 import {
   getOutfitRows,
   outfitSignature,
@@ -73,10 +74,10 @@ function enrichOutfitPayload(items) {
     const details = collectDetails(row);
     const category = valueOf(row, "category") || item.category || "other";
     const electronicControl = String(details.electronic_control || item.electronic_control || "");
-    const controlModifier = category === "armor" || category === "vehicle"
+    const controlModifier = outfitSupportsControl(category)
       ? Number(valueOf(row, "control_modifier") || item.control_modifier || 0)
       : 0;
-    const csModifier = category === "tron" || category === "vehicle"
+    const csModifier = outfitSupportsCsModifier(category)
       ? Number(valueOf(row, "cs_modifier") || item.cs_modifier || 0)
       : 0;
 
