@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
   normalizeSkillLevel,
+  normalizeSkillFreeLevel,
   shouldSelectAllSuits,
   resolveSkillLevelAfterSuitChange
 } from "../js/sheet-skill-level-suit-state.js";
@@ -11,6 +12,14 @@ test("skill level normalization clamps negative and blank values", () => {
   assert.equal(normalizeSkillLevel(-2), 0);
   assert.equal(normalizeSkillLevel(""), 0);
   assert.equal(normalizeSkillLevel("3"), 3);
+});
+
+test("free level stays between zero and the current skill level", () => {
+  assert.equal(normalizeSkillFreeLevel(2, 3), 2);
+  assert.equal(normalizeSkillFreeLevel(5, 3), 3);
+  assert.equal(normalizeSkillFreeLevel(-2, 3), 0);
+  assert.equal(normalizeSkillFreeLevel("2", "4"), 2);
+  assert.equal(normalizeSkillFreeLevel(3, 0), 0);
 });
 
 test("level four or higher selects all suits", () => {
