@@ -28,14 +28,6 @@ function install() {
   };
 }
 
-function composeDefense(details, fallback = "") {
-  const s = String(details.defense_s ?? "").trim();
-  const p = String(details.defense_p ?? "").trim();
-  const i = String(details.defense_i ?? "").trim();
-  if (!s && !p && !i) return fallback || "";
-  return `S ${s || 0} / P ${p || 0} / I ${i || 0}`;
-}
-
 function proxyValue(row, field, fallback) {
   const proxy = row.querySelector(`[data-pc-outfit-proxy="${field}"]`);
   if (!proxy) return fallback;
@@ -65,7 +57,7 @@ function enrichOutfitPayload(items) {
       const category = item.category || "other";
       return withoutRetiredModifier({
         ...item,
-        defense: category === "armor" ? "" : item.defense || "",
+        defense: "",
         sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
         ofc_details: normalizeImportedOutfitDetails(category, item.ofc_details || {})
       });
@@ -87,9 +79,9 @@ function enrichOutfitPayload(items) {
       concealment: String(valueOf(row, "concealment") || ""),
       slot: proxyValue(row, "slot", item.slot || ""),
       electronic_control: electronicControl,
-      // Armor S/P/I persist canonically in ofc_details. The combined base defense
-      // remains vehicle-read compatibility only until that DB column is retired.
-      defense: category === "vehicle" ? composeDefense(details, item.defense) : "",
+      // Outfit defense is canonical only as structured S/P/I in ofc_details.
+      // The legacy combined base column is intentionally cleared for every category.
+      defense: "",
       control_modifier: controlModifier,
       cs_modifier: csModifier,
       sort_order: Number.isFinite(Number(item.sort_order)) ? Number(item.sort_order) : index,
