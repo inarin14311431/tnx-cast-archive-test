@@ -1,4 +1,5 @@
 import { supabase } from "./supabase-client.js";
+import { normalizeOutfitForView } from "./outfit-view-model.js?v=2";
 
 const STYLE_CODES = new Map([
   ["カブキ", "0"], ["バサラ", "1"], ["タタラ", "2"], ["ミストレス", "3"], ["カブト", "4"], ["カリスマ", "5"],
@@ -69,7 +70,7 @@ export async function fetchTransferBundle(publicId) {
   if (skillError) throw skillError;
   if (outfitError) throw outfitError;
 
-  return { character, skills: skills || [], outfits: (outfits || []).map(normalizeOutfit) };
+  return { character, skills: skills || [], outfits: (outfits || []).map(normalizeOutfitForView) };
 }
 
 export function resolvePublicId(raw) {
@@ -105,7 +106,7 @@ export function buildCharacterSheetsPayload(bundle, { hideFromList = false } = {
   const styleSkills = skills.filter(skill => skill.category === "style" && text(skill.name));
 
   const groups = { weapons: [], armours: [], vehicles: [], residences: [], outfits: [] };
-  for (const outfit of outfits.map(normalizeOutfit).filter(item => text(item.name))) {
+  for (const outfit of outfits.map(normalizeOutfitForView).filter(item => text(item.name))) {
     const target = outfit.category === "weapon" ? "weapons"
       : outfit.category === "armor" ? "armours"
       : outfit.category === "vehicle" ? "vehicles"
@@ -236,10 +237,6 @@ function toStyleSkill(skill) {
 }
 function blankStyleSkill() { return { aim:null,c:null,confront:null,d:null,expbase:"10",h:null,level:null,limit:null,name:null,notes:null,page:null,range:null,s:null,skill:null,target:null,timing:null,type:null }; }
 
-function normalizeOutfit(outfit) {
-  const details = outfit?.ofc_details && typeof outfit.ofc_details === "object" && !Array.isArray(outfit.ofc_details) ? outfit.ofc_details : {};
-  return { ...outfit, ofc_details: Object.fromEntries(Object.entries(details).map(([key, value]) => [key, text(value)])) };
-}
 function parseStyleDetail(skill) {
   if (skill?._styleDetail) return skill._styleDetail;
   const raw = String(skill?.description || "");
@@ -265,33 +262,19 @@ function parseOutfitExtra(description) {
   }
   extras.notes = plain.join("\n").trim(); return extras;
 }
-function parseDefense(value) {
-  const result = { s:"", p:"", i:"" }, raw = text(value);
-  for (const match of raw.matchAll(/(?:^|[\s,，/／])([SPI])\s*[:：]?\s*([^/／,，\s]+)/gi)) result[match[1].toLowerCase()] = match[2];
-  if (Object.values(result).some(Boolean)) return result;
-  const parts = raw.split(/[\/／,，\s]+/).filter(Boolean); result.s = parts[0] || ""; result.p = parts[1] || ""; result.i = parts[2] || ""; return result;
-}
-function splitConcealment(value) {
-  const raw = text(value);
-  if (!raw) return { value: "", modifier: "" };
-  const match = raw.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
-  return match
-    ? { value: text(match[1]), modifier: text(match[2] || match[3]) }
-    : { value: raw, modifier: "" };
-}
 function outfitFields(outfit) {
-  const details = outfit.ofc_details || {}, legacy = parseOutfitExtra(outfit.description), defense = parseDefense(outfit.defense);
-  const concealment = splitConcealment(details.concealment || outfit.concealment);
-  const category = text(outfit.category) || "other";
-  const control = ["armor", "vehicle"].includes(category) ? outfit.control_modifier : "";
+  const normalized = normalizeOutfitForView(outfit);
+  const details = normalized.ofc_details || {};
+  const legacy = parseOutfitExtra(normalized.description);
+  const category = normalized.category;
   return {
-    name: nullable(outfit.name), purchase: nullable(details.purchase_target || outfit.purchase_value), permanent: nullable(details.permanent_cost || outfit.experience_cost),
-    concealA: nullable(concealment.value || legacy.concealA), concealB: nullable(details.concealment_penalty || concealment.modifier || legacy.concealB),
-    attack: nullable(outfit.attack || details.attack || legacy.attack), defense: nullable(category === "weapon" ? (details.parry || legacy.defense || outfit.defense) : (outfit.defense || legacy.defense)),
-    range: nullable(outfit.range || details.range_text || legacy.range), slot: nullable(details.speed || legacy.slot), control: nullable(control ?? legacy.control),
-    electrical_control: nullable(details.electronic_control || outfit.electronic_control || legacy.electrical_control), protecS: nullable(details.defense_s || legacy.protecS || defense.s),
-    protecP: nullable(details.defense_p || legacy.protecP || defense.p), protecI: nullable(details.defense_i || legacy.protecI || defense.i), crew: nullable(details.crew || legacy.crew),
-    sf: nullable(details.sf || legacy.sf), entry: nullable(details.residence_entry || legacy.entry), part: nullable(outfit.slot || legacy.part), notes: nullable(legacy.notes || outfit.description), page: nullable(details.page_number || legacy.page)
+    name: nullable(normalized.name), purchase: nullable(details.purchase_target || normalized.purchase_value), permanent: nullable(details.permanent_cost || normalized.experience_cost),
+    concealA: nullable(normalized.concealment || legacy.concealA), concealB: nullable(normalized.concealment_penalty || legacy.concealB),
+    attack: nullable(normalized.attack || legacy.attack), defense: nullable(category === "weapon" ? (normalized.parry || legacy.defense || normalized.defense) : (normalized.defense || legacy.defense)),
+    range: nullable(normalized.range || legacy.range), slot: nullable(normalized.speed || legacy.slot), control: nullable(normalized.control_modifier || legacy.control),
+    electrical_control: nullable(normalized.electronic_control || legacy.electrical_control), protecS: nullable(normalized.defense_s || legacy.protecS),
+    protecP: nullable(normalized.defense_p || legacy.protecP), protecI: nullable(normalized.defense_i || legacy.protecI), crew: nullable(normalized.crew || legacy.crew),
+    sf: nullable(normalized.sf || legacy.sf), entry: nullable(normalized.residence_entry || legacy.entry), part: nullable(normalized.slot || legacy.part), notes: nullable(legacy.notes || normalized.description), page: nullable(normalized.page_number || legacy.page)
   };
 }
 function toCharacterSheetsOutfit(outfit, target) {
