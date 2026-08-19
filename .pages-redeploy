@@ -14,3 +14,4 @@ GitHub Pages redeploy trigger
 2026-08-19 remove retired sheet save watchdog
 2026-08-19 extract classic PC save lifecycle coordinator
 2026-08-19 make PC save state explicit instead of DOM-derived
+2026-08-19 remove save-diagnostics RPC interception
