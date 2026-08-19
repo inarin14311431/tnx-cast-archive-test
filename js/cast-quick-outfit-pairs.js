@@ -44,6 +44,9 @@ async function apply() {
 function patchSection(section, category, outfits) {
   const table = section?.querySelector(".quick-sheet__outfit-table");
   if (!table) return;
+
+  // The two values commonly referenced during an act are always shown in the
+  // same place, regardless of outfit category.
   ensureColumn(table, "purchase", "購入", 1);
   ensureColumn(table, "concealment", "隠匿", 2);
 
@@ -63,6 +66,8 @@ function patchSection(section, category, outfits) {
       setText(row.querySelector(".quick-sheet__outfit-cs-value"), display(outfit.cs_modifier));
     }
   });
+
+  if (category === "armor") normalizeArmorFooter(table);
 }
 
 function ensureColumn(table, key, label, index) {
@@ -85,6 +90,37 @@ function ensureColumn(table, key, label, index) {
     const anchor = row.cells[index] || null;
     row.insertBefore(cell, anchor);
   });
+}
+
+function normalizeArmorFooter(table) {
+  const row = table.tFoot?.rows?.[0];
+  if (!row) return;
+
+  const totalLabel = row.querySelector(".quick-sheet__armor-total-label");
+  const defenseCells = [...row.querySelectorAll(".quick-sheet__armor-total-value")];
+  if (!totalLabel || defenseCells.length !== 3) return;
+
+  // Name + Purchase + Concealment occupy the columns before S/P/I.
+  totalLabel.colSpan = 3;
+
+  const targetCount = table.tHead?.rows?.[0]?.cells?.length || 0;
+  const occupied = 3 + defenseCells.length;
+  const remainder = Math.max(0, targetCount - occupied);
+  const spacers = [...row.querySelectorAll(".quick-sheet__armor-total-spacer")];
+
+  if (!remainder) {
+    spacers.forEach(cell => cell.remove());
+    return;
+  }
+
+  let spacer = spacers[0];
+  if (!spacer) {
+    spacer = document.createElement("td");
+    spacer.className = "quick-sheet__armor-total-spacer";
+    row.append(spacer);
+  }
+  spacer.colSpan = remainder;
+  spacers.slice(1).forEach(cell => cell.remove());
 }
 
 function removeColumn(table, suffix) {
