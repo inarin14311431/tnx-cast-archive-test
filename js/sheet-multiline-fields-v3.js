@@ -3,6 +3,7 @@ import { supabase } from "./supabase-client.js";
 const styleRoot=document.querySelector("#style-skills");
 const outfitRoot=document.querySelector("#outfit-list");
 const publicId=new URLSearchParams(location.search).get("id")?.trim()||"";
+const OUTFIT_RENDER_EVENT="tnx:outfit-tables-rendered";
 const outfitValues=new Map();
 const appliedOutfits=new Set();
 let queued=false;
@@ -148,7 +149,7 @@ async function loadOriginalOutfits(){
 }
 
 styleRoot&&new MutationObserver(queue).observe(styleRoot,{childList:true,subtree:true});
-outfitRoot&&new MutationObserver(queue).observe(outfitRoot,{childList:true,subtree:true});
+outfitRoot?.addEventListener(OUTFIT_RENDER_EVENT,queue);
 document.addEventListener("input",event=>{
   const field=event.target;
   if(field instanceof HTMLInputElement&&field.matches('input[data-o="description"]')){
