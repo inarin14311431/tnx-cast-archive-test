@@ -258,7 +258,7 @@ function parseStyleDetail(skill) {
 }
 function parseOutfitExtra(description) {
   const extras = {}, plain = [];
-  const labels = { "隠匿A":"concealA", "隠匿B":"concealB", "攻撃":"attack", "防御":"defense", "射程":"range", "スロット":"slot", "制御":"control", "電制":"electrical_control", "防御S":"protecS", "防御P":"protecP", "防御I":"protecI", "乗員":"crew", "SF":"sf", "登場":"entry", "部位":"part", "参照P":"page" };
+  const labels = { "隠匿A":"concealA", "隠匿B":"concealB", "攻撃":"attack", "防御":"defense", "射程":"range", "スロット":"slot", "制御":"control", "制御値":"control", "電制":"electrical_control", "防御S":"protecS", "防御P":"protecP", "防御I":"protecI", "乗員":"crew", "SF":"sf", "登場":"entry", "部位":"part", "参照P":"page" };
   for (const line of String(description || "").split(/\r?\n/)) {
     const match = line.match(/^([^：:]+)[：:]\s*(.*)$/); const key = match && labels[match[1].trim()];
     if (key) extras[key] = match[2]; else plain.push(line);
@@ -269,17 +269,27 @@ function parseDefense(value) {
   const result = { s:"", p:"", i:"" }, raw = text(value);
   for (const match of raw.matchAll(/(?:^|[\s,，/／])([SPI])\s*[:：]?\s*([^/／,，\s]+)/gi)) result[match[1].toLowerCase()] = match[2];
   if (Object.values(result).some(Boolean)) return result;
-  const parts = raw.split(/[\/／,，\s]+/).filter(Boolean); result.s = parts[0] || ""; result.i = parts[1] || ""; result.p = parts[2] || ""; return result;
+  const parts = raw.split(/[\/／,，\s]+/).filter(Boolean); result.s = parts[0] || ""; result.p = parts[1] || ""; result.i = parts[2] || ""; return result;
+}
+function splitConcealment(value) {
+  const raw = text(value);
+  if (!raw) return { value: "", modifier: "" };
+  const match = raw.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
+  return match
+    ? { value: text(match[1]), modifier: text(match[2] || match[3]) }
+    : { value: raw, modifier: "" };
 }
 function outfitFields(outfit) {
   const details = outfit.ofc_details || {}, legacy = parseOutfitExtra(outfit.description), defense = parseDefense(outfit.defense);
-  const [concealA="", concealB=""] = text(outfit.concealment).split(/[\/／]/);
+  const concealment = splitConcealment(details.concealment || outfit.concealment);
+  const category = text(outfit.category) || "other";
+  const control = ["armor", "vehicle"].includes(category) ? outfit.control_modifier : "";
   return {
-    name: nullable(outfit.name), purchase: nullable(outfit.purchase_value), permanent: nullable(outfit.experience_cost),
-    concealA: nullable(legacy.concealA ?? concealA), concealB: nullable(legacy.concealB ?? concealB),
-    attack: nullable(outfit.attack || legacy.attack), defense: nullable(outfit.category === "weapon" ? (details.parry || legacy.defense || outfit.defense) : (outfit.defense || legacy.defense)),
-    range: nullable(outfit.range || legacy.range), slot: nullable(details.speed || legacy.slot), control: nullable(outfit.category === "armor" ? (details.control_value || legacy.control) : (outfit.control_modifier ?? legacy.control)),
-    electrical_control: nullable(details.electronic_control || legacy.electrical_control), protecS: nullable(details.defense_s || legacy.protecS || defense.s),
+    name: nullable(outfit.name), purchase: nullable(details.purchase_target || outfit.purchase_value), permanent: nullable(details.permanent_cost || outfit.experience_cost),
+    concealA: nullable(concealment.value || legacy.concealA), concealB: nullable(details.concealment_penalty || concealment.modifier || legacy.concealB),
+    attack: nullable(outfit.attack || details.attack || legacy.attack), defense: nullable(category === "weapon" ? (details.parry || legacy.defense || outfit.defense) : (outfit.defense || legacy.defense)),
+    range: nullable(outfit.range || details.range_text || legacy.range), slot: nullable(details.speed || legacy.slot), control: nullable(control ?? legacy.control),
+    electrical_control: nullable(details.electronic_control || outfit.electronic_control || legacy.electrical_control), protecS: nullable(details.defense_s || legacy.protecS || defense.s),
     protecP: nullable(details.defense_p || legacy.protecP || defense.p), protecI: nullable(details.defense_i || legacy.protecI || defense.i), crew: nullable(details.crew || legacy.crew),
     sf: nullable(details.sf || legacy.sf), entry: nullable(details.residence_entry || legacy.entry), part: nullable(outfit.slot || legacy.part), notes: nullable(legacy.notes || outfit.description), page: nullable(details.page_number || legacy.page)
   };
