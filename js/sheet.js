@@ -22,6 +22,11 @@ import {
   appendGeneralBlankSlots,
   orderGeneralRows
 } from "./sheet-general-skill-state.js?v=1";
+import {
+  parseSheetTsv,
+  buildStyleSkillTsvRow,
+  buildOutfitTsvRow
+} from "./sheet-tsv-import.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -468,21 +473,16 @@ function collectOutfits() {
 
 function openImport(mode) { importMode = mode; $("#tsv-title").textContent = `${mode.toUpperCase()} TSV取込`; $("#tsv-text").value = ""; $("#tsv-dialog").showModal(); }
 
-function parseTSV(text) {
-  const lines = String(text).replace(/\r/g, "").trim().split("\n").filter(Boolean).map(line => line.split("\t"));
-  if (!lines.length) return [];
-  const header = lines.shift().map(value => value.trim());
-  return lines.map(row => Object.fromEntries(header.map((name, index) => [name, (row[index] || "").replace(/\\n/g, "\n")])));
-}
-
 function applyImport() {
-  const rows = parseTSV($("#tsv-text").value);
+  const rows = parseSheetTsv($("#tsv-text").value);
   if (importMode === "skd") {
-    for (const row of rows) skills.push({ ...blankSkill("style"), name: row["名称"] || "", skill_kind: window.TNXStyleSkillKinds?.fromLabel(row["種別"]) || (/奥義/.test(row["種別"] || "") ? "ultimate" : /秘技/.test(row["種別"] || "") ? "secret" : "normal"), level: Number(row["レベル"] || 1), description: row["解説"] || "" });
+    for (const row of rows) skills.push(buildStyleSkillTsvRow(row, {
+      base: blankSkill("style"),
+      styleKindFromLabel: label => window.TNXStyleSkillKinds?.fromLabel(label)
+    }));
     renderSkills();
   } else {
-    const map = { weapons: "weapon", armours: "armor", vehicles: "vehicle", residences: "residence", outfits: "other", 武器: "weapon", 防具: "armor", ヴィークル: "vehicle", 住居: "residence", 住宅: "residence", 装備: "other" };
-    for (const row of rows) outfits.push({ ...blankOutfit(), category: map[row.target] || "other", name: row.name || "", purchase_value: row.purchase || "", experience_cost: Number(row.permanent || 0), concealment: [row.concealA, row.concealB].filter(Boolean).join("/"), attack: row.attack || "", range: row.range || "", slot: row.part || row.slot || "", description: row.notes || "" });
+    for (const row of rows) outfits.push(buildOutfitTsvRow(row, { base: blankOutfit() }));
     renderOutfits();
   }
   recalc(); markDirty();
