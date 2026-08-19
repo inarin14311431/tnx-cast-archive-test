@@ -103,3 +103,40 @@ test("OFCマスター直接追加は隠匿を分離し、解説へ補助項目�
   await expect(row.locator('[data-ofc="electronic_control"]')).toHaveValue("16");
   await expect(row.locator('[data-o="description"]')).not.toHaveValue(/メーカー：|制御値：|電制：|参照P：/);
 });
+
+test("アウトフィット追加と並べ替え後も複数行フィールド変換と値を保持する", async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openEditor(page);
+
+  const suffix = Date.now();
+  const firstName = `E2E-ORDER-A-${suffix}`;
+  const secondName = `E2E-ORDER-B-${suffix}`;
+
+  await page.locator('[data-add-outfit-category="weapon"]').click();
+  let weaponRows = page.locator('#outfit-list .outfit-table-group--weapon .outfit-table-row');
+  let first = weaponRows.last();
+  const firstNameField = first.locator('[data-o="name"]');
+  await expect(firstNameField).toHaveJSProperty("tagName", "TEXTAREA", { timeout: 10000 });
+  await firstNameField.fill(firstName);
+  await first.locator('[data-o="description"]').fill("FIRST DESCRIPTION");
+
+  await page.locator('[data-add-outfit-category="weapon"]').click();
+  weaponRows = page.locator('#outfit-list .outfit-table-group--weapon .outfit-table-row');
+  let second = weaponRows.last();
+  const secondNameField = second.locator('[data-o="name"]');
+  await expect(secondNameField).toHaveJSProperty("tagName", "TEXTAREA", { timeout: 10000 });
+  await secondNameField.fill(secondName);
+  await second.locator('[data-o="description"]').fill("SECOND DESCRIPTION");
+
+  second = outfitRowByName(page, secondName);
+  await second.locator('[data-outfit-move="up"]').click();
+
+  const movedFirst = outfitRowByName(page, firstName);
+  const movedSecond = outfitRowByName(page, secondName);
+  await expect(movedFirst).toHaveCount(1, { timeout: 10000 });
+  await expect(movedSecond).toHaveCount(1, { timeout: 10000 });
+  await expect(movedFirst.locator('[data-o="name"]')).toHaveJSProperty("tagName", "TEXTAREA");
+  await expect(movedSecond.locator('[data-o="name"]')).toHaveJSProperty("tagName", "TEXTAREA");
+  await expect(movedFirst.locator('[data-o="description"]')).toHaveValue("FIRST DESCRIPTION");
+  await expect(movedSecond.locator('[data-o="description"]')).toHaveValue("SECOND DESCRIPTION");
+});
