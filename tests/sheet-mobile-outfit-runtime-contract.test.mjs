@@ -38,7 +38,7 @@ test("mobile outfit groups common, performance, and description fields by respon
   for (const token of ["名称", "購入", "常備化"]) assert.match(baseBlock, new RegExp(token));
   assert.match(baseBlock, /concealFields\(item\)/);
   assert.match(baseBlock, /slotField\(item\)/);
-  assert.match(concealBlock, /隠匿値/);
+  assert.match(concealBlock, /<label>隠匿<input/);
   assert.match(concealBlock, /隠匿修正/);
   assert.match(ui, /const slotField = item => `<label>部位/);
   assert.match(descriptionBlock, /解説/);
