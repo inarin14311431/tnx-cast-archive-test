@@ -21,6 +21,24 @@ test("canonical view separates concealment value and modifier", () => {
   assert.equal(legacy.concealment_penalty, "0");
 });
 
+test("shared outfit normalization is idempotent and preserves normalized zero modifiers", () => {
+  const once = normalizeOutfitForView({
+    category: "vehicle",
+    concealment: "10/0",
+    defense: "S 2 / P 3 / I 4",
+    ofc_details: { speed: "5", electronic_control: "18", crew: "2" }
+  });
+  const twice = normalizeOutfitForView(once);
+  assert.equal(twice.concealment, "10");
+  assert.equal(twice.concealment_penalty, "0");
+  assert.equal(twice.speed, "5");
+  assert.equal(twice.electronic_control, "18");
+  assert.equal(twice.defense_s, "2");
+  assert.equal(twice.defense_p, "3");
+  assert.equal(twice.defense_i, "4");
+  assert.equal(twice.crew, "2");
+});
+
 test("control and CS modifiers are category constrained", () => {
   const cyberware = normalizeOutfitForView({ category: "cyberware", control_modifier: 4, cs_modifier: 2 });
   assert.equal(cyberware.control_modifier, "");
