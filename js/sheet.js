@@ -13,6 +13,7 @@ import {
   normalizeLoadedOutfit
 } from "./sheet-load-normalization.js?v=1";
 import { formatSheetPersistenceError } from "./sheet-error-message.js?v=1";
+import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -107,36 +108,16 @@ function bind() {
   });
   document.addEventListener("click", event => {
     const toggle = event.target.closest(".section-toggle");
-    if (toggle) {
-      toggle.closest(".sheet-section")?.classList.toggle("is-open");
-      return;
-    }
+    if (toggle) toggle.closest(".sheet-section")?.classList.toggle("is-open");
+  });
 
-    const deleteSkill = event.target.closest("[data-delete-skill]");
-    if (deleteSkill) {
-      skills = skills.filter(item => item._key !== deleteSkill.dataset.deleteSkill);
-      renderSkills(); recalc(); markDirty(); return;
-    }
-
-    const moveSkill = event.target.closest("[data-skill-move]");
-    if (moveSkill) {
-      const key = moveSkill.dataset.skillKey;
-      const index = skills.findIndex(item => item._key === key);
-      if (index < 0) return;
-      const category = skills[index].category;
-      const step = moveSkill.dataset.skillMove === "up" ? -1 : 1;
-      let other = index + step;
-      while (other >= 0 && other < skills.length && skills[other].category !== category) other += step;
-      if (other < 0 || other >= skills.length) return;
-      [skills[index], skills[other]] = [skills[other], skills[index]];
-      renderSkills(); recalc(); markDirty(); return;
-    }
-
-    const deleteOutfit = event.target.closest("[data-delete-outfit]");
-    if (deleteOutfit) {
-      outfits = outfits.filter(item => item._key !== deleteOutfit.dataset.deleteOutfit);
-      renderOutfits(); recalc(); markDirty();
-    }
+  initSheetRowInteractions({
+    root: document,
+    onSkillInput: handleSkillRowInput,
+    onOutfitInput: handleOutfitRowInput,
+    onDeleteSkill: deleteSkillByKey,
+    onMoveSkill: moveSkillByKey,
+    onDeleteOutfit: deleteOutfitByKey
   });
 
   $("#save-button").onclick = () => saveCoordinator.save(true);
@@ -153,6 +134,49 @@ function bind() {
 function onEdit(event) {
   if (loading || !event.target.matches("input,select,textarea")) return;
   recalc(); markDirty();
+}
+
+function handleSkillRowInput({ key, field, value, element, row }) {
+  const skill = skills.find(item => item._key === key); if (!skill) return;
+  skill[field] = value;
+  if (SUITS.includes(field)) {
+    const suitCount = SUITS.filter(suit => skill[suit]).length;
+    skill.level = Math.max(Number(skill.level || 0), suitCount);
+    const levelInput = row.querySelector('[data-f="level"]'); if (levelInput) levelInput.value = String(skill.level);
+  } else if (field === "level") {
+    const level = Math.max(0, Number(value || 0));
+    skill.level = level; skill.free_level = Math.min(Math.max(Number(skill.free_level || 0), 0), level); element.value = String(level);
+  }
+  recalc(); markDirty();
+}
+
+function handleOutfitRowInput({ key, field, value }) {
+  const outfit = outfits.find(item => item._key === key); if (!outfit) return;
+  outfit[field] = value;
+  if (field === "category") renderOutfits();
+  recalc(); markDirty();
+}
+
+function deleteSkillByKey(key) {
+  skills = skills.filter(item => item._key !== key);
+  renderSkills(); recalc(); markDirty();
+}
+
+function moveSkillByKey(key, direction) {
+  const index = skills.findIndex(item => item._key === key);
+  if (index < 0) return;
+  const category = skills[index].category;
+  const step = direction === "up" ? -1 : 1;
+  let other = index + step;
+  while (other >= 0 && other < skills.length && skills[other].category !== category) other += step;
+  if (other < 0 || other >= skills.length) return;
+  [skills[index], skills[other]] = [skills[other], skills[index]];
+  renderSkills(); recalc(); markDirty();
+}
+
+function deleteOutfitByKey(key) {
+  outfits = outfits.filter(item => item._key !== key);
+  renderOutfits(); recalc(); markDirty();
 }
 
 function addSkill(category, kind, name) {
@@ -388,7 +412,6 @@ function renderSkills() {
     ${skillTable("社会", "SOCIAL", skills.filter(item => item.category === "social"), false, "social skill-group--ordered")}
     ${skillTable("コネクション", "CONNECTIONS", skills.filter(item => item.category === "connection"), false, "connection skill-group--ordered")}`;
   $("#style-skills").innerHTML = skillTable("スタイル技能", "STYLE SKILLS", skills.filter(item => item.category === "style"), true, "style");
-  bindSkillRows();
 }
 
 function skillTable(jp, en, rows, detail, category = "") {
@@ -432,27 +455,6 @@ function skillRow(skill, detail) {
   </tr>`;
 }
 
-function bindSkillRows() {
-  $$("[data-skill-key]").forEach(row => {
-    row.querySelectorAll("[data-f]").forEach(element => {
-      element.oninput = () => {
-        const skill = skills.find(item => item._key === row.dataset.skillKey); if (!skill) return;
-        const field = element.dataset.f;
-        skill[field] = element.type === "checkbox" ? element.checked : element.type === "number" ? Number(element.value) : element.value;
-        if (SUITS.includes(field)) {
-          const suitCount = SUITS.filter(suit => skill[suit]).length;
-          skill.level = Math.max(Number(skill.level || 0), suitCount);
-          const levelInput = row.querySelector('[data-f="level"]'); if (levelInput) levelInput.value = String(skill.level);
-        } else if (field === "level") {
-          const level = Math.max(0, Number(element.value || 0));
-          skill.level = level; skill.free_level = Math.min(Math.max(Number(skill.free_level || 0), 0), level); element.value = String(level);
-        }
-        recalc(); markDirty();
-      };
-    });
-  });
-}
-
 function blankOutfit() {
   return { _key: crypto.randomUUID(), category: "other", name: "", purchase_value: "", experience_cost: 0, concealment: "", attack: "", range: "", slot: "", description: "", sort_order: outfits.length };
 }
@@ -470,15 +472,6 @@ function outfitFields(outfit) {
 
 function renderOutfits() {
   $("#outfit-list").innerHTML = outfits.map(outfit => `<article class="outfit-card outfit-form" data-outfit-key="${outfit._key}"><header><label>分類<select data-o="category">${Object.entries(OUTFIT_LABELS).map(([value, label]) => `<option value="${value}" ${outfit.category === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><button class="row-delete" data-delete-outfit="${outfit._key}" type="button">×</button></header><div class="outfit-fields">${outfitFields(outfit)}</div></article>`).join("") || "<p>アウトフィット未登録</p>";
-  $$("[data-outfit-key]").forEach(card => {
-    card.querySelectorAll("[data-o]").forEach(element => {
-      element.oninput = () => {
-        const outfit = outfits.find(item => item._key === card.dataset.outfitKey); if (!outfit) return;
-        outfit[element.dataset.o] = element.type === "number" ? Number(element.value) : element.value;
-        if (element.dataset.o === "category") renderOutfits(); recalc(); markDirty();
-      };
-    });
-  });
 }
 
 function current(id) { return Number($(`#${id}-base`)?.value || 0); }
