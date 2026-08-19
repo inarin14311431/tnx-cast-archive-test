@@ -12,9 +12,12 @@ Classic skill markup rendering is delegated to `js/sheet-skill-renderer.js`. The
 
 Classic outfit card markup rendering is delegated to `js/sheet-outfit-renderer.js`. The renderer receives the current outfit collection and returns the raw category-specific card/control markup consumed by `outfit-tables.js`. It does not own editor state, event binding, table enhancement, OFC enrichment, recalculation, dirty state, persistence, or DOM insertion.
 
+Classic blank skill/outfit record defaults are delegated to `js/sheet-row-factory.js`. The factory receives explicit key and sort-order inputs and owns only the DOM-free default object shape. `sheet.js` remains responsible for collection length/order and for contextual overrides used by master rows, blank slots, separators, and imports.
+
 ## Responsibility groups
 
 - Core state mutation / load-save integration / render orchestration: `js/sheet.js`
+- Classic skill/outfit blank-record defaults: `js/sheet-row-factory.js`
 - Classic skill markup generation: `js/sheet-skill-renderer.js`
 - Classic outfit raw-card markup generation: `js/sheet-outfit-renderer.js`
 - Dynamic skill/outfit row event translation: `js/sheet-row-interactions.js`
@@ -79,14 +82,24 @@ The next extraction moved classic skill HTML generation behind a render-only bou
 
 This boundary is locked by `tests/sheet-skill-renderer.test.mjs`.
 
-The following extraction moves classic outfit raw-card HTML generation behind the same render-only pattern:
+The following extraction moved classic outfit raw-card HTML generation behind the same render-only pattern:
 
 - `sheet-outfit-renderer.js` owns category labels, raw card markup, category-specific base controls, delete-button markup, and user-value escaping;
 - its output deliberately preserves the raw control schemas expected by `outfit-tables.js` for weapon, armor, cyberware, tron, vehicle, residence, and other categories;
-- `sheet.js` retains the `outfits` collection, blank-record creation, category mutation, delete behavior, render invocation, recalculation, dirty state, imports, and persistence;
+- `sheet.js` retains the `outfits` collection, category mutation, delete behavior, render invocation, recalculation, dirty state, imports, and persistence;
 - `outfit-tables.js` remains the sole owner of converting raw cards into the category table UI and is not merged into the renderer.
 
 This boundary is locked by `tests/sheet-outfit-renderer.test.mjs`.
+
+The next extraction moves blank skill/outfit defaults behind a DOM-free row-factory boundary:
+
+- `sheet-row-factory.js` owns the default object shape for a new skill and a new outfit, including default skill kind and canonical blank outfit base fields;
+- the factory accepts explicit key and sort-order inputs instead of reading editor collections;
+- `sheet.js` keeps thin `blankSkill()` / `blankOutfit()` wrappers so current collection length remains the source of sort order;
+- contextual overrides for fixed general skills, general blank slots, social/connection initial rows, style separators, SKD import, and OFC import remain in `sheet.js`;
+- the factory has no DOM access, editor collection access, rendering, recalculation, dirty-state publication, or persistence responsibilities.
+
+This boundary is locked by `tests/sheet-row-factory.test.mjs` and the outfit save-policy regression coverage.
 
 ## Safety contracts
 
@@ -95,6 +108,7 @@ This boundary is locked by `tests/sheet-outfit-renderer.test.mjs`.
 - Core-dependent editor modules must not move before `js/sheet.js` without an explicit migration.
 - Existing element ids and persisted data shape are compatibility contracts.
 - Row interaction adapters must not own editor collections, persistence, recalculation, or dirty-state policy.
+- Row factories must remain DOM-free, collection-free, rendering-free, and persistence-free; contextual sort-order policy remains in `sheet.js`.
 - Render-only modules must not mutate editor collections, bind events, publish dirty state, or perform persistence.
 - Raw outfit renderer output must remain compatible with `outfit-tables.js` category schemas and direct-child card discovery.
 - Refactoring commits should avoid simultaneous CSS/layout changes.
