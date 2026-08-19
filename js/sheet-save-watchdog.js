@@ -1,47 +1,9 @@
-/* Manual-save guard for the sheet editor.
- * sheet.js historically schedules saveAll(false) 1.2 seconds after edits.
- * Suppress only that exact timer. All other timers continue normally.
+/* Manual-save UX compatibility for the sheet editor.
+ * The old autosave timer no longer exists, so this module must not patch timers
+ * or own save-state / beforeunload detection. Save state is centralized in
+ * sheet.js + sheet-save-state.js.
  */
 (() => {
-  const nativeSetTimeout = window.setTimeout.bind(window);
-  const nativeClearTimeout = window.clearTimeout.bind(window);
-  const suppressedTimers = new Set();
-  let nextSuppressedId = -1;
-
-  window.setTimeout = function manualSaveSetTimeout(handler, delay, ...args) {
-    const source = typeof handler === 'function' ? Function.prototype.toString.call(handler) : '';
-    const isLegacyAutoSave = Number(delay) === 1200 && /saveAll\s*\(\s*false\s*\)/.test(source);
-
-    if (isLegacyAutoSave) {
-      const id = nextSuppressedId--;
-      suppressedTimers.add(id);
-      return id;
-    }
-
-    return nativeSetTimeout(handler, delay, ...args);
-  };
-
-  window.clearTimeout = function manualSaveClearTimeout(id) {
-    if (suppressedTimers.delete(id)) return;
-    nativeClearTimeout(id);
-  };
-
-  function hasUnsavedChanges() {
-    const status = document.querySelector('#save-status');
-    const button = document.querySelector('#save-button');
-    return Boolean(
-      status?.classList.contains('unsaved') ||
-      button?.dataset.saveState === 'unsaved' ||
-      /未保存/.test(status?.textContent || '')
-    );
-  }
-
-  window.addEventListener('beforeunload', event => {
-    if (!hasUnsavedChanges()) return;
-    event.preventDefault();
-    event.returnValue = '';
-  });
-
   function applyManualSaveLabels() {
     const saveButton = document.querySelector('#save-button');
     if (saveButton) {
