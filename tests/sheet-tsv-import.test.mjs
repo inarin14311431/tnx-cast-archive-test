@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import {
   parseSheetTsv,
   buildStyleSkillTsvRow,
@@ -44,4 +45,14 @@ test("OFC TSV row transformation preserves existing target and field mappings", 
     ["住居", "residence"], ["住宅", "residence"], ["outfits", "other"], ["装備", "other"], ["unknown", "other"]
   ]);
   for (const [target, category] of aliases) assert.equal(buildOutfitTsvRow({ target }).category, category);
+});
+
+test("classic editor delegates TSV parsing and row mapping to a DOM-free module", async () => {
+  const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
+  const importSource = await readFile(new URL("../js/sheet-tsv-import.js", import.meta.url), "utf8");
+
+  assert.match(sheetSource, /sheet-tsv-import\.js\?v=1/);
+  assert.match(sheetSource, /parseSheetTsv\(\$\("#tsv-text"\)\.value\)/);
+  assert.doesNotMatch(sheetSource, /function parseTSV\(/);
+  assert.doesNotMatch(importSource, /document\.|window\.|supabase|localStorage|sessionStorage/);
 });
