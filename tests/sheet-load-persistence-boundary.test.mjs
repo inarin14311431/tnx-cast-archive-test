@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
 const loadSource = await readFile(new URL("../js/sheet-load-persistence.js", import.meta.url), "utf8");
+const normalizationSource = await readFile(new URL("../js/sheet-load-normalization.js", import.meta.url), "utf8");
 
 test("classic sheet delegates character bundle reads to the load persistence boundary", () => {
   assert.match(sheetSource, /sheet-load-persistence\.js\?v=1/);
@@ -29,4 +30,15 @@ test("load persistence rejects missing identity and propagates related-table fai
   assert.match(loadSource, /if \(!character\) throw new Error/);
   assert.match(loadSource, /const relatedError = skillResult\.error \|\| outfitResult\.error/);
   assert.match(loadSource, /if \(relatedError\) throw relatedError/);
+});
+
+test("classic sheet routes loaded records through the DOM-free normalization boundary", () => {
+  assert.match(sheetSource, /sheet-load-normalization\.js\?v=1/);
+  assert.match(sheetSource, /normalizeLoadedSkill\(/);
+  assert.match(sheetSource, /bundle\.outfits\.map\(normalizeLoadedOutfit\)/);
+  assert.match(normalizationSource, /export function normalizeLoadedSkill/);
+  assert.match(normalizationSource, /export function normalizeLoadedOutfit/);
+  assert.doesNotMatch(normalizationSource, /document\.|querySelector|window\.|supabase/);
+  assert.doesNotMatch(sheetSource, /function normalizeSkill\s*\(/);
+  assert.doesNotMatch(sheetSource, /function normalizeOutfit\s*\(/);
 });
