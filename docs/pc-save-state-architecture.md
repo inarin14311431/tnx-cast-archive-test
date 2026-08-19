@@ -1,6 +1,6 @@
 # PC editor save-state ownership
 
-The classic PC editor separates editor capture, load persistence, payload serialization, save persistence, save orchestration, and save-state presentation.
+The classic PC editor separates editor interaction/rendering, load persistence, loaded-record normalization, payload serialization, save persistence, error wording, save orchestration, and save-state presentation.
 
 `js/sheet-save-coordinator.js` owns producer-side save lifecycle mechanics:
 
@@ -32,7 +32,20 @@ The payload module is DOM-free. `sheet.js` reads the editor state and supplies a
 - preserving `sort_order` ordering for both related collections;
 - rejecting missing identity, missing characters, and related-table errors before editor normalization/rendering.
 
-`sheet.js` no longer performs direct `characters`, `character_skills`, or `character_outfits` table reads. It receives the returned plain bundle, then applies editor-specific normalization and rendering.
+`js/sheet-load-normalization.js` owns conversion from persisted skill/outfit rows into classic editor state:
+
+- default editor fields for loaded skills and outfits;
+- numeric normalization for skill levels, free levels, and outfit experience cost;
+- legacy `初期取得` social/connection labels;
+- style-skill kind inference for old rows that do not carry `skill_kind`;
+- V1 style-detail separator detection and separator row marking;
+- stable editor row keys based on persisted IDs when available.
+
+This normalization module is DOM-free and persistence-free. It does not know how rows are rendered and does not perform database access.
+
+`js/sheet-error-message.js` owns user-facing persistence error wording. Save and load paths now share one matcher for RLS, schema-cache, and network errors while preserving operation-specific wording. In particular, load failures no longer pass through a generic `保存に失敗しました` formatter.
+
+`sheet.js` no longer performs direct `characters`, `character_skills`, or `character_outfits` table reads and no longer owns loaded skill/outfit compatibility normalization or persistence error mapping. It receives the returned plain bundle, routes related rows through `sheet-load-normalization.js`, and then renders the normalized editor state.
 
 `js/sheet-save-persistence.js` owns the transactional database save boundary:
 
@@ -44,7 +57,7 @@ The payload module is DOM-free. `sheet.js` reads the editor state and supplies a
 
 `js/outfit-ofc-save.js` is now an explicit outfit enrichment adapter. It no longer imports the Supabase client or monkey-patches `supabase.rpc`.
 
-`js/sheet.js` owns editor interaction, editor-specific normalization/rendering, and capture plus post-save editor integration. Its `collectCharacter()`, `collectSkills()`, and `collectOutfits()` functions gather current editor state and delegate DB-shaped serialization to `sheet-save-payload.js`. Its load path delegates database access to `loadSheetBundle()`. The save persistence callback calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
+`js/sheet.js` owns editor interaction/rendering and capture plus post-save editor integration. Its `collectCharacter()`, `collectSkills()`, and `collectOutfits()` functions gather current editor state and delegate DB-shaped serialization to `sheet-save-payload.js`. Its load path delegates database access to `loadSheetBundle()` and loaded-row normalization to `sheet-load-normalization.js`. The save persistence callback calls `persistSheetBundle()`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
 
 `js/sheet-save-state.js` is the single presentation/consumer bridge for save state.
 
@@ -69,8 +82,10 @@ The former `sheet-save-watchdog.js` has been removed from the repository. Its hi
 
 Current ownership boundary:
 
-- `sheet.js`: editor DOM/state capture, editor-specific normalization/rendering, and post-save URL/event integration;
+- `sheet.js`: editor DOM interaction/rendering, current-state capture, and post-save URL/event integration;
 - `sheet-load-persistence.js`: authenticated character/skill/outfit database reads;
+- `sheet-load-normalization.js`: DOM-free loaded skill/outfit editor-state normalization;
+- `sheet-error-message.js`: shared load/save persistence error wording;
 - `sheet-save-payload.js`: canonical DB-shaped character/skill/outfit serialization;
 - `sheet-save-coordinator.js`: save lifecycle state, edit-revision tracking, queued save mechanics, structured failure publication, and canonical save-command registration;
 - `sheet-save-persistence.js`: transactional RPC persistence and explicit OFC enrichment;
@@ -78,6 +93,6 @@ Current ownership boundary:
 - `sheet-save-state.js`: explicit state store, presentation, and consumer API;
 - `sheet-save-diagnostics.js`: diagnostic interpretation only, with no persistence interception.
 
-The PC save refactor is ownership-complete, and the first load boundary is now extracted. `tests/pc-save-architecture-audit.test.mjs` plus `tests/sheet-load-persistence-boundary.test.mjs` lock the database transport boundaries so direct table reads or transactional RPC ownership cannot silently collapse back into `sheet.js`.
+The PC save refactor is ownership-complete, and the load pipeline now has separate transport and normalization boundaries. `tests/pc-save-architecture-audit.test.mjs`, `tests/sheet-load-persistence-boundary.test.mjs`, `tests/sheet-load-normalization.test.mjs`, and `tests/sheet-error-message.test.mjs` lock these responsibilities.
 
-Further refactoring should continue with editor-specific normalization/rendering in `sheet.js`. The next useful target is separating loaded-record normalization from DOM rendering while preserving the completed load/save persistence boundaries above.
+Further refactoring should now target the remaining skill/outfit rendering and interaction concentration in `sheet.js`. The next useful boundary is separating row rendering/event binding from editor state mutation without disturbing the completed load/save contracts above.
