@@ -22,3 +22,4 @@ GitHub Pages redeploy trigger
 2026-08-19 preserve edits made during in-flight PC saves
 2026-08-19 lock final PC save ownership boundaries
 2026-08-19 extract classic sheet load persistence boundary
+2026-08-19 extract classic loaded-record normalization and error wording
