@@ -1,6 +1,7 @@
 import {
   OUTFIT_LABELS,
   normalizeOutfitCategory,
+  normalizeOutfitDetailCompatibility,
   outfitSupportsControl,
   outfitSupportsCsModifier
 } from "./outfit-contract.js";
@@ -43,16 +44,16 @@ export function normalizeNumber(value) {
   return Number.isFinite(result) ? result : 0;
 }
 
-export function normalizeDetails(value) {
-  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+export function normalizeDetails(value, category = "other") {
+  const compatible = normalizeOutfitDetailCompatibility(category, value);
   const output = {};
-  for (const [key, raw] of Object.entries(source)) output[key] = raw == null ? "" : String(raw);
+  for (const [key, raw] of Object.entries(compatible)) output[key] = raw == null ? "" : String(raw);
   for (const key of DETAIL_FIELDS) if (!(key in output)) output[key] = "";
   return output;
 }
 
-export function compactDetails(value) {
-  const normalized = normalizeDetails(value);
+export function compactDetails(value, category = "other") {
+  const normalized = normalizeDetails(value, category);
   return Object.fromEntries(Object.entries(normalized).filter(([, item]) => item !== ""));
 }
 
@@ -67,15 +68,13 @@ export function blankOutfit() {
     concealment: "",
     electronic_control: "",
     attack: "",
-    defense: "",
     range: "",
     slot: "",
     description: "",
     control_modifier: 0,
     cs_modifier: 0,
-    mundane_modifier: 0,
     sort_order: 9999,
-    ofc_details: normalizeDetails({}),
+    ofc_details: normalizeDetails({}, "other"),
     _concealValue: "",
     _concealMod: "",
     _defS: "",
@@ -121,12 +120,21 @@ export function composeDefense(item) {
 }
 
 export function cloneOutfit(item) {
-  const details = normalizeDetails(item?.ofc_details || {});
-  if (!details.electronic_control && item?.electronic_control) details.electronic_control = String(item.electronic_control);
   const category = item?.category ? normalizeOutfitCategory(item.category) : "";
-  const control = outfitSupportsControl(category) ? normalizeNumber(item?.control_modifier) : 0;
-  const cs = outfitSupportsCsModifier(category) ? normalizeNumber(item?.cs_modifier) : 0;
+  const details = normalizeDetails(item?.ofc_details || {}, category || "other");
+  if (!details.electronic_control && item?.electronic_control) details.electronic_control = String(item.electronic_control);
+
+  const legacyDetails = item?.ofc_details && typeof item.ofc_details === "object" ? item.ofc_details : {};
+  const controlSource = item?.control_modifier ?? legacyDetails.control_modifier ?? legacyDetails.control_value;
+  const csSource = item?.cs_modifier ?? legacyDetails.cs_modifier ?? legacyDetails.cs_value;
+  const control = outfitSupportsControl(category) ? normalizeNumber(controlSource) : 0;
+  const cs = outfitSupportsCsModifier(category) ? normalizeNumber(csSource) : 0;
+
+  delete details.control_modifier;
+  delete details.cs_modifier;
+
   const draft = { ...item, category, control_modifier: control, cs_modifier: cs, ofc_details: details };
+  delete draft.mundane_modifier;
   parseConcealment(draft);
   parseDefense(draft);
   return draft;
@@ -139,7 +147,7 @@ export function collectOutfitRecord(item, character) {
   const control = outfitSupportsControl(category) ? normalizeNumber(item.control_modifier) : 0;
   const cs = outfitSupportsCsModifier(category) ? normalizeNumber(item.cs_modifier) : 0;
   const detailsSource = {
-    ...normalizeDetails(item.ofc_details || {}),
+    ...normalizeDetails(item.ofc_details || {}, category),
     site_category: category,
     purchase_target: String(item.purchase_value ?? ""),
     permanent_cost: String(normalizeNumber(item.experience_cost)),
@@ -153,7 +161,9 @@ export function collectOutfitRecord(item, character) {
     defense_p: String(item._defP ?? "").trim(),
     defense_i: String(item._defI ?? "").trim()
   };
-  const details = compactDetails(detailsSource);
+  delete detailsSource.control_modifier;
+  delete detailsSource.cs_modifier;
+  const details = compactDetails(detailsSource, category);
 
   return {
     character_id: character?.id,
@@ -170,7 +180,6 @@ export function collectOutfitRecord(item, character) {
     description: item.description || "",
     control_modifier: control,
     cs_modifier: cs,
-    mundane_modifier: normalizeNumber(item.mundane_modifier),
     sort_order: normalizeNumber(item.sort_order),
     ofc_details: details
   };
