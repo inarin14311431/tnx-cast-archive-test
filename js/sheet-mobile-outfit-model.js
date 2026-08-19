@@ -5,6 +5,7 @@ import {
   outfitSupportsControl,
   outfitSupportsCsModifier
 } from "./outfit-contract.js";
+import { parseLegacyDefense, splitLegacyConcealment } from "./outfit-legacy-compat.js";
 
 export const LABELS = OUTFIT_LABELS;
 
@@ -85,10 +86,9 @@ export function blankOutfit() {
 
 export function parseConcealment(item) {
   if (item._concealParsed) return item;
-  const text = String(item.concealment || "").trim();
-  const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
-  item._concealValue = match ? String(match[1] || "").trim() : text;
-  item._concealMod = match ? String(match[2] || match[3] || "").trim() : "";
+  const parsed = splitLegacyConcealment(item.concealment);
+  item._concealValue = parsed.value;
+  item._concealMod = parsed.modifier;
   if (item.ofc_details?.concealment_penalty !== undefined && item.ofc_details?.concealment_penalty !== "") {
     item._concealMod = String(item.ofc_details.concealment_penalty);
   }
@@ -102,21 +102,12 @@ export function composeConcealment(item) {
 
 export function parseDefense(item) {
   if (item._defParsed) return item;
-  const text = String(item.defense || "").trim();
-  let match = text.match(/S\s*([+-]?\d+)\s*[\/／, ]+P\s*([+-]?\d+)\s*[\/／, ]+I\s*([+-]?\d+)/i);
-  if (!match) match = text.match(/^\s*([+-]?\d+)\s*[\/／,]\s*([+-]?\d+)\s*[\/／,]\s*([+-]?\d+)\s*$/);
-  item._defS = String(item.ofc_details?.defense_s || (match ? match[1] : ""));
-  item._defP = String(item.ofc_details?.defense_p || (match ? match[2] : ""));
-  item._defI = String(item.ofc_details?.defense_i || (match ? match[3] : ""));
+  const legacy = parseLegacyDefense(item.defense);
+  item._defS = String(item.ofc_details?.defense_s || legacy.defense_s || "");
+  item._defP = String(item.ofc_details?.defense_p || legacy.defense_p || "");
+  item._defI = String(item.ofc_details?.defense_i || legacy.defense_i || "");
   item._defParsed = true;
   return item;
-}
-
-export function composeDefense(item) {
-  const s = String(item._defS ?? "").trim();
-  const p = String(item._defP ?? "").trim();
-  const i = String(item._defI ?? "").trim();
-  return !s && !p && !i ? "" : `S ${s || 0} / P ${p || 0} / I ${i || 0}`;
 }
 
 export function cloneOutfit(item) {
@@ -143,7 +134,6 @@ export function cloneOutfit(item) {
 export function collectOutfitRecord(item, character) {
   const category = normalizeOutfitCategory(item.category || "other");
   const concealment = String(item._concealValue ?? "").trim();
-  const defense = composeDefense(item);
   const control = outfitSupportsControl(category) ? normalizeNumber(item.control_modifier) : 0;
   const cs = outfitSupportsCsModifier(category) ? normalizeNumber(item.cs_modifier) : 0;
   const detailsSource = {
@@ -174,7 +164,7 @@ export function collectOutfitRecord(item, character) {
     concealment,
     electronic_control: String(details.electronic_control || ""),
     attack: item.attack || "",
-    defense,
+    defense: "",
     range: item.range || "",
     slot: item.slot || "",
     description: item.description || "",
