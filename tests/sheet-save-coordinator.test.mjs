@@ -1,0 +1,40 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
+const coordinatorSource = await readFile(new URL("../js/sheet-save-coordinator.js", import.meta.url), "utf8");
+
+test("classic sheet delegates save lifecycle state to the coordinator", () => {
+  assert.match(sheetSource, /createSheetSaveCoordinator/);
+  assert.match(sheetSource, /saveCoordinator\.save\(true\)/);
+  assert.match(sheetSource, /saveCoordinator\.markDirty\(\)/);
+  assert.match(sheetSource, /saveCoordinator\.markLoading/);
+  assert.match(sheetSource, /saveCoordinator\.markSaved\(\)/);
+  assert.match(sheetSource, /saveCoordinator\.markLoadError/);
+  assert.match(sheetSource, /saveCoordinator\.hasUnsavedChanges\(\)/);
+  assert.doesNotMatch(sheetSource, /let dirty\s*=/);
+  assert.doesNotMatch(sheetSource, /let saving\s*=/);
+  assert.doesNotMatch(sheetSource, /let pending\s*=/);
+  assert.doesNotMatch(sheetSource, /function saveAll\s*\(/);
+  assert.doesNotMatch(sheetSource, /function setStatus\s*\(/);
+  assert.doesNotMatch(sheetSource, /function pulse\s*\(/);
+});
+
+test("save coordinator owns dirty, saving and queued-save mechanics", () => {
+  assert.match(coordinatorSource, /let dirty = false/);
+  assert.match(coordinatorSource, /let saving = false/);
+  assert.match(coordinatorSource, /let pending = false/);
+  assert.match(coordinatorSource, /async function save\(force = false\)/);
+  assert.match(coordinatorSource, /if \(saving\) \{[\s\S]*pending = true/);
+  assert.match(coordinatorSource, /queueMicrotask\(\(\) => save\(false\)\)/);
+  assert.match(coordinatorSource, /function setStatus\(/);
+});
+
+test("transactional character persistence stays explicit at the sheet boundary", () => {
+  assert.match(sheetSource, /supabase\.rpc\("save_character_bundle"/);
+  assert.match(sheetSource, /p_character: collectCharacter\(\)/);
+  assert.match(sheetSource, /p_skills: collectSkills\(\)/);
+  assert.match(sheetSource, /p_outfits: collectOutfits\(\)/);
+  assert.match(sheetSource, /tnx:character-saved/);
+});
