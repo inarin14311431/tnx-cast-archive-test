@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
+const rendererSource = await readFile(new URL("../js/sheet-outfit-renderer.js", import.meta.url), "utf8");
 const payloadSource = await readFile(new URL("../js/sheet-save-payload.js", import.meta.url), "utf8");
 
 function functionBlock(source, name, nextName) {
@@ -12,8 +13,14 @@ function functionBlock(source, name, nextName) {
   return match[0];
 }
 
+function trailingFunctionBlock(source, name) {
+  const match = source.match(new RegExp(`function ${name}\\([\\s\\S]*$`));
+  assert.ok(match, `${name} block should exist`);
+  return match[0];
+}
+
 test("new outfit state no longer seeds retired compatibility fields", () => {
-  const block = functionBlock(sheetSource, "blankOutfit", "outfitFields");
+  const block = functionBlock(sheetSource, "blankOutfit", "renderOutfits");
   assert.doesNotMatch(block, /defense:/);
   assert.doesNotMatch(block, /control_modifier:/);
   assert.doesNotMatch(block, /cs_modifier:/);
@@ -22,7 +29,7 @@ test("new outfit state no longer seeds retired compatibility fields", () => {
 
 test("classic raw card no longer emits hidden legacy outfit transport fields", () => {
   assert.doesNotMatch(sheetSource, /function compatibilityOutfitFields/);
-  const block = functionBlock(sheetSource, "outfitFields", "renderOutfits");
+  const block = trailingFunctionBlock(rendererSource, "renderOutfitFields");
   assert.doesNotMatch(block, /type="hidden" data-o="defense"/);
   assert.doesNotMatch(block, /type="hidden" data-o="control_modifier"/);
   assert.doesNotMatch(block, /type="hidden" data-o="cs_modifier"/);
@@ -30,7 +37,7 @@ test("classic raw card no longer emits hidden legacy outfit transport fields", (
 });
 
 test("raw editor exposes only canonical category-owned control and CS fields", () => {
-  const block = functionBlock(sheetSource, "outfitFields", "renderOutfits");
+  const block = trailingFunctionBlock(rendererSource, "renderOutfitFields");
   assert.match(block, /outfit\.category === "armor"[\s\S]*data-o="control_modifier"/);
   assert.match(block, /outfit\.category === "tron"[\s\S]*data-o="cs_modifier"/);
   assert.match(block, /outfit\.category === "vehicle"[\s\S]*data-o="control_modifier"[\s\S]*data-o="cs_modifier"/);
