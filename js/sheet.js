@@ -33,6 +33,7 @@ import { buildStylePresentation } from "./sheet-style-presentation.js?v=1";
 import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
 import { resolveStyleBaselineValue } from "./sheet-baseline-adjustment.js?v=1";
 import { buildNewCharacterSkills } from "./sheet-new-character-state.js?v=1";
+import { chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -215,7 +216,7 @@ function generalColumnCounts() {
 
 function addGeneralSkill() {
   const counts = generalColumnCounts();
-  const column = counts.left <= counts.right ? "left" : "right";
+  const column = chooseGeneralSkillColumn(counts);
   const skill = { ...blankSkill("general"), name: "", level: 0, free_level: 0, skill_kind: "proper", _blankSlot: true, _slotColumn: column };
   skills.push(skill); renderSkills(); recalc(); markDirty();
   requestAnimationFrame(() => document.querySelector(`#general-skills tr[data-skill-key="${skill._key}"] [data-f="name"]`)?.focus());
