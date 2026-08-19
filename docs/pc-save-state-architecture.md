@@ -11,6 +11,14 @@ Responsibilities:
 - publish `tnx:sheet-save-state` when the state changes;
 - expose `TNXSheetSaveState` plus module helpers for consumers that need to query dirty state, request a save, wait for completion, or focus the save button.
 
-Consumers must not parse `#save-status` text/classes or duplicate the save-button presentation mapping. `sheet-snapshots.js` now uses the shared bridge for its unsaved guard. `sheet-features.js` no longer owns a second MutationObserver for save presentation.
+Consumers must not parse `#save-status` text/classes or duplicate the save-button presentation mapping.
 
-The next migration target is `sheet-image.js`, which still contains direct save-button/status polling while it bootstraps a first save before image upload. That flow should move to `requestSheetSave()` + `waitForSheetSaved()` after the shared bridge is green in Regression/E2E.
+Current consumers:
+
+- `sheet-snapshots.js` uses the shared bridge for its unsaved guard and save-button focus.
+- `sheet-image.js` uses `requestSheetSave()` + `waitForSheetSaved()` while bootstrapping the first save before image upload.
+- `sheet-save-diagnostics.js` listens to `tnx:sheet-save-state`; it no longer owns a second `MutationObserver` over `#save-status`.
+- `sheet-features.js` no longer owns a second MutationObserver for save presentation.
+- `sheet-save-watchdog.js` is now manual-save wording compatibility only. The historic 1.2-second autosave timer interception, timer monkey-patching, duplicate unsaved-state parser, and duplicate `beforeunload` listener have been retired.
+
+The remaining ownership seam is the producer side in `sheet.js`: `setStatus()`, save-button click binding, `dirty/saving/pending`, and the transactional `saveAll()` flow still live together there. Future extraction should preserve that transactional behavior and move producer mechanics behind an explicit coordinator API rather than adding another observer or polling layer.
