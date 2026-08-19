@@ -18,3 +18,4 @@ GitHub Pages redeploy trigger
 2026-08-19 route shared save requests directly through coordinator
 2026-08-19 extract classic transactional persistence boundary
 2026-08-19 make OFC enrichment explicit in persistence boundary
+2026-08-19 extract classic DB-shaped save payload contract
