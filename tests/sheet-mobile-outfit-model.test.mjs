@@ -30,17 +30,35 @@ test("mobile outfit prefers structured concealment modifier", () => {
   assert.equal(item._concealMod, "-2");
 });
 
-test("mobile outfit keeps control_modifier canonical without generating control_value", () => {
+test("mobile outfit keeps control_modifier canonical without generating deprecated detail keys", () => {
   const item = cloneOutfit({
     category: "vehicle",
     name: "VEHICLE",
     control_modifier: -2,
+    cs_modifier: 1,
     ofc_details: {}
   });
   assert.equal(item.control_modifier, -2);
-  assert.equal(item.ofc_details.control_value, "");
+  assert.equal(Object.hasOwn(item.ofc_details, "control_value"), false);
+  assert.equal(Object.hasOwn(item.ofc_details, "cs_value"), false);
 
   const record = collectOutfitRecord(item, { id: "character" });
   assert.equal(record.control_modifier, -2);
+  assert.equal(record.cs_modifier, 1);
   assert.equal(Object.hasOwn(record.ofc_details, "control_value"), false);
+  assert.equal(Object.hasOwn(record.ofc_details, "cs_value"), false);
+});
+
+test("mobile outfit preserves non-empty legacy detail keys without creating new blanks", () => {
+  const item = cloneOutfit({
+    category: "vehicle",
+    name: "LEGACY DETAIL",
+    ofc_details: { control_value: "-3", cs_value: "2", manufacturer: "TEST" }
+  });
+  assert.equal(item.ofc_details.control_value, "-3");
+  assert.equal(item.ofc_details.cs_value, "2");
+  const record = collectOutfitRecord(item, { id: "character" });
+  assert.equal(record.ofc_details.control_value, "-3");
+  assert.equal(record.ofc_details.cs_value, "2");
+  assert.equal(record.ofc_details.manufacturer, "TEST");
 });
