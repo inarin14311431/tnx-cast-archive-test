@@ -15,3 +15,4 @@ GitHub Pages redeploy trigger
 2026-08-19 extract classic PC save lifecycle coordinator
 2026-08-19 make PC save state explicit instead of DOM-derived
 2026-08-19 remove save-diagnostics RPC interception
+2026-08-19 route shared save requests directly through coordinator
