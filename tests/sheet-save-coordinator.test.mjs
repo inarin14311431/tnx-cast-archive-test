@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
 const coordinatorSource = await readFile(new URL("../js/sheet-save-coordinator.js", import.meta.url), "utf8");
+const stateSource = await readFile(new URL("../js/sheet-save-state.js", import.meta.url), "utf8");
 
 test("classic sheet delegates save lifecycle state to the coordinator", () => {
   assert.match(sheetSource, /createSheetSaveCoordinator/);
@@ -43,6 +44,14 @@ test("save coordinator publishes structured errors without diagnostics intercept
   assert.match(coordinatorSource, /function publishError\(error, text\)/);
   assert.match(coordinatorSource, /detail: \{ error, text: String\(text \|\| ""\) \}/);
   assert.match(coordinatorSource, /publishError\(error, text\);[\s\S]*publish\("error", text\)/);
+});
+
+test("shared save requests call the coordinator directly instead of clicking the save button", () => {
+  assert.match(coordinatorSource, /registerSheetSaveRequester/);
+  assert.match(coordinatorSource, /registerSheetSaveRequester\(\(\) => save\(true\)\)/);
+  assert.match(stateSource, /export function registerSheetSaveRequester/);
+  assert.match(stateSource, /return saveRequester\(\)/);
+  assert.doesNotMatch(stateSource, /button\.click\(\)/);
 });
 
 test("transactional character persistence stays explicit at the sheet boundary", () => {
