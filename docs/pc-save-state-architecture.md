@@ -1,6 +1,16 @@
 # PC editor save-state ownership
 
-`js/sheet.js` remains the persistence owner for the classic PC editor. It decides when the sheet is dirty, performs the transactional save RPC, and writes the source `#save-status` text/class.
+The classic PC editor now separates save orchestration from save-state presentation.
+
+`js/sheet-save-coordinator.js` owns producer-side save lifecycle mechanics:
+
+- dirty / saving / pending state;
+- queued repeat-save handling while a save is already running;
+- validation gating;
+- writing the source `#save-status` text/class;
+- loading, saved, unsaved, and error transitions.
+
+`js/sheet.js` owns editor data collection and the transactional persistence boundary. It supplies the coordinator with a `persist()` callback that calls `save_character_bundle`, updates the current character/public ID, rewrites the editor URL, and publishes `tnx:character-saved`.
 
 `js/sheet-save-state.js` is the single presentation/consumer bridge for save state.
 
@@ -20,6 +30,13 @@ Current consumers:
 - `sheet-save-diagnostics.js` listens to `tnx:sheet-save-state`; it no longer owns a second `MutationObserver` over `#save-status`.
 - `sheet-features.js` no longer owns a second MutationObserver for save presentation.
 
-The former `sheet-save-watchdog.js` has been removed from the repository. Its historic autosave timer interception, timer monkey-patching, duplicate unsaved-state parser, and duplicate `beforeunload` listener are all retired. Manual-save guidance is already present in the editor markup, while the actual dirty guard remains in `sheet.js`.
+The former `sheet-save-watchdog.js` has been removed from the repository. Its historic autosave timer interception, timer monkey-patching, duplicate unsaved-state parser, and duplicate `beforeunload` listener are retired.
 
-The remaining ownership seam is the producer side in `sheet.js`: `setStatus()`, save-button click binding, `dirty/saving/pending`, and the transactional `saveAll()` flow still live together there. Future extraction should preserve that transactional behavior and move producer mechanics behind an explicit coordinator API rather than adding another observer or polling layer.
+Current ownership boundary:
+
+- `sheet-save-coordinator.js`: save lifecycle state and status production;
+- `sheet.js`: canonical editor payload collection and transactional persistence callback;
+- `sheet-save-state.js`: presentation and consumer API;
+- `sheet-save-diagnostics.js`: diagnostic interpretation only.
+
+The next extraction target, if needed, is the persistence callback itself. That should move only after the coordinator boundary has remained green, because the callback carries the transactional character/skill/outfit bundle contract and the `tnx:character-saved` integration event.
