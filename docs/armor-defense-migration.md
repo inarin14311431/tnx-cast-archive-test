@@ -1,20 +1,20 @@
-# Outfit defense migration boundary
+# Armor defense migration boundary
 
-Armor and vehicle defense now use `defense_s`, `defense_p`, and `defense_i` in `ofc_details` as the canonical representation.
+Armor and vehicle defense values are canonical only as structured `defense_s`, `defense_p`, and `defense_i` values in `ofc_details`.
 
 ## Current ownership
 
-- `js/outfit-ofc-fields.js` owns the editable S/P/I controls for supported outfit categories.
-- `js/outfit-display-rules-v5.js` presents those canonical controls in the PC editor.
-- `js/outfit-tables.js` calculates armor totals from canonical S/P/I controls.
-- `js/outfit-ofc-save.js` clears the legacy combined `character_outfits.defense` value on save and persists structured S/P/I through `ofc_details`.
+- `js/outfit-ofc-fields.js` creates and restores editable S/P/I controls from `ofc_details` only.
+- `js/outfit-display-rules-v5.js` presents those OFC controls as the visible S/P/I columns.
+- `js/outfit-tables.js` calculates armor totals directly from the canonical OFC S/P/I controls.
+- `js/outfit-ofc-save.js` clears the retired combined `character_outfits.defense` column for every category and never rebuilds it.
 
-## Completed conversion
+## Legacy state
 
-The remaining armor and vehicle rows that still carried a combined `defense` value were checked before cleanup. Every vehicle row with a combined value already had structured S/P/I data, and armor-only legacy rows were converted to structured values before their combined value was cleared.
+The database conversion is complete. Current editor loading no longer parses `character_outfits.defense` or reconstructs OFC metadata from the base description field.
 
-The active database now has no non-empty combined `defense` values for armor or vehicle rows.
+External import compatibility remains separate from stored-row loading. Legacy external source formats may still be accepted by dedicated import adapters, but they must normalize into the canonical outfit contract before entering editor state or save payloads.
 
-## Compatibility policy
+## Guardrail
 
-Combined outfit `defense` is no longer an active save format. Current import and save paths must not recreate it. Any legacy parsing that remains elsewhere in the codebase is read-only compatibility and can be removed once its callers are retired.
+Regression tests verify that the PC editor does not reintroduce combined defense parsing, hidden armor defense backing controls, or combined defense save generation.
