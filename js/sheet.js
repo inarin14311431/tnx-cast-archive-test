@@ -15,6 +15,7 @@ import {
 import { formatSheetPersistenceError } from "./sheet-error-message.js?v=1";
 import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
 import { renderSkillEditorSections } from "./sheet-skill-renderer.js?v=1";
+import { renderOutfitEditor } from "./sheet-outfit-renderer.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -40,15 +41,6 @@ const GENERAL_MASTER = [
   ["信用", "mundane", "general"], ["圧力", "mundane", "general"], ["隠密", "mundane", "general"]
 ];
 const GENERAL_BLANK_SLOT_COLUMNS = ["left", "left", "right", "right"];
-const OUTFIT_LABELS = {
-  weapon: "武器",
-  armor: "防具",
-  cyberware: "サイバーウェア",
-  tron: "トロン",
-  vehicle: "ヴィークル",
-  residence: "住居",
-  other: "その他"
-};
 const STRUCTURED_FIELDS = [
   ["handle_kana", "#handle-kana"], ["age", "#age"], ["gender", "#gender"],
   ["height", "#height"], ["weight", "#weight"], ["eyes", "#eyes"], ["hair", "#hair"],
@@ -419,19 +411,8 @@ function blankOutfit() {
   return { _key: crypto.randomUUID(), category: "other", name: "", purchase_value: "", experience_cost: 0, concealment: "", attack: "", range: "", slot: "", description: "", sort_order: outfits.length };
 }
 
-function outfitFields(outfit) {
-  const common = `<label>名称<input data-o="name" value="${esc(outfit.name)}"></label><label>購入<input data-o="purchase_value" value="${esc(outfit.purchase_value)}"></label><label>常備化<input data-o="experience_cost" type="number" value="${Number(outfit.experience_cost || 0)}"></label>`;
-  const description = `<label class="outfit-description">解説<input data-o="description" value="${esc(outfit.description)}"></label>`;
-  if (outfit.category === "weapon") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>攻撃<input data-o="attack" value="${esc(outfit.attack)}"></label><label>射程<input data-o="range" value="${esc(outfit.range)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label>` + description;
-  if (outfit.category === "armor") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label><label>制御値<input data-o="control_modifier" type="number" value="${Number(outfit.control_modifier || 0)}"></label>` + description;
-  if (outfit.category === "tron") return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label><label>CS修正<input data-o="cs_modifier" type="number" value="${Number(outfit.cs_modifier || 0)}"></label>` + description;
-  if (outfit.category === "vehicle") return common + `<label>攻撃<input data-o="attack" value="${esc(outfit.attack)}"></label><label>制御値<input data-o="control_modifier" type="number" value="${Number(outfit.control_modifier || 0)}"></label><label>CS修正<input data-o="cs_modifier" type="number" value="${Number(outfit.cs_modifier || 0)}"></label>` + description;
-  if (outfit.category === "residence") return common + `<label>部位／エリア<input data-o="slot" value="${esc(outfit.slot)}"></label>` + description;
-  return common + `<label>隠匿<input data-o="concealment" value="${esc(outfit.concealment)}"></label><label>部位<input data-o="slot" value="${esc(outfit.slot)}"></label>` + description;
-}
-
 function renderOutfits() {
-  $("#outfit-list").innerHTML = outfits.map(outfit => `<article class="outfit-card outfit-form" data-outfit-key="${outfit._key}"><header><label>分類<select data-o="category">${Object.entries(OUTFIT_LABELS).map(([value, label]) => `<option value="${value}" ${outfit.category === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><button class="row-delete" data-delete-outfit="${outfit._key}" type="button">×</button></header><div class="outfit-fields">${outfitFields(outfit)}</div></article>`).join("") || "<p>アウトフィット未登録</p>";
+  $("#outfit-list").innerHTML = renderOutfitEditor(outfits);
 }
 
 function current(id) { return Number($(`#${id}-base`)?.value || 0); }
