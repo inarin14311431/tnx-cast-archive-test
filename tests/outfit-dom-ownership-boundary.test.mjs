@@ -14,16 +14,25 @@ test("outfit tables solely own armor defense totals", () => {
   assert.doesNotMatch(armorShim, /#outfit-list|MutationObserver|data-armor-defense|data-armor-total/);
 });
 
-test("current outfit root responsibilities remain distinct", () => {
+test("outfit tables publish an explicit post-render completion event", () => {
+  assert.match(tables, /RENDER_EVENT='tnx:outfit-tables-rendered'/);
+  assert.match(tables, /function notifyRendered\(\)/);
+  assert.match(tables, /root\.dispatchEvent\(new CustomEvent\(RENDER_EVENT/);
+  assert.match(tables, /root\.replaceChildren\(fragment\);\s*notifyRendered\(\);/);
+});
+
+test("multiline outfit enhancement consumes render completion instead of observing outfit DOM", () => {
+  assert.match(multiline, /OUTFIT_RENDER_EVENT="tnx:outfit-tables-rendered"/);
+  assert.match(multiline, /outfitRoot\?\.addEventListener\(OUTFIT_RENDER_EVENT,queue\)/);
+  assert.doesNotMatch(multiline, /new MutationObserver\(queue\)\.observe\(outfitRoot/);
+  assert.doesNotMatch(multiline, /outfitRoot&&new MutationObserver/);
+  assert.match(multiline, /window\.TNXMultilineFields=\{enhance,queue,normalize,setStyleNameExact\}/);
+});
+
+test("remaining outfit root responsibilities stay action scoped or structural", () => {
   assert.match(tables, /document\.querySelector\('#outfit-list'\)/);
   assert.match(multiline, /const outfitRoot=document\.querySelector\("#outfit-list"\)/);
-  assert.match(multiline, /new MutationObserver\(queue\)\.observe\(outfitRoot/);
   assert.match(autofill, /document\.querySelectorAll\("#outfit-list \[data-outfit-key\]"\)/);
   assert.doesNotMatch(autofill, /MutationObserver/);
   assert.doesNotMatch(features, /#outfit-list/);
-});
-
-test("multiline observer is the next explicit outfit listener migration boundary", () => {
-  assert.match(multiline, /outfitRoot&&new MutationObserver\(queue\)/);
-  assert.match(multiline, /window\.TNXMultilineFields=\{enhance,queue,normalize,setStyleNameExact\}/);
 });
