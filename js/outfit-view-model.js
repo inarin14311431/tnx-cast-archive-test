@@ -22,8 +22,6 @@ export function normalizeOutfitForView(outfit = {}) {
     electronic_control: first(details.electronic_control, outfit.electronic_control),
     control_modifier: control,
     cs_modifier: cs,
-    // Read-only compatibility alias for legacy view modules. It is never a DB field.
-    cs_value: cs,
     defense_s: first(details.defense_s, defense.s),
     defense_p: first(details.defense_p, defense.p),
     defense_i: first(details.defense_i, defense.i),
