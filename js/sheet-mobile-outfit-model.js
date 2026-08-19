@@ -29,11 +29,11 @@ export const CONCEALMENT_PENALTY_OPTIONS = [
 
 export const DETAIL_FIELDS = [
   "page_number", "major_category", "minor_category", "manufacturer", "concealment_penalty",
-  "parry", "speed", "control_value", "electronic_control",
+  "parry", "speed", "electronic_control",
   "defense_s", "defense_p", "defense_i",
   "ianus_surface", "ianus_deep", "ianus_none",
   "tron_software", "tron_support", "tron_hardware",
-  "cs_value", "crew", "sf",
+  "crew", "sf",
   "residence_entry", "residence_electric", "residence_area",
   "site_category", "purchase_target", "permanent_cost", "concealment",
   "attack", "range_text", "slot", "description"
