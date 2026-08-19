@@ -24,7 +24,7 @@ export function categoryToTarget(category) {
 }
 
 export function parseDefense(value) {
-  return parseLegacyDefense(value);
+  return parseLegacyDefense(value, "sip");
 }
 
 export function defenseText(details) {
