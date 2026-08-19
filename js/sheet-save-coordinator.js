@@ -1,5 +1,7 @@
 import { setSheetSaveState } from "./sheet-save-state.js?v=2";
 
+const SAVE_ERROR_EVENT = "tnx:sheet-save-error";
+
 export function createSheetSaveCoordinator({
   persist,
   validate,
@@ -12,6 +14,12 @@ export function createSheetSaveCoordinator({
 
   function publish(state, text = "") {
     setSheetSaveState(state, text);
+  }
+
+  function publishError(error, text) {
+    window.dispatchEvent(new CustomEvent(SAVE_ERROR_EVENT, {
+      detail: { error, text: String(text || "") }
+    }));
   }
 
   function markDirty() {
@@ -70,6 +78,7 @@ export function createSheetSaveCoordinator({
       console.error(error);
       dirty = true;
       const text = onError?.(error) || error?.message || "保存に失敗しました。";
+      publishError(error, text);
       publish("error", text);
       return false;
     } finally {
