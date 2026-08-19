@@ -155,7 +155,9 @@ test('OFC master application is isolated from field rendering', async () => {
   const apply = await read('js/outfit-ofc-master-apply.js');
   assert.match(apply, /function handleMasterAdd/);
   assert.match(apply, /function applyMasterRowsAfterBaseAdd/);
-  assert.match(apply, /function masterRowDetails/);
+  assert.match(apply, /masterRowToOutfitDetails/);
+  assert.match(apply, /outfit-ofc-adapter\.js/);
+  assert.doesNotMatch(apply, /function masterRowDetails/);
   assert.match(apply, /outfit-ofc-utils\.js/);
   assert.doesNotMatch(apply, /save_character_bundle_with_ofc|handleTsvImport|CATEGORY_FIELDS|enhanceTable/);
 
@@ -163,7 +165,7 @@ test('OFC master application is isolated from field rendering', async () => {
   assert.match(access, /import "\.\/outfit-ofc-master-apply\.js(?:\?[^\"]+)?"/);
 
   const fields = await read('js/outfit-ofc-fields.js');
-  assert.doesNotMatch(fields, /handleMasterAdd|applyMasterRowsAfterBaseAdd|fetchMasterRows|masterRowDetails/);
+  assert.doesNotMatch(fields, /handleMasterAdd|applyMasterRowsAfterBaseAdd|fetchMasterRows|masterRowDetails|masterRowToOutfitDetails/);
 });
 
 test('OFC shared utilities own category, defense and signature rules', async () => {
