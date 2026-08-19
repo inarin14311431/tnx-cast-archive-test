@@ -6,17 +6,27 @@ const stateSource = await readFile(new URL("../js/sheet-save-state.js", import.m
 const featureSource = await readFile(new URL("../js/sheet-features.js", import.meta.url), "utf8");
 const snapshotSource = await readFile(new URL("../js/sheet-snapshots.js", import.meta.url), "utf8");
 const diagnosticsSource = await readFile(new URL("../js/sheet-save-diagnostics.js", import.meta.url), "utf8");
+const imageSource = await readFile(new URL("../js/sheet-image.js", import.meta.url), "utf8");
 const sheetHtmlSource = await readFile(new URL("../sheet.html", import.meta.url), "utf8");
 const ofcSaveSource = await readFile(new URL("../js/outfit-ofc-save.js", import.meta.url), "utf8");
 
-test("PC save presentation has one shared state bridge", () => {
+test("PC save presentation is driven by one explicit shared state store", () => {
   assert.match(stateSource, /const STATE_EVENT = "tnx:sheet-save-state"/);
-  assert.match(stateSource, /function installSheetSaveState/);
-  assert.match(stateSource, /new MutationObserver\(sync\)\.observe\(status/);
+  assert.match(stateSource, /export function setSheetSaveState/);
+  assert.match(stateSource, /function renderSheetSaveState/);
   assert.match(stateSource, /globalThis\.TNXSheetSaveState/);
-  assert.match(featureSource, /import "\.\/sheet-save-state\.js\?v=1"/);
+  assert.doesNotMatch(stateSource, /new MutationObserver/);
+  assert.doesNotMatch(stateSource, /classList\.contains\("error"\)/);
+  assert.doesNotMatch(stateSource, /\/エラー\|失敗\//);
+  assert.match(featureSource, /import "\.\/sheet-save-state\.js\?v=2"/);
   assert.doesNotMatch(featureSource, /function initializeSaveButtonState/);
-  assert.doesNotMatch(featureSource, /new MutationObserver\(sync\)\.observe\(status/);
+});
+
+test("all PC save-state consumers share the current cache boundary", () => {
+  assert.match(snapshotSource, /sheet-save-state\.js\?v=2/);
+  assert.match(diagnosticsSource, /sheet-save-state\.js\?v=2/);
+  assert.match(imageSource, /sheet-save-state\.js\?v=2/);
+  assert.doesNotMatch(featureSource + snapshotSource + diagnosticsSource + imageSource, /sheet-save-state\.js\?v=1/);
 });
 
 test("snapshot unsaved guard consumes shared save state instead of parsing save DOM", () => {
@@ -28,7 +38,6 @@ test("snapshot unsaved guard consumes shared save state instead of parsing save 
 });
 
 test("save diagnostics consumes the shared save-state event instead of observing status DOM", () => {
-  assert.match(diagnosticsSource, /sheet-save-state\.js\?v=1/);
   assert.match(diagnosticsSource, /tnx:sheet-save-state/);
   assert.match(diagnosticsSource, /refreshFromState/);
   assert.doesNotMatch(diagnosticsSource, /function observeSaveStatus/);
