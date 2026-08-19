@@ -30,6 +30,7 @@ import {
 import { renderStyleCards, renderAbilityCards } from "./sheet-character-renderer.js?v=1";
 import { calculateStyleBaselines } from "./sheet-style-baseline.js?v=1";
 import { buildStylePresentation } from "./sheet-style-presentation.js?v=1";
+import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -397,10 +398,31 @@ function renderOutfits() {
 }
 
 function current(id) { return Number($(`#${id}-base`)?.value || 0); }
-function final(id) { return current(id) + Number($(`#${id}-mod`)?.value || 0); }
+function currentAbilityValues() {
+  return Object.fromEntries(ABILITIES.map(([key]) => {
+    const controlKey = `${key}-control`;
+    return [key, {
+      current: current(key),
+      modifier: Number($(`#${key}-mod`)?.value || 0),
+      controlCurrent: current(controlKey),
+      controlModifier: Number($(`#${controlKey}-mod`)?.value || 0)
+    }];
+  }));
+}
 function recalc() {
-  for (const [key] of ABILITIES) { $(`#${key}-final`).textContent = final(key); $(`#${key}-control-final`).textContent = final(`${key}-control`); }
-  $("#cs-final").textContent = Number($("#cs-base").value || 0) + Number($("#cs-mod").value || 0);
+  const finals = calculateAbilityFinals({
+    abilities: ABILITIES,
+    values: currentAbilityValues(),
+    cs: {
+      current: Number($("#cs-base")?.value || 0),
+      modifier: Number($("#cs-mod")?.value || 0)
+    }
+  });
+  for (const [key] of ABILITIES) {
+    $(`#${key}-final`).textContent = finals[key];
+    $(`#${key}-control-final`).textContent = finals[`${key}-control`];
+  }
+  $("#cs-final").textContent = finals.cs;
   window.TNXExperience?.queue?.();
 }
 function markDirty() { if (loading) return; saveCoordinator.markDirty(); }
