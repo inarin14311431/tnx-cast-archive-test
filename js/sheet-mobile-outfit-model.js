@@ -39,8 +39,6 @@ export const DETAIL_FIELDS = [
   "attack", "range_text", "slot", "description"
 ];
 
-const USES_CONTROL_MODIFIER = new Set(["armor", "vehicle"]);
-
 export function normalizeNumber(value) {
   const result = Number(value || 0);
   return Number.isFinite(result) ? result : 0;
@@ -93,16 +91,15 @@ export function parseConcealment(item) {
   const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
   item._concealValue = match ? String(match[1] || "").trim() : text;
   item._concealMod = match ? String(match[2] || match[3] || "").trim() : "";
-  if (!item._concealMod && item.ofc_details?.concealment_penalty) item._concealMod = String(item.ofc_details.concealment_penalty);
+  if (item.ofc_details?.concealment_penalty !== undefined && item.ofc_details?.concealment_penalty !== "") {
+    item._concealMod = String(item.ofc_details.concealment_penalty);
+  }
   item._concealParsed = true;
   return item;
 }
 
 export function composeConcealment(item) {
-  const value = String(item._concealValue ?? "").trim();
-  const mod = String(item._concealMod ?? "").trim();
-  if (!value) return "";
-  return mod ? `${value}/${mod}` : value;
+  return String(item._concealValue ?? "").trim();
 }
 
 export function parseDefense(item) {
@@ -127,9 +124,7 @@ export function composeDefense(item) {
 export function cloneOutfit(item) {
   const details = normalizeDetails(item?.ofc_details || {});
   if (!details.electronic_control && item?.electronic_control) details.electronic_control = String(item.electronic_control);
-  let control = normalizeNumber(item?.control_modifier);
-  if (USES_CONTROL_MODIFIER.has(item?.category) && details.control_value !== "") control = normalizeNumber(details.control_value);
-  if (USES_CONTROL_MODIFIER.has(item?.category)) details.control_value = String(control);
+  const control = normalizeNumber(item?.control_modifier);
   const draft = { ...item, control_modifier: control, ofc_details: details };
   parseConcealment(draft);
   parseDefense(draft);
@@ -155,7 +150,6 @@ export function collectOutfitRecord(item, character) {
     defense_p: String(item._defP ?? "").trim(),
     defense_i: String(item._defI ?? "").trim()
   };
-  if (USES_CONTROL_MODIFIER.has(item.category)) detailsSource.control_value = String(control);
   const details = compactDetails(detailsSource);
 
   return {
