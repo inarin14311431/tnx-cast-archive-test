@@ -3,12 +3,15 @@ import {
   outfitSupportsControl,
   outfitSupportsCsModifier
 } from "./outfit-contract.js";
+import { parseLegacyDefense, splitLegacyConcealment } from "./outfit-legacy-compat.js";
+
+export { splitLegacyConcealment };
 
 export function normalizeOutfitForView(outfit = {}) {
   const category = normalizeOutfitCategory(outfit.category);
   const details = normalizeDetails(outfit.ofc_details);
   const concealment = splitLegacyConcealment(first(details.concealment, outfit.concealment));
-  const defense = parseDefense(outfit.defense);
+  const defense = parseLegacyDefense(outfit.defense);
   const control = outfitSupportsControl(category) ? first(outfit.control_modifier) : "";
   const cs = outfitSupportsCsModifier(category) ? first(outfit.cs_modifier) : "";
 
@@ -25,9 +28,9 @@ export function normalizeOutfitForView(outfit = {}) {
     electronic_control: first(outfit.electronic_control, details.electronic_control),
     control_modifier: control,
     cs_modifier: cs,
-    defense_s: first(outfit.defense_s, details.defense_s, defense.s),
-    defense_p: first(outfit.defense_p, details.defense_p, defense.p),
-    defense_i: first(outfit.defense_i, details.defense_i, defense.i),
+    defense_s: first(outfit.defense_s, details.defense_s, defense.defense_s),
+    defense_p: first(outfit.defense_p, details.defense_p, defense.defense_p),
+    defense_i: first(outfit.defense_i, details.defense_i, defense.defense_i),
     tron_software: first(outfit.tron_software, details.tron_software),
     tron_support: first(outfit.tron_support, details.tron_support),
     tron_hardware: first(outfit.tron_hardware, details.tron_hardware),
@@ -58,34 +61,10 @@ export function formatConcealmentPair(outfit) {
   return pair(normalized.concealment, normalized.concealment_penalty);
 }
 
-export function splitLegacyConcealment(value) {
-  const text = String(value ?? "").trim();
-  if (!text) return { value: "", modifier: "" };
-  const match = text.match(/^\s*([^/（）()]+?)\s*(?:[／/]\s*([^/（）()]+)|[（(]\s*([^）)]+)\s*[）)])?\s*$/);
-  return match
-    ? { value: String(match[1] || "").trim(), modifier: String(match[2] || match[3] || "").trim() }
-    : { value: text, modifier: "" };
-}
-
 function normalizeDetails(value) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, String(item ?? "")]))
     : {};
-}
-
-function parseDefense(value) {
-  const result = { s: "", p: "", i: "" };
-  const text = String(value ?? "").trim();
-  if (!text) return result;
-  for (const match of text.matchAll(/(?:^|[\s,，/／])([SPI])\s*[:：]?\s*([^/／,，\s]+)/gi)) {
-    result[match[1].toLowerCase()] = match[2];
-  }
-  if (Object.values(result).some(Boolean)) return result;
-  const parts = text.split(/[\/／,，\s]+/).filter(Boolean);
-  result.s = parts[0] || "";
-  result.p = parts[1] || "";
-  result.i = parts[2] || "";
-  return result;
 }
 
 function first(...values) {
