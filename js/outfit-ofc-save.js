@@ -1,5 +1,4 @@
 import "./outfit-pc-field-policy.js?v=5";
-import { supabase } from "./supabase-client.js";
 import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
 import { outfitSupportsControl, outfitSupportsCsModifier } from "./outfit-contract.js?v=3";
 import {
@@ -8,25 +7,6 @@ import {
   rowSignature,
   valueOf
 } from "./outfit-ofc-utils.js";
-
-const BASE_SAVE_RPC = "save_character_bundle";
-const OFC_SAVE_RPC = "save_character_bundle_with_ofc";
-
-install();
-
-function install() {
-  if (supabase.__tnxOfcSaveWrapped) return;
-  const originalRpc = supabase.rpc.bind(supabase);
-  Object.defineProperty(supabase, "__tnxOfcSaveWrapped", { value: true });
-
-  supabase.rpc = (functionName, args = {}, options) => {
-    if (functionName !== BASE_SAVE_RPC) return originalRpc(functionName, args, options);
-    return originalRpc(OFC_SAVE_RPC, {
-      ...args,
-      p_outfits: enrichOutfitPayload(Array.isArray(args?.p_outfits) ? args.p_outfits : [])
-    }, options);
-  };
-}
 
 function proxyValue(row, field, fallback) {
   const proxy = row.querySelector(`[data-pc-outfit-proxy="${field}"]`);
@@ -41,7 +21,7 @@ function withoutRetiredModifier(payload) {
   return current;
 }
 
-function enrichOutfitPayload(items) {
+export function enrichOutfitPayload(items) {
   const rows = getOutfitRows();
   const queues = rowsBySignature(rows);
   const used = new Set();
