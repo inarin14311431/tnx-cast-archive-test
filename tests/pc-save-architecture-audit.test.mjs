@@ -9,6 +9,8 @@ const [
   payload,
   persistence,
   loadPersistence,
+  loadNormalization,
+  errorMessage,
   coordinator,
   state,
   diagnostics,
@@ -18,6 +20,8 @@ const [
   read("sheet-save-payload.js"),
   read("sheet-save-persistence.js"),
   read("sheet-load-persistence.js"),
+  read("sheet-load-normalization.js"),
+  read("sheet-error-message.js"),
   read("sheet-save-coordinator.js"),
   read("sheet-save-state.js"),
   read("sheet-save-diagnostics.js"),
@@ -39,13 +43,26 @@ test("classic editor keeps database transport ownership outside sheet.js", () =>
   assert.match(loadPersistence, /\.from\("character_outfits"\)/);
 });
 
-test("DB-shaped serialization remains DOM-free and isolated from persistence", () => {
+test("DB-shaped serialization and loaded-record normalization remain DOM-free", () => {
   assert.doesNotMatch(payload, /document\.|querySelector|window\.|supabase/);
+  assert.doesNotMatch(loadNormalization, /document\.|querySelector|window\.|supabase/);
+  assert.doesNotMatch(errorMessage, /document\.|querySelector|window\.|supabase/);
   assert.doesNotMatch(persistence, /document\.|querySelector|#save-/);
   assert.doesNotMatch(loadPersistence, /document\.|querySelector|#save-/);
   assert.match(sheet, /buildCharacterSavePayload/);
   assert.match(sheet, /buildSkillSavePayloads/);
   assert.match(sheet, /buildOutfitSavePayloads/);
+  assert.match(sheet, /normalizeLoadedSkill/);
+  assert.match(sheet, /normalizeLoadedOutfit/);
+  assert.match(sheet, /formatSheetPersistenceError/);
+});
+
+test("sheet.js no longer owns loaded skill/outfit normalization or persistence error wording", () => {
+  assert.doesNotMatch(sheet, /function normalizeSkill\s*\(/);
+  assert.doesNotMatch(sheet, /function normalizeOutfit\s*\(/);
+  assert.doesNotMatch(sheet, /function inferKind\s*\(/);
+  assert.doesNotMatch(sheet, /function isStyleSeparatorDescription\s*\(/);
+  assert.doesNotMatch(sheet, /function jpError\s*\(/);
 });
 
 test("save lifecycle modules do not regain database or payload ownership", () => {
