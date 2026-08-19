@@ -10,7 +10,7 @@ import {
   parseConcealment,
   parseDefense,
   normalizeNumber
-} from "./sheet-mobile-outfit-model.js?v=6";
+} from "./sheet-mobile-outfit-model.js?v=7";
 import {
   buildOutfitEditor,
   ensureOutfitDialog,
@@ -105,9 +105,6 @@ function updateDraft(control) {
     activeDraft[field] = control.type === "number" || field === "control_modifier"
       ? normalizeNumber(control.value)
       : control.value;
-    if (field === "control_modifier" && ["armor", "vehicle"].includes(activeDraft.category)) {
-      activeDraft.ofc_details.control_value = String(activeDraft.control_modifier);
-    }
   }
 
   activeDraft.concealment = composeConcealment(activeDraft);
