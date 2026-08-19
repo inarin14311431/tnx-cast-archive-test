@@ -11,6 +11,13 @@ test("PC outfit policy consumes the shared outfit contract", () => {
   assert.match(source, /from "\.\/outfit-contract\.js\?v=2"/);
 });
 
+test("PC outfit policy consumes shared legacy concealment parsing directly", () => {
+  assert.match(source, /splitLegacyConcealment/);
+  assert.match(source, /from "\.\/outfit-legacy-compat\.js\?v=1"/);
+  assert.doesNotMatch(source, /from "\.\/outfit-view-model/);
+  assert.doesNotMatch(source, /function splitConcealment/);
+});
+
 test("PC outfit policy no longer owns an outfit root MutationObserver", () => {
   assert.doesNotMatch(source, /new MutationObserver/);
   assert.match(source, /tnx:outfit-tables-rendered/);
