@@ -3,6 +3,7 @@ import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
 import { SITE_BASE_PATH } from "./config.js?v=2";
 import { createSheetSaveCoordinator } from "./sheet-save-coordinator.js?v=1";
+import { persistSheetBundle } from "./sheet-save-persistence.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -61,14 +62,12 @@ const saveCoordinator = createSheetSaveCoordinator({
     return "";
   },
   async persist() {
-    const { data, error } = await supabase.rpc("save_character_bundle", {
-      p_character_id: character?.id ?? null,
-      p_character: collectCharacter(),
-      p_skills: collectSkills(),
-      p_outfits: collectOutfits()
+    const data = await persistSheetBundle({
+      characterId: character?.id ?? null,
+      character: collectCharacter(),
+      skills: collectSkills(),
+      outfits: collectOutfits()
     });
-    if (error) throw error;
-    if (!data?.id || !data?.public_id) throw new Error("保存結果を確認できませんでした。");
     character = data;
     history.replaceState(null, "", `${SITE_BASE_PATH}sheet.html?id=${encodeURIComponent(character.public_id)}`);
     window.dispatchEvent(new CustomEvent("tnx:character-saved", { detail: { id: character.id, publicId: character.public_id } }));
@@ -534,7 +533,7 @@ function collectCharacter() {
   for (const [name, selector] of STRUCTURED_FIELDS) { const element = $(selector); payload[name] = element ? element.value.trim() : ""; }
   for (let i = 1; i <= 3; i++) {
     const style = STYLE_DATA.find(item => item.name === $(`#style-${i}`).value);
-    payload[`style_${i}`] = $(`#style-${i}`).value; payload[`style_${i}_mark`] = $(`#style-${i}-mark`).value;
+    payload[`style_${i}`] = $(`#style-${i}`).value; payload[`style_${i}_mark`] = $(`#style-${i}-mark`].value;
     payload[`style_${i}_attribute`] = $(`#style-${i}-attribute`)?.value || ""; payload[`divine_${i}`] = style?.divine || ""; payload[`divine_${i}_yomi`] = style?.divineYomi || style?.divine || "";
   }
   for (const [key] of ABILITIES) {
