@@ -25,13 +25,13 @@ test("OFC TSV uses CS modifier instead of deprecated cs_value", () => {
 });
 
 test("OFC TSV routes structured control and CS fields to base columns", () => {
-  assert.match(tsv, /field === "control_value".*data-o=\\"control_modifier\\"/s);
-  assert.match(tsv, /field === "cs_modifier".*data-o=\\"cs_modifier\\"/s);
-  assert.match(tsv, /field === "concealment".*data-pc-outfit-proxy=\\"concealment\\"/s);
+  assert.match(tsv, /field === "control_value".*data-o="control_modifier"/s);
+  assert.match(tsv, /field === "cs_modifier".*data-o="cs_modifier"/s);
+  assert.match(tsv, /field === "concealment".*data-pc-outfit-proxy="concealment"/s);
 });
 
 test("direct OFC master transfer restores canonical description", () => {
-  assert.match(master, /field === "description".*data-o=\\"description\\"/s);
+  assert.match(master, /field === "description".*data-o="description"/s);
   assert.match(master, /concealment_penalty: row\.concealment_penalty/);
   assert.match(master, /cs_modifier: raw\.CS/);
 });
