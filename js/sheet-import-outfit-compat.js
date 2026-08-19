@@ -127,17 +127,37 @@
     };
   }
 
-  function createRaw(item){
-    const root=document.querySelector(ROOT),add=document.querySelector("#add-outfit");
-    if(!root||!add)throw new Error("アウトフィット追加欄を確認できません。");
+  function fieldControl(row,field){
+    return row?.querySelector?.(`[data-o="${field}"]`)
+      ||row?.querySelector?.(`[data-pc-outfit-proxy="${field}"]`)
+      ||null;
+  }
+
+  async function createRaw(item){
+    const root=document.querySelector(ROOT);
+    if(!root)throw new Error("アウトフィット追加欄を確認できません。");
     const before=new Set([...root.querySelectorAll('[data-outfit-key]')].map(row=>row.dataset.outfitKey));
+    const categoryAdd=root.querySelector(`[data-add-outfit-category="${CSS.escape(item.category)}"]`);
+    const generic=document.querySelector("#add-outfit");
+    const add=categoryAdd||generic;
+    if(!add)throw new Error("アウトフィット追加欄を確認できません。");
     add.click();
-    const card=[...root.querySelectorAll(':scope > .outfit-card[data-outfit-key]')].find(candidate=>!before.has(candidate.dataset.outfitKey));
-    if(!card)throw new Error(`アウトフィット行を作成できません：${item.name}`);
-    const key=card.dataset.outfitKey;
+
+    let row=null;
+    for(let attempt=0;attempt<20&&!row;attempt++){
+      await frame();
+      row=[...root.querySelectorAll('[data-outfit-key]')].find(candidate=>!before.has(candidate.dataset.outfitKey))||null;
+    }
+    if(!row)throw new Error(`アウトフィット行を作成できません：${item.name}`);
+
+    const key=row.dataset.outfitKey;
+    if(!categoryAdd){
+      setValue(fieldControl(row,"category"),item.category);
+      await frame();
+      row=root.querySelector(`[data-outfit-key="${CSS.escape(key)}"]`)||row;
+    }
     const values=commonValues(item);
-    for(const [field,value] of Object.entries(values))setValue(card.querySelector(`[data-o="${field}"]`),value);
-    setValue(card.querySelector('[data-o="category"]'),item.category);
+    for(const [field,value] of Object.entries(values))setValue(fieldControl(row,field),value);
     return key;
   }
 
@@ -156,7 +176,7 @@
     let row=await waitRow(key);
     if(!row)throw new Error(`アウトフィット行の再描画に失敗しました：${item.name}`);
     const data=item.data;
-    const base=(field,value)=>setValue(row.querySelector(`[data-o="${field}"]`),value);
+    const base=(field,value)=>setValue(fieldControl(row,field),value);
     const ofc=(field,value)=>String(value??"")!==""&&setValue(row.querySelector(`[data-ofc="${field}"]`),value);
     base("name",item.name);
     ofc("concealment_penalty",first(data,"concealB","concealmentPenalty","concealment_penalty"));
@@ -208,9 +228,8 @@
         for(let index=0;index<items.length;index++){
           const item=items[index];
           progress(52+32*(index/Math.max(1,items.length)),"アウトフィットを作成中",`${index+1}/${items.length}件　${item.name}`);
-          const key=createRaw(item);
+          const key=await createRaw(item);
           created.push({key,item});
-          await frame();
         }
         for(let index=0;index<created.length;index++){
           const {key,item}=created[index];
