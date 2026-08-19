@@ -4,6 +4,12 @@ import { readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../js/outfit-tables.js", import.meta.url), "utf8");
 
+function rawSchemasBlock() {
+  const match = source.match(/const RAW_CARD_SCHEMAS=\{([\s\S]*?)\n  \};/);
+  assert.ok(match, "RAW_CARD_SCHEMAS block should exist");
+  return match[1];
+}
+
 test("outfit table source distinguishes raw transport schema from canonical semantics", () => {
   assert.match(source, /const RAW_CARD_SCHEMAS=/);
   assert.match(source, /const BASE_LABELS=/);
@@ -12,21 +18,29 @@ test("outfit table source distinguishes raw transport schema from canonical sema
   assert.doesNotMatch(source, /const LABELS=/);
 });
 
-test("raw table labels no longer expose retired outfit terminology", () => {
+test("raw table labels use current outfit terminology", () => {
   assert.match(source, /concealment:'隠匿値'/);
   assert.match(source, /control_modifier:'制御値'/);
   assert.match(source, /cs_modifier:'CS修正'/);
   assert.match(source, /slot:'部位'/);
-  assert.match(source, /mundane_modifier:''/);
-  assert.doesNotMatch(source, /concealment:'隠匿'/);
-  assert.doesNotMatch(source, /control_modifier:'制御'/);
-  assert.doesNotMatch(source, /cs_modifier:'CS'/);
   assert.doesNotMatch(source, /mundane_modifier:'外界'/);
 });
 
-test("compatibility-only controls remain transported during reorder rebuild", () => {
-  assert.match(source, /mundane_modifier/);
-  assert.match(source, /function snapshot\(\)/);
+test("reorder snapshot preserves complete raw card data before visible controls move", () => {
+  assert.match(source, /function captureCardData\(card\)/);
+  assert.match(source, /card\.querySelectorAll\('\[data-o\]'\)/);
+  assert.match(source, /tr\._outfitTransportData=captureCardData\(card\)/);
+  assert.match(source, /const data=\{\.\.\.\(row\._outfitTransportData\|\|\{\}\)\};/);
   assert.match(source, /row\.querySelectorAll\('\[data-o\]'\)/);
   assert.match(source, /items\.forEach\(item=>addRawOutfit\(item\)\)/);
+});
+
+test("raw table presentation omits retired and category-invalid modifier cells", () => {
+  const schemas = rawSchemasBlock();
+  assert.doesNotMatch(schemas, /mundane_modifier/);
+  assert.match(schemas, /cyberware:\['category','name','purchase_value','experience_cost','concealment','slot','description','actions'\]/);
+  assert.match(schemas, /tron:\['category','name','purchase_value','experience_cost','concealment','slot','cs_modifier','description','actions'\]/);
+  assert.match(schemas, /other:\['category','name','purchase_value','experience_cost','concealment','slot','description','actions'\]/);
+  assert.match(schemas, /armor:[^\n]*control_modifier/);
+  assert.match(schemas, /vehicle:[^\n]*control_modifier[^\n]*cs_modifier/);
 });
