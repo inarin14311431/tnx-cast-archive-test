@@ -533,7 +533,7 @@ function collectCharacter() {
   for (const [name, selector] of STRUCTURED_FIELDS) { const element = $(selector); payload[name] = element ? element.value.trim() : ""; }
   for (let i = 1; i <= 3; i++) {
     const style = STYLE_DATA.find(item => item.name === $(`#style-${i}`).value);
-    payload[`style_${i}`] = $(`#style-${i}`).value; payload[`style_${i}_mark`] = $(`#style-${i}-mark`].value;
+    payload[`style_${i}`] = $(`#style-${i}`).value; payload[`style_${i}_mark`] = $(`#style-${i}-mark`).value;
     payload[`style_${i}_attribute`] = $(`#style-${i}-attribute`)?.value || ""; payload[`divine_${i}`] = style?.divine || ""; payload[`divine_${i}_yomi`] = style?.divineYomi || style?.divine || "";
   }
   for (const [key] of ABILITIES) {
