@@ -19,3 +19,4 @@ GitHub Pages redeploy trigger
 2026-08-19 extract classic transactional persistence boundary
 2026-08-19 make OFC enrichment explicit in persistence boundary
 2026-08-19 extract classic DB-shaped save payload contract
+2026-08-19 preserve edits made during in-flight PC saves
