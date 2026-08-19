@@ -5,13 +5,13 @@
  * - Adding a suit raises the level only when the suit count exceeds it.
  * - Removing a suit lowers the level to the remaining suit count.
  *
- * This wraps the editor's own row handlers so the internal skill data,
- * displayed values, experience calculation and saved data stay in sync.
+ * Dynamic skill rows now use delegated handlers in sheet-row-interactions.js,
+ * so this module also delegates from the skill roots instead of wrapping
+ * per-control oninput handlers.
  */
 (function(){
   const SUITS=["reason","passion","life","mundane"];
   const ROOT_SELECTOR="#general-skills,#style-skills";
-  let queued=false;
 
   function suitBoxes(row){
     return SUITS.map(suit=>row.querySelector(`[data-f="${suit}"]`)).filter(Boolean);
@@ -21,74 +21,36 @@
     return suitBoxes(row).filter(box=>box.checked).length;
   }
 
-  function remember(boxes){
-    boxes.forEach(box=>box.dataset.previousChecked=box.checked?"1":"0");
+  function dispatchInput(control){
+    control.dispatchEvent(new Event("input",{bubbles:true}));
   }
 
-  function wrapRow(row){
-    if(row.dataset.levelSuitRules==="1")return true;
+  function handleInput(event){
+    const control=event.target;
+    if(!control?.matches)return;
+    const row=control.closest?.('tr[data-skill-key]');
+    if(!row)return;
 
-    const level=row.querySelector('[data-f="level"]');
-    const boxes=suitBoxes(row);
-    if(!level||boxes.length!==4)return false;
-    if(typeof level.oninput!=="function"||boxes.some(box=>typeof box.oninput!=="function"))return false;
+    if(control.matches('[data-f="level"]')){
+      const value=Math.max(0,Number(control.value||0));
+      control.value=String(value);
+      if(value<4)return;
 
-    const originalLevel=level.oninput;
-    const originalSuitHandlers=new Map(boxes.map(box=>[box,box.oninput]));
-    remember(boxes);
-
-    level.oninput=function(event){
-      const value=Math.max(0,Number(level.value||0));
-      level.value=String(value);
-      originalLevel.call(level,event);
-
-      if(value>=4){
-        for(const box of boxes){
-          if(box.checked)continue;
-          box.checked=true;
-          originalSuitHandlers.get(box)?.call(box,new Event("input",{bubbles:true}));
-        }
-        /* Suit handlers must not reduce a level above four. */
-        level.value=String(value);
-        originalLevel.call(level,new Event("input",{bubbles:true}));
+      for(const box of suitBoxes(row)){
+        if(box.checked)continue;
+        box.checked=true;
+        dispatchInput(box);
       }
-
-      remember(boxes);
-    };
-
-    for(const box of boxes){
-      box.oninput=function(event){
-        const wasChecked=box.dataset.previousChecked==="1";
-        const isChecked=box.checked;
-        originalSuitHandlers.get(box)?.call(box,event);
-
-        if(wasChecked&&!isChecked){
-          const remaining=selectedCount(row);
-          level.value=String(remaining);
-          originalLevel.call(level,new Event("input",{bubbles:true}));
-        }
-
-        remember(boxes);
-      };
+      return;
     }
 
-    row.dataset.levelSuitRules="1";
-    return true;
-  }
+    if(!SUITS.some(suit=>control.matches(`[data-f="${suit}"]`)))return;
+    if(control.checked)return;
 
-  function enhance(){
-    document.querySelectorAll(ROOT_SELECTOR).forEach(root=>{
-      root.querySelectorAll('tr[data-skill-key]').forEach(wrapRow);
-    });
-  }
-
-  function queue(){
-    if(queued)return;
-    queued=true;
-    requestAnimationFrame(()=>{
-      queued=false;
-      enhance();
-    });
+    const level=row.querySelector('[data-f="level"]');
+    if(!level)return;
+    level.value=String(selectedCount(row));
+    dispatchInput(level);
   }
 
   function initializeSkillLevelSuitRules(){
@@ -100,9 +62,8 @@
     roots.forEach(root=>{
       if(root.dataset.levelSuitRulesObserver==="1")return;
       root.dataset.levelSuitRulesObserver="1";
-      new MutationObserver(queue).observe(root,{childList:true,subtree:true});
+      root.addEventListener("input",handleInput);
     });
-    queue();
   }
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initializeSkillLevelSuitRules,{once:true});
