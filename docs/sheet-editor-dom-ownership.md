@@ -54,28 +54,37 @@ Behavioral coverage protects visible/hidden structured detail synchronization, c
 
 ## Outfit ownership: current phase
 
-The first `#outfit-list` responsibility has now been consolidated.
-
 ### Armor defense totals: completed
 
 `armor-grand-total.js` previously duplicated the S/P/I total synchronization already maintained by `outfit-tables.js`. The shim is now inert and no longer reads, observes, or mutates `#outfit-list`. `outfit-tables.js` is the sole runtime owner of armor total calculation and refresh.
 
-This reduces the active outfit responsibilities to distinct roles:
+### Multiline structural observer: completed
 
-- `outfit-tables.js`: category table structure, row ordering, armor S/P/I presentation and totals.
-- `sheet-multiline-fields-v3.js`: multiline conversion/normalization and restoration of outfit text values; it still owns a structural `#outfit-list` MutationObserver.
-- `sheet-master-autofill.js`: user-triggered SKD/OFC master completion; it reads current outfit rows only while autofill is running and does not continuously observe the root.
+`sheet-multiline-fields-v3.js` previously maintained its own `MutationObserver` on `#outfit-list` so that text fields could be converted and normalized after `outfit-tables.js` rebuilt the table DOM.
+
+That timing dependency is now replaced by an explicit completion contract:
+
+1. `outfit-tables.js` remains the structural owner of the outfit table DOM and dispatches `tnx:outfit-tables-rendered` immediately after replacing the rendered category tables.
+2. `sheet-multiline-fields-v3.js` subscribes to `tnx:outfit-tables-rendered` and queues its idempotent multiline enhancement.
+3. `sheet-multiline-fields-v3.js` no longer observes `#outfit-list` structurally.
+4. Initial load remains safe because multiline enhancement still performs its own initial `queue()`, while saved DB values are restored through `loadOriginalOutfits()` and its existing queue path.
+
+Regression coverage locks the event publisher/consumer boundary and verifies that the removed outfit observer is not restored. Authenticated Playwright coverage exercises category addition and row reorder, confirming multiline conversion and field values survive the rebuild lifecycle.
+
+### Current active responsibilities
+
+- `outfit-tables.js`: category table structure, structural MutationObserver, row ordering, armor S/P/I presentation and totals, and `tnx:outfit-tables-rendered` publication.
+- `sheet-multiline-fields-v3.js`: multiline conversion/normalization and restoration of outfit text values; no structural outfit observer.
+- `sheet-master-autofill.js`: user-triggered SKD/OFC master completion; reads current outfit rows only while autofill is running and does not continuously observe the root.
 - `outfit-pc-field-policy.js`: compatibility policy for DB-backed PC outfit proxy fields and legacy concealment normalization.
 
-`sheet-features.js` no longer participates in outfit-root ownership.
+`sheet-features.js` and `armor-grand-total.js` no longer participate in active outfit-root ownership.
 
-### Next outfit boundary
+## Next outfit boundary
 
-The next listener-level consolidation target is `sheet-multiline-fields-v3.js`'s structural observer on `#outfit-list`.
+The next candidate is not another raw `#outfit-list` listener removal. The remaining consumers have distinct responsibilities. Before further consolidation, inspect `outfit-pc-field-policy.js` and the base `outfit-tables.js` schema against the canonical contract in `docs/outfit-data-contract.md`, especially legacy-only field generation and compatibility proxy ownership.
 
-Before removing it, `outfit-tables.js` must expose an explicit post-render completion contract so multiline enhancement can run after initial load, category changes, reorder rebuilds, imports, and saved-data restoration without relying on timing. The observer must not be removed until that event path has dedicated Regression and Playwright coverage.
-
-`sheet-master-autofill.js` should remain an action-scoped consumer for now; it is not a competing structural owner.
+`sheet-master-autofill.js` should remain action-scoped for now; it is not a competing structural owner.
 
 ## Deferred high-overlap areas
 
