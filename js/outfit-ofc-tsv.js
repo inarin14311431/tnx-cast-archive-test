@@ -17,7 +17,7 @@ const TSV_EXTRA_HEADERS = [
   "defense_s", "defense_p", "defense_i",
   "ianus_surface", "ianus_deep", "ianus_none",
   "tron_software", "tron_support", "tron_hardware",
-  "cs_value", "crew", "sf",
+  "cs_modifier", "crew", "sf",
   "residence_entry", "residence_electric", "residence_area"
 ];
 
@@ -71,10 +71,18 @@ function handleTsvImport(event) {
 
 function applyDetailsToRow(row, details) {
   requestAnimationFrame(() => {
+    const category = row.closest("table")?.dataset.outfitSchema || row.querySelector('[data-o="category"]')?.value || "other";
     for (const [field, value] of Object.entries(details)) {
-      const input = row.querySelector(`[data-ofc="${cssEscape(field)}"]`);
+      if (field === "control_value" && !["armor", "vehicle"].includes(category)) continue;
+      if (field === "cs_modifier" && !["tron", "vehicle"].includes(category)) continue;
+
+      let input = row.querySelector(`[data-ofc="${cssEscape(field)}"]`);
+      if (field === "control_value") input = row.querySelector('[data-o="control_modifier"]') || input;
+      if (field === "cs_modifier") input = row.querySelector('[data-o="cs_modifier"]') || input;
+      if (field === "concealment") input = row.querySelector('[data-pc-outfit-proxy="concealment"]') || row.querySelector('[data-o="concealment"]') || input;
+      if (field === "slot") input = row.querySelector('[data-pc-outfit-proxy="slot"]') || row.querySelector('[data-o="slot"]') || input;
       if (!input) continue;
-      input.value = String(value || "");
+      input.value = String(value ?? "");
       input.dispatchEvent(new Event("input", { bubbles: true }));
       input.dispatchEvent(new Event("change", { bubbles: true }));
     }
@@ -130,7 +138,7 @@ function masterRowDetails(row) {
     tron_software: raw["ソ"],
     tron_support: raw["サ"],
     tron_hardware: raw["ハ"],
-    cs_value: raw.CS,
+    cs_modifier: raw.CS,
     crew: raw["乗員"],
     sf: raw.SF,
     residence_entry: raw["登"],
@@ -161,6 +169,8 @@ function createFullOfcTsv(rows) {
 function tsvRowDetails(row) {
   const details = {};
   for (const header of TSV_EXTRA_HEADERS) details[header] = row[header] || "";
+  // Backward compatibility for TSVs copied before CS was renamed to cs_modifier.
+  if (!details.cs_modifier && row.cs_value) details.cs_modifier = row.cs_value;
   return compactDetails({
     ...details,
     purchase_target: row.purchase,
