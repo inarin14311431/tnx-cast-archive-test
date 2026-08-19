@@ -28,6 +28,7 @@ import {
   buildOutfitTsvRow
 } from "./sheet-tsv-import.js?v=1";
 import { renderStyleCards, renderAbilityCards } from "./sheet-character-renderer.js?v=1";
+import { calculateStyleBaselines } from "./sheet-style-baseline.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -301,19 +302,23 @@ function toggleAttribute(i) {
   wrap.hidden = !enabled; if (!enabled) select.value = "";
 }
 
-function styleRecord(i) {
-  const name = $(`#style-${i}`).value;
-  return name === "ウツワ" ? UTSUWA_ATTRIBUTES.find(item => item.name === $(`#style-${i}-attribute`).value) || null : STYLE_DATA.find(item => item.name === name) || null;
+function currentStyleSlots() {
+  return [1, 2, 3].map(i => ({
+    name: $(`#style-${i}`).value,
+    attribute: $(`#style-${i}-attribute`)?.value || ""
+  }));
 }
 
 function calculateBaselines() {
-  for (const [key] of ABILITIES) { styleBaseline[key] = 0; styleBaseline[`${key}-control`] = 0; }
-  for (let i = 1; i <= 3; i++) {
-    const record = styleRecord(i); if (!record) continue;
-    for (const [key] of ABILITIES) {
-      styleBaseline[key] += Number(record[key]?.[0] || 0);
-      styleBaseline[`${key}-control`] += Number(record[key]?.[1] || 0);
-    }
+  const calculated = calculateStyleBaselines({
+    slots: currentStyleSlots(),
+    abilities: ABILITIES,
+    styleData: STYLE_DATA,
+    utsuwaAttributes: UTSUWA_ATTRIBUTES
+  });
+  for (const [key] of ABILITIES) {
+    styleBaseline[key] = Number(calculated[key] || 0);
+    styleBaseline[`${key}-control`] = Number(calculated[`${key}-control`] || 0);
   }
 }
 
