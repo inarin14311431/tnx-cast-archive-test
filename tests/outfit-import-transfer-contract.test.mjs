@@ -16,9 +16,13 @@ test("legacy outfit import keeps concealment value and modifier separated", () =
   assert.doesNotMatch(legacy, /concealment:\[concealA,concealB\]/);
 });
 
-test("legacy outfit import preserves current control and CS semantics", () => {
-  assert.match(legacy, /\["armor","vehicle"\]\.includes\(item\.category\)\?first\(data,"control","controlModifier"\):0/);
-  assert.match(legacy, /\["tron","vehicle"\]\.includes\(item\.category\)\?first\(data,"cs","csModifier"\):0/);
+test("legacy outfit import uses the shared adapter for current control and CS semantics", () => {
+  assert.match(legacy, /outfit-ofc-adapter\.js\?v=1/);
+  assert.match(legacy, /normalizeImportedOutfitDetails\(item\.category/);
+  assert.match(legacy, /control_modifier:first\(data,"control","controlModifier","controlValue"\)/);
+  assert.match(legacy, /cs_modifier:first\(data,"cs","csModifier"\)/);
+  assert.doesNotMatch(legacy, /\["armor","vehicle"\]\.includes\(item\.category\)/);
+  assert.doesNotMatch(legacy, /\["tron","vehicle"\]\.includes\(item\.category\)/);
   assert.match(legacy, /ofc\("electronic_control"/);
 });
 
