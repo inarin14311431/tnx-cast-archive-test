@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  moveAdjacentRow,
   moveRowWithinCategory,
   normalizeOutfitCategory,
   removeRowByKey
@@ -11,6 +12,28 @@ test("removeRowByKey removes only the requested editor row without mutating the 
   const result = removeRowByKey(source, "b");
   assert.deepEqual(result.map(item => item._key), ["a", "c"]);
   assert.deepEqual(source.map(item => item._key), ["a", "b", "c"]);
+});
+
+test("moveAdjacentRow swaps adjacent rows without mutating the source", () => {
+  const source = [{ _key: "a" }, { _key: "b" }, { _key: "c" }];
+  const result = moveAdjacentRow(source, "b", "up");
+  assert.equal(result.moved, true);
+  assert.deepEqual(result.rows.map(item => item._key), ["b", "a", "c"]);
+  assert.deepEqual(source.map(item => item._key), ["a", "b", "c"]);
+});
+
+test("moveAdjacentRow supports alternate key selectors and filtered movement", () => {
+  const source = [
+    { id: "a", enabled: true },
+    { id: "b", enabled: false },
+    { id: "c", enabled: true }
+  ];
+  const result = moveAdjacentRow(source, "c", "up", {
+    keyOf: item => item.id,
+    canCross: (_current, candidate) => candidate.enabled
+  });
+  assert.equal(result.moved, true);
+  assert.deepEqual(result.rows.map(item => item.id), ["c", "b", "a"]);
 });
 
 test("moveRowWithinCategory skips rows from other categories and preserves them", () => {
