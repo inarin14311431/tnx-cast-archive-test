@@ -54,11 +54,14 @@ test("unified skill input state keeps level and free level consistent", () => {
   }), { level: 3, freeLevel: 3 });
 });
 
-test("helper remains DOM-free and delegated DOM rule loads it", async () => {
+test("helper remains DOM-free and delegated DOM rule loads the unified state resolver", async () => {
   const helperSource = await readFile(new URL("../js/sheet-skill-level-suit-state.js", import.meta.url), "utf8");
   const domSource = await readFile(new URL("../js/skill-level-suit-rules.js", import.meta.url), "utf8");
   assert.doesNotMatch(helperSource, /document\.|window\.|supabase|localStorage|sessionStorage|addEventListener/);
   assert.match(domSource, /sheet-skill-level-suit-state\.js\?v=1/);
-  assert.match(domSource, /resolveSkillLevelAfterSuitChange/);
+  assert.match(domSource, /resolveSkillInputState/);
   assert.match(domSource, /shouldSelectAllSuits/);
+  assert.match(domSource, /action:\"level\"/);
+  assert.match(domSource, /action:\"suit\"/);
+  assert.match(domSource, /action:\"free_level\"/);
 });
