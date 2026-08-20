@@ -42,6 +42,7 @@ import { collectCharacterInputSnapshot, applyCharacterInputSnapshot } from "./sh
 import { collectAbilityInputSnapshot, applyAbilityInputSnapshot } from "./sheet-ability-input-snapshot.js?v=1";
 import { collectStyleInputSnapshot, applyStyleInputSnapshot } from "./sheet-style-input-snapshot.js?v=1";
 import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
+import { moveRowWithinCategory, normalizeOutfitCategory, removeRowByKey } from "./sheet-row-collection-state.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -182,24 +183,19 @@ function handleOutfitRowInput({ key, field, value }) {
 }
 
 function deleteSkillByKey(key) {
-  skills = skills.filter(item => item._key !== key);
+  skills = removeRowByKey(skills, key);
   renderSkills(); recalc(); markDirty();
 }
 
 function moveSkillByKey(key, direction) {
-  const index = skills.findIndex(item => item._key === key);
-  if (index < 0) return;
-  const category = skills[index].category;
-  const step = direction === "up" ? -1 : 1;
-  let other = index + step;
-  while (other >= 0 && other < skills.length && skills[other].category !== category) other += step;
-  if (other < 0 || other >= skills.length) return;
-  [skills[index], skills[other]] = [skills[other], skills[index]];
+  const result = moveRowWithinCategory(skills, key, direction);
+  if (!result.moved) return;
+  skills = result.rows;
   renderSkills(); recalc(); markDirty();
 }
 
 function deleteOutfitByKey(key) {
-  outfits = outfits.filter(item => item._key !== key);
+  outfits = removeRowByKey(outfits, key);
   renderOutfits(); recalc(); markDirty();
 }
 
@@ -211,7 +207,7 @@ function addSkill(category, kind, name) {
 function addOutfitForImport(category = "other") {
   const outfit = {
     ...blankOutfit(),
-    category: OUTFIT_CATEGORIES.has(category) ? category : "other"
+    category: normalizeOutfitCategory(category, OUTFIT_CATEGORIES)
   };
   outfits.push(outfit);
   renderOutfits(); recalc(); markDirty();
