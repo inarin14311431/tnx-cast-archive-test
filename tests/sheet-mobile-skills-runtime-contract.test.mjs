@@ -15,9 +15,11 @@ test("mobile skills keeps save coordinator contract", () => {
   assert.match(source, /tnx:mobile-skills-saved/);
 });
 
-test("mobile skills preserves core edit rules", () => {
-  assert.match(source, /PC_GENERAL_ORDER/);
+test("mobile skills preserves core edit rules through the shared general catalog", () => {
+  assert.match(source, /GENERAL_MOBILE_ORDER/);
   assert.match(source, /MUTABLE_GENERAL_PREFIXES/);
+  assert.match(source, /general-skill-catalog\.js\?v=1/);
+  assert.doesNotMatch(source, /PC_GENERAL_ORDER/);
   assert.match(source, /STYLE_SEPARATOR/);
   assert.match(source, /levelOptions\(current,\s*floor\s*=\s*0\)/);
 });
