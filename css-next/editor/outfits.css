@@ -48,6 +48,11 @@
 .outfit-table :is(.outfit-table-head--manufacturer, .outfit-table-cell--manufacturer) { display: none !important; }
 .outfit-table :is(.outfit-table-head--description, .outfit-table-cell--description) { width: auto; min-width: 0; }
 
+/* Armor has fewer wide-text performance fields than other categories. Give that spare width to the explanation field. */
+.outfit-table-group--armor .outfit-table :is(.outfit-table-head--description, .outfit-table-cell--description) {
+  width: 42%;
+}
+
 .outfit-table-group--armor tfoot :is(th, td) { text-align: center; vertical-align: middle; }
 .outfit-table-group--armor tfoot td { color: var(--color-accent); background: var(--color-accent-soft); font-weight: 800; }
 .outfit-table-group--armor tfoot td:first-child { color: var(--color-muted); font-size: .82rem; font-weight: 800; letter-spacing: .03em; }
