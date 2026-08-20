@@ -11,6 +11,8 @@ test("armor total alignment helper owns layout only, not defense calculation", (
   assert.match(aligner, /dataset\.ofcHead === "defense_p"/);
   assert.match(aligner, /dataset\.ofcHead === "defense_i"/);
   assert.match(aligner, /label\.colSpan = Math\.max\(1, sIndex\)/);
+  assert.match(aligner, /root\.addEventListener\("tnx:outfit-tables-rendered", queue\)/);
+  assert.doesNotMatch(aligner, /MutationObserver/);
   assert.doesNotMatch(aligner, /\[data-ofc="defense_\$\{key\}"\]|Number\(input\.value|totals\[key\]/);
 });
 
