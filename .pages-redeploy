@@ -40,3 +40,4 @@ GitHub Pages redeploy trigger
 2026-08-20 extract general skill column choice
 2026-08-20 extract skill level and suit synchronization rules
 2026-08-20 lock free skill level normalization contract
+2026-08-20 unify skill level suit and free-level input state
