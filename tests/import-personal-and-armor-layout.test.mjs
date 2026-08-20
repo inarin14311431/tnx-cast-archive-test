@@ -14,9 +14,9 @@ test("structured personal import values are restored after the base importer fin
 
 test("armor total footer aligns itself to the dynamically injected S P I columns", async () => {
   const source = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
-  assert.match(source, /data\.ofcHead === "defense_s"/);
-  assert.match(source, /data\.ofcHead === "defense_p"/);
-  assert.match(source, /data\.ofcHead === "defense_i"/);
+  assert.match(source, /dataset\.ofcHead === "defense_s"/);
+  assert.match(source, /dataset\.ofcHead === "defense_p"/);
+  assert.match(source, /dataset\.ofcHead === "defense_i"/);
   assert.match(source, /label\.colSpan = Math\.max\(1, sIndex\)/);
   assert.match(source, /tail\.colSpan = Math\.max\(1, cells\.length - iIndex - 1\)/);
   assert.match(source, /new MutationObserver\(queue\)/);
