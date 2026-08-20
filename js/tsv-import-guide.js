@@ -171,6 +171,20 @@
     return lines.join("\n");
   }
 
+  function importedOFCDetails(data) {
+    return {
+      page_number: data.page,
+      concealment_penalty: data.concealB,
+      electronic_control: data.electrical_control,
+      defense_s: data.protecS,
+      defense_p: data.protecP,
+      defense_i: data.protecI,
+      crew: data.crew,
+      sf: data.sf,
+      residence_entry: data.entry
+    };
+  }
+
   async function importOFC(rows) {
     const addButton = document.querySelector("#add-outfit");
     if (!addButton) return;
@@ -209,23 +223,18 @@
         card = document.querySelector(`[data-outfit-key="${CSS.escape(key)}"]`) || card;
       }
 
-      const detailValues = {
-        page_number: data.page,
-        concealment_penalty: data.concealB,
-        electronic_control: data.electrical_control,
-        defense_s: data.protecS,
-        defense_p: data.protecP,
-        defense_i: data.protecI,
-        crew: data.crew,
-        sf: data.sf,
-        residence_entry: data.entry
-      };
+      const detailValues = importedOFCDetails(data);
+      // Persist imported OFC details into editor state immediately. Detail inputs are
+      // enhanced asynchronously after stored data loads, so waiting on the DOM alone
+      // can drop S/P/I on slower environments.
+      globalThis.TNXOutfitOFCState?.setDetails?.(key, detailValues);
 
-      card = await waitFor(() => {
+      const detailedCard = await waitFor(() => {
         const current = document.querySelector(`[data-outfit-key="${CSS.escape(key)}"]`);
         return current?.querySelector('[data-ofc="page_number"]') ? current : null;
       });
-      if (!card) continue;
+      if (!detailedCard) continue;
+      card = detailedCard;
 
       for (const [field, value] of Object.entries(detailValues)) {
         if (String(value || "") === "") continue;
