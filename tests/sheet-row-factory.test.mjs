@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { createBlankSkill, createBlankOutfit } from "../js/sheet-row-factory.js";
+import { createBlankSkill, createSkillRow, createBlankOutfit, createOutfitRow } from "../js/sheet-row-factory.js";
 
 test("skill factory preserves category defaults and explicit ordering", () => {
   const general = createBlankSkill("general", { key: "skill-general", sortOrder: 4 });
@@ -20,6 +20,29 @@ test("skill factory preserves category defaults and explicit ordering", () => {
   assert.equal(general.level, 1);
   assert.equal(general.free_level, 0);
   assert.equal(general.description, "");
+});
+
+test("skill row factory layers explicit values over canonical defaults", () => {
+  const row = createSkillRow("general", {
+    name: "射撃",
+    level: 3,
+    reason: true,
+    skill_kind: "general"
+  }, { key: "skill-row", sortOrder: 12 });
+
+  assert.equal(row._key, "skill-row");
+  assert.equal(row.category, "general");
+  assert.equal(row.name, "射撃");
+  assert.equal(row.level, 3);
+  assert.equal(row.reason, true);
+  assert.equal(row.free_level, 0);
+  assert.equal(row.sort_order, 12);
+});
+
+test("skill row factory cannot override the requested category", () => {
+  const row = createSkillRow("social", { category: "style", name: "社会：N◎VA" }, { key: "social-row" });
+  assert.equal(row.category, "social");
+  assert.equal(row.skill_kind, "proper");
 });
 
 test("outfit factory preserves canonical blank base state only", () => {
@@ -42,6 +65,16 @@ test("outfit factory preserves canonical blank base state only", () => {
   assert.equal("control_modifier" in outfit, false);
   assert.equal("cs_modifier" in outfit, false);
   assert.equal("mundane_modifier" in outfit, false);
+});
+
+test("outfit row factory layers import or editor values over the canonical blank", () => {
+  const outfit = createOutfitRow({ category: "weapon", name: "テスト武器", attack: "+5" }, { key: "outfit-row", sortOrder: 8 });
+  assert.equal(outfit._key, "outfit-row");
+  assert.equal(outfit.category, "weapon");
+  assert.equal(outfit.name, "テスト武器");
+  assert.equal(outfit.attack, "+5");
+  assert.equal(outfit.experience_cost, 0);
+  assert.equal(outfit.sort_order, 8);
 });
 
 test("classic sheet keeps collection-aware ordering while delegating row defaults", async () => {
