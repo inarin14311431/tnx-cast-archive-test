@@ -42,7 +42,7 @@ import { collectCharacterInputSnapshot, applyCharacterInputSnapshot } from "./sh
 import { collectAbilityInputSnapshot, applyAbilityInputSnapshot } from "./sheet-ability-input-snapshot.js?v=1";
 import { collectStyleInputSnapshot, applyStyleInputSnapshot } from "./sheet-style-input-snapshot.js?v=1";
 import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
-import { moveRowWithinCategory, normalizeOutfitCategory, removeRowByKey } from "./sheet-row-collection-state.js?v=1";
+import { appendRow, appendRows, clearRows, moveRowWithinCategory, normalizeOutfitCategory, removeRowByKey } from "./sheet-row-collection-state.js?v=2";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -200,7 +200,7 @@ function deleteOutfitByKey(key) {
 }
 
 function addSkill(category, kind, name) {
-  skills.push({ ...blankSkill(category), skill_kind: kind, name });
+  skills = appendRow(skills, { ...blankSkill(category), skill_kind: kind, name });
   renderSkills(); recalc(); markDirty();
 }
 
@@ -209,13 +209,13 @@ function addOutfitForImport(category = "other") {
     ...blankOutfit(),
     category: normalizeOutfitCategory(category, OUTFIT_CATEGORIES)
   };
-  outfits.push(outfit);
+  outfits = appendRow(outfits, outfit);
   renderOutfits(); recalc(); markDirty();
   return outfit._key;
 }
 
 function clearOutfitsForImport() {
-  outfits = [];
+  outfits = clearRows();
   renderOutfits(); recalc(); markDirty();
 }
 
@@ -229,7 +229,7 @@ function addStyleSeparator() {
     description: STYLE_SEPARATOR_MARKER,
     _rowType: "separator"
   };
-  skills.push(skill);
+  skills = appendRow(skills, skill);
   renderSkills(); recalc(); markDirty();
   requestAnimationFrame(() => document.querySelector(`#style-skills tr[data-skill-key="${skill._key}"] [data-f="name"]`)?.focus());
 }
@@ -249,7 +249,7 @@ function addGeneralSkill() {
   const counts = generalColumnCounts();
   const column = chooseGeneralSkillColumn(counts);
   const skill = { ...blankSkill("general"), name: "", level: 0, free_level: 0, skill_kind: "proper", _blankSlot: true, _slotColumn: column };
-  skills.push(skill); renderSkills(); recalc(); markDirty();
+  skills = appendRow(skills, skill); renderSkills(); recalc(); markDirty();
   requestAnimationFrame(() => document.querySelector(`#general-skills tr[data-skill-key="${skill._key}"] [data-f="name"]`)?.focus());
 }
 
@@ -465,13 +465,19 @@ function openImport(mode) { importMode = mode; $("#tsv-title").textContent = `${
 function applyImport() {
   const rows = parseSheetTsv($("#tsv-text").value);
   if (importMode === "skd") {
-    for (const row of rows) skills.push(buildStyleSkillTsvRow(row, {
-      base: blankSkill("style"),
+    const start = skills.length;
+    const additions = rows.map((row, index) => buildStyleSkillTsvRow(row, {
+      base: createBlankSkill("style", { sortOrder: start + index }),
       styleKindFromLabel: label => window.TNXStyleSkillKinds?.fromLabel(label)
     }));
+    skills = appendRows(skills, additions);
     renderSkills();
   } else {
-    for (const row of rows) outfits.push(buildOutfitTsvRow(row, { base: blankOutfit() }));
+    const start = outfits.length;
+    const additions = rows.map((row, index) => buildOutfitTsvRow(row, {
+      base: createBlankOutfit({ sortOrder: start + index })
+    }));
+    outfits = appendRows(outfits, additions);
     renderOutfits();
   }
   recalc(); markDirty();
