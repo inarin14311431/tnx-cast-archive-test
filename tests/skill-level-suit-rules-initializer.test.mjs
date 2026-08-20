@@ -14,15 +14,19 @@ test("skill level suit rules has an explicit idempotent delegated initializer", 
   assert.match(source, /initializeSkillLevelSuitRules\(\);/);
 });
 
-test("skill level suit rules delegates increase, decrease, and level-four decisions", () => {
+test("skill level suit rules delegates level, suit and free-level decisions", () => {
   assert.match(source, /sheet-skill-level-suit-state\.js\?v=1/);
   assert.match(source, /normalizeSkillLevel/);
   assert.match(source, /shouldSelectAllSuits/);
-  assert.match(source, /resolveSkillLevelAfterSuitChange/);
+  assert.match(source, /resolveSkillInputState/);
+  assert.match(source, /action:\"level\"/);
+  assert.match(source, /action:\"suit\"/);
+  assert.match(source, /action:\"free_level\"/);
   assert.match(source, /box\.checked=true/);
   assert.match(source, /selectedSuitCount:selectedCount\(row\)/);
   assert.match(source, /checked:control\.checked/);
   assert.match(source, /dispatchInput\(level\)/);
+  assert.match(source, /dispatchInput\(freeLevel\)/);
   assert.match(source, /setTimeout\(initializeSkillLevelSuitRules,100\)/);
 });
 
