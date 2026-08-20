@@ -1,5 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { moveAdjacentRow } from "./sheet-row-collection-state.js?v=2";
 import {
   LABELS,
   blankOutfit,
@@ -74,13 +75,11 @@ function hasChanges() {
 }
 
 function moveOutfit(id, direction) {
-  const list = sortedVisibleOutfits();
-  const index = list.findIndex(item => String(item.id) === String(id));
-  if (index < 0) return;
-  const target = direction === "up" ? index - 1 : index + 1;
-  if (target < 0 || target >= list.length) return;
-  [list[index], list[target]] = [list[target], list[index]];
-  list.forEach((item, i) => {
+  const result = moveAdjacentRow(sortedVisibleOutfits(), String(id), direction, {
+    keyOf: item => String(item?.id)
+  });
+  if (!result.moved) return;
+  result.rows.forEach((item, i) => {
     item.sort_order = i * 10;
     dirtyIds.add(String(item.id));
   });
