@@ -5,6 +5,7 @@ import "./sheet-mobile-profile.js?v=20260818-4";
 import "./sheet-mobile-style.js?v=20260818-4";
 import "./sheet-mobile-ability.js?v=20260818-1";
 import "./sheet-mobile-skills.js?v=20260818-4";
+import "./sheet-mobile-general-display.js?v=20260820-1";
 import "./sheet-mobile-style-existing-values.js?v=5";
 import "./sheet-mobile-outfit.js?v=20260819-6";
 import "./sheet-mobile-combos.js?v=20260818-7";
