@@ -8,6 +8,7 @@ const skill = (overrides = {}) => ({
   category: "general",
   name: "技能",
   level: 1,
+  free_level: 0,
   skill_kind: "general",
   reason: true,
   passion: false,
@@ -35,6 +36,13 @@ test("skill renderer preserves general two-column and ordered group contracts", 
   assert.match(output.generalHtml, /data-skill-category="connection"/);
   assert.match(output.generalHtml, /data-skill-move="up"/);
   assert.match(output.generalHtml, /data-delete-skill="s1"/);
+});
+
+test("skill renderer preserves free level as hidden editor state", () => {
+  const output = renderSkillEditorSections({
+    generalRows: [skill({ _key: "free-1", name: "射撃", level: 2, free_level: 1 })]
+  });
+  assert.match(output.generalHtml, /data-f="free_level" type="hidden" value="1"/);
 });
 
 test("skill renderer preserves style rows, separators and escaping", () => {
