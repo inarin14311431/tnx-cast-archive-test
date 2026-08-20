@@ -59,6 +59,13 @@ globalThis.TNXOutfitOFCState = {
     const key = row?.dataset?.outfitKey || "";
     const details = key ? stateByKey.get(key) : null;
     return details ? { ...details } : {};
+  },
+  setDetails(rowOrKey, details = {}) {
+    const key = typeof rowOrKey === "string" ? rowOrKey : rowOrKey?.dataset?.outfitKey || "";
+    if (!key) return false;
+    stateByKey.set(key, normalizeDetails(details));
+    queueEnhance();
+    return true;
   }
 };
 
