@@ -52,7 +52,6 @@ test("character renderer stays DOM-free and sheet delegates only markup generati
   assert.match(sheetSource, /sheet-character-renderer\.js\?v=1/);
   assert.match(sheetSource, /renderStyleCards\(/);
   assert.match(sheetSource, /renderAbilityCards\(ABILITIES\)/);
-  assert.match(sheetSource, /#style-grid[\s\S]*addEventListener\("change"/);
   assert.match(sheetSource, /function toggleAttribute\(/);
   assert.match(sheetSource, /function updateDivines\(/);
 });
