@@ -37,6 +37,7 @@ import { chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";
 import { resolveSkillInputState } from "./sheet-skill-level-suit-state.js?v=1";
 import { buildStyleSaveRows } from "./sheet-style-save-projection.js?v=1";
 import { buildAbilitySaveSnapshot, buildCsSaveSnapshot } from "./sheet-ability-save-projection.js?v=1";
+import { collectCharacterInputSnapshot } from "./sheet-character-input-snapshot.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -450,7 +451,11 @@ function markDirty() { if (loading) return; saveCoordinator.markDirty(); }
 
 function collectCharacter() {
   const experience = window.TNXExperience?.calculate?.();
-  const structured = Object.fromEntries(STRUCTURED_FIELDS.map(([name, selector]) => [name, $(selector)?.value || ""]));
+  const input = collectCharacterInputSnapshot({
+    root: document,
+    structuredFields: STRUCTURED_FIELDS,
+    experienceTotal: experience?.total ?? $("#exp-total")?.textContent ?? 0
+  });
   const styles = buildStyleSaveRows({ slots: currentStyleSlots(), styleData: STYLE_DATA });
   const abilities = buildAbilitySaveSnapshot({
     abilities: ABILITIES,
@@ -462,19 +467,8 @@ function collectCharacter() {
     modifier: $("#cs-mod")?.value
   });
   return buildCharacterSavePayload({
-    base: {
-      character_name: $("#character-name").value,
-      character_kana: $("#character-kana").value,
-      handle: $("#handle").value,
-      player_name: $("#player-name").value,
-      affiliation: $("#affiliation").value,
-      citizen_rank: $("#citizen-rank").value,
-      summary: $("#summary").value,
-      profile: $("#profile").value,
-      visibility: $("#visibility").value,
-      experience_points: Number(experience?.total ?? $("#exp-total").textContent ?? 0)
-    },
-    structured,
+    base: input.base,
+    structured: input.structured,
     styles,
     abilities,
     cs
