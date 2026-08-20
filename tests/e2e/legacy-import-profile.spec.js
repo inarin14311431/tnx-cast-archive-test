@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { getTestCastId, hasAuthCredentials, waitForEditorReady } from "./helpers.js";
 
-test("旧JSON取込はライフパス・★取得技能・アウトフィットを反映する", async ({ page }) => {
+test("旧JSON取込はライフパス・★表示技能・明示free_level・アウトフィットを反映する", async ({ page }) => {
   test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
 
   await page.goto(`/sheet.html?id=${encodeURIComponent(getTestCastId())}`);
@@ -26,7 +26,8 @@ test("旧JSON取込はライフパス・★取得技能・アウトフィット�
       }
     },
     skills1: [
-      { name: "★射撃", level: 1, s: 1 }
+      { name: "★射撃", level: 1, s: 1 },
+      { name: "医療", level: 1, h: 1, free_level: 1 }
     ],
     weapons: [
       { name: "夜魔の武器", attack: "+5", range: "至近", permanent: 10 }
@@ -52,7 +53,10 @@ test("旧JSON取込はライフパス・★取得技能・アウトフィット�
   await expect(page.locator("#profile")).toHaveValue(/出身：N◎VA/);
 
   const shooting = page.locator('#general-skills tr[data-skill-key]:has(input[data-f="name"][value="射撃"])').first();
-  await expect(shooting.locator('[data-f="free_level"]')).toHaveValue("1");
+  await expect(shooting.locator('[data-f="free_level"]')).toHaveValue("0");
+
+  const medical = page.locator('#general-skills tr[data-skill-key]:has(input[data-f="name"][value="医療"])').first();
+  await expect(medical.locator('[data-f="free_level"]')).toHaveValue("1");
 
   const weapon = page.locator('#outfit-list [data-outfit-key]:has(input[data-o="name"][value="夜魔の武器"])').first();
   await expect(weapon).toBeVisible();
