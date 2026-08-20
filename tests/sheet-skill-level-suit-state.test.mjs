@@ -5,7 +5,8 @@ import {
   normalizeSkillLevel,
   normalizeSkillFreeLevel,
   shouldSelectAllSuits,
-  resolveSkillLevelAfterSuitChange
+  resolveSkillLevelAfterSuitChange,
+  resolveSkillInputState
 } from "../js/sheet-skill-level-suit-state.js";
 
 test("skill level normalization clamps negative and blank values", () => {
@@ -36,6 +37,21 @@ test("adding suits raises level only when selected count exceeds it", () => {
 test("removing a suit lowers level to the remaining selected count", () => {
   assert.equal(resolveSkillLevelAfterSuitChange({ currentLevel: 4, selectedSuitCount: 3, checked: false }), 3);
   assert.equal(resolveSkillLevelAfterSuitChange({ currentLevel: 2, selectedSuitCount: 0, checked: false }), 0);
+});
+
+test("unified skill input state keeps level and free level consistent", () => {
+  assert.deepEqual(resolveSkillInputState({
+    action: "suit", currentLevel: 1, currentFreeLevel: 1, selectedSuitCount: 2, checked: true
+  }), { level: 2, freeLevel: 1 });
+  assert.deepEqual(resolveSkillInputState({
+    action: "suit", currentLevel: 4, currentFreeLevel: 4, selectedSuitCount: 2, checked: false
+  }), { level: 2, freeLevel: 2 });
+  assert.deepEqual(resolveSkillInputState({
+    action: "level", value: 1, currentLevel: 4, currentFreeLevel: 3
+  }), { level: 1, freeLevel: 1 });
+  assert.deepEqual(resolveSkillInputState({
+    action: "free_level", value: 5, currentLevel: 3, currentFreeLevel: 0
+  }), { level: 3, freeLevel: 3 });
 });
 
 test("helper remains DOM-free and delegated DOM rule loads it", async () => {
