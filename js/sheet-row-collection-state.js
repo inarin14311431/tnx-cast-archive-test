@@ -1,3 +1,15 @@
+export function appendRow(rows, row) {
+  return [...(rows || []), row];
+}
+
+export function appendRows(rows, additions) {
+  return [...(rows || []), ...(additions || [])];
+}
+
+export function clearRows() {
+  return [];
+}
+
 export function removeRowByKey(rows, key) {
   return (rows || []).filter(item => item?._key !== key);
 }
