@@ -66,6 +66,7 @@ const STRUCTURED_FIELDS = [
   ["skin", "#skin"], ["life_path_origin", "#life-path-origin"],
   ["life_path_experience", "#life-path-experience"], ["life_path_encounter", "#life-path-encounter"]
 ];
+const OUTFIT_CATEGORIES = new Set(["weapon", "armor", "cyberware", "tron", "vehicle", "residence", "other"]);
 
 let user;
 let character = null;
@@ -132,7 +133,7 @@ function bind() {
   $("#add-social").onclick = () => addSkill("social", "proper", "社会：");
   $("#add-connection").onclick = () => addSkill("connection", "proper", "コネ：");
   $("#add-style-skill").onclick = () => addSkill("style", "normal", "");
-  $("#add-outfit").onclick = () => { outfits.push(blankOutfit()); renderOutfits(); markDirty(); };
+  $("#add-outfit").onclick = () => addOutfitForImport("other");
   $("#import-skd").onclick = () => openImport("skd");
   $("#import-ofc").onclick = () => openImport("ofc");
   $("#tsv-apply").onclick = event => { event.preventDefault(); applyImport(); $("#tsv-dialog").close(); };
@@ -207,6 +208,21 @@ function addSkill(category, kind, name) {
   renderSkills(); recalc(); markDirty();
 }
 
+function addOutfitForImport(category = "other") {
+  const outfit = {
+    ...blankOutfit(),
+    category: OUTFIT_CATEGORIES.has(category) ? category : "other"
+  };
+  outfits.push(outfit);
+  renderOutfits(); recalc(); markDirty();
+  return outfit._key;
+}
+
+function clearOutfitsForImport() {
+  outfits = [];
+  renderOutfits(); recalc(); markDirty();
+}
+
 function addStyleSeparator() {
   const skill = {
     ...blankSkill("style"),
@@ -222,7 +238,12 @@ function addStyleSeparator() {
   requestAnimationFrame(() => document.querySelector(`#style-skills tr[data-skill-key="${skill._key}"] [data-f="name"]`)?.focus());
 }
 
-window.TNXSheetEditor = { ...(window.TNXSheetEditor || {}), addStyleSeparator };
+window.TNXSheetEditor = {
+  ...(window.TNXSheetEditor || {}),
+  addStyleSeparator,
+  addOutfitForImport,
+  clearOutfitsForImport
+};
 
 function generalColumnCounts() {
   return countGeneralSkillColumns(mergedGeneral());
