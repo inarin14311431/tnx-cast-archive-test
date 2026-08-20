@@ -11,7 +11,7 @@ test("supabase client does not load retired transfer TSV module", async () => {
 
 test("character-sheets URL import provides multiple JSONP endpoint candidates", async () => {
   const source = await read("js/sheet-import-url.js");
-  assert.match(source, /VERSION='1\.5\.0'/);
+  assert.match(source, /VERSION='1\.5\.1'/);
   assert.match(source, /\/tnx\/display\?ajax=1&key=/);
   assert.match(source, /\/tnx\/display\.html\?ajax=1&key=/);
   assert.match(source, /async function fetchJsonp\(key\)/);
@@ -25,4 +25,13 @@ test("URL import unwraps parenthesized jsonData used by character-sheets", async
   assert.match(source, /data\.jsonData/);
   assert.match(source, /mergeWrapperMetadata/);
   assert.match(source, /'outline','name','nameKana','player','display'/);
+});
+
+test("URL import can recover style names when only legacy style codes are returned", async () => {
+  const source = await read("js/sheet-import-url.js");
+  assert.match(source, /STYLE_CODE_NAMES/);
+  assert.match(source, /\['11','カタナ'\]/);
+  assert.match(source, /\['-21','ウツワ'\]/);
+  assert.match(source, /data\.outline=`STYLE:\$\{names\.join\('='/);
+  assert.match(source, /enrichLegacyStyles\(data\)/);
 });
