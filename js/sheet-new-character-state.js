@@ -3,6 +3,7 @@ import {
   appendGeneralBlankSlots
 } from "./sheet-general-skill-state.js";
 import { createSkillRow as defaultCreateSkillRow } from "./sheet-row-factory.js";
+import { appendRows } from "./sheet-row-collection-state.js";
 
 export function buildNewCharacterSkills({
   masterRows = [],
@@ -35,20 +36,20 @@ export function buildNewCharacterSkills({
   });
 
   const sharedTrailingSortOrder = rows.length;
-  const add = (category, name) => rows.push(createSkillRow(category, {
+  const trailingRows = [
+    ["social", "社会：N◎VA"],
+    ["social", "社会："],
+    ["social", "社会："],
+    ["social", "社会："],
+    ["connection", "コネ："],
+    ["connection", "コネ："],
+    ["connection", "コネ："]
+  ].map(([category, name]) => createSkillRow(category, {
     name,
     level: 1,
     free_level: 0,
     skill_kind: "proper"
   }, { sortOrder: sharedTrailingSortOrder }));
 
-  add("social", "社会：N◎VA");
-  add("social", "社会：");
-  add("social", "社会：");
-  add("social", "社会：");
-  add("connection", "コネ：");
-  add("connection", "コネ：");
-  add("connection", "コネ：");
-
-  return rows;
+  return appendRows(rows, trailingRows);
 }
