@@ -89,11 +89,19 @@ export const supabase = isPublicCastView
     })
   : rawSupabase;
 
+function loadModuleScript(src, id) {
+  if (!hasDocument || document.getElementById(id)) return;
+  const script = document.createElement("script");
+  script.id = id;
+  script.type = "module";
+  script.src = src;
+  script.addEventListener("error", () => {
+    console.error(`${src} could not be loaded.`);
+  }, { once: true });
+  document.head.append(script);
+}
+
 if (hasDocument && document.querySelector(".cast-content, .sheet-layout")) {
-  import("./cocofolia-export.js?v=2").catch(error => {
-    console.error("Cocofolia export could not be loaded.", error);
-  });
-  import("./udonarium-export.js?v=1").catch(error => {
-    console.error("Udonarium export could not be loaded.", error);
-  });
+  loadModuleScript("./js/cocofolia-export.js?v=2", "tnx-cocofolia-export-module");
+  loadModuleScript("./js/udonarium-export.js?v=1", "tnx-udonarium-export-module");
 }
