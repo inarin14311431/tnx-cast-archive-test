@@ -146,7 +146,6 @@
   }
   function skillFreeLevel(data){
     const level=skillLevel(data);
-    if(/^\s*★/.test(String(firstDefined(data,'name')||'')))return Math.min(level,1);
     return Math.min(level,Math.max(0,number(firstDefined(data,'free_level','freeLevel'))));
   }
 
