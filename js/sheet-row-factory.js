@@ -20,6 +20,14 @@ export function createBlankSkill(category, { key = crypto.randomUUID(), sortOrde
   };
 }
 
+export function createSkillRow(category, overrides = {}, options = {}) {
+  return {
+    ...createBlankSkill(category, options),
+    ...overrides,
+    category
+  };
+}
+
 export function createBlankOutfit({ key = crypto.randomUUID(), sortOrder = 0 } = {}) {
   return {
     _key: key,
@@ -33,5 +41,12 @@ export function createBlankOutfit({ key = crypto.randomUUID(), sortOrder = 0 } =
     slot: "",
     description: "",
     sort_order: sortOrder
+  };
+}
+
+export function createOutfitRow(overrides = {}, options = {}) {
+  return {
+    ...createBlankOutfit(options),
+    ...overrides
   };
 }
