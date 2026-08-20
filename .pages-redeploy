@@ -57,3 +57,4 @@ GitHub Pages redeploy trigger
 2026-08-20 extract classic row collection state operations
 2026-08-20 add mobile style skill and outfit ordering controls
 2026-08-20 extract adjacent row movement primitive
+2026-08-20 share adjacent row ordering across PC and mobile editors
