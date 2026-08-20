@@ -1,5 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { moveAdjacentRow } from "./sheet-row-collection-state.js?v=2";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -413,12 +414,11 @@ function moveStyleItem(id, direction) {
   const list = skills
     .filter(item => item.category === "style" && !deletedIds.has(String(item.id)))
     .sort((a,b) => num(a.sort_order) - num(b.sort_order));
-  const index = list.findIndex(item => String(item.id) === String(id));
-  if (index < 0) return;
-  const target = direction === "up" ? index - 1 : index + 1;
-  if (target < 0 || target >= list.length) return;
-  [list[index], list[target]] = [list[target], list[index]];
-  list.forEach((item, i) => {
+  const result = moveAdjacentRow(list, String(id), direction, {
+    keyOf: item => String(item?.id)
+  });
+  if (!result.moved) return;
+  result.rows.forEach((item, i) => {
     item.sort_order = i * 10;
     dirtyIds.add(String(item.id));
   });
