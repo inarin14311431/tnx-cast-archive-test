@@ -28,23 +28,52 @@ test("SKD TSV row transformation preserves base identity and style-kind fallback
   assert.equal(buildStyleSkillTsvRow({ "種別": "通常" }).skill_kind, "normal");
 });
 
-test("OFC TSV row transformation preserves existing target and field mappings", () => {
+test("OFC TSV row transformation preserves canonical base and structured detail mappings", () => {
   const base = { _key: "outfit-key", sort_order: 7, category: "other" };
   const result = buildOutfitTsvRow({
     target: "armours", name: "鎧", purchase: "5", permanent: "2",
-    concealA: "12", concealB: "-1", attack: "P+1", range: "近", part: "スーツ", notes: "説明"
+    concealA: "12", concealB: "-1", attack: "P+1", range: "近", part: "スーツ",
+    control: "-2", electrical_control: "15", protecS: "3", protecP: "2", protecI: "1",
+    page: "123", notes: "説明"
   }, { base });
   assert.deepEqual(result, {
-    ...base, category: "armor", name: "鎧", purchase_value: "5", experience_cost: 2,
-    concealment: "12/-1", attack: "P+1", range: "近", slot: "スーツ", description: "説明"
+    ...base,
+    category: "armor",
+    name: "鎧",
+    purchase_value: "5",
+    experience_cost: 2,
+    concealment: "12/-1",
+    attack: "P+1",
+    range: "近",
+    slot: "スーツ",
+    control_modifier: -2,
+    description: "説明",
+    ofc_details: {
+      page_number: "123",
+      electronic_control: "15",
+      defense_s: "3",
+      defense_p: "2",
+      defense_i: "1"
+    }
   });
 
   const aliases = new Map([
     ["weapons", "weapon"], ["武器", "weapon"], ["armours", "armor"], ["防具", "armor"],
+    ["cyberwares", "cyberware"], ["サイバーウェア", "cyberware"], ["trons", "tron"], ["トロン", "tron"],
     ["vehicles", "vehicle"], ["ヴィークル", "vehicle"], ["residences", "residence"],
     ["住居", "residence"], ["住宅", "residence"], ["outfits", "other"], ["装備", "other"], ["unknown", "other"]
   ]);
   for (const [target, category] of aliases) assert.equal(buildOutfitTsvRow({ target }).category, category);
+});
+
+test("expanded OFC importer writes canonical S/P/I controls instead of description-only fallback", async () => {
+  const source = await readFile(new URL("../js/tsv-import-guide.js", import.meta.url), "utf8");
+  assert.match(source, /defense_s:\s*data\.protecS/);
+  assert.match(source, /defense_p:\s*data\.protecP/);
+  assert.match(source, /defense_i:\s*data\.protecI/);
+  assert.match(source, /\[data-ofc=\\?"\$\{field\}\\?"\]/);
+  assert.match(source, /electronic_control:\s*data\.electrical_control/);
+  assert.match(source, /page_number:\s*data\.page/);
 });
 
 test("classic editor delegates TSV parsing and row mapping to a DOM-free module", async () => {
