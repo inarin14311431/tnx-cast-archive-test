@@ -28,6 +28,28 @@ export function createSkillRow(category, overrides = {}, options = {}) {
   };
 }
 
+export function createGeneralBlankSlotRow(column, options = {}) {
+  return createSkillRow("general", {
+    name: "",
+    level: 0,
+    free_level: 0,
+    skill_kind: "proper",
+    _blankSlot: true,
+    _slotColumn: column
+  }, options);
+}
+
+export function createStyleSeparatorRow(marker, options = {}) {
+  return createSkillRow("style", {
+    name: "",
+    level: 1,
+    free_level: 0,
+    skill_kind: "none",
+    description: marker,
+    _rowType: "separator"
+  }, options);
+}
+
 export function createBlankOutfit({ key = crypto.randomUUID(), sortOrder = 0 } = {}) {
   return {
     _key: key,
