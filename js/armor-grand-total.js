@@ -26,13 +26,14 @@
   function queue() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(() => {
+    // outfit-tables renders first; outfit-ofc-fields injects S/P/I on the next frame.
+    // Align one frame after that instead of observing every DOM mutation.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       queued = false;
       alignArmorFooter();
-    });
+    }));
   }
 
-  new MutationObserver(queue).observe(root, { childList: true, subtree: true });
   root.addEventListener("tnx:outfit-tables-rendered", queue);
   queue();
 })();
