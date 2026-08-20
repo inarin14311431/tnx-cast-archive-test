@@ -199,13 +199,37 @@
         attack: data.attack,
         defense: data.defense,
         range: data.range,
-        slot: data.slot,
+        slot: data.part || data.slot,
         control_modifier: numberValue(data.control),
         description: buildOFCDescription(data)
       };
 
       for (const [field, value] of Object.entries(values)) {
         await setControl(card.querySelector(`[data-o="${field}"]`), value ?? "");
+        card = document.querySelector(`[data-outfit-key="${CSS.escape(key)}"]`) || card;
+      }
+
+      const detailValues = {
+        page_number: data.page,
+        concealment_penalty: data.concealB,
+        electronic_control: data.electrical_control,
+        defense_s: data.protecS,
+        defense_p: data.protecP,
+        defense_i: data.protecI,
+        crew: data.crew,
+        sf: data.sf,
+        residence_entry: data.entry
+      };
+
+      card = await waitFor(() => {
+        const current = document.querySelector(`[data-outfit-key="${CSS.escape(key)}"]`);
+        return current?.querySelector('[data-ofc="page_number"]') ? current : null;
+      });
+      if (!card) continue;
+
+      for (const [field, value] of Object.entries(detailValues)) {
+        if (String(value || "") === "") continue;
+        await setControl(card.querySelector(`[data-ofc="${field}"]`), value);
         card = document.querySelector(`[data-outfit-key="${CSS.escape(key)}"]`) || card;
       }
     }
