@@ -14,6 +14,7 @@ import {
 } from "./sheet-load-normalization.js?v=1";
 import { formatSheetPersistenceError } from "./sheet-error-message.js?v=1";
 import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
+import { initSheetEditorInteractions } from "./sheet-editor-interactions.js?v=1";
 import { renderSkillEditorSections } from "./sheet-skill-renderer.js?v=1";
 import { renderOutfitEditor } from "./sheet-outfit-renderer.js?v=1";
 import { createBlankSkill, createBlankOutfit } from "./sheet-row-factory.js?v=1";
@@ -109,16 +110,12 @@ async function init() {
 }
 
 function bind() {
-  document.addEventListener("input", onEdit);
-  document.addEventListener("change", onEdit);
-  window.addEventListener("beforeunload", event => {
-    if (!saveCoordinator.hasUnsavedChanges()) return;
-    event.preventDefault();
-    event.returnValue = "";
-  });
-  document.addEventListener("click", event => {
-    const toggle = event.target.closest(".section-toggle");
-    if (toggle) toggle.closest(".sheet-section")?.classList.toggle("is-open");
+  initSheetEditorInteractions({
+    root: document,
+    windowRef: window,
+    isLoading: () => loading,
+    hasUnsavedChanges: () => saveCoordinator.hasUnsavedChanges(),
+    onEdit() { recalc(); markDirty(); }
   });
 
   initSheetRowInteractions({
@@ -139,11 +136,6 @@ function bind() {
   $("#import-skd").onclick = () => openImport("skd");
   $("#import-ofc").onclick = () => openImport("ofc");
   $("#tsv-apply").onclick = event => { event.preventDefault(); applyImport(); $("#tsv-dialog").close(); };
-}
-
-function onEdit(event) {
-  if (loading || !event.target.matches("input,select,textarea")) return;
-  recalc(); markDirty();
 }
 
 function handleSkillRowInput({ key, field, value, row }) {
