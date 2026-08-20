@@ -77,7 +77,7 @@ function skillRow(skill, detail, categoryRows, context) {
     : `<input data-f="name" value="${esc(skill.name)}">`;
 
   return `<tr data-skill-key="${esc(skill._key)}"${slotAttribute}>
-    <td>${nameControl}</td>
+    <td>${nameControl}<input data-f="free_level" type="hidden" value="${Math.min(Math.max(Number(skill.free_level) || 0, 0), Math.max(Number(skill.level) || 0, 0))}"></td>
     <td><select data-f="skill_kind">${kinds.map(value => `<option value="${value}" ${skill.skill_kind === value ? "selected" : ""}>${esc(labels[value] ?? value)}</option>`).join("")}</select></td>
     <td><input data-f="level" type="number" min="0" value="${Number(skill.level) || 0}"></td>
     ${SUITS.map((suit, index) => `<td class="suit-cell"><label class="suit-check"><input data-f="${suit}" type="checkbox" ${skill[suit] ? "checked" : ""}><span>${MARKS[index]}</span></label></td>`).join("")}
