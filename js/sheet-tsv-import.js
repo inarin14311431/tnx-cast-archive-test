@@ -58,14 +58,26 @@ function compactDetails(details) {
   );
 }
 
+function firstValue(...values) {
+  return values.find(value => String(value ?? "").trim() !== "") ?? "";
+}
+
+export function resolveImportedDefense(row = {}) {
+  const combined = String(row.defense || "").trim().split(/[\/／]/).map(value => value.trim());
+  return {
+    defense_s: firstValue(row.protecS, row.protectS, row.protectionS, row.defenseS, row.defense_s, row.S, combined[0]),
+    defense_p: firstValue(row.protecP, row.protectP, row.protectionP, row.defenseP, row.defense_p, row.P, combined[1]),
+    defense_i: firstValue(row.protecI, row.protectI, row.protectionI, row.defenseI, row.defense_i, row.I, combined[2])
+  };
+}
+
 export function buildOutfitTsvRow(row = {}, { base = {} } = {}) {
   const category = OUTFIT_TARGET_MAP[row.target] || OUTFIT_TARGET_MAP[String(row.target || "").toLowerCase()] || "other";
+  const defense = resolveImportedDefense(row);
   const ofcDetails = compactDetails({
     page_number: row.page || "",
     electronic_control: row.electrical_control || "",
-    defense_s: row.protecS || "",
-    defense_p: row.protecP || "",
-    defense_i: row.protecI || "",
+    ...defense,
     crew: row.crew || "",
     sf: row.sf || "",
     residence_entry: row.entry || ""
