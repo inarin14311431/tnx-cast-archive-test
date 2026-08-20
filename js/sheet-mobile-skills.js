@@ -1,6 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 import { moveAdjacentRow } from "./sheet-row-collection-state.js?v=2";
+import { GENERAL_MOBILE_ORDER, MUTABLE_GENERAL_PREFIXES } from "./general-skill-catalog.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -10,10 +11,8 @@ const SUITS = [["reason","♠","♤"],["passion","♣","♧"],["life","♥","♡
 const STYLE_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const STYLE_SEPARATOR = "[[STYLE_SEPARATOR]]";
 const DETAIL_FIELDS = ["skill","limit","timing","target","range","difficulty","confrontation","description","page"];
-const MUTABLE_GENERAL_PREFIXES = ["製作：","芸術：","操縦："];
 const CATEGORY_LABELS = {general:"一般技能",social:"社会",connection:"コネ"};
 const KIND_LABELS = {normal:"通常",secret:"秘技",ultimate:"奥義",direction:"演出",none:"なし"};
-const PC_GENERAL_ORDER = ["医療","芸術：","射撃","運動","知覚","回避","電脳","白兵","製作：","操縦：","心理","信用","自我","圧力","交渉","隠密"];
 
 let character = null;
 let skills = [];
@@ -121,10 +120,10 @@ function normalizeSkillLevel(item, source = "close", changedKey = "") {
 function generalRank(item, index) {
   if (item.category !== "general") return index;
   const name = String(item.name || "");
-  const rank = PC_GENERAL_ORDER.findIndex(master =>
+  const rank = GENERAL_MOBILE_ORDER.findIndex(master =>
     MUTABLE_GENERAL_PREFIXES.includes(master) ? name.startsWith(master) : name === master
   );
-  return rank < 0 ? PC_GENERAL_ORDER.length + index : rank;
+  return rank < 0 ? GENERAL_MOBILE_ORDER.length + index : rank;
 }
 
 function sortedGeneral(list) {
