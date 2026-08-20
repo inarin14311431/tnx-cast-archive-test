@@ -7,7 +7,7 @@ async function openEditor(page) {
   await waitForEditorReady(page);
 }
 
-test("技能LVとスートは追加・解除・LV4以上で同期する", async ({ page }) => {
+test("技能LV・free LV・スートは追加・解除・LV4以上で同期する", async ({ page }) => {
   await openEditor(page);
 
   const rows = page.locator("#style-skills tbody tr[data-skill-key]:not(.style-skill-separator-row)");
@@ -17,6 +17,7 @@ test("技能LVとスートは追加・解除・LV4以上で同期する", async 
 
   const row = rows.last();
   const level = row.locator('[data-f="level"]');
+  const freeLevel = row.locator('[data-f="free_level"]');
   const reason = row.locator('[data-f="reason"]');
   const passion = row.locator('[data-f="passion"]');
   const life = row.locator('[data-f="life"]');
@@ -33,8 +34,14 @@ test("技能LVとスートは追加・解除・LV4以上で同期する", async 
   await level.fill("4");
   for (const suit of [reason, passion, life, mundane]) await expect(suit).toBeChecked();
 
+  await freeLevel.fill("4");
+  await expect(freeLevel).toHaveValue("4");
   await mundane.uncheck();
   await expect(level).toHaveValue("3");
+  await expect(freeLevel).toHaveValue("3");
+
+  await freeLevel.fill("9");
+  await expect(freeLevel).toHaveValue("3");
 
   await row.locator("[data-delete-skill]").click();
   await expect(rows).toHaveCount(before);
