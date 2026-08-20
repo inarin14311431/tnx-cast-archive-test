@@ -27,19 +27,24 @@ test("mobile profile covers every PC editable character/profile field", async ()
   }
 });
 
-test("mobile outfit editor exposes every canonical PC common OFC field", async () => {
-  const pc = await read("js/outfit-ofc-fields.js");
+test("mobile outfit editor exposes public-view common outfit fields", async () => {
+  const view = await read("js/cast-view-definitions.js");
   const mobileUi = await read("js/sheet-mobile-outfit-ui.js");
   const mobileModel = await read("js/sheet-mobile-outfit-model.js");
 
-  for (const field of ["manufacturer", "page_number", "concealment_penalty"]) {
-    assert.match(pc, new RegExp(`\\b${field}\\b`));
+  for (const field of ["page_number", "concealment_penalty"]) {
+    assert.match(view, new RegExp(`\\b${field}\\b`), `cast view must expose ${field}`);
     assert.match(mobileUi, new RegExp(`\\b${field}\\b`), `mobile outfit editor must expose ${field}`);
     assert.match(mobileModel, new RegExp(`\\b${field}\\b`), `mobile outfit model must preserve ${field}`);
   }
+
+  assert.doesNotMatch(view, /\bmanufacturer\b/, "manufacturer is metadata, not a public-view field");
+  assert.doesNotMatch(mobileUi, /data-outfit-detail=["']manufacturer["']/, "mobile editor should not expose view-unused manufacturer metadata");
+  assert.match(mobileModel, /\bmanufacturer\b/, "mobile outfit model must still preserve imported manufacturer metadata");
 });
 
-test("mobile outfit editor keeps category-specific PC editable OFC fields", async () => {
+test("mobile outfit editor keeps category-specific public-view fields", async () => {
+  const view = await read("js/cast-view-definitions.js");
   const mobileUi = await read("js/sheet-mobile-outfit-ui.js");
   for (const field of [
     "parry", "speed", "electronic_control",
@@ -48,6 +53,7 @@ test("mobile outfit editor keeps category-specific PC editable OFC fields", asyn
     "tron_software", "tron_support", "tron_hardware",
     "crew", "sf", "residence_entry", "residence_electric", "residence_area"
   ]) {
+    assert.match(view, new RegExp(`\\b${field === "residence_electric" || field === "residence_area" ? "residence_electric_area" : field}\\b`), `cast view must expose ${field}`);
     assert.match(mobileUi, new RegExp(`\\b${field}\\b`), `mobile outfit editor must expose ${field}`);
   }
 });
