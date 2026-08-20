@@ -19,5 +19,5 @@ test("mobile skills preserves core edit rules", () => {
   assert.match(source, /PC_GENERAL_ORDER/);
   assert.match(source, /MUTABLE_GENERAL_PREFIXES/);
   assert.match(source, /STYLE_SEPARATOR/);
-  assert.match(source, /levelOptions\(current,floor=0\)/);
+  assert.match(source, /levelOptions\(current,\s*floor\s*=\s*0\)/);
 });
