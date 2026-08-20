@@ -7,7 +7,7 @@ const importer = await readFile(new URL("../js/sheet-import-outfit-compat.js", i
 
 test("classic editor exposes direct outfit state operations for import", () => {
   assert.match(sheet, /function addOutfitForImport\(category = "other"\)/);
-  assert.match(sheet, /OUTFIT_CATEGORIES\.has\(category\) \? category : "other"/);
+  assert.match(sheet, /normalizeOutfitCategory\(category, OUTFIT_CATEGORIES\)/);
   assert.match(sheet, /return outfit\._key/);
   assert.match(sheet, /function clearOutfitsForImport\(\)/);
   assert.match(sheet, /addOutfitForImport,/);
