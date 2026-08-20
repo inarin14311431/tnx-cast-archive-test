@@ -54,9 +54,10 @@ test("unified skill input state keeps level and free level consistent", () => {
   }), { level: 3, freeLevel: 3 });
 });
 
-test("helper remains DOM-free and delegated DOM rule loads the unified state resolver", async () => {
+test("helper remains DOM-free and both DOM layers use the unified state resolver", async () => {
   const helperSource = await readFile(new URL("../js/sheet-skill-level-suit-state.js", import.meta.url), "utf8");
   const domSource = await readFile(new URL("../js/skill-level-suit-rules.js", import.meta.url), "utf8");
+  const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
   assert.doesNotMatch(helperSource, /document\.|window\.|supabase|localStorage|sessionStorage|addEventListener/);
   assert.match(domSource, /sheet-skill-level-suit-state\.js\?v=1/);
   assert.match(domSource, /resolveSkillInputState/);
@@ -64,4 +65,8 @@ test("helper remains DOM-free and delegated DOM rule loads the unified state res
   assert.match(domSource, /action:\"level\"/);
   assert.match(domSource, /action:\"suit\"/);
   assert.match(domSource, /action:\"free_level\"/);
+  assert.match(sheetSource, /sheet-skill-level-suit-state\.js\?v=1/);
+  assert.match(sheetSource, /resolveSkillInputState/);
+  assert.doesNotMatch(sheetSource, /skill\.level\s*=\s*Math\.max\(Number\(skill\.level/);
+  assert.doesNotMatch(sheetSource, /skill\.free_level\s*=\s*Math\.min\(Math\.max\(Number\(skill\.free_level/);
 });
