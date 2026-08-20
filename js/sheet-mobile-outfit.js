@@ -27,8 +27,33 @@ let activeDraft = null;
 const dirtyIds = new Set();
 const deletedIds = new Set();
 
+function sortedVisibleOutfits() {
+  return outfits
+    .filter(item => !deletedIds.has(String(item.id)))
+    .sort((a, b) => normalizeNumber(a.sort_order) - normalizeNumber(b.sort_order));
+}
+
+function installOutfitOrderControls() {
+  const root = $("#mobile-outfits");
+  if (!root) return;
+  for (const button of [...root.querySelectorAll(":scope > [data-mobile-outfit]")]) {
+    const id = String(button.dataset.mobileOutfit || "");
+    if (!id) continue;
+    const row = document.createElement("div");
+    row.className = "mobile-outfit-order-row";
+    row.dataset.mobileOutfitRow = id;
+    const actions = document.createElement("div");
+    actions.className = "mobile-outfit-order-row__actions";
+    actions.innerHTML = '<button type="button" data-move-outfit="up" aria-label="上へ">↑</button><button type="button" data-move-outfit="down" aria-label="下へ">↓</button>';
+    button.replaceWith(row);
+    row.append(button, actions);
+  }
+}
+
 function render() {
+  outfits.sort((a, b) => normalizeNumber(a.sort_order) - normalizeNumber(b.sort_order));
   renderOutfitCards({ root: $("#mobile-outfits"), outfits, deletedIds, dirtyIds });
+  installOutfitOrderControls();
 }
 
 function markDirty() {
@@ -46,6 +71,21 @@ function markDirty() {
 
 function hasChanges() {
   return dirtyIds.size > 0 || deletedIds.size > 0;
+}
+
+function moveOutfit(id, direction) {
+  const list = sortedVisibleOutfits();
+  const index = list.findIndex(item => String(item.id) === String(id));
+  if (index < 0) return;
+  const target = direction === "up" ? index - 1 : index + 1;
+  if (target < 0 || target >= list.length) return;
+  [list[index], list[target]] = [list[target], list[index]];
+  list.forEach((item, i) => {
+    item.sort_order = i * 10;
+    dirtyIds.add(String(item.id));
+  });
+  markDirty();
+  render();
 }
 
 function normalizeConfrontationOptionLabels() {
@@ -68,7 +108,7 @@ function openEditor(id) {
   renderEditor();
   const dialog = $("#mobile-outfit-dialog");
   if (!dialog?.open) dialog?.showModal();
-  requestAnimationFrame(() => $("#mobile-outfit-fields [data-outfit-field=\"category\"]")?.focus());
+  requestAnimationFrame(() => $('#mobile-outfit-fields [data-outfit-field="category"]')?.focus());
 }
 
 function renderEditor() {
@@ -81,6 +121,8 @@ function renderEditor() {
 
 function addOutfit() {
   const item = blankOutfit();
+  const maxOrder = outfits.length ? Math.max(...outfits.map(row => normalizeNumber(row.sort_order))) : -10;
+  item.sort_order = maxOrder + 10;
   outfits.push(item);
   dirtyIds.add(String(item.id));
   markDirty();
@@ -182,6 +224,14 @@ async function flush() {
 function bindEvents() {
   $("#mobile-outfit-add")?.addEventListener("click", addOutfit);
   $("#mobile-outfits")?.addEventListener("click", event => {
+    const move = event.target.closest("[data-move-outfit]");
+    if (move) {
+      moveOutfit(
+        move.closest("[data-mobile-outfit-row]")?.dataset.mobileOutfitRow,
+        move.dataset.moveOutfit
+      );
+      return;
+    }
     const button = event.target.closest("[data-mobile-outfit]");
     if (button) openEditor(button.dataset.mobileOutfit);
   });
@@ -213,6 +263,8 @@ function bindEvents() {
 
 async function init() {
   ensureOutfitStylesheet();
+  const styleLink = document.querySelector("link[data-mobile-outfit-style]");
+  if (styleLink) styleLink.href = "./css-next/pages/sheet-mobile-outfit.css?v=9";
   ensureOutfitToolbar();
   ensureOutfitDialog();
   normalizeConfrontationOptionLabels();
