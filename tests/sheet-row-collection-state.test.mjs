@@ -1,11 +1,39 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  appendRow,
+  appendRows,
+  clearRows,
   moveAdjacentRow,
   moveRowWithinCategory,
   normalizeOutfitCategory,
   removeRowByKey
 } from "../js/sheet-row-collection-state.js";
+
+test("appendRow appends without mutating the source", () => {
+  const source = [{ _key: "a" }];
+  const row = { _key: "b" };
+  const result = appendRow(source, row);
+  assert.deepEqual(result.map(item => item._key), ["a", "b"]);
+  assert.deepEqual(source.map(item => item._key), ["a"]);
+});
+
+test("appendRows appends a batch without mutating either source array", () => {
+  const source = [{ _key: "a" }];
+  const additions = [{ _key: "b" }, { _key: "c" }];
+  const result = appendRows(source, additions);
+  assert.deepEqual(result.map(item => item._key), ["a", "b", "c"]);
+  assert.deepEqual(source.map(item => item._key), ["a"]);
+  assert.deepEqual(additions.map(item => item._key), ["b", "c"]);
+});
+
+test("clearRows returns a fresh empty collection", () => {
+  const source = [{ _key: "a" }];
+  const result = clearRows(source);
+  assert.deepEqual(result, []);
+  assert.notEqual(result, source);
+  assert.equal(source.length, 1);
+});
 
 test("removeRowByKey removes only the requested editor row without mutating the source", () => {
   const source = [{ _key: "a" }, { _key: "b" }, { _key: "c" }];
