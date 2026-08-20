@@ -1,5 +1,5 @@
 /* Skill level / suit synchronization DOM adapter.
- * Pure level/suit decisions live in sheet-skill-level-suit-state.js.
+ * Pure level/suit/free-level decisions live in sheet-skill-level-suit-state.js.
  */
 (async function(){
   const SUITS=["reason","passion","life","mundane"];
@@ -8,7 +8,7 @@
   const {
     normalizeSkillLevel,
     shouldSelectAllSuits,
-    resolveSkillLevelAfterSuitChange
+    resolveSkillInputState
   }=await import(stateUrl.href);
 
   function suitBoxes(row){
@@ -23,6 +23,20 @@
     control.dispatchEvent(new Event("input",{bubbles:true}));
   }
 
+  function syncFreeLevel(row, levelValue){
+    const freeLevel=row.querySelector('[data-f="free_level"]');
+    if(!freeLevel)return;
+    const state=resolveSkillInputState({
+      action:"free_level",
+      value:freeLevel.value,
+      currentLevel:levelValue,
+      currentFreeLevel:freeLevel.value
+    });
+    if(String(state.freeLevel)===String(freeLevel.value))return;
+    freeLevel.value=String(state.freeLevel);
+    dispatchInput(freeLevel);
+  }
+
   function handleInput(event){
     const control=event.target;
     if(!control?.matches)return;
@@ -30,9 +44,15 @@
     if(!row)return;
 
     if(control.matches('[data-f="level"]')){
-      const value=normalizeSkillLevel(control.value);
-      control.value=String(value);
-      if(!shouldSelectAllSuits(value))return;
+      const state=resolveSkillInputState({
+        action:"level",
+        value:control.value,
+        currentLevel:control.value,
+        currentFreeLevel:row.querySelector('[data-f="free_level"]')?.value||0
+      });
+      control.value=String(state.level);
+      syncFreeLevel(row,state.level);
+      if(!shouldSelectAllSuits(state.level))return;
 
       for(const box of suitBoxes(row)){
         if(box.checked)continue;
@@ -42,17 +62,34 @@
       return;
     }
 
+    if(control.matches('[data-f="free_level"]')){
+      const level=row.querySelector('[data-f="level"]');
+      const state=resolveSkillInputState({
+        action:"free_level",
+        value:control.value,
+        currentLevel:level?.value||0,
+        currentFreeLevel:control.value
+      });
+      control.value=String(state.freeLevel);
+      return;
+    }
+
     if(!SUITS.some(suit=>control.matches(`[data-f="${suit}"]`)))return;
     const level=row.querySelector('[data-f="level"]');
     if(!level)return;
     const currentLevel=normalizeSkillLevel(level.value);
-    const nextLevel=resolveSkillLevelAfterSuitChange({
+    const state=resolveSkillInputState({
+      action:"suit",
       currentLevel,
+      currentFreeLevel:row.querySelector('[data-f="free_level"]')?.value||0,
       selectedSuitCount:selectedCount(row),
       checked:control.checked
     });
-    if(nextLevel===currentLevel)return;
-    level.value=String(nextLevel);
+    if(state.level===currentLevel){
+      syncFreeLevel(row,state.level);
+      return;
+    }
+    level.value=String(state.level);
     dispatchInput(level);
   }
 
