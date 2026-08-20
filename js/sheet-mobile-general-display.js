@@ -26,8 +26,10 @@ export function initMobileGeneralDisplayMarks({ root = document } = {}) {
   });
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => initMobileGeneralDisplayMarks(), { once: true });
-} else {
-  initMobileGeneralDisplayMarks();
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => initMobileGeneralDisplayMarks(), { once: true });
+  } else {
+    initMobileGeneralDisplayMarks();
+  }
 }
