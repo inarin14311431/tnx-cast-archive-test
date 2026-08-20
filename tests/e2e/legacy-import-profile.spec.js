@@ -31,6 +31,9 @@ test("旧JSON取込はライフパス・★表示技能・明示free_level・ア
     ],
     weapons: [
       { name: "夜魔の武器", attack: "+5", range: "至近", permanent: 10 }
+    ],
+    armors: [
+      { name: "E2Eアーマー", protecS: "3", protecP: "2", protecI: "1", control: "-1", permanent: 5 }
     ]
   };
 
@@ -64,4 +67,25 @@ test("旧JSON取込はライフパス・★表示技能・明示free_level・ア
   await expect(weapon.locator('[data-o="attack"]')).toHaveValue("+5");
   await expect(weapon.locator('[data-o="range"]')).toHaveValue("至近");
   await expect(weapon.locator('[data-o="experience_cost"]')).toHaveValue("10");
+
+  const armor = page.locator('#outfit-list [data-outfit-key]:has(input[data-o="name"][value="E2Eアーマー"])').first();
+  await expect(armor).toBeVisible();
+  await expect(armor.locator('[data-o="category"]')).toHaveValue("armor");
+  await expect(armor.locator('[data-ofc="defense_s"]')).toHaveValue("3");
+  await expect(armor.locator('[data-ofc="defense_p"]')).toHaveValue("2");
+  await expect(armor.locator('[data-ofc="defense_i"]')).toHaveValue("1");
+  await expect(armor.locator('[data-o="control_modifier"]')).toHaveValue("-1");
+
+  const armorTable = page.locator('#outfit-list table[data-outfit-schema="armor"]');
+  await expect(armorTable.locator('[data-armor-total="s"]')).toHaveText("3");
+  await expect(armorTable.locator('[data-armor-total="p"]')).toHaveText("2");
+  await expect(armorTable.locator('[data-armor-total="i"]')).toHaveText("1");
+
+  for (const key of ["s", "p", "i"]) {
+    const fieldBox = await armor.locator(`[data-ofc="defense_${key}"]`).boundingBox();
+    const totalBox = await armorTable.locator(`[data-armor-total="${key}"]`).boundingBox();
+    expect(fieldBox).not.toBeNull();
+    expect(totalBox).not.toBeNull();
+    expect(Math.abs(fieldBox.x - totalBox.x)).toBeLessThanOrEqual(3);
+  }
 });
