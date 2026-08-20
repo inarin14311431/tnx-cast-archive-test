@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { getTestCastId, hasAuthCredentials, waitForEditorReady } from "./helpers.js";
 
-test("旧JSON取込はライフパス・★表示技能・明示free_level・アウトフィットを反映する", async ({ page }) => {
+test("旧JSON取込はライフパス・★表示技能・明示free_level・アウトフィットを保存再読込まで維持する", async ({ page }) => {
   test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
 
-  await page.goto(`/sheet.html?id=${encodeURIComponent(getTestCastId())}`);
+  const castId = getTestCastId();
+  await page.goto(`/sheet.html?id=${encodeURIComponent(castId)}`);
   await waitForEditorReady(page);
 
   const legacy = {
@@ -88,4 +89,33 @@ test("旧JSON取込はライフパス・★表示技能・明示free_level・ア
     expect(totalBox).not.toBeNull();
     expect(Math.abs(fieldBox.x - totalBox.x)).toBeLessThanOrEqual(3);
   }
+
+  await page.locator("#save-button").click();
+  await expect(page.locator("#save-button")).toHaveAttribute("data-save-state", "saved", { timeout: 30000 });
+
+  await page.reload();
+  await waitForEditorReady(page);
+
+  await expect(page.locator("#age")).toHaveValue("31");
+  await expect(page.locator("#gender")).toHaveValue("X");
+  await expect(page.locator("#height")).toHaveValue("170cm");
+  await expect(page.locator("#weight")).toHaveValue("60kg");
+  await expect(page.locator("#eyes")).toHaveValue("青");
+  await expect(page.locator("#hair")).toHaveValue("黒");
+  await expect(page.locator("#skin")).toHaveValue("白");
+  await expect(page.locator("#life-path-origin")).toHaveValue("化学汚染地");
+  await expect(page.locator("#life-path-experience")).toHaveValue("企業");
+  await expect(page.locator("#life-path-encounter")).toHaveValue("ビジネス");
+
+  const reloadedArmor = page.locator('#outfit-list [data-outfit-key]:has(input[data-o="name"][value="E2Eアーマー"])').first();
+  await expect(reloadedArmor).toBeVisible({ timeout: 20000 });
+  await expect(reloadedArmor.locator('[data-ofc="defense_s"]')).toHaveValue("3", { timeout: 20000 });
+  await expect(reloadedArmor.locator('[data-ofc="defense_p"]')).toHaveValue("2");
+  await expect(reloadedArmor.locator('[data-ofc="defense_i"]')).toHaveValue("1");
+  await expect(reloadedArmor.locator('[data-o="control_modifier"]')).toHaveValue("-1");
+
+  const reloadedArmorTable = page.locator('#outfit-list table[data-outfit-schema="armor"]');
+  await expect(reloadedArmorTable.locator('[data-armor-total="s"]')).toHaveText("3", { timeout: 20000 });
+  await expect(reloadedArmorTable.locator('[data-armor-total="p"]')).toHaveText("2");
+  await expect(reloadedArmorTable.locator('[data-armor-total="i"]')).toHaveText("1");
 });
