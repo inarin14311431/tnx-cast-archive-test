@@ -1,6 +1,6 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.5.1 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.5.2 */
 (()=>{
-  const VERSION='1.5.1';
+  const VERSION='1.5.2';
   const STYLE_CODE_NAMES=new Map([
     ['0','カブキ'],['1','バサラ'],['2','タタラ'],['3','ミストレス'],['4','カブト'],['5','カリスマ'],['6','マネキン'],['7','カゼ'],['8','フェイト'],['9','クロマク'],['10','エグゼク'],['11','カタナ'],['12','クグツ'],['13','カゲ'],['14','チャクラ'],['15','レッガー'],['16','カブトワリ'],['17','ハイランダー'],['18','マヤカシ'],['19','トーキー'],['20','イヌ'],['21','ニューロ'],
     ['-0','コモン'],['-1','ヒルコ'],['-2','クロガネ'],['-4','イブキ'],['-6','シキガミ'],['-7','アラシ'],['-9','カゲムシャ'],['-12','ミギウデ'],['-17','エトランゼ'],['-18','アヤカシ'],['-21','ウツワ']
@@ -97,6 +97,24 @@
     return data;
   }
 
+  function stripLegacyStarSkillMarkers(data){
+    if(!data||typeof data!=='object')return data;
+    const visit=(value,inSkillTree=false)=>{
+      if(Array.isArray(value)){
+        value.forEach(item=>visit(item,inSkillTree));
+        return;
+      }
+      if(!value||typeof value!=='object')return;
+      for(const [key,item] of Object.entries(value)){
+        const nextSkillTree=inSkillTree||/skill/i.test(key);
+        if(nextSkillTree&&key==='name'&&typeof item==='string')value[key]=item.replace(/^\s*★\s*/,'');
+        else visit(item,nextSkillTree);
+      }
+    };
+    visit(data,false);
+    return data;
+  }
+
   function normalizePayload(payload){
     let data=payload;
     for(let i=0;i<6;i++){
@@ -117,6 +135,7 @@
     }
     if(!data||typeof data!=='object')throw new Error('キャラクターシート倉庫から有効なデータを取得できませんでした。');
     data=enrichLegacyStyles(data);
+    data=stripLegacyStarSkillMarkers(data);
     const supported=Array.isArray(data.fields)||data.base||data.skills1||data.skills2||data.superhumanskills||data.weapons||data.outfits;
     if(!supported)throw new Error('取得データをTNXキャラクターシートとして認識できません。');
     return data;
