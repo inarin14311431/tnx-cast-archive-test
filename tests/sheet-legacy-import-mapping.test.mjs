@@ -17,13 +17,29 @@ test("legacy personal and lifepath fields map into structured editor controls", 
   assert.match(source, /'#life-path-encounter',get\(map,'base\.lifepath\.encounter','base\.lifepath\.encouter'/);
 });
 
-test("legacy star-marked skills become one free level while keeping a clean name", async () => {
+test("legacy star-marked skills keep a clean name without becoming free levels", async () => {
   const source = await readFile(sourceUrl, "utf8");
   assert.match(source, /function skillFreeLevel\(data\)/);
-  assert.match(source, /\^\\s\*★/);
-  assert.match(source, /Math\.min\(level,1\)/);
+  const freeLevelStart = source.indexOf("function skillFreeLevel(data)");
+  const freeLevelEnd = source.indexOf("async function setSkillRow", freeLevelStart);
+  assert.ok(freeLevelStart >= 0 && freeLevelEnd > freeLevelStart);
+  const freeLevelBlock = source.slice(freeLevelStart, freeLevelEnd);
+  assert.doesNotMatch(freeLevelBlock, /★/);
+  assert.match(freeLevelBlock, /firstDefined\(data,'free_level','freeLevel'\)/);
+  assert.match(freeLevelBlock, /Math\.min\(level,Math\.max\(0,/);
   assert.match(source, /data-f="free_level"/);
   assert.match(source, /cleanName\(data\.name\)/);
+  assert.match(source, /\^\[★†※■┗\]\+/);
+});
+
+test("legacy explicit free_level remains supported and clamped to skill level", async () => {
+  const source = await readFile(sourceUrl, "utf8");
+  const freeLevelStart = source.indexOf("function skillFreeLevel(data)");
+  const freeLevelEnd = source.indexOf("async function setSkillRow", freeLevelStart);
+  const freeLevelBlock = source.slice(freeLevelStart, freeLevelEnd);
+  assert.match(freeLevelBlock, /const level=skillLevel\(data\)/);
+  assert.match(freeLevelBlock, /firstDefined\(data,'free_level','freeLevel'\)/);
+  assert.match(freeLevelBlock, /Math\.min\(level,Math\.max\(0,/);
 });
 
 test("structured personal fields are no longer duplicated into profile text", async () => {
