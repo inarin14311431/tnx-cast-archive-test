@@ -1,4 +1,5 @@
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
+import { paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.js?v=1";
 
 /* Single authoritative experience-point calculator. */
 (function(){
@@ -42,15 +43,6 @@ import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
     return result;
   }
 
-  function steppedCost(base,current,threshold){
-    let total=0;
-    const growth=Math.max(0,current-base);
-    for(let step=1;step<=growth;step++){
-      total+=base+step<=threshold?20:40;
-    }
-    return total;
-  }
-
   function skillCategory(row){
     if(row.closest("#style-skills"))return "style";
     return "general";
@@ -69,11 +61,13 @@ import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
       if(!name)continue;
       const level=Math.max(0,num(row.querySelector('[data-f="level"]')?.value));
       if(level<=0)continue;
+      const freeLevel=Math.max(0,num(row.querySelector('[data-f="free_level"]')?.value));
+      const paidLevel=paidSkillLevel(level,freeLevel);
       const kind=row.querySelector('[data-f="skill_kind"]')?.value||"general";
       if(skillCategory(row)==="style"){
-        style+=level*(STYLE_COST[kind]??10);
+        style+=paidLevel*(STYLE_COST[kind]??10);
       }else{
-        general+=level*(kind==="proper"?5:10);
+        general+=paidLevel*(kind==="proper"?5:10);
       }
     }
     return {general,style};
@@ -98,8 +92,8 @@ import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
     let ability=0;
     let control=0;
     for(const key of ABILITIES){
-      ability+=steppedCost(base[key],num($(`#${key}-base`)?.value),10);
-      control+=steppedCost(base[`${key}-control`],num($(`#${key}-control-base`)?.value),16);
+      ability+=steppedExperienceCost(base[key],num($(`#${key}-base`)?.value),10);
+      control+=steppedExperienceCost(base[`${key}-control`],num($(`#${key}-control-base`)?.value),16);
     }
 
     const skills=skillParts();
