@@ -54,12 +54,14 @@ test("fixed general rows preserve starting suit and level semantics", () => {
   assert.equal(craft.reason, false);
 });
 
-test("new character state uses shared row factory while remaining DOM-free", async () => {
+test("new character state uses shared row and collection factories while remaining DOM-free", async () => {
   const helperSource = await readFile(new URL("../js/sheet-new-character-state.js", import.meta.url), "utf8");
   const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
   assert.doesNotMatch(helperSource, /document\.|window\.|supabase|localStorage|sessionStorage|addEventListener/);
   assert.match(helperSource, /createSkillRow as defaultCreateSkillRow/);
   assert.match(helperSource, /createSkillRow\("general"/);
+  assert.match(helperSource, /appendRows/);
+  assert.doesNotMatch(helperSource, /\.push\(/);
   assert.match(sheetSource, /sheet-new-character-state\.js\?v=1/);
   assert.match(sheetSource, /buildNewCharacterSkills\(/);
 });
