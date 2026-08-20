@@ -63,3 +63,4 @@ GitHub Pages redeploy trigger
 2026-08-20 centralize classic row append and batch import state
 2026-08-20 use shared collection operations for new character rows
 2026-08-20 centralize specialized classic editor skill row creation
+2026-08-20 centralize canonical general skill catalog
