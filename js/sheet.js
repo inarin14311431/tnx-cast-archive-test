@@ -34,6 +34,7 @@ import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
 import { resolveStyleBaselineValue } from "./sheet-baseline-adjustment.js?v=1";
 import { buildNewCharacterSkills } from "./sheet-new-character-state.js?v=1";
 import { chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";
+import { buildStyleSaveRows } from "./sheet-style-save-projection.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -302,6 +303,7 @@ function toggleAttribute(i) {
 function currentStyleSlots() {
   return [1, 2, 3].map(i => ({
     name: $(`#style-${i}`).value,
+    mark: $(`#style-${i}-mark`).value,
     attribute: $(`#style-${i}-attribute`)?.value || ""
   }));
 }
@@ -426,17 +428,7 @@ function markDirty() { if (loading) return; saveCoordinator.markDirty(); }
 function collectCharacter() {
   const experience = window.TNXExperience?.calculate?.();
   const structured = Object.fromEntries(STRUCTURED_FIELDS.map(([name, selector]) => [name, $(selector)?.value || ""]));
-  const styles = [1, 2, 3].map(i => {
-    const name = $(`#style-${i}`).value;
-    const style = STYLE_DATA.find(item => item.name === name);
-    return {
-      name,
-      mark: $(`#style-${i}-mark`).value,
-      attribute: $(`#style-${i}-attribute`)?.value || "",
-      divine: style?.divine || "",
-      divineYomi: style?.divineYomi || style?.divine || ""
-    };
-  });
+  const styles = buildStyleSaveRows({ slots: currentStyleSlots(), styleData: STYLE_DATA });
   const abilities = Object.fromEntries(ABILITIES.map(([key]) => {
     const controlKey = `${key}-control`;
     return [key, {
