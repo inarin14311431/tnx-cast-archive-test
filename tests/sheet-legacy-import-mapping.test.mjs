@@ -22,7 +22,7 @@ test("legacy star-marked skills become one free level while keeping a clean name
   assert.match(source, /function skillFreeLevel\(data\)/);
   assert.match(source, /\^\\s\*★/);
   assert.match(source, /Math\.min\(level,1\)/);
-  assert.match(source, /\[data-f=\\"free_level\\"\]/);
+  assert.match(source, /data-f="free_level"/);
   assert.match(source, /cleanName\(data\.name\)/);
 });
 
