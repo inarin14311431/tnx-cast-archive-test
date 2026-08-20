@@ -48,6 +48,7 @@ import { collectAbilityInputSnapshot, applyAbilityInputSnapshot } from "./sheet-
 import { collectStyleInputSnapshot, applyStyleInputSnapshot } from "./sheet-style-input-snapshot.js?v=1";
 import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
 import { appendRow, appendRows, clearRows, moveRowWithinCategory, normalizeOutfitCategory, removeRowByKey } from "./sheet-row-collection-state.js?v=2";
+import { GENERAL_MASTER_ROWS as GENERAL_MASTER, GENERAL_BLANK_SLOT_COLUMNS } from "./general-skill-catalog.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -59,13 +60,6 @@ const ABILITIES = [
   ["life", "生命", "LIFE"],
   ["mundane", "外界", "MUNDANE"]
 ];
-const GENERAL_MASTER = [
-  ["医療", "reason", "general"], ["射撃", "reason", "general"], ["知覚", "reason", "general"], ["電脳", "reason", "general"], ["製作：", "reason", "proper"],
-  ["心理", "passion", "general"], ["自我", "passion", "general"], ["交渉", "passion", "general"], ["芸術：", "passion", "proper"],
-  ["運動", "life", "general"], ["回避", "life", "general"], ["白兵", "life", "general"], ["操縦：", "life", "proper"],
-  ["信用", "mundane", "general"], ["圧力", "mundane", "general"], ["隠密", "mundane", "general"]
-];
-const GENERAL_BLANK_SLOT_COLUMNS = ["left", "left", "right", "right"];
 const STRUCTURED_FIELDS = [
   ["handle_kana", "#handle-kana"], ["age", "#age"], ["gender", "#gender"],
   ["height", "#height"], ["weight", "#weight"], ["eyes", "#eyes"], ["hair", "#hair"],
