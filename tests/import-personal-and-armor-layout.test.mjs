@@ -12,12 +12,14 @@ test("structured personal import values are restored after the base importer fin
   assert.match(source, /life_path_origin: \["base\.lifepath\.origin", "base\.lifepath\.experience"/);
 });
 
-test("armor total footer aligns itself to the dynamically injected S P I columns", async () => {
+test("armor total footer aligns itself after outfit and OFC column rendering", async () => {
   const source = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
   assert.match(source, /dataset\.ofcHead === "defense_s"/);
   assert.match(source, /dataset\.ofcHead === "defense_p"/);
   assert.match(source, /dataset\.ofcHead === "defense_i"/);
   assert.match(source, /label\.colSpan = Math\.max\(1, sIndex\)/);
   assert.match(source, /tail\.colSpan = Math\.max\(1, cells\.length - iIndex - 1\)/);
-  assert.match(source, /new MutationObserver\(queue\)/);
+  assert.match(source, /root\.addEventListener\("tnx:outfit-tables-rendered", queue\)/);
+  assert.match(source, /requestAnimationFrame\(\(\) => requestAnimationFrame/);
+  assert.doesNotMatch(source, /MutationObserver/);
 });
