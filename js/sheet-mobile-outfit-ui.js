@@ -69,6 +69,7 @@ const detailField = (item, field, label, options = {}) => {
 function commonBaseFields(item) {
   return `<fieldset class="mobile-outfit-group"><legend>基本</legend><div class="mobile-outfit-group__grid">
     <label class="mobile-outfit-editor__name">名称<input data-outfit-field="name" value="${esc(item.name || "")}"></label>
+    ${detailField(item, "manufacturer", "メーカー")}
     <label>購入<input data-outfit-field="purchase_value" type="number" step="1" inputmode="numeric" value="${esc(item.purchase_value ?? "")}"></label>
     <label>常備化<input data-outfit-field="experience_cost" type="number" step="1" min="0" inputmode="numeric" value="${esc(item.experience_cost ?? 0)}"></label>
     ${concealFields(item)}
