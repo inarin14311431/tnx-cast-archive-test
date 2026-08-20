@@ -2,12 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const shim = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
+const aligner = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
 const tables = await readFile(new URL("../js/outfit-tables.js", import.meta.url), "utf8");
 
-test("armor total compatibility entry no longer owns outfit DOM behavior", () => {
-  assert.match(shim, /Armor defense totals are owned by outfit-tables\.js/);
-  assert.doesNotMatch(shim, /#outfit-list|MutationObserver|addEventListener|data-armor-defense|data-armor-total/);
+test("armor total alignment helper owns layout only, not defense calculation", () => {
+  assert.match(aligner, /function alignArmorFooter\(\)/);
+  assert.match(aligner, /dataset\.ofcHead === "defense_s"/);
+  assert.match(aligner, /dataset\.ofcHead === "defense_p"/);
+  assert.match(aligner, /dataset\.ofcHead === "defense_i"/);
+  assert.match(aligner, /label\.colSpan = Math\.max\(1, sIndex\)/);
+  assert.doesNotMatch(aligner, /\[data-ofc="defense_\$\{key\}"\]|Number\(input\.value|totals\[key\]/);
 });
 
 test("outfit tables owns armor totals from canonical OFC S P I fields", () => {
