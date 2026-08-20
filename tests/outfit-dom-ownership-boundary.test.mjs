@@ -3,15 +3,17 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const tables = await readFile(new URL("../js/outfit-tables.js", import.meta.url), "utf8");
-const armorShim = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
+const armorAligner = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
 const multiline = await readFile(new URL("../js/sheet-multiline-fields-v3.js", import.meta.url), "utf8");
 const autofill = await readFile(new URL("../js/sheet-master-autofill.js", import.meta.url), "utf8");
 const features = await readFile(new URL("../js/sheet-features.js", import.meta.url), "utf8");
 
-test("outfit tables solely own armor defense totals", () => {
+test("outfit tables own armor defense calculation while alignment helper owns footer placement only", () => {
   assert.match(tables, /function updateArmorTotals\(section\)/);
   assert.match(tables, /data-armor-total/);
-  assert.doesNotMatch(armorShim, /#outfit-list|MutationObserver|data-armor-defense|data-armor-total/);
+  assert.match(armorAligner, /function alignArmorFooter\(\)/);
+  assert.match(armorAligner, /dataset\.ofcHead === "defense_s"/);
+  assert.doesNotMatch(armorAligner, /\[data-ofc="defense_\$\{key\}"\]|Number\(input\.value|totals\[key\]/);
 });
 
 test("outfit tables publish an explicit post-render completion event", () => {
