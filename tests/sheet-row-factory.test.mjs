@@ -1,7 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { createBlankSkill, createSkillRow, createBlankOutfit, createOutfitRow } from "../js/sheet-row-factory.js";
+import {
+  createBlankSkill,
+  createSkillRow,
+  createGeneralBlankSlotRow,
+  createStyleSeparatorRow,
+  createBlankOutfit,
+  createOutfitRow
+} from "../js/sheet-row-factory.js";
 
 test("skill factory preserves category defaults and explicit ordering", () => {
   const general = createBlankSkill("general", { key: "skill-general", sortOrder: 4 });
@@ -43,6 +50,30 @@ test("skill row factory cannot override the requested category", () => {
   const row = createSkillRow("social", { category: "style", name: "社会：N◎VA" }, { key: "social-row" });
   assert.equal(row.category, "social");
   assert.equal(row.skill_kind, "proper");
+});
+
+test("general blank slot factory owns mutable editor slot semantics", () => {
+  const row = createGeneralBlankSlotRow("right", { key: "blank-slot", sortOrder: 14 });
+  assert.equal(row._key, "blank-slot");
+  assert.equal(row.category, "general");
+  assert.equal(row.level, 0);
+  assert.equal(row.free_level, 0);
+  assert.equal(row.skill_kind, "proper");
+  assert.equal(row._blankSlot, true);
+  assert.equal(row._slotColumn, "right");
+  assert.equal(row.sort_order, 14);
+});
+
+test("style separator factory owns separator record semantics", () => {
+  const row = createStyleSeparatorRow("__STYLE_SEPARATOR__", { key: "separator", sortOrder: 18 });
+  assert.equal(row._key, "separator");
+  assert.equal(row.category, "style");
+  assert.equal(row.level, 1);
+  assert.equal(row.free_level, 0);
+  assert.equal(row.skill_kind, "none");
+  assert.equal(row.description, "__STYLE_SEPARATOR__");
+  assert.equal(row._rowType, "separator");
+  assert.equal(row.sort_order, 18);
 });
 
 test("outfit factory preserves canonical blank base state only", () => {
