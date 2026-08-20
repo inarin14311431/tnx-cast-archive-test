@@ -38,6 +38,7 @@ import { resolveSkillInputState } from "./sheet-skill-level-suit-state.js?v=1";
 import { buildStyleSaveRows } from "./sheet-style-save-projection.js?v=1";
 import { buildAbilitySaveSnapshot, buildCsSaveSnapshot } from "./sheet-ability-save-projection.js?v=1";
 import { collectCharacterInputSnapshot } from "./sheet-character-input-snapshot.js?v=1";
+import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -309,11 +310,14 @@ function fillCharacter(data) {
 }
 
 function renderStyles() {
-  $("#style-grid").innerHTML = renderStyleCards({ styleData: STYLE_DATA, utsuwaAttributes: UTSUWA_ATTRIBUTES });
-  $("#style-grid").addEventListener("change", event => {
-    if (!event.target.matches('[id^="style-"]')) return;
-    for (let i = 1; i <= 3; i++) toggleAttribute(i);
-    updateDivines(true);
+  const root = $("#style-grid");
+  root.innerHTML = renderStyleCards({ styleData: STYLE_DATA, utsuwaAttributes: UTSUWA_ATTRIBUTES });
+  initSheetStyleInteractions({
+    root,
+    onStyleChange() {
+      for (let i = 1; i <= 3; i++) toggleAttribute(i);
+      updateDivines(true);
+    }
   });
 }
 
