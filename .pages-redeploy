@@ -71,3 +71,4 @@ GitHub Pages redeploy trigger
 2026-08-20 replace armor total mutation observer with render event scheduling
 2026-08-20 bump armor total alignment cache contract
 2026-08-20 use shared general skill catalog in layout helper
+2026-08-20 remove export module dependency cycles
