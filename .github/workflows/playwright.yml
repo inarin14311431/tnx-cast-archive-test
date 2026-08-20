@@ -59,6 +59,7 @@ jobs:
         run: >-
           npx playwright test
           tests/e2e/authenticated.spec.js
+          tests/e2e/legacy-import-profile.spec.js
           tests/e2e/outfit-import-transfer.spec.js
           tests/e2e/sheet-row-lifecycle.spec.js
           tests/e2e/sheet-save-reload-flow.spec.js
