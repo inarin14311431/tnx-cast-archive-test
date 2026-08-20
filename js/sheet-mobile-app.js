@@ -1,3 +1,4 @@
+import "./sheet-mobile-ordering-style-refresh.js?v=20260820-1";
 import "./sheet-mobile-runtime.js?v=1";
 import "./sheet-mobile-save-coordinator.js?v=20260818-1";
 import "./sheet-mobile.js?v=7";
