@@ -300,7 +300,7 @@ function fillCharacter(data) {
     $(`#${key}-mod`).value = Number(data[`${key}_gear`] || 0) + Number(data[`${key}_manual`] || 0);
     const controlKey = `${key}-control`;
     $(`#${controlKey}-base`).value = Number(data[`${key}_control_base`] ?? data[`${key}_control`] ?? styleBaseline[controlKey] ?? 0);
-    $(`#${controlKey}-mod`).value = Number(data[`${controlKey.replace("-control", "")}_control_gear`] || 0) + Number(data[`${controlKey.replace("-control", "")}_control_manual`] || 0);
+    $(`#${controlKey}-mod`).value = Number(data[`${key}_control_gear`] || 0) + Number(data[`${key}_control_manual`] || 0);
   }
   $("#cs-base").value = data.cs_base ?? data.cs ?? 0;
   $("#cs-mod").value = Number(data.cs_gear || 0) + Number(data.cs_manual || 0);
