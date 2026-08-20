@@ -30,9 +30,9 @@ test("stepped experience cost follows ability and control thresholds", () => {
 test("desktop and mobile calculators share canonical experience rules", async () => {
   const desktop = await readFile(new URL("../js/experience.js", import.meta.url), "utf8");
   const mobile = await readFile(new URL("../js/sheet-mobile-header-exp.js", import.meta.url), "utf8");
-  assert.match(desktop, /sheet-experience-rules\.js\?v=1/);
+  assert.match(desktop, /sheet-experience-rules\.js\?v=2/);
   assert.match(desktop, /paidSkillLevel\(level,freeLevel\)/);
-  assert.match(mobile, /sheet-experience-rules\.js\?v=1/);
+  assert.match(mobile, /sheet-experience-rules\.js\?v=2/);
   assert.match(mobile, /current:character\[`\$\{key\}_base`\]/);
   assert.match(mobile, /current:character\[`\$\{key\}_control_base`\]/);
   assert.match(mobile, /select\("id,skill_kind,free_level"\)/);
