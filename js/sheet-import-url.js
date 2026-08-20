@@ -1,6 +1,6 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.4.0 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.5.0 */
 (()=>{
-  const VERSION='1.4.0';
+  const VERSION='1.5.0';
   import('./help-ui.js?v=6').catch(error=>console.error('sheet help failed to load',error));
 
   const dialog=document.querySelector('#legacy-import-dialog');
@@ -66,17 +66,39 @@
     return key;
   }
 
+  function parseJsonData(value){
+    if(typeof value!=='string')return value;
+    let source=value.trim();
+    if(!source)return value;
+    if(source.endsWith(';'))source=source.slice(0,-1).trim();
+    if(source.startsWith('(')&&source.endsWith(')'))source=source.slice(1,-1).trim();
+    try{return JSON.parse(source)}catch{return value}
+  }
+
+  function mergeWrapperMetadata(parsed,wrapper){
+    if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))return parsed;
+    const result={...parsed};
+    for(const key of ['outline','name','nameKana','player','display']){
+      if((result[key]===undefined||result[key]===null||result[key]==='')&&wrapper?.[key]!==undefined)result[key]=wrapper[key];
+    }
+    return result;
+  }
+
   function normalizePayload(payload){
     let data=payload;
-    for(let i=0;i<4;i++){
+    for(let i=0;i<6;i++){
       if(typeof data==='string'){
-        try{data=JSON.parse(data);continue;}catch{break;}
+        const parsed=parseJsonData(data);
+        if(parsed!==data){data=parsed;continue;}
+        break;
       }
       if(data&&typeof data==='object'&&typeof data.jsonData==='string'&&data.jsonData.trim()){
-        try{data=JSON.parse(data.jsonData);continue;}catch{}
+        const parsed=parseJsonData(data.jsonData);
+        if(parsed!==data.jsonData){data=mergeWrapperMetadata(parsed,data);continue;}
       }
       if(data&&typeof data==='object'&&data.data&&typeof data.data==='object'&&!data.base&&!data.skills1&&!data.superhumanskills&&!data.weapons){
-        data=data.data;continue;
+        const wrapper=data;
+        data=mergeWrapperMetadata(data.data,wrapper);continue;
       }
       break;
     }
