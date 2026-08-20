@@ -106,6 +106,12 @@
   }
 
   async function clearExisting(){
+    const directClear=window.TNXSheetEditor?.clearOutfitsForImport;
+    if(typeof directClear==="function"){
+      directClear();
+      await frame();
+      return;
+    }
     let guard=0;
     while(guard++<300){
       const remove=document.querySelector(`${ROOT} [data-delete-outfit]`);
@@ -155,6 +161,18 @@
   async function createRaw(item){
     const root=document.querySelector(ROOT);
     if(!root)throw new Error("アウトフィット追加欄を確認できません。");
+
+    const directAdd=window.TNXSheetEditor?.addOutfitForImport;
+    if(typeof directAdd==="function"){
+      const key=directAdd(item.category);
+      if(!key)throw new Error(`アウトフィット行を作成できません：${item.name}`);
+      const row=await waitRow(key);
+      if(!row)throw new Error(`アウトフィット行を作成できません：${item.name}`);
+      const values=commonValues(item);
+      for(const [field,value] of Object.entries(values))setValue(fieldControl(row,field),value);
+      return key;
+    }
+
     const before=new Set([...root.querySelectorAll('[data-outfit-key]')].map(row=>row.dataset.outfitKey));
     const categoryAdd=root.querySelector(`[data-add-outfit-category="${CSS.escape(item.category)}"]`);
     const generic=document.querySelector("#add-outfit");
