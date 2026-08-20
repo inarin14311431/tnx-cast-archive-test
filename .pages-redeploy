@@ -23,7 +23,6 @@ GitHub Pages redeploy trigger
 2026-08-19 lock final PC save ownership boundaries
 2026-08-19 extract classic sheet load persistence boundary
 2026-08-19 extract classic loaded-record normalization and error wording
-2026-08-19 align regression tests with extracted load and normalization boundaries
 2026-08-19 extract classic sheet row interaction boundary
 2026-08-19 fix suit decrease and residence concealment autofill
 2026-08-19 extract classic skill rendering boundary
@@ -69,3 +68,4 @@ GitHub Pages redeploy trigger
 2026-08-20 preserve personal lifepath import and align armor totals
 2026-08-20 remove temporary mobile CSS cache rewrite helper
 2026-08-20 use shared general skill catalog in PC and mobile editors
+2026-08-20 replace armor total mutation observer with render event scheduling
