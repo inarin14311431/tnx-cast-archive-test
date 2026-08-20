@@ -144,6 +144,11 @@
     const suits=skillSuits(data);
     return Math.max(0,number(firstDefined(data,'level','lv')),Object.values(suits).filter(Boolean).length);
   }
+  function skillFreeLevel(data){
+    const level=skillLevel(data);
+    if(/^\s*★/.test(String(firstDefined(data,'name')||'')))return Math.min(level,1);
+    return Math.min(level,Math.max(0,number(firstDefined(data,'free_level','freeLevel'))));
+  }
 
   async function setSkillRow(row,data,kind){
     if(!row)return false;
@@ -164,6 +169,8 @@
     }
     current=locate();
     await setInput(current?.querySelector('[data-f="level"]'),level);
+    current=locate();
+    await setInput(current?.querySelector('[data-f="free_level"]'),skillFreeLevel(data));
     current=locate();
     const description=current?.querySelector('[data-f="description"]');
     if(description){
@@ -252,24 +259,27 @@
   async function importGeneral(map,stats){
     await clearRows(()=>skillRows('一般技能'),row=>!FIXED_GENERAL.has(rowName(row)));
     for(const data of [...groups(map,'skills1'),...groups(map,'skills2')]){
-      const name=cleanName(firstDefined(data,'name'));
+      const rawName=firstDefined(data,'name');
+      const name=cleanName(rawName);
       const level=skillLevel(data);
       if(!name||!level)continue;
       const row=findGeneralRow(name);
       const kind=name.includes('：')?'proper':'general';
-      const done=row?await setSkillRow(row,{...data,name},kind):await addSkill('#add-general','一般技能',{...data,name},kind);
+      const done=row?await setSkillRow(row,{...data,name:rawName},kind):await addSkill('#add-general','一般技能',{...data,name:rawName},kind);
       if(done)stats.general++;
     }
     for(const data of groups(map,['skills3','socialskills','social'])){
-      const name=prefixed(firstDefined(data,'name'),'社会：');
+      const rawName=firstDefined(data,'name');
+      const name=prefixed(rawName,'社会：');
       if(!name||!skillLevel(data))continue;
-      if(await addSkill('#add-social','社会',{...data,name},'proper'))stats.social++;
+      if(await addSkill('#add-social','社会',{...data,name:/^\s*★/.test(String(rawName||''))?`★${name}`:name},'proper'))stats.social++;
     }
     for(const data of groups(map,['skills4','connectionskills','connections'])){
-      const raw=cleanName(firstDefined(data,'name'));
+      const rawName=firstDefined(data,'name');
+      const raw=cleanName(rawName);
       if(!raw||/^ー+$/.test(raw)||!skillLevel(data))continue;
       const name=prefixed(raw,'コネ：');
-      if(await addSkill('#add-connection','コネクション',{...data,name},'proper'))stats.connection++;
+      if(await addSkill('#add-connection','コネクション',{...data,name:/^\s*★/.test(String(rawName||''))?`★${name}`:name},'proper'))stats.connection++;
     }
   }
 
@@ -285,10 +295,11 @@
   async function importStyleSkills(map,stats){
     await clearRows(()=>$$('#style-skills tr[data-skill-key]'));
     for(const data of groups(map,['superhumanskills','styleskills','styleSkills'])){
-      const name=cleanName(firstDefined(data,'name'));
+      const rawName=firstDefined(data,'name');
+      const name=cleanName(rawName);
       const level=skillLevel(data);
-      if(!name||!level||String(firstDefined(data,'name')).trim().startsWith('■'))continue;
-      if(await addSkill('#add-style-skill','__style__',{...data,name},styleSkillKind(data)))stats.style++;
+      if(!name||!level||String(rawName).trim().startsWith('■'))continue;
+      if(await addSkill('#add-style-skill','__style__',{...data,name:rawName},styleSkillKind(data)))stats.style++;
     }
   }
 
@@ -317,17 +328,26 @@
       const castName=parseCastName(get(map,'base.name','name'));
       await setElement('#character-name',castName.name);
       await setElement('#handle',get(map,'base.handle','handle')||castName.handle);
+      await setElement('#handle-kana',get(map,'base.handleKana','base.handle_kana','handleKana','handle_kana'));
       await setElement('#character-kana',get(map,'base.nameKana','base.kana','kana'));
       await setElement('#player-name',get(map,'base.player','player'));
       await setElement('#affiliation',get(map,'base.post','base.affiliation','affiliation'));
       await setElement('#citizen-rank',get(map,'base.rank','rank'));
       await setElement('#summary',get(map,'base.lifepath.memo','base.summary','summary'));
+      await setElement('#age',get(map,'base.age','age'));
+      await setElement('#gender',get(map,'base.sex','base.gender','sex','gender'));
+      await setElement('#height',get(map,'base.height','height'));
+      await setElement('#weight',get(map,'base.weight','weight'));
+      await setElement('#eyes',get(map,'base.eyes','eyes'));
+      await setElement('#hair',get(map,'base.hair','hair'));
+      await setElement('#skin',get(map,'base.skin','skin'));
+      await setElement('#life-path-origin',get(map,'base.lifepath.origin','base.lifepath.experience','life_path_origin'));
+      await setElement('#life-path-experience',get(map,'base.lifepath.environment','life_path_experience'));
+      await setElement('#life-path-encounter',get(map,'base.lifepath.encounter','base.lifepath.encouter','life_path_encounter'));
       const profileParts=[
         get(map,'base.memoir','base.profile','profile'),
         get(map,'base.memo')&&`【メモ】\n${get(map,'base.memo')}`,
-        [
-          ['出身',get(map,'base.birth')],['年齢',get(map,'base.age')],['性別',get(map,'base.sex')],['身長',get(map,'base.height')],['体重',get(map,'base.weight')],['瞳',get(map,'base.eyes')],['髪',get(map,'base.hair')],['肌',get(map,'base.skin')],['経験',get(map,'base.lifepath.experience')],['環境',get(map,'base.lifepath.environment')],['邂逅',get(map,'base.lifepath.encounter','base.lifepath.encouter')]
-        ].filter(([,value])=>String(value??'').trim()).map(([key,value])=>`${key}：${value}`).join('\n')
+        get(map,'base.birth')&&`出身：${get(map,'base.birth')}`
       ].filter(Boolean);
       await setElement('#profile',profileParts.join('\n\n'));
 
