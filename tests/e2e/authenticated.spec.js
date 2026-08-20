@@ -20,8 +20,8 @@ test("編集画面のエクスポートモジュールは循環せず一度だ�
 
   await expect(page.locator("#cocofolia-copy-button")).toBeVisible();
   await expect(page.locator("#udonarium-export-button")).toBeVisible();
-  await expect(page.locator('script[data-tnx-export-module="cocofolia"]')).toHaveCount(1);
-  await expect(page.locator('script[data-tnx-export-module="udonarium"]')).toHaveCount(1);
+  await expect(page.locator("script#tnx-cocofolia-export-module")).toHaveCount(1);
+  await expect(page.locator("script#tnx-udonarium-export-module")).toHaveCount(1);
 
   assertNoErrors();
   assertNoAssetErrors();
