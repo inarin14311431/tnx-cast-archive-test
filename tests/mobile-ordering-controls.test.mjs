@@ -38,7 +38,7 @@ test("mobile skill and outfit ordering share the classic row movement primitive"
 test("mobile ordering assets use direct HTML cache versions without a runtime rewrite helper", async () => {
   const app = await read("../js/sheet-mobile-app.js");
   const html = await read("../sheet-mobile.html");
-  assert.match(app, /sheet-mobile-skills\.js\?v=20260820-6/);
+  assert.match(app, /sheet-mobile-skills\.js\?v=20260820-7/);
   assert.match(app, /sheet-mobile-outfit\.js\?v=20260820-8/);
   assert.doesNotMatch(app, /sheet-mobile-ordering-style-refresh/);
   assert.match(html, /sheet-mobile-skills\.css\?v=6/);
