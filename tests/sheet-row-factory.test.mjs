@@ -114,6 +114,10 @@ test("classic sheet keeps collection-aware ordering while delegating row default
 
   assert.match(source, /createBlankSkill\(category, \{ sortOrder: skills\.length \}\)/);
   assert.match(source, /createBlankOutfit\(\{ sortOrder: outfits\.length \}\)/);
+  assert.match(source, /createGeneralBlankSlotRow\(column, \{ sortOrder: skills\.length \}\)/);
+  assert.match(source, /createStyleSeparatorRow\(STYLE_SEPARATOR_MARKER, \{ sortOrder: skills\.length \}\)/);
+  assert.doesNotMatch(source, /_rowType:\s*["']separator["']/);
+  assert.doesNotMatch(source, /_blankSlot:\s*true,\s*_slotColumn:/);
   assert.doesNotMatch(factory, /\bdocument\b|\bwindow\b|\bskills\b|\boutfits\b/);
   assert.doesNotMatch(factory, /save|persist|render|markDirty|recalc/);
 });
