@@ -37,7 +37,8 @@ import { chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";
 import { resolveSkillInputState } from "./sheet-skill-level-suit-state.js?v=1";
 import { buildStyleSaveRows } from "./sheet-style-save-projection.js?v=1";
 import { buildAbilitySaveSnapshot, buildCsSaveSnapshot } from "./sheet-ability-save-projection.js?v=1";
-import { collectCharacterInputSnapshot } from "./sheet-character-input-snapshot.js?v=1";
+import { collectCharacterInputSnapshot, applyCharacterInputSnapshot } from "./sheet-character-input-snapshot.js?v=1";
+import { collectAbilityInputSnapshot } from "./sheet-ability-input-snapshot.js?v=1";
 import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
 
 const $ = selector => document.querySelector(selector);
@@ -285,11 +286,7 @@ async function loadCharacter(publicId) {
 }
 
 function fillCharacter(data) {
-  ["character_name", "character_kana", "handle", "player_name", "affiliation", "citizen_rank", "summary", "profile"].forEach(name => {
-    const element = $("#" + name.replaceAll("_", "-")); if (element) element.value = data[name] ?? "";
-  });
-  for (const [name, selector] of STRUCTURED_FIELDS) { const element = $(selector); if (element) element.value = data[name] ?? ""; }
-  $("#visibility").value = data.visibility === "public" ? "public" : "private";
+  applyCharacterInputSnapshot({ root: document, data, structuredFields: STRUCTURED_FIELDS });
   for (let i = 1; i <= 3; i++) {
     $(`#style-${i}`).value = data[`style_${i}`] || "";
     $(`#style-${i}-mark`).value = data[`style_${i}_mark`] || "";
@@ -423,26 +420,16 @@ function renderOutfits() {
   $("#outfit-list").innerHTML = renderOutfitEditor(outfits);
 }
 
-function current(id) { return Number($(`#${id}-base`)?.value || 0); }
-function currentAbilityValues() {
-  return Object.fromEntries(ABILITIES.map(([key]) => {
-    const controlKey = `${key}-control`;
-    return [key, {
-      current: current(key),
-      modifier: Number($(`#${key}-mod`)?.value || 0),
-      controlCurrent: current(controlKey),
-      controlModifier: Number($(`#${controlKey}-mod`)?.value || 0)
-    }];
-  }));
+function currentAbilityInput() {
+  return collectAbilityInputSnapshot({ root: document, abilities: ABILITIES });
 }
+
 function recalc() {
+  const input = currentAbilityInput();
   const finals = calculateAbilityFinals({
     abilities: ABILITIES,
-    values: currentAbilityValues(),
-    cs: {
-      current: Number($("#cs-base")?.value || 0),
-      modifier: Number($("#cs-mod")?.value || 0)
-    }
+    values: input.values,
+    cs: input.cs
   });
   for (const [key] of ABILITIES) {
     $(`#${key}-final`).textContent = finals[key];
@@ -461,15 +448,13 @@ function collectCharacter() {
     experienceTotal: experience?.total ?? $("#exp-total")?.textContent ?? 0
   });
   const styles = buildStyleSaveRows({ slots: currentStyleSlots(), styleData: STYLE_DATA });
+  const abilityInput = currentAbilityInput();
   const abilities = buildAbilitySaveSnapshot({
     abilities: ABILITIES,
-    values: currentAbilityValues(),
+    values: abilityInput.values,
     baselines: styleBaseline
   });
-  const cs = buildCsSaveSnapshot({
-    current: $("#cs-base")?.value,
-    modifier: $("#cs-mod")?.value
-  });
+  const cs = buildCsSaveSnapshot(abilityInput.cs);
   return buildCharacterSavePayload({
     base: input.base,
     structured: input.structured,
