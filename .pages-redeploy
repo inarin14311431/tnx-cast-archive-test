@@ -60,3 +60,4 @@ GitHub Pages redeploy trigger
 2026-08-20 share adjacent row ordering across PC and mobile editors
 2026-08-20 align legacy star import semantics and regression contracts
 2026-08-20 centralize override-based editor row factories
+2026-08-20 centralize classic row append and batch import state
