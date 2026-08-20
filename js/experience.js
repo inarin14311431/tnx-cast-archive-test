@@ -1,5 +1,5 @@
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
-import { paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.js?v=1";
+import { CREATION_ALLOWANCE, INITIAL_GENERAL_SKILL_COST, paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.js?v=2";
 
 /* Single authoritative experience-point calculator. */
 (function(){
@@ -7,8 +7,6 @@ import { paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.
   const $$=selector=>[...document.querySelectorAll(selector)];
   const ABILITIES=["reason","passion","life","mundane"];
   const STYLE_COST=window.TNXStyleSkillKinds?.costs||{normal:10,secret:20,ultimate:50,direction:2};
-  const INITIAL_SKILL_COST=165;
-  const CREATION_ALLOWANCE=170;
   let queued=false;
   let writing=false;
 
@@ -97,7 +95,7 @@ import { paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.
     }
 
     const skills=skillParts();
-    const paidGeneral=Math.max(0,skills.general-INITIAL_SKILL_COST);
+    const paidGeneral=Math.max(0,skills.general-INITIAL_GENERAL_SKILL_COST);
     const parts={
       "能力値":ability,
       "制御値":control,
@@ -129,7 +127,7 @@ import { paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.
       parts,
       gross,
       rawGeneralSkillCost:skills.general,
-      initialSkillCost:INITIAL_SKILL_COST,
+      initialSkillCost:INITIAL_GENERAL_SKILL_COST,
       creationAllowance:CREATION_ALLOWANCE
     };
   }
