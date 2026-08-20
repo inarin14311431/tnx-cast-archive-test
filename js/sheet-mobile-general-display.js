@@ -1,4 +1,4 @@
-const STARRED_GENERAL_NAMES = new Set(["射撃", "心理", "自我", "回避", "操縦：", "白兵", "信用", "圧力"]);
+import { STARRED_GENERAL_NAMES } from "./general-skill-catalog.js?v=1";
 
 export function mobileGeneralDisplayName(value) {
   const name = String(value ?? "");
