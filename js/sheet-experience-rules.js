@@ -1,3 +1,6 @@
+export const INITIAL_GENERAL_SKILL_COST = 190;
+export const CREATION_ALLOWANCE = 170;
+
 export function numericValue(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
