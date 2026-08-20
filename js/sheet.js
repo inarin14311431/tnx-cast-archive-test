@@ -17,7 +17,12 @@ import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
 import { initSheetEditorInteractions } from "./sheet-editor-interactions.js?v=1";
 import { renderSkillEditorSections } from "./sheet-skill-renderer.js?v=1";
 import { renderOutfitEditor } from "./sheet-outfit-renderer.js?v=1";
-import { createBlankSkill, createBlankOutfit } from "./sheet-row-factory.js?v=1";
+import {
+  createBlankSkill,
+  createBlankOutfit,
+  createGeneralBlankSlotRow,
+  createStyleSeparatorRow
+} from "./sheet-row-factory.js?v=2";
 import {
   reconcileGeneralMasterRows,
   appendGeneralBlankSlots,
@@ -220,15 +225,7 @@ function clearOutfitsForImport() {
 }
 
 function addStyleSeparator() {
-  const skill = {
-    ...blankSkill("style"),
-    name: "",
-    level: 1,
-    free_level: 0,
-    skill_kind: "none",
-    description: STYLE_SEPARATOR_MARKER,
-    _rowType: "separator"
-  };
+  const skill = createStyleSeparatorRow(STYLE_SEPARATOR_MARKER, { sortOrder: skills.length });
   skills = appendRow(skills, skill);
   renderSkills(); recalc(); markDirty();
   requestAnimationFrame(() => document.querySelector(`#style-skills tr[data-skill-key="${skill._key}"] [data-f="name"]`)?.focus());
@@ -248,7 +245,7 @@ function generalColumnCounts() {
 function addGeneralSkill() {
   const counts = generalColumnCounts();
   const column = chooseGeneralSkillColumn(counts);
-  const skill = { ...blankSkill("general"), name: "", level: 0, free_level: 0, skill_kind: "proper", _blankSlot: true, _slotColumn: column };
+  const skill = createGeneralBlankSlotRow(column, { sortOrder: skills.length });
   skills = appendRow(skills, skill); renderSkills(); recalc(); markDirty();
   requestAnimationFrame(() => document.querySelector(`#general-skills tr[data-skill-key="${skill._key}"] [data-f="name"]`)?.focus());
 }
