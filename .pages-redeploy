@@ -47,3 +47,4 @@ GitHub Pages redeploy trigger
 2026-08-20 extract character load and ability input snapshots
 2026-08-20 finish general column style load and editor lifecycle boundaries
 2026-08-20 fix legacy lifepath import and mobile experience parity
+2026-08-20 make legacy outfit reconstruction use editor state API
