@@ -34,7 +34,9 @@ import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
 import { resolveStyleBaselineValue } from "./sheet-baseline-adjustment.js?v=1";
 import { buildNewCharacterSkills } from "./sheet-new-character-state.js?v=1";
 import { chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";
+import { resolveSkillInputState } from "./sheet-skill-level-suit-state.js?v=1";
 import { buildStyleSaveRows } from "./sheet-style-save-projection.js?v=1";
+import { buildAbilitySaveSnapshot, buildCsSaveSnapshot } from "./sheet-ability-save-projection.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -140,16 +142,37 @@ function onEdit(event) {
   recalc(); markDirty();
 }
 
-function handleSkillRowInput({ key, field, value, element, row }) {
+function handleSkillRowInput({ key, field, value, row }) {
   const skill = skills.find(item => item._key === key); if (!skill) return;
+  const currentLevel = skill.level;
+  const currentFreeLevel = skill.free_level;
   skill[field] = value;
+
+  let state = null;
   if (SUITS.includes(field)) {
-    const suitCount = SUITS.filter(suit => skill[suit]).length;
-    skill.level = Math.max(Number(skill.level || 0), suitCount);
-    const levelInput = row.querySelector('[data-f="level"]'); if (levelInput) levelInput.value = String(skill.level);
-  } else if (field === "level") {
-    const level = Math.max(0, Number(value || 0));
-    skill.level = level; skill.free_level = Math.min(Math.max(Number(skill.free_level || 0), 0), level); element.value = String(level);
+    state = resolveSkillInputState({
+      action: "suit",
+      currentLevel,
+      currentFreeLevel,
+      selectedSuitCount: SUITS.filter(suit => skill[suit]).length,
+      checked: Boolean(value)
+    });
+  } else if (field === "level" || field === "free_level") {
+    state = resolveSkillInputState({
+      action: field,
+      value,
+      currentLevel,
+      currentFreeLevel
+    });
+  }
+
+  if (state) {
+    skill.level = state.level;
+    skill.free_level = state.freeLevel;
+    const levelInput = row.querySelector('[data-f="level"]');
+    const freeLevelInput = row.querySelector('[data-f="free_level"]');
+    if (levelInput) levelInput.value = String(state.level);
+    if (freeLevelInput) freeLevelInput.value = String(state.freeLevel);
   }
   recalc(); markDirty();
 }
@@ -277,7 +300,7 @@ function fillCharacter(data) {
     $(`#${key}-mod`).value = Number(data[`${key}_gear`] || 0) + Number(data[`${key}_manual`] || 0);
     const controlKey = `${key}-control`;
     $(`#${controlKey}-base`).value = Number(data[`${key}_control_base`] ?? data[`${key}_control`] ?? styleBaseline[controlKey] ?? 0);
-    $(`#${controlKey}-mod`).value = Number(data[`${key}_control_gear`] || 0) + Number(data[`${key}_control_manual`] || 0);
+    $(`#${controlKey}-mod`).value = Number(data[`${controlKey.replace("-control", "")}_control_gear`] || 0) + Number(data[`${controlKey.replace("-control", "")}_control_manual`] || 0);
   }
   $("#cs-base").value = data.cs_base ?? data.cs ?? 0;
   $("#cs-mod").value = Number(data.cs_gear || 0) + Number(data.cs_manual || 0);
@@ -429,17 +452,15 @@ function collectCharacter() {
   const experience = window.TNXExperience?.calculate?.();
   const structured = Object.fromEntries(STRUCTURED_FIELDS.map(([name, selector]) => [name, $(selector)?.value || ""]));
   const styles = buildStyleSaveRows({ slots: currentStyleSlots(), styleData: STYLE_DATA });
-  const abilities = Object.fromEntries(ABILITIES.map(([key]) => {
-    const controlKey = `${key}-control`;
-    return [key, {
-      current: current(key),
-      baseline: Number(styleBaseline[key] || 0),
-      modifier: Number($(`#${key}-mod`).value || 0),
-      controlCurrent: current(controlKey),
-      controlBaseline: Number(styleBaseline[controlKey] || 0),
-      controlModifier: Number($(`#${controlKey}-mod`).value || 0)
-    }];
-  }));
+  const abilities = buildAbilitySaveSnapshot({
+    abilities: ABILITIES,
+    values: currentAbilityValues(),
+    baselines: styleBaseline
+  });
+  const cs = buildCsSaveSnapshot({
+    current: $("#cs-base")?.value,
+    modifier: $("#cs-mod")?.value
+  });
   return buildCharacterSavePayload({
     base: {
       character_name: $("#character-name").value,
@@ -456,10 +477,7 @@ function collectCharacter() {
     structured,
     styles,
     abilities,
-    cs: {
-      base: Number($("#cs-base").value || 0),
-      modifier: Number($("#cs-mod").value || 0)
-    }
+    cs
   });
 }
 
