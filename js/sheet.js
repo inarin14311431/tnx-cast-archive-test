@@ -33,12 +33,13 @@ import { buildStylePresentation } from "./sheet-style-presentation.js?v=1";
 import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
 import { resolveStyleBaselineValue } from "./sheet-baseline-adjustment.js?v=1";
 import { buildNewCharacterSkills } from "./sheet-new-character-state.js?v=1";
-import { chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";
+import { countGeneralSkillColumns, chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";
 import { resolveSkillInputState } from "./sheet-skill-level-suit-state.js?v=1";
 import { buildStyleSaveRows } from "./sheet-style-save-projection.js?v=1";
 import { buildAbilitySaveSnapshot, buildCsSaveSnapshot } from "./sheet-ability-save-projection.js?v=1";
 import { collectCharacterInputSnapshot, applyCharacterInputSnapshot } from "./sheet-character-input-snapshot.js?v=1";
-import { collectAbilityInputSnapshot } from "./sheet-ability-input-snapshot.js?v=1";
+import { collectAbilityInputSnapshot, applyAbilityInputSnapshot } from "./sheet-ability-input-snapshot.js?v=1";
+import { collectStyleInputSnapshot, applyStyleInputSnapshot } from "./sheet-style-input-snapshot.js?v=1";
 import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
 
 const $ = selector => document.querySelector(selector);
@@ -232,13 +233,7 @@ function addStyleSeparator() {
 window.TNXSheetEditor = { ...(window.TNXSheetEditor || {}), addStyleSeparator };
 
 function generalColumnCounts() {
-  const leftRows = document.querySelectorAll("#general-skills .general-skill-column--first tbody tr").length;
-  const rightRows = document.querySelectorAll("#general-skills .general-skill-column--second tbody tr").length;
-  if (leftRows || rightRows) return { left: leftRows, right: rightRows };
-  return skills.filter(item => item.category === "general" && item._slotColumn).reduce((counts, item) => {
-    counts[item._slotColumn === "left" ? "left" : "right"] += 1;
-    return counts;
-  }, { left: 0, right: 0 });
+  return countGeneralSkillColumns(mergedGeneral());
 }
 
 function addGeneralSkill() {
@@ -287,22 +282,10 @@ async function loadCharacter(publicId) {
 
 function fillCharacter(data) {
   applyCharacterInputSnapshot({ root: document, data, structuredFields: STRUCTURED_FIELDS });
-  for (let i = 1; i <= 3; i++) {
-    $(`#style-${i}`).value = data[`style_${i}`] || "";
-    $(`#style-${i}-mark`).value = data[`style_${i}_mark`] || "";
-    const attribute = $(`#style-${i}-attribute`); if (attribute) attribute.value = data[`style_${i}_attribute`] || "";
-    toggleAttribute(i);
-  }
+  applyStyleInputSnapshot({ root: document, data });
+  for (let i = 1; i <= 3; i++) toggleAttribute(i);
   calculateBaselines();
-  for (const [key] of ABILITIES) {
-    $(`#${key}-base`).value = Number(data[`${key}_base`] ?? data[`${key}_value`] ?? styleBaseline[key] ?? 0);
-    $(`#${key}-mod`).value = Number(data[`${key}_gear`] || 0) + Number(data[`${key}_manual`] || 0);
-    const controlKey = `${key}-control`;
-    $(`#${controlKey}-base`).value = Number(data[`${key}_control_base`] ?? data[`${key}_control`] ?? styleBaseline[controlKey] ?? 0);
-    $(`#${controlKey}-mod`).value = Number(data[`${key}_control_gear`] || 0) + Number(data[`${key}_control_manual`] || 0);
-  }
-  $("#cs-base").value = data.cs_base ?? data.cs ?? 0;
-  $("#cs-mod").value = Number(data.cs_gear || 0) + Number(data.cs_manual || 0);
+  applyAbilityInputSnapshot({ root: document, abilities: ABILITIES, data, baselines: styleBaseline });
   updateDivines(false);
 }
 
@@ -326,11 +309,7 @@ function toggleAttribute(i) {
 }
 
 function currentStyleSlots() {
-  return [1, 2, 3].map(i => ({
-    name: $(`#style-${i}`).value,
-    mark: $(`#style-${i}-mark`).value,
-    attribute: $(`#style-${i}-attribute`)?.value || ""
-  }));
+  return collectStyleInputSnapshot({ root: document });
 }
 
 function calculateBaselines() {
