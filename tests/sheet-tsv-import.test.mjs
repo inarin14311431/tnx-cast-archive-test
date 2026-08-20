@@ -4,7 +4,8 @@ import { readFile } from "node:fs/promises";
 import {
   parseSheetTsv,
   buildStyleSkillTsvRow,
-  buildOutfitTsvRow
+  buildOutfitTsvRow,
+  resolveImportedDefense
 } from "../js/sheet-tsv-import.js";
 
 test("TSV parser preserves legacy header and escaped-newline behavior", () => {
@@ -28,12 +29,24 @@ test("SKD TSV row transformation preserves base identity and style-kind fallback
   assert.equal(buildStyleSkillTsvRow({ "種別": "通常" }).skill_kind, "normal");
 });
 
+test("OFC defense import prefers explicit SPI and falls back to combined defense", () => {
+  assert.deepEqual(resolveImportedDefense({ protecS: "4", protecP: "3", protecI: "2", defense: "9/9/9" }), {
+    defense_s: "4", defense_p: "3", defense_i: "2"
+  });
+  assert.deepEqual(resolveImportedDefense({ defense: "3/2/1" }), {
+    defense_s: "3", defense_p: "2", defense_i: "1"
+  });
+  assert.deepEqual(resolveImportedDefense({ protectionS: "6", defenseP: "5", I: "4" }), {
+    defense_s: "6", defense_p: "5", defense_i: "4"
+  });
+});
+
 test("OFC TSV row transformation preserves canonical base and structured detail mappings", () => {
   const base = { _key: "outfit-key", sort_order: 7, category: "other" };
   const result = buildOutfitTsvRow({
     target: "armours", name: "鎧", purchase: "5", permanent: "2",
     concealA: "12", concealB: "-1", attack: "P+1", range: "近", part: "スーツ",
-    control: "-2", electrical_control: "15", protecS: "3", protecP: "2", protecI: "1",
+    control: "-2", electrical_control: "15", defense: "3/2/1",
     page: "123", notes: "説明"
   }, { base });
   assert.deepEqual(result, {
@@ -66,14 +79,14 @@ test("OFC TSV row transformation preserves canonical base and structured detail 
   for (const [target, category] of aliases) assert.equal(buildOutfitTsvRow({ target }).category, category);
 });
 
-test("expanded OFC importer writes canonical S/P/I controls instead of description-only fallback", async () => {
+test("expanded OFC importer stores canonical SPI in state before async detail controls exist", async () => {
   const source = await readFile(new URL("../js/tsv-import-guide.js", import.meta.url), "utf8");
-  assert.match(source, /defense_s:\s*data\.protecS/);
-  assert.match(source, /defense_p:\s*data\.protecP/);
-  assert.match(source, /defense_i:\s*data\.protecI/);
-  assert.match(source, /\[data-ofc=\\?"\$\{field\}\\?"\]/);
-  assert.match(source, /electronic_control:\s*data\.electrical_control/);
-  assert.match(source, /page_number:\s*data\.page/);
+  assert.match(source, /function resolveOFCDefense/);
+  assert.match(source, /split\(\/\[\\\/／\]\//);
+  assert.match(source, /TNXOutfitOFCState\?\.setDetails\?\.\(key, detailValues\)/);
+  assert.match(source, /defense_s:/);
+  assert.match(source, /defense_p:/);
+  assert.match(source, /defense_i:/);
 });
 
 test("classic editor delegates TSV parsing and row mapping to a DOM-free module", async () => {
