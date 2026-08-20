@@ -88,6 +88,13 @@ test("ability feature keeps style baselines, breakdown display, CS and coordinat
   assert.match(ability, /cs_base/);
 });
 
+test("mobile general skill experience fallback matches PC proper-skill inference", () => {
+  assert.match(exp, /function inferGeneralKind\(name,category,storedKind=""\)/);
+  assert.match(exp, /category!=="general"\)return "proper"/);
+  assert.match(exp, /includes\("："\)\?"proper":"general"/);
+  assert.match(exp, /kind=inferGeneralKind\(name,category,meta\.kind\)/);
+});
+
 test("snapshot feature keeps create, restore, delete and dirty-state safeguards", () => {
   assert.match(snapshots, /MAX_SNAPSHOTS=10/);
   assert.match(snapshots, /create_character_snapshot/);
