@@ -45,11 +45,9 @@ test("旧JSON取込はパーソナル・ライフパスと★取得技能を反�
   await expect(page.locator("#life-path-origin")).toHaveValue("化学汚染地");
   await expect(page.locator("#life-path-experience")).toHaveValue("企業");
   await expect(page.locator("#life-path-encounter")).toHaveValue("ビジネス");
-  await expect(page.locator("#profile")).toContainText("取込プロフィール");
-  await expect(page.locator("#profile")).toContainText("出身：N◎VA");
+  await expect(page.locator("#profile")).toHaveValue(/取込プロフィール/);
+  await expect(page.locator("#profile")).toHaveValue(/出身：N◎VA/);
 
-  const shooting = page.locator('#general-skills tr[data-skill-key]').filter({
-    has: page.locator('[data-f="name"][value="射撃"]')
-  }).first();
+  const shooting = page.locator('#general-skills tr[data-skill-key]:has(input[data-f="name"][value="射撃"])').first();
   await expect(shooting.locator('[data-f="free_level"]')).toHaveValue("1");
 });
