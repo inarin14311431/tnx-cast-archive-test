@@ -17,7 +17,7 @@ test("転記画面の更新先URLは更新モードだけ表示される", async
   expect(characterSheetsRequests).toEqual([]);
 });
 
-test("データ転記ダイアログはiframe内にフォーカスがあってもEscapeで閉じる", async ({ page }) => {
+test("保存したPOST転記ダイアログはiframe内にフォーカスがあってもEscapeで閉じる", async ({ page }) => {
   await page.goto("/tests/e2e/fixtures/direct-transfer-dialog.html");
   await page.getByRole("button", { name: "データ転記" }).click();
 
@@ -31,4 +31,13 @@ test("データ転記ダイアログはiframe内にフォーカスがあって�
   await sourceInput.press("Escape");
 
   await expect(dialog).toBeHidden();
+});
+
+test("通常キャスト転記はBM式を表示しPOSTトリガーを除去する", async ({ page }) => {
+  await page.goto("/tests/e2e/fixtures/bookmarklet-transfer-mode.html?id=TNX-E2E");
+
+  await expect(page.locator("html")).toHaveAttribute("data-transfer-mode", "bookmarklet");
+  await expect(page.locator("#direct-transfer-button")) .toHaveCount(0);
+  await expect(page.getByRole("button", { name: /転記TSV/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /転記BM/ })).toBeVisible();
 });
