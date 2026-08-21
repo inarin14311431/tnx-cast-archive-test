@@ -1,3 +1,5 @@
+import { initialGeneralSkillSuit } from "./general-skill-catalog.js?v=2";
+
 const SUITS = ["reason", "passion", "life", "mundane"];
 const MARKS = ["♠", "♣", "♥", "♦"];
 const DEFAULT_KIND_LABELS = {
@@ -75,12 +77,19 @@ function skillRow(skill, detail, categoryRows, context) {
   const nameControl = skill.category === "style"
     ? `<textarea data-f="name" rows="1" aria-label="名称">${esc(skill.name)}</textarea>`
     : `<input data-f="name" value="${esc(skill.name)}">`;
+  const requiredSuit = skill.category === "general" ? initialGeneralSkillSuit(skill.name) : "";
+  const minimumLevel = requiredSuit ? 1 : 0;
+  const renderedLevel = Math.max(minimumLevel, Number(skill.level) || 0);
 
   return `<tr data-skill-key="${esc(skill._key)}"${slotAttribute}>
-    <td>${nameControl}<input data-f="free_level" type="hidden" value="${Math.min(Math.max(Number(skill.free_level) || 0, 0), Math.max(Number(skill.level) || 0, 0))}"></td>
+    <td>${nameControl}<input data-f="free_level" type="hidden" value="${Math.min(Math.max(Number(skill.free_level) || 0, 0), renderedLevel)}"></td>
     <td><select data-f="skill_kind">${kinds.map(value => `<option value="${value}" ${skill.skill_kind === value ? "selected" : ""}>${esc(labels[value] ?? value)}</option>`).join("")}</select></td>
-    <td><input data-f="level" type="number" min="0" value="${Number(skill.level) || 0}"></td>
-    ${SUITS.map((suit, index) => `<td class="suit-cell"><label class="suit-check"><input data-f="${suit}" type="checkbox" ${skill[suit] ? "checked" : ""}><span>${MARKS[index]}</span></label></td>`).join("")}
+    <td><input data-f="level" type="number" min="${minimumLevel}" value="${renderedLevel}"></td>
+    ${SUITS.map((suit, index) => {
+      const locked = suit === requiredSuit;
+      const checked = locked || Boolean(skill[suit]);
+      return `<td class="suit-cell"><label class="suit-check${locked ? " is-locked" : ""}"${locked ? ' title="初期取得スート"' : ""}><input data-f="${suit}" type="checkbox" ${checked ? "checked" : ""} ${locked ? "disabled data-initial-general-suit=\"1\"" : ""}><span>${MARKS[index]}</span></label></td>`;
+    }).join("")}
     ${detail ? `<td><textarea data-f="description" rows="2">${esc(skill.description || skill.timing || "")}</textarea></td>` : ""}
     <td>${rowActions(skill, ordered, categoryRows)}</td>
   </tr>`;
