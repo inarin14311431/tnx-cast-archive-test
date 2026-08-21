@@ -2,6 +2,7 @@ import { supabase } from "./supabase-client.js";
 import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 import { moveAdjacentRow } from "./sheet-row-collection-state.js?v=2";
 import { GENERAL_MOBILE_ORDER, MUTABLE_GENERAL_PREFIXES } from "./general-skill-catalog.js?v=1";
+import { normalizeStyleSkillRow } from "./sheet-mobile-style-normalizer.js?v=1";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -11,6 +12,7 @@ const SUITS = [["reason","♠","♤"],["passion","♣","♧"],["life","♥","♡
 const STYLE_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const STYLE_SEPARATOR = "[[STYLE_SEPARATOR]]";
 const DETAIL_FIELDS = ["skill","limit","timing","target","range","difficulty","confrontation","description","page"];
+const STYLE_COLUMN_FIELDS = ["timing","target","range","difficulty","confrontation"];
 const CATEGORY_LABELS = {general:"一般技能",social:"社会",connection:"コネ"};
 const KIND_LABELS = {normal:"通常",secret:"秘技",ultimate:"奥義",direction:"演出",none:"なし"};
 
@@ -198,16 +200,24 @@ function renderGeneral() {
 }
 
 function parseDetail(item) {
-  const data = Object.fromEntries(DETAIL_FIELDS.map(key => [key, ""]));
-  const text = String(item?.description || "");
-  if (text.startsWith(STYLE_PREFIX)) {
-    try { return { ...data, ...JSON.parse(text.slice(STYLE_PREFIX.length).trim()) }; } catch {}
-  }
-  return data;
+  return normalizeStyleSkillRow(item);
 }
 
 function encodeDetail(data) {
   return STYLE_PREFIX + "\n" + JSON.stringify(Object.fromEntries(DETAIL_FIELDS.map(key => [key, String(data[key] ?? "")] )));
+}
+
+function assignStyleControl(control, value) {
+  if (!control) return;
+  const text = String(value ?? "");
+  if (control.tagName === "SELECT" && text && ![...control.options].some(option => option.value === text)) {
+    const option = document.createElement("option");
+    option.value = text;
+    option.textContent = text;
+    option.dataset.mobileStyleExistingValue = "1";
+    control.append(option);
+  }
+  control.value = text;
 }
 
 function styleCard(item) {
@@ -301,6 +311,11 @@ function deleteGeneral() {
   markDirty();
 }
 
+function styleMessage(text = "") {
+  const message = $("#mobile-style-message");
+  if (message) message.textContent = text;
+}
+
 function openStyle(id) {
   const item = byId(id);
   if (!item || isSeparator(item)) return;
@@ -312,11 +327,12 @@ function openStyle(id) {
   $("#mobile-style-level").value = String(Math.max(0, num(item.level)));
   for (const [key] of SUITS) $("#mobile-style-suit-" + key).checked = Boolean(item[key]);
   for (const key of DETAIL_FIELDS) {
-    const input = document.querySelector(`[data-mobile-style-detail="${key}"]`);
-    if (input) input.value = detail[key] || "";
+    assignStyleControl(document.querySelector(`[data-mobile-style-detail="${key}"]`), detail[key]);
   }
+  styleMessage("");
   $("#mobile-style-delete").hidden = false;
   $("#style-skill-dialog")?.showModal();
+  requestAnimationFrame(() => $("#mobile-style-name")?.focus());
 }
 
 function syncStyleModal(source = "level", changedKey = "") {
@@ -336,26 +352,46 @@ function syncStyleModal(source = "level", changedKey = "") {
 
 function commitStyle() {
   const item = byId(activeStyleId);
-  if (!item || isSeparator(item)) return;
+  if (!item || isSeparator(item)) return false;
+  const name = $("#mobile-style-name").value.trim();
+  if (!name) {
+    styleMessage("スタイル技能の名称を入力してください。");
+    $("#mobile-style-name")?.focus();
+    return false;
+  }
   const before = JSON.stringify(payload(item));
-  item.name = $("#mobile-style-name").value;
+  item.name = name;
   item.skill_kind = $("#mobile-style-kind").value || "normal";
   item.level = Math.max(0, num($("#mobile-style-level").value));
   for (const [key] of SUITS) item[key] = $("#mobile-style-suit-" + key).checked;
   normalizeSkillLevel(item, "close");
   const detail = {};
   for (const key of DETAIL_FIELDS) detail[key] = document.querySelector(`[data-mobile-style-detail="${key}"]`)?.value || "";
+  for (const key of STYLE_COLUMN_FIELDS) item[key] = detail[key] || "";
   item.description = encodeDetail(detail);
   if (before !== JSON.stringify(payload(item))) {
     dirtyIds.add(String(item.id));
     markDirty();
   }
   renderStyle();
+  return true;
 }
 
-function closeStyle() {
-  if (activeStyleId) commitStyle();
+function applyStyle() {
+  if (!activeStyleId || !commitStyle()) return;
   activeStyleId = "";
+  $("#style-skill-dialog")?.close();
+}
+
+function cancelStyle() {
+  const item = byId(activeStyleId);
+  if (item && isNew(item)) {
+    skills = skills.filter(row => String(row.id) !== String(item.id));
+    dirtyIds.delete(String(item.id));
+    renderStyle();
+  }
+  activeStyleId = "";
+  styleMessage("");
   $("#style-skill-dialog")?.close();
 }
 
@@ -363,13 +399,14 @@ function deleteStyle() {
   const item = byId(activeStyleId);
   if (!item) return;
   if (!confirm(`「${item.name || "名称未入力"}」を削除しますか？`)) return;
-  if (isNew(item)) skills = skills.filter(row => String(row.id) !== String(item.id));
+  const wasNew = isNew(item);
+  if (wasNew) skills = skills.filter(row => String(row.id) !== String(item.id));
   else deletedIds.add(String(item.id));
   dirtyIds.delete(String(item.id));
   activeStyleId = "";
   $("#style-skill-dialog")?.close();
   renderStyle();
-  markDirty();
+  if (!wasNew) markDirty();
 }
 
 function openSeparator(id) {
@@ -432,15 +469,14 @@ function moveStyleItem(id, direction) {
 function addSkill(category) {
   const item = blankSkill(category);
   skills.push(item);
+  if (category === "style") {
+    openStyle(item.id);
+    return;
+  }
   dirtyIds.add(String(item.id));
   markDirty();
-  if (category === "style") {
-    renderStyle();
-    openStyle(item.id);
-  } else {
-    renderGeneral();
-    openGeneral(item.id);
-  }
+  renderGeneral();
+  openGeneral(item.id);
 }
 
 function addSeparator() {
@@ -559,8 +595,17 @@ function bind() {
   }
 
   const styleDialog = $("#style-skill-dialog");
-  $("#style-skill-dialog-apply")?.remove();
-  styleDialog?.querySelector(".mobile-editor-dialog__header")?.classList.add("mobile-editor-dialog__header--close-only");
+  const styleHeader = styleDialog?.querySelector(".mobile-editor-dialog__header");
+  styleHeader?.classList.remove("mobile-editor-dialog__header--close-only");
+  styleHeader?.classList.add("mobile-editor-dialog__header--actions");
+  if (styleDialog && !$("#mobile-style-message")) {
+    const message = document.createElement("p");
+    message.id = "mobile-style-message";
+    message.className = "mobile-editor-policy-note";
+    message.setAttribute("role", "status");
+    message.setAttribute("aria-live", "polite");
+    styleDialog.querySelector(".mobile-editor-dialog__body")?.prepend(message);
+  }
   if (styleDialog && !$("#mobile-style-delete")) {
     const button = document.createElement("button");
     button.type = "button";
@@ -569,10 +614,11 @@ function bind() {
     button.textContent = "このスタイル技能を削除";
     styleDialog.querySelector(".mobile-editor-dialog__body")?.append(button);
   }
-  $("#style-skill-dialog-cancel")?.addEventListener("click", closeStyle);
+  $("#style-skill-dialog-cancel")?.addEventListener("click", cancelStyle);
+  $("#style-skill-dialog-apply")?.addEventListener("click", applyStyle);
   styleDialog?.addEventListener("cancel", event => {
     event.preventDefault();
-    closeStyle();
+    cancelStyle();
   });
   $("#mobile-style-delete")?.addEventListener("click", deleteStyle);
   $("#mobile-style-level")?.addEventListener("change", () => syncStyleModal("level"));
