@@ -22,7 +22,7 @@ test('consolidated card styling keeps theme-aware icon colors', () => {
 });
 
 test('account page loads only the consolidated cast-card stylesheet', () => {
-  assert.match(html, /account-action-hierarchy\.css\?v=5/);
+  assert.match(html, /account-action-hierarchy\.css\?v=6/);
   assert.doesNotMatch(html, /account-action-icons\.css/);
   assert.doesNotMatch(html, /account-mobile-compact\.css/);
   assert.ok(html.indexOf('account-action-icons.js?v=1') > html.indexOf('account.js?v=42'));
