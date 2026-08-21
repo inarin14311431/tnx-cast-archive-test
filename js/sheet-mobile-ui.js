@@ -11,6 +11,11 @@ const NAV_ITEMS=[
   ["#mobile-image-section","09 キャスト画像"]
 ];
 
+function refreshUiStylesheet(){
+  const link=document.querySelector("link[data-mobile-ui-style]");
+  if(link)link.href="./css-next/pages/sheet-mobile-ui.css?v=8";
+}
+
 function normalizeNav(){
   const nav=$(".mobile-sheet-nav");
   if(!nav)return;
@@ -114,6 +119,7 @@ function observeDeleteActions(){
 }
 
 function init(){
+  refreshUiStylesheet();
   removeObsoleteControls();
   ensureSaveStatus();
   addEditNotice();
