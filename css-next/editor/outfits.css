@@ -48,13 +48,6 @@
 .outfit-table :is(.outfit-table-head--manufacturer, .outfit-table-cell--manufacturer) { display: none !important; }
 .outfit-table :is(.outfit-table-head--description, .outfit-table-cell--description) { width: auto; min-width: 0; }
 
-/* Armor has 47.2% of percentage-based fixed columns plus the shared name/actions columns.
-   Make explanation the sole flexible remainder so the table always reaches the right edge. */
-.outfit-table-group--armor .outfit-table :is(.outfit-table-head--description, .outfit-table-cell--description) {
-  width: calc(52.8% - var(--outfit-name-column) - var(--row-action-column));
-  min-width: 0;
-}
-
 .outfit-table-group--armor tfoot :is(th, td) { text-align: center; vertical-align: middle; }
 .outfit-table-group--armor tfoot td { color: var(--color-accent); background: var(--color-accent-soft); font-weight: 800; }
 .outfit-table-group--armor tfoot td:first-child { color: var(--color-muted); font-size: .82rem; font-weight: 800; letter-spacing: .03em; }
