@@ -18,8 +18,14 @@ test("mobile combo section uses the same numbered heading style as other section
   assert.match(ux, /ensureNavLink\("#mobile-combos-section","07 コンボ"\)/);
 });
 
+test("mobile nav normalization is idempotent and cannot self-trigger the child-list observer", () => {
+  assert.match(ux, /if\(link\.textContent!==label\)link\.textContent=label/);
+  assert.doesNotMatch(ux, /\n  link\.textContent=label;\n/);
+  assert.match(ux, /observer\.observe\(document\.body,\{childList:true,subtree:true\}\)/);
+});
+
 test("active nav highlighting does not scroll the fully visible navigation", () => {
   const active = ux.match(/const activate=id=>\{[\s\S]*?\n  \};/)?.[0] || "";
   assert.doesNotMatch(active, /scrollIntoView/);
-  assert.match(app, /sheet-mobile-ux\.js\?v=[0-9-]+/);
+  assert.match(app, /sheet-mobile-ux\.js\?v=4/);
 });
