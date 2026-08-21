@@ -34,8 +34,22 @@ function removeObsoleteControls(){
   document.querySelectorAll(".mobile-sheet-section > header > small").forEach(node=>node.remove());
 }
 
+function ensureSaveStatus(){
+  if($("#mobile-save-status"))return;
+  const shell=$(".mobile-sheet-shell");
+  if(!shell)return;
+  const status=document.createElement("p");
+  status.id="mobile-save-status";
+  status.className="mobile-sheet-status";
+  status.dataset.state="saved";
+  status.setAttribute("role","status");
+  status.setAttribute("aria-live","polite");
+  status.textContent="保存済み";
+  shell.prepend(status);
+}
+
 function addEditNotice(){
-  const text="各項目はタップすると編集できます。モーダルは閉じると編集内容を反映し、画面下部の保存ボタンで確定します。";
+  const text="各項目はタップして編集できます。対応モーダルでは「反映」で確定、「キャンセル」で破棄できます。最後に画面下部の保存ボタンでデータを保存します。";
   const current=$("#mobile-edit-notice");
   if(current){current.textContent=text;return;}
   const status=$("#mobile-save-status");
@@ -101,6 +115,7 @@ function observeDeleteActions(){
 
 function init(){
   removeObsoleteControls();
+  ensureSaveStatus();
   addEditNotice();
   normalizeNav();
   document.addEventListener("click",confirmGeneralDelete,true);
