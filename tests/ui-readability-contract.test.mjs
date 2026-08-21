@@ -22,11 +22,12 @@ test("mobile cast gameplay text is promoted above legacy micro-text sizes", () =
   assert.match(mobileReadability, /\.mobile-core-skills \{ grid-template-columns: 1fr;/);
 });
 
-test("account cast cards keep compact two-row action hierarchy", () => {
-  assert.match(accountHtml, /account-action-hierarchy\.css\?v=3/);
+test("account cast cards use one consolidated responsive stylesheet", () => {
+  assert.match(accountHtml, /account-action-hierarchy\.css\?v=4/);
+  assert.doesNotMatch(accountHtml, /account-mobile-compact\.css/);
+  assert.doesNotMatch(accountHtml, /account-action-icons\.css/);
   assert.match(accountHierarchy, /\.owned-cast \{[\s\S]*display: grid;/);
   assert.match(accountHierarchy, /grid-template-columns: minmax\(230px, \.8fr\) minmax\(500px, 1\.35fr\)/);
-  assert.match(accountHierarchy, /\.owned-cast__links > a[\s\S]*min-height: 46px/);
-  assert.match(accountHierarchy, /\.owned-cast__management > a[\s\S]*min-height: 46px/);
+  assert.match(accountHierarchy, /min-height: 46px/);
   assert.match(accountHierarchy, /@media \(max-width: 767px\)[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
 });
