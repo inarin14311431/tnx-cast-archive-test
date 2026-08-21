@@ -13,7 +13,7 @@
 .outfit-table-title { margin: 0; color: var(--color-accent); font-size: .9rem; letter-spacing: .04em; }
 .outfit-table-empty { margin: 0; padding: 16px; color: var(--color-muted); text-align: center; }
 .outfit-table-scroll { width: 100%; min-width: 0; overflow-x: auto; }
-.outfit-table { width: 100%; min-width: 920px; border-collapse: collapse; table-layout: fixed; font-size: clamp(.74rem, .62vw, .9rem); }
+.outfit-table { --outfit-name-column: 150px; width: 100%; min-width: 920px; border-collapse: collapse; table-layout: fixed; font-size: clamp(.74rem, .62vw, .9rem); }
 .outfit-table :is(th, td) { box-sizing: border-box; height: 44px; padding: 4px 3px; overflow: hidden; border-right: 1px solid var(--color-border-muted); border-bottom: 1px solid var(--color-border-muted); vertical-align: middle; }
 .outfit-table th { height: 34px; color: var(--color-muted); background: var(--color-accent-soft); font: 700 .66rem/1.1 var(--font-data); text-align: center; white-space: normal; }
 .outfit-table td { color: var(--color-text); }
@@ -23,9 +23,9 @@
 .outfit-table-cell--actions, .outfit-table-head--actions { width: var(--row-action-column); min-width: var(--row-action-column); max-width: var(--row-action-column); }
 .outfit-table-cell--actions { text-align: center; }
 
-/* OFC実データの最大文字数を基準に、短い数値欄を詰めて解説へ幅を返す。名称は従来の11%を固定。 */
+/* OFC実データの最大文字数を基準に、短い数値欄を詰めて解説へ幅を返す。名称は全カテゴリで同じ固定幅。 */
 .outfit-table :is(.outfit-table-head--category, .outfit-table-cell--category) { width: 5.2%; }
-.outfit-table :is(.outfit-table-head--name, .outfit-table-cell--name) { width: 11%; }
+.outfit-table :is(.outfit-table-head--name, .outfit-table-cell--name) { width: var(--outfit-name-column); min-width: var(--outfit-name-column); max-width: var(--outfit-name-column); }
 .outfit-table :is(.outfit-table-head--purchase_value, .outfit-table-cell--purchase_value) { width: 3.4%; }
 .outfit-table :is(.outfit-table-head--experience_cost, .outfit-table-cell--experience_cost) { width: 4%; }
 .outfit-table :is(.outfit-table-head--concealment, .outfit-table-cell--concealment) { width: 4.2%; }
@@ -47,11 +47,6 @@
 .outfit-table :is(.outfit-table-head--page_number, .outfit-table-cell--page_number) { width: 4.5%; }
 .outfit-table :is(.outfit-table-head--manufacturer, .outfit-table-cell--manufacturer) { display: none !important; }
 .outfit-table :is(.outfit-table-head--description, .outfit-table-cell--description) { width: auto; min-width: 0; }
-
-/* Armor keeps the same name width as other categories and gives its spare width to explanation. */
-.outfit-table-group--armor .outfit-table :is(.outfit-table-head--description, .outfit-table-cell--description) {
-  width: 42%;
-}
 
 .outfit-table-group--armor tfoot :is(th, td) { text-align: center; vertical-align: middle; }
 .outfit-table-group--armor tfoot td { color: var(--color-accent); background: var(--color-accent-soft); font-weight: 800; }
