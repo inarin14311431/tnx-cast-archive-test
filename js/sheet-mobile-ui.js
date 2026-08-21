@@ -47,10 +47,55 @@ function addEditNotice(){
   status.after(notice);
 }
 
+function promoteDeleteAction(source){
+  if(!source?.matches?.(".mobile-editor-dialog .mobile-danger-action")||source.dataset.mobileDeleteProxy==="1")return;
+  const dialog=source.closest(".mobile-editor-dialog");
+  const body=dialog?.querySelector(".mobile-editor-dialog__body");
+  if(!body)return;
+  let proxy=body.querySelector(":scope > [data-mobile-delete-proxy='1']");
+  if(!proxy){
+    proxy=document.createElement("button");
+    proxy.type="button";
+    proxy.className="mobile-danger-action";
+    proxy.dataset.mobileDeleteProxy="1";
+    proxy.style.margin="0 0 12px";
+    proxy.addEventListener("click",()=>proxy._mobileDeleteSource?.click());
+    body.prepend(proxy);
+  }
+  proxy._mobileDeleteSource=source;
+  proxy.textContent=source.textContent;
+  proxy.hidden=source.hidden;
+  source.dataset.mobileDeleteSource="1";
+  source.style.display="none";
+  if(body.firstElementChild!==proxy)body.prepend(proxy);
+}
+
+function promoteDeleteActions(root=document){
+  if(root?.matches?.(".mobile-editor-dialog .mobile-danger-action"))promoteDeleteAction(root);
+  root?.querySelectorAll?.(".mobile-editor-dialog .mobile-danger-action:not([data-mobile-delete-proxy='1'])").forEach(promoteDeleteAction);
+}
+
+function observeDeleteActions(){
+  promoteDeleteActions();
+  const observer=new MutationObserver(mutations=>{
+    for(const mutation of mutations){
+      if(mutation.type==="attributes"){
+        if(mutation.target?.matches?.("[data-mobile-delete-source='1']"))promoteDeleteAction(mutation.target);
+        continue;
+      }
+      for(const node of mutation.addedNodes){
+        if(node.nodeType===Node.ELEMENT_NODE)promoteDeleteActions(node);
+      }
+    }
+  });
+  observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["hidden"]});
+}
+
 function init(){
   removeObsoleteControls();
   addEditNotice();
   normalizeNav();
+  observeDeleteActions();
   document.addEventListener("tnx:mobile-section-ready",normalizeNav);
 }
 

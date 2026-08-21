@@ -11,7 +11,7 @@ const features = await readFile(new URL("../js/sheet-features.js", import.meta.u
 test("outfit tables own armor defense calculation while alignment helper owns footer placement only", () => {
   assert.match(tables, /function updateArmorTotals\(section\)/);
   assert.match(tables, /data-armor-total/);
-  assert.match(armorAligner, /function alignArmorFooter\(\)/);
+  assert.match(armorAligner, /function alignArmorLayout\(\)/);
   assert.match(armorAligner, /dataset\.ofcHead === "defense_s"/);
   assert.doesNotMatch(armorAligner, /\[data-ofc="defense_\$\{key\}"\]|Number\(input\.value|totals\[key\]/);
 });

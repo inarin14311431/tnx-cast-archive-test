@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const html = await readFile(new URL("../sheet-mobile.html", import.meta.url), "utf8");
 const app = await readFile(new URL("../js/sheet-mobile-app.js", import.meta.url), "utf8");
 const profile = await readFile(new URL("../js/sheet-mobile.js", import.meta.url), "utf8");
+const ui = await readFile(new URL("../js/sheet-mobile-ui.js", import.meta.url), "utf8");
 
 test("mobile editor keeps required sections and footer controls", () => {
   for (const id of [
@@ -37,4 +38,12 @@ test("mobile runtime loads before feature modules", () => {
 test("mobile editor app owns feature bootstrapping through one module entry", () => {
   assert.match(html, /<script\b[^>]*type=["']module["'][^>]*src=["']\.\/js\/sheet-mobile-app\.js\?v=\d+["']/i);
   assert.doesNotMatch(html, /<script\b[^>]*src=["']\.\/js\/sheet-mobile-(?:profile|style|ability|skills|outfit|combos|snapshots|image)\.js/i);
+});
+
+test("mobile modal delete actions are promoted to the top without replacing feature delete handlers", () => {
+  assert.match(ui, /function promoteDeleteAction\(source\)/);
+  assert.match(ui, /body\.prepend\(proxy\)/);
+  assert.match(ui, /proxy\._mobileDeleteSource\?\.click\(\)/);
+  assert.match(ui, /source\.style\.display="none"/);
+  assert.match(ui, /attributeFilter:\["hidden"\]/);
 });
