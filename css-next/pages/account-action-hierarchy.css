@@ -1,12 +1,59 @@
-/* Cast-management action hierarchy: exactly two compact rows. */
+/* Compact cast-management card: identity on the left, two-row actions on the right. */
+body[data-page="account.html"] .owned-cast-list {
+  gap: 9px;
+}
+body[data-page="account.html"] .owned-cast {
+  display: grid;
+  grid-template-columns: minmax(230px, .8fr) minmax(500px, 1.35fr);
+  gap: 18px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, var(--color-border-muted));
+  border-left: 2px solid var(--color-accent);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--color-accent) 3%, var(--color-bg)),
+    color-mix(in srgb, var(--color-bg) 78%, transparent));
+}
+body[data-page="account.html"] .owned-cast__identity {
+  min-width: 0;
+  padding: 0 4px;
+}
+body[data-page="account.html"] .owned-cast__identity h3 {
+  margin: 2px 0 0;
+  font-size: 1.08rem;
+  line-height: 1.15;
+}
+body[data-page="account.html"] .owned-cast__handle {
+  margin: 0;
+  font-size: .74rem;
+  line-height: 1.2;
+}
+body[data-page="account.html"] .owned-cast__styles {
+  width: min(100%, 300px);
+  margin-top: 7px;
+}
+
 body[data-page="account.html"] .owned-cast__meta {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  align-items: stretch;
   gap: 5px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
 }
 body[data-page="account.html"] .owned-cast__status-row {
-  grid-column: 1;
+  display: flex;
+  min-height: 25px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+body[data-page="account.html"] .owned-cast__visibility {
+  font-size: .75rem;
+}
+body[data-page="account.html"] .owned-cast__serial {
+  padding: 5px 8px 4px;
+  font-size: .64rem;
 }
 
 /* Row 1: OPEN / EDIT SHEET / MOBILE EDIT */
@@ -14,14 +61,14 @@ body[data-page="account.html"] .owned-cast__links {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
-  align-items: stretch;
-  margin-top: 0;
+  width: 100%;
+  margin: 0;
 }
 body[data-page="account.html"] .owned-cast__links > a {
   min-width: 0;
   min-height: 46px;
+  padding: 6px 5px;
 }
-/* Old cached helper may still inject this legacy duplicate; never display it. */
 body[data-page="account.html"] .owned-cast__links > [data-mobile-sheet-link] {
   display: none !important;
 }
@@ -30,11 +77,10 @@ body[data-page="account.html"] .owned-cast__links > a:nth-child(1) {
   background: linear-gradient(180deg,
     color-mix(in srgb, var(--color-accent) 32%, var(--color-surface)),
     color-mix(in srgb, var(--color-accent) 13%, var(--color-bg)));
-  box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 body[data-page="account.html"] .owned-cast__links > a:nth-child(1) .action-label__jp {
   color: var(--color-accent);
-  font-size: .94rem;
 }
 body[data-page="account.html"] .owned-cast__links > a:nth-child(2),
 body[data-page="account.html"] .owned-cast__links > a:nth-child(3) {
@@ -42,65 +88,84 @@ body[data-page="account.html"] .owned-cast__links > a:nth-child(3) {
   background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
 }
 
-/* Row 2: ACTS at one-button width, compact management cluster on the right. */
+/* Row 2: ACTS uses the same height as primary actions; management stays compact. */
 body[data-page="account.html"] .owned-cast__management {
-  display: flex;
-  align-items: stretch;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 5px;
   width: 100%;
   margin: 0;
   padding: 0;
   border: 0;
-  opacity: .9;
-}
-body[data-page="account.html"] .owned-cast__management > a,
-body[data-page="account.html"] .owned-cast__management > button {
-  min-width: 0;
-  min-height: 36px;
+  opacity: .94;
 }
 body[data-page="account.html"] .owned-cast__management > a {
-  display: flex;
-  flex: 0 0 calc((100% - 10px) / 3);
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border: 1px solid var(--color-border-muted);
-  background: color-mix(in srgb, var(--color-bg) 68%, var(--color-surface));
+  display: grid;
+  min-width: 0;
+  min-height: 46px;
+  place-items: center;
+  gap: 2px;
+  padding: 6px 5px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 48%, var(--color-border-muted));
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
   color: inherit;
+  text-align: center;
   text-decoration: none;
 }
 body[data-page="account.html"] .owned-cast__management-label {
   display: flex;
-  min-width: 54px;
+  min-width: 48px;
   margin-left: auto;
   align-items: flex-end;
   justify-content: center;
   flex-direction: column;
-  padding: 2px 3px 2px 8px;
-  border-right: 1px dashed var(--color-border-muted);
+  padding: 0 5px 0 2px;
   color: var(--color-text-muted);
-  font-size: .62rem;
+  font-size: .58rem;
   line-height: 1.05;
-  letter-spacing: .08em;
+  letter-spacing: .06em;
   text-align: right;
   white-space: nowrap;
 }
 body[data-page="account.html"] .owned-cast__management-label small {
-  margin-top: 2px;
-  font-size: .42rem;
-  opacity: .65;
+  display: none;
 }
-body[data-page="account.html"] .owned-cast__management button {
-  flex: 0 0 58px;
+body[data-page="account.html"] .owned-cast__management {
+  position: relative;
+}
+body[data-page="account.html"] .owned-cast__management > .owned-cast__management-label,
+body[data-page="account.html"] .owned-cast__management > button {
+  grid-row: 1;
+}
+body[data-page="account.html"] .owned-cast__management > .owned-cast__management-label {
+  grid-column: 2;
+  justify-self: end;
+  margin-right: 122px;
+}
+body[data-page="account.html"] .owned-cast__management > button {
+  align-self: center;
+  min-width: 0;
+  width: 56px;
+  min-height: 34px;
   padding: 4px 3px;
 }
-body[data-page="account.html"] .owned-cast__management .action-label__jp {
-  font-size: .7rem;
+body[data-page="account.html"] .owned-cast__management > button[data-duplicate] {
+  grid-column: 2;
+  justify-self: end;
+  margin-right: 61px;
 }
-body[data-page="account.html"] .owned-cast__management .action-label__en {
-  font-size: .45rem;
-  opacity: .62;
+body[data-page="account.html"] .owned-cast__management > button[data-delete] {
+  grid-column: 2;
+  justify-self: end;
+}
+body[data-page="account.html"] .owned-cast__management .action-label__jp {
+  font-size: .72rem;
+}
+body[data-page="account.html"] .owned-cast__management > a .action-label__jp {
+  font-size: .86rem;
+}
+body[data-page="account.html"] .owned-cast__management > a .action-label__en {
+  font-size: .52rem;
 }
 body[data-page="account.html"] .owned-cast__management button .action-label__en {
   display: none;
@@ -110,57 +175,81 @@ body[data-page="account.html"] .owned-cast__management:hover {
   opacity: 1;
 }
 
-@media (max-width: 767px) {
-  body[data-page="account.html"] .owned-cast__links {
-    gap: 4px;
+@media (max-width: 860px) {
+  body[data-page="account.html"] .owned-cast {
+    grid-template-columns: minmax(190px, .72fr) minmax(420px, 1.28fr);
+    gap: 12px;
   }
-  body[data-page="account.html"] .owned-cast__links > a {
+  body[data-page="account.html"] .owned-cast__identity h3 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  body[data-page="account.html"] .owned-cast {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+  body[data-page="account.html"] .owned-cast__identity {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
+    align-items: end;
+  }
+  body[data-page="account.html"] .owned-cast__identity h3,
+  body[data-page="account.html"] .owned-cast__handle {
+    grid-column: 1;
+  }
+  body[data-page="account.html"] .owned-cast__styles {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 6px;
+  }
+  body[data-page="account.html"] .owned-cast__status-row {
+    min-height: 22px;
+  }
+  body[data-page="account.html"] .owned-cast__links > a,
+  body[data-page="account.html"] .owned-cast__management > a {
     min-height: 44px;
     padding-inline: 4px;
   }
   body[data-page="account.html"] .owned-cast__links .action-label__jp {
-    font-size: .73rem;
+    font-size: .72rem;
     white-space: nowrap;
   }
   body[data-page="account.html"] .owned-cast__links .action-label__en {
-    font-size: .46rem;
+    font-size: .44rem;
   }
-  body[data-page="account.html"] .owned-cast__management {
-    gap: 3px;
-  }
-  body[data-page="account.html"] .owned-cast__management > a {
-    flex-basis: calc((100% - 8px) / 3);
-    min-height: 36px;
-    padding-inline: 4px;
+  body[data-page="account.html"] .owned-cast__management > a .action-label__jp {
+    font-size: .7rem;
   }
   body[data-page="account.html"] .owned-cast__management > button {
-    flex-basis: 46px;
-    min-height: 36px;
+    width: 44px;
+    min-height: 34px;
   }
-  body[data-page="account.html"] .owned-cast__management-label {
-    min-width: 44px;
-    padding: 2px 2px 2px 5px;
-    font-size: .55rem;
+  body[data-page="account.html"] .owned-cast__management > .owned-cast__management-label {
+    margin-right: 96px;
+    font-size: .52rem;
   }
-  body[data-page="account.html"] .owned-cast__management-label small,
-  body[data-page="account.html"] .owned-cast__management .action-label__en {
-    display: none;
-  }
-  body[data-page="account.html"] .owned-cast__management .action-label__jp {
-    font-size: .62rem;
+  body[data-page="account.html"] .owned-cast__management > button[data-duplicate] {
+    margin-right: 48px;
   }
 }
 
 @media (max-width: 390px) {
-  body[data-page="account.html"] .owned-cast__links .action-label__en {
+  body[data-page="account.html"] .owned-cast__links .action-label__en,
+  body[data-page="account.html"] .owned-cast__management > a .action-label__en {
     display: none;
   }
-  body[data-page="account.html"] .owned-cast__management-label {
-    min-width: 38px;
-    font-size: .5rem;
-    letter-spacing: 0;
+  body[data-page="account.html"] .owned-cast__management > .owned-cast__management-label {
+    margin-right: 90px;
+    font-size: .48rem;
   }
   body[data-page="account.html"] .owned-cast__management > button {
-    flex-basis: 42px;
+    width: 42px;
+  }
+  body[data-page="account.html"] .owned-cast__management > button[data-duplicate] {
+    margin-right: 45px;
   }
 }
