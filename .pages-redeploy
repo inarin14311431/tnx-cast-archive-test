@@ -77,3 +77,4 @@ GitHub Pages redeploy trigger
 2026-08-21 fix outfit name column width across categories
 2026-08-21 let armor explanation consume remaining table width
 2026-08-21 measure armor explanation remainder after OFC columns render
+2026-08-21 improve mobile editor touch targets
