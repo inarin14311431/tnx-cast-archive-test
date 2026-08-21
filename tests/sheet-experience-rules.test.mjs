@@ -5,13 +5,11 @@ import {
   CREATION_ALLOWANCE,
   INITIAL_GENERAL_SKILL_COUNT,
   INITIAL_GENERAL_SKILL_COST,
-  INITIAL_SOCIAL_SKILL_LEVELS,
-  INITIAL_SOCIAL_SKILL_COST,
-  INITIAL_CONNECTION_SKILL_LEVELS,
-  INITIAL_CONNECTION_SKILL_COST,
+  INITIAL_SOCIAL_CONNECTION_SKILL_LEVELS,
+  INITIAL_SOCIAL_CONNECTION_SKILL_COST,
   INITIAL_SKILL_COST,
   paidFixedInitialGeneralLevel,
-  paidFlexibleInitialSkillCost,
+  paidSocialConnectionInitialCost,
   paidSkillLevel,
   resolveCanonicalCurrent,
   steppedExperienceCost
@@ -24,13 +22,11 @@ test("paid skill level excludes imported free levels without going negative", ()
   assert.equal(paidSkillLevel(2, -1), 2);
 });
 
-test("construction constants model 13 fixed General, 4 Social and 3 Connection levels", () => {
+test("construction constants model 13 fixed General plus shared 7 Social Connection levels", () => {
   assert.equal(INITIAL_GENERAL_SKILL_COUNT, 13);
   assert.equal(INITIAL_GENERAL_SKILL_COST, 130);
-  assert.equal(INITIAL_SOCIAL_SKILL_LEVELS, 4);
-  assert.equal(INITIAL_SOCIAL_SKILL_COST, 20);
-  assert.equal(INITIAL_CONNECTION_SKILL_LEVELS, 3);
-  assert.equal(INITIAL_CONNECTION_SKILL_COST, 15);
+  assert.equal(INITIAL_SOCIAL_CONNECTION_SKILL_LEVELS, 7);
+  assert.equal(INITIAL_SOCIAL_CONNECTION_SKILL_COST, 35);
   assert.equal(INITIAL_SKILL_COST, 165);
   assert.equal(CREATION_ALLOWANCE, 170);
 });
@@ -41,22 +37,12 @@ test("each fixed initial General skill gets exactly its first level free", () =>
   assert.equal(paidFixedInitialGeneralLevel(3), 2);
 });
 
-test("Social and Connection free pools are independent", () => {
-  assert.deepEqual(paidFlexibleInitialSkillCost({ social: 25, connection: 15 }), {
-    social: 5,
-    connection: 0,
-    total: 5
-  });
-  assert.deepEqual(paidFlexibleInitialSkillCost({ social: 5, connection: 30 }), {
-    social: 0,
-    connection: 15,
-    total: 15
-  });
-  assert.deepEqual(paidFlexibleInitialSkillCost({ social: 20, connection: 15 }), {
-    social: 0,
-    connection: 0,
-    total: 0
-  });
+test("Social and Connection share one flexible seven-level pool", () => {
+  assert.equal(paidSocialConnectionInitialCost({ social: 25, connection: 10 }), 0);
+  assert.equal(paidSocialConnectionInitialCost({ social: 20, connection: 15 }), 0);
+  assert.equal(paidSocialConnectionInitialCost({ social: 10, connection: 25 }), 0);
+  assert.equal(paidSocialConnectionInitialCost({ social: 30, connection: 10 }), 5);
+  assert.equal(paidSocialConnectionInitialCost({ social: 20, connection: 20 }), 5);
 });
 
 test("canonical current value wins over stale growth and falls back when absent", () => {
@@ -76,13 +62,13 @@ test("desktop and mobile calculators share exact initial experience rules", asyn
   const desktop = await readFile(new URL("../js/experience.js", import.meta.url), "utf8");
   const mobile = await readFile(new URL("../js/sheet-mobile-header-exp.js", import.meta.url), "utf8");
   assert.match(desktop, /general-skill-catalog\.js/);
-  assert.match(desktop, /sheet-experience-rules\.js\?v=5/);
+  assert.match(desktop, /sheet-experience-rules\.js\?v=6/);
   assert.match(desktop, /paidFixedInitialGeneralLevel/);
-  assert.match(desktop, /paidFlexibleInitialSkillCost\(\{social,connection\}\)/);
+  assert.match(desktop, /paidSocialConnectionInitialCost\(\{social,connection\}\)/);
   assert.match(mobile, /general-skill-catalog\.js/);
-  assert.match(mobile, /sheet-experience-rules\.js\?v=5/);
+  assert.match(mobile, /sheet-experience-rules\.js\?v=6/);
   assert.match(mobile, /paidFixedInitialGeneralLevel/);
-  assert.match(mobile, /paidFlexibleInitialSkillCost\(\{social,connection\}\)/);
+  assert.match(mobile, /paidSocialConnectionInitialCost\(\{social,connection\}\)/);
   assert.match(mobile, /current:character\[`\$\{key\}_base`\]/);
   assert.match(mobile, /current:character\[`\$\{key\}_control_base`\]/);
   assert.match(mobile, /select\("id,skill_kind,free_level"\)/);

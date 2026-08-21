@@ -20,17 +20,16 @@ test("mobile general skills are normalized to the PC skill-kind rule",()=>{
   assert.match(normalizer,/tnx:mobile-skill-kind-normalized/);
 });
 
-test("mobile experience gives one free level to each fixed General and separate Social/Connection pools",()=>{
+test("mobile experience gives one free level to each fixed General and a shared seven-level Social Connection pool",()=>{
   assert.match(mobileExp,/isInitialGeneralSkill/);
   assert.match(mobileExp,/paidFixedInitialGeneralLevel/);
-  assert.match(mobileExp,/paidFlexibleInitialSkillCost\(\{social,connection\}\)/);
-  assert.match(mobileExp,/sheet-experience-rules\.js\?v=5/);
-  assert.doesNotMatch(mobileExp,/socialConnection/);
+  assert.match(mobileExp,/paidSocialConnectionInitialCost\(\{social,connection\}\)/);
+  assert.match(mobileExp,/sheet-experience-rules\.js\?v=6/);
 });
 
 test("mobile app loads skill-kind normalization before experience calculation",()=>{
   const normalizeIndex=app.indexOf("sheet-mobile-skill-kind-normalizer.js");
   const expIndex=app.indexOf("sheet-mobile-header-exp.js");
   assert.ok(normalizeIndex>=0&&normalizeIndex<expIndex);
-  assert.match(app,/sheet-mobile-header-exp\.js\?v=20260821-2/);
+  assert.match(app,/sheet-mobile-header-exp\.js\?v=20260821-3/);
 });
