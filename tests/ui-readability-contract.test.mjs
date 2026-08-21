@@ -22,12 +22,11 @@ test("mobile cast gameplay text is promoted above legacy micro-text sizes", () =
   assert.match(mobileReadability, /\.mobile-core-skills \{ grid-template-columns: 1fr;/);
 });
 
-test("account cast actions keep hierarchy in two compact rows", () => {
-  assert.match(accountHtml, /account-action-hierarchy\.css\?v=2/);
-  assert.match(accountHierarchy, /\.owned-cast__links > a:nth-child\(1\)/);
-  assert.match(accountHierarchy, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(accountHierarchy, /\.owned-cast__management \{[\s\S]*display: flex;/);
-  assert.match(accountHierarchy, /\.owned-cast__management > a \{[\s\S]*flex: 0 0 calc\(\(100% - 10px\) \/ 3\);/);
-  assert.match(accountHierarchy, /\.owned-cast__management-label \{[\s\S]*margin-left: auto;/);
-  assert.match(accountHierarchy, /\.owned-cast__management-label \{[\s\S]*font-size: \.62rem;/);
+test("account cast cards keep compact two-row action hierarchy", () => {
+  assert.match(accountHtml, /account-action-hierarchy\.css\?v=3/);
+  assert.match(accountHierarchy, /\.owned-cast \{[\s\S]*display: grid;/);
+  assert.match(accountHierarchy, /grid-template-columns: minmax\(230px, \.8fr\) minmax\(500px, 1\.35fr\)/);
+  assert.match(accountHierarchy, /\.owned-cast__links > a[\s\S]*min-height: 46px/);
+  assert.match(accountHierarchy, /\.owned-cast__management > a[\s\S]*min-height: 46px/);
+  assert.match(accountHierarchy, /@media \(max-width: 767px\)[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
 });
