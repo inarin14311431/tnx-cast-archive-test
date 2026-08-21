@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
-import { CREATION_ALLOWANCE, INITIAL_GENERAL_SKILL_COST, paidSkillLevel, resolveCanonicalCurrent, steppedExperienceCost } from "./sheet-experience-rules.js?v=2";
+import { CREATION_ALLOWANCE, INITIAL_GENERAL_SKILL_COST, paidSkillLevel, resolveCanonicalCurrent, steppedExperienceCost } from "./sheet-experience-rules.js?v=3";
 const ABILITIES=["reason","passion","life","mundane"];
 const STYLE_COST={none:0,normal:10,secret:20,ultimate:50,direction:2};
 const KIND_FROM_LABEL={なし:"none",通常:"normal",秘技:"secret",奥義:"ultimate",演出:"direction"};
