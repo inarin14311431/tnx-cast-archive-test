@@ -1,0 +1,31 @@
+name: Bump exact experience cache
+
+on:
+  push:
+    branches:
+      - fix/exact-initial-skill-pools
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump desktop experience entry cache key
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's#experience.js?v=99#experience.js?v=101#g' sheet.html
+          rm -f .github/workflows/bump-exact-exp-cache.yml
+      - name: Commit patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Refresh exact experience calculator cache key'
+          git push
