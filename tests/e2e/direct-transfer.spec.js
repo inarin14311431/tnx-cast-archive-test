@@ -77,6 +77,6 @@ test("BMスタイル技能転記は転記元より多い既存行を削除して
   await expect(page.locator("#superhumanskills\\.0\\.expbase")).toHaveValue("20");
   await expect(page.locator("#superhumanskills\\.001\\.expbase")).toHaveValue("10");
   await expect(page.locator("#exp\\.superhumanskills")).toHaveValue("50");
-  await expect(page.getByDisplayValue("余剰技能C")).toHaveCount(0);
-  await expect(page.getByDisplayValue("余剰技能D")).toHaveCount(0);
+  await expect(page.locator('input[value="余剰技能C"]')).toHaveCount(0);
+  await expect(page.locator('input[value="余剰技能D"]')).toHaveCount(0);
 });
