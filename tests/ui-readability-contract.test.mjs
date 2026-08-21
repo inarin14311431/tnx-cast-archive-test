@@ -22,13 +22,12 @@ test("mobile cast gameplay text is promoted above legacy micro-text sizes", () =
   assert.match(mobileReadability, /\.mobile-core-skills \{ grid-template-columns: 1fr;/);
 });
 
-test("account cast actions keep hierarchy while management is inline", () => {
+test("account cast actions keep hierarchy in two compact rows", () => {
   assert.match(accountHtml, /account-action-hierarchy\.css\?v=2/);
   assert.match(accountHierarchy, /\.owned-cast__links > a:nth-child\(1\)/);
-  assert.match(accountHierarchy, /grid-template-columns: minmax\(0, 1\.25fr\) minmax\(0, 1fr\) minmax\(0, \.86fr\)/);
+  assert.match(accountHierarchy, /grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\) minmax\(0, 1fr\)/);
   assert.match(accountHierarchy, /\.owned-cast__management \{/);
-  assert.match(accountHierarchy, /grid-column: 2;/);
-  assert.match(accountHierarchy, /grid-row: 2;/);
-  assert.match(accountHierarchy, /grid-template-columns: repeat\(2, 52px\)/);
-  assert.match(accountHierarchy, /\.owned-cast__management-label \{\s*display: none;/);
+  assert.match(accountHierarchy, /grid-template-columns: minmax\(0, 1fr\) auto 58px 58px/);
+  assert.match(accountHierarchy, /\.owned-cast__management-label \{[\s\S]*font-size: \.62rem;/);
+  assert.doesNotMatch(accountHierarchy, /\.owned-cast__management-label \{\s*display: none;/);
 });
