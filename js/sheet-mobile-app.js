@@ -1,6 +1,6 @@
 import "./sheet-mobile-runtime.js?v=1";
 import "./sheet-mobile-save-coordinator.js?v=20260818-1";
-import "./sheet-mobile-ui.js?v=20260821-4";
+import "./sheet-mobile-ui.js?v=20260821-5";
 import "./sheet-mobile.js?v=7";
 import "./sheet-mobile-profile.js?v=20260821-3";
 import "./sheet-mobile-style.js?v=20260821-3";
@@ -17,3 +17,4 @@ import "./sheet-mobile-image.js?v=20260818-3";
 import "./sheet-mobile-import.js?v=20260818-4";
 import "./sheet-mobile-summary-text.js?v=20260818-3";
 import "./sheet-mobile-header-exp.js?v=20260821-1";
+import "./sheet-mobile-ux.js?v=1";
