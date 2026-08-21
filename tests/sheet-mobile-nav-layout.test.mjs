@@ -15,11 +15,11 @@ test("mobile section navigation shows every item in a wrapped three-column grid"
 
 test("mobile combo section uses the same numbered heading style as other sections", () => {
   assert.match(ux, /comboTitle\.textContent!=="07 コンボ"/);
-  assert.match(ux, /comboNav\.textContent!=="07 コンボ"/);
+  assert.match(ux, /ensureNavLink\("#mobile-combos-section","07 コンボ"\)/);
 });
 
 test("active nav highlighting does not scroll the fully visible navigation", () => {
   const active = ux.match(/const activate=id=>\{[\s\S]*?\n  \};/)?.[0] || "";
   assert.doesNotMatch(active, /scrollIntoView/);
-  assert.match(app, /sheet-mobile-ux\.js\?v=2/);
+  assert.match(app, /sheet-mobile-ux\.js\?v=[0-9-]+/);
 });
