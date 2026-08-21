@@ -11,8 +11,8 @@ test("all outfit categories share one fixed name column width", () => {
   assert.doesNotMatch(css, /outfit-table-group--armor[^\n]*outfit-table-head--name/);
 });
 
-test("armor does not force a category-specific description width", () => {
-  assert.doesNotMatch(css, /outfit-table-group--armor[\s\S]{0,160}outfit-table-head--description/);
-  assert.match(css, /outfit-table-head--description, \.outfit-table-cell--description\) \{ width: auto;/);
-  assert.match(index, /editor\/outfits\.css\?v=14/);
+test("armor explanation consumes the remaining table width", () => {
+  assert.match(css, /outfit-table-group--armor[\s\S]{0,240}outfit-table-head--description/);
+  assert.match(css, /width:\s*calc\(52\.8% - var\(--outfit-name-column\) - var\(--row-action-column\)\)/);
+  assert.match(index, /editor\/outfits\.css\?v=15/);
 });
