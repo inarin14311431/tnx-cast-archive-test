@@ -1,34 +1,65 @@
 (() => {
-  const ACTIVE_MODE = "bookmarklet";
-  const DIRECT_TRIGGER_SELECTOR = "[data-direct-transfer-trigger], #direct-transfer-button";
+  const ACTIVE_MODE = "post";
+  const POST_ADAPTER = "./direct-transfer-button-post.js?v=2";
+  const TRIGGER_SELECTOR = "[data-direct-transfer-trigger], #direct-transfer-button";
 
-  function removeInactivePostTriggers(root = document) {
-    if (root?.matches?.(DIRECT_TRIGGER_SELECTOR)) root.remove();
-    root?.querySelectorAll?.(DIRECT_TRIGGER_SELECTOR).forEach(node => node.remove());
+  function removeInactiveBookmarkletActions(root = document) {
+    root.querySelectorAll?.("#transfer-tsv-copy-button, #transfer-bookmarklet-copy-button").forEach(node => {
+      const wrapper = node.parentElement;
+      node.remove();
+      if (wrapper && wrapper !== document.body && !wrapper.children.length && !wrapper.textContent.trim()) wrapper.remove();
+    });
   }
 
-  function initializeBookmarkletMode() {
+  function ensureEditorTrigger() {
+    if (document.body?.dataset.page !== "sheet.html") return null;
+    const panel = document.querySelector(".exp-panel");
+    if (!panel) return null;
+    const existing = panel.querySelector(TRIGGER_SELECTOR);
+    if (existing) return existing;
+
+    const button = document.createElement("button");
+    button.id = "direct-transfer-button";
+    button.type = "button";
+    button.className = "direct-transfer-button sheet-post-transfer-button";
+    button.dataset.directTransferTrigger = "1";
+    button.innerHTML = "<span>データ転記</span><small>CHARACTER SHEETS / POST</small>";
+
+    const view = panel.querySelector("#cast-view-button");
+    if (view?.parentElement === panel && view.nextSibling) panel.insertBefore(button, view.nextSibling);
+    else panel.append(button);
+    return button;
+  }
+
+  function syncPostUi(root = document) {
+    removeInactiveBookmarkletActions(root);
+    ensureEditorTrigger();
+    window.TNXDirectTransfer?.sync?.(root);
+  }
+
+  async function initializePostMode() {
     document.documentElement.dataset.transferMode = ACTIVE_MODE;
-    delete window.TNXDirectTransfer;
-    removeInactivePostTriggers();
+    removeInactiveBookmarkletActions();
+    ensureEditorTrigger();
+
+    try {
+      await import(POST_ADAPTER);
+      syncPostUi();
+    } catch (error) {
+      console.error("POST transfer adapter failed to load", error);
+      return;
+    }
 
     const observer = new MutationObserver(mutations => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node.nodeType === Node.ELEMENT_NODE) removeInactivePostTriggers(node);
-        }
-      }
+      if (!mutations.some(mutation => mutation.addedNodes.length)) return;
+      queueMicrotask(() => syncPostUi());
     });
     observer.observe(document.body, { childList: true, subtree: true });
-
-    import("./transfer-tsv-export.js?v=1").catch(error => {
-      console.error("bookmarklet transfer adapter failed to load", error);
-    });
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeBookmarkletMode, { once: true });
+    document.addEventListener("DOMContentLoaded", initializePostMode, { once: true });
   } else {
-    initializeBookmarkletMode();
+    initializePostMode();
   }
 })();
