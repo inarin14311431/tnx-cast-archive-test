@@ -17,7 +17,7 @@ test("転記画面の更新先URLは更新モードだけ表示される", async
   expect(characterSheetsRequests).toEqual([]);
 });
 
-test("保存したPOST転記ダイアログはiframe内にフォーカスがあってもEscapeで閉じる", async ({ page }) => {
+test("POST転記ダイアログはiframe内にフォーカスがあってもEscapeで閉じる", async ({ page }) => {
   await page.goto("/tests/e2e/fixtures/direct-transfer-dialog.html");
   await page.getByRole("button", { name: "データ転記" }).click();
 
@@ -33,37 +33,36 @@ test("保存したPOST転記ダイアログはiframe内にフォーカスがあ�
   await expect(dialog).toBeHidden();
 });
 
-test("通常キャスト転記はBM式を表示しPOSTトリガーを除去する", async ({ page }) => {
+test("通常キャスト転記はPOSTモードで転記画面を開く", async ({ page }) => {
   await page.goto("/tests/e2e/fixtures/bookmarklet-transfer-mode.html?id=TNX-E2E");
 
-  await expect(page.locator("html")).toHaveAttribute("data-transfer-mode", "bookmarklet");
-  await expect(page.locator("#direct-transfer-button")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: /転記TSV/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /転記BM/ })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("data-transfer-mode", "post");
+  const trigger = page.locator("#direct-transfer-button");
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+
+  const dialog = page.locator("dialog.cast-transfer-dialog");
+  await expect(dialog).toBeVisible();
+  const frame = page.locator(".cast-transfer-dialog__frame");
+  await expect(frame).toHaveAttribute("src", /transfer\.html\?embed=1&id=TNX-E2E/);
+  await expect(page.getByRole("button", { name: /転記TSV/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /転記BM/ })).toHaveCount(0);
 });
 
-test("PC編集画面のBM転記は編集DOMからTSVとBMを生成する", async ({ page }) => {
+test("PC編集画面はPOST転記ボタンを1つ表示して転記画面を開く", async ({ page }) => {
   await page.goto("/tests/e2e/fixtures/bookmarklet-transfer-editor.html?id=TNX-E2E");
 
-  await expect(page.locator("html")).toHaveAttribute("data-transfer-mode", "bookmarklet");
-  const tsvButton = page.locator("#transfer-tsv-copy-button");
-  const bmButton = page.locator("#transfer-bookmarklet-copy-button");
-  await expect(tsvButton).toBeVisible();
-  await expect(bmButton).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("data-transfer-mode", "post");
+  const trigger = page.locator("#direct-transfer-button");
+  await expect(trigger).toHaveCount(1);
+  await expect(trigger).toContainText("データ転記");
+  await expect(page.locator("#transfer-tsv-copy-button")).toHaveCount(0);
+  await expect(page.locator("#transfer-bookmarklet-copy-button")).toHaveCount(0);
 
-  await tsvButton.click();
-  const tsv = await page.evaluate(() => window.__copiedText);
-  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\tbase\t0\tname\t転記テスト");
-  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\tstyle_skill\t0\tconfrontation\t回避");
-  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tcontrol\t-2");
-  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tprotecS\t3");
-  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tprotecP\t4");
-  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tprotecI\t5");
-
-  await bmButton.click();
-  const bookmarklet = await page.evaluate(() => window.__copiedText);
-  expect(bookmarklet).toMatch(/^javascript:/);
-  expect(bookmarklet).toContain("/js/tnx-transfer-bookmarklet.js?v=2");
+  await trigger.click();
+  const dialog = page.locator("dialog.cast-transfer-dialog");
+  await expect(dialog).toBeVisible();
+  await expect(page.locator(".cast-transfer-dialog__frame")).toHaveAttribute("src", /transfer\.html\?embed=1&id=TNX-E2E/);
 });
 
 test("BMスタイル技能転記は転記元より多い既存行を削除して経験点を一致させる", async ({ page }) => {
