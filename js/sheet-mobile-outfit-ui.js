@@ -39,7 +39,7 @@ export function ensureOutfitDialog() {
   const dialog = document.createElement("dialog");
   dialog.id = "mobile-outfit-dialog";
   dialog.className = "mobile-editor-dialog";
-  dialog.innerHTML = `<form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--close-only"><button id="mobile-outfit-close" type="button">閉じる</button><strong id="mobile-outfit-title">アウトフィット編集</strong></header><div class="mobile-editor-dialog__body"><div id="mobile-outfit-fields" class="mobile-outfit-editor"></div></div></form>`;
+  dialog.innerHTML = `<form method="dialog"><header class="mobile-editor-dialog__header mobile-editor-dialog__header--actions"><button id="mobile-outfit-cancel" type="button">キャンセル</button><strong id="mobile-outfit-title">アウトフィット編集</strong><button id="mobile-outfit-apply" type="button">反映</button></header><div class="mobile-editor-dialog__body"><p id="mobile-outfit-message" class="mobile-editor-policy-note" aria-live="polite"></p><div id="mobile-outfit-fields" class="mobile-outfit-editor"></div></div></form>`;
   document.body.append(dialog);
 }
 

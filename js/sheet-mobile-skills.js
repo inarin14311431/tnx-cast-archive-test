@@ -69,7 +69,9 @@ function canRename(item) {
   return mutableGeneralName(item);
 }
 
-function canDeleteGeneral(item) { return isNew(item); }
+function canDeleteGeneral(item) {
+  return Boolean(item) && (isNew(item) || item.category !== "general" || mutableGeneralName(item));
+}
 
 function blankSkill(category) {
   return {
@@ -289,8 +291,9 @@ function closeGeneral() {
 
 function deleteGeneral() {
   const item = byId(activeGeneralId);
-  if (!item || !isNew(item)) return;
-  skills = skills.filter(row => String(row.id) !== String(item.id));
+  if (!item || !canDeleteGeneral(item)) return;
+  if (isNew(item)) skills = skills.filter(row => String(row.id) !== String(item.id));
+  else deletedIds.add(String(item.id));
   dirtyIds.delete(String(item.id));
   activeGeneralId = "";
   $("#mobile-general-dialog")?.close();
