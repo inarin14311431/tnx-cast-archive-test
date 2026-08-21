@@ -24,8 +24,8 @@ test("direct transfer posts into the result iframe without automatic external na
   assert.doesNotMatch(script, /setInterval\s*\(/);
 });
 
-test("direct transfer dialog supports Escape from parent and same-origin iframe", async () => {
-  const script = await read("js/direct-transfer-button.js");
+test("preserved POST transfer dialog supports Escape from parent and same-origin iframe", async () => {
+  const script = await read("js/direct-transfer-button-post.js");
 
   assert.match(script, /event\.key !== "Escape"/);
   assert.match(script, /dialog\.addEventListener\("cancel"/);
