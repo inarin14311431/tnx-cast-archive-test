@@ -72,18 +72,18 @@ body[data-page="account.html"] .owned-cast__management > a {
 }
 body[data-page="account.html"] .owned-cast__management-label {
   display: flex;
-  min-width: 62px;
+  min-width: 54px;
   margin-left: auto;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   flex-direction: column;
-  padding: 2px 6px;
-  border-left: 1px dashed var(--color-border-muted);
+  padding: 2px 3px 2px 8px;
   border-right: 1px dashed var(--color-border-muted);
   color: var(--color-text-muted);
   font-size: .62rem;
   line-height: 1.05;
   letter-spacing: .08em;
+  text-align: right;
   white-space: nowrap;
 }
 body[data-page="account.html"] .owned-cast__management-label small {
@@ -138,8 +138,8 @@ body[data-page="account.html"] .owned-cast__management:hover {
     min-height: 36px;
   }
   body[data-page="account.html"] .owned-cast__management-label {
-    min-width: 48px;
-    padding-inline: 3px;
+    min-width: 44px;
+    padding: 2px 2px 2px 5px;
     font-size: .55rem;
   }
   body[data-page="account.html"] .owned-cast__management-label small,
@@ -156,7 +156,7 @@ body[data-page="account.html"] .owned-cast__management:hover {
     display: none;
   }
   body[data-page="account.html"] .owned-cast__management-label {
-    min-width: 42px;
+    min-width: 38px;
     font-size: .5rem;
     letter-spacing: 0;
   }
