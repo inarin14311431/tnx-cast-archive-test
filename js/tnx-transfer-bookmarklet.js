@@ -103,6 +103,7 @@
     await load(localResource("tnx-transfer-social-connection.js"));
     await load(localResource("tnx-transfer-style-skills.js"));
     await load(localResource("tnx-transfer-general-skills.js"));
+    await load(localResource("tnx-transfer-handle-repair.js"));
 
     startResponsibilityRepairs(window.TNXTransferRepairCommon.parse(window.__TNX_TRANSFER_TSV__));
 
