@@ -13,7 +13,7 @@ test("owned cast markup contains exactly one mobile editor action", () => {
 
 test("cast actions stay in two compact visual rows", () => {
   assert.match(css, /\.owned-cast__links[\s\S]*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(css, /\.owned-cast__management[\s\S]*display:\s*flex/);
-  assert.match(css, /\.owned-cast__management > a[\s\S]*flex:\s*0 0 calc\(\(100% - 10px\) \/ 3\)/);
-  assert.match(css, /\.owned-cast__management-label[\s\S]*margin-left:\s*auto/);
+  assert.match(css, /\.owned-cast__management[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 2fr\)/);
+  assert.match(css, /\.owned-cast__management > a[\s\S]*min-height:\s*46px/);
+  assert.match(css, /\.owned-cast__management > button[\s\S]*width:\s*56px/);
 });
