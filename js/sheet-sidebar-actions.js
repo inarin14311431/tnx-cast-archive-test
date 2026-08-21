@@ -4,10 +4,12 @@
     if (!panel || panel.dataset.tnxSidebarActionsInitialized === '1') return;
     panel.dataset.tnxSidebarActionsInitialized = '1';
 
-    // Export / transfer helpers belong to the public cast viewer.
-    const VIEWER_ONLY_ACTION = /ココフォリア|ユドナリウム|転記TSV|転記BM/;
+    // Viewer-specific VTT exports stay off the editor; bookmarklet transfer is shared with the editor.
+    const VIEWER_ONLY_ACTION = /ココフォリア|ユドナリウム/;
     const LABELS = {
       view: /キャストを閲覧/,
+      transferTsv: /転記TSV/,
+      transferBm: /転記BM/,
       import: /データ取込/,
       autofill: /SKD・OFC補完|補完/
     };
@@ -43,9 +45,11 @@
       const visibility = topLevelChild(document.querySelector('#visibility'));
       const save = topLevelChild(document.querySelector('#save-button'));
       const view = topLevelChild(document.querySelector('#cast-view-button') || findByLabel(LABELS.view));
+      const transferTsv = topLevelChild(document.querySelector('#transfer-tsv-copy-button') || findByLabel(LABELS.transferTsv));
+      const transferBm = topLevelChild(document.querySelector('#transfer-bookmarklet-copy-button') || findByLabel(LABELS.transferBm));
       const importAction = topLevelChild(document.querySelector('#legacy-import-open') || findByLabel(LABELS.import));
       const autofill = topLevelChild(findByLabel(LABELS.autofill));
-      const ordered = [visibility, save, view, importAction, autofill].filter(Boolean);
+      const ordered = [visibility, save, view, transferTsv, transferBm, importAction, autofill].filter(Boolean);
       if (!ordered.length) return false;
 
       const children = [...panel.children];
@@ -68,7 +72,7 @@
         const label = labelOf(element);
         let group = '';
         if (element.id === 'save-button' || /保存済み|未保存|保存中|保存失敗/.test(label)) group = 'save';
-        else if (/キャストを閲覧|データ取込|SKD・OFC補完/.test(label)) group = 'action';
+        else if (/キャストを閲覧|転記TSV|転記BM|データ取込|SKD・OFC補完/.test(label)) group = 'action';
 
         if (!group) {
           if (element.dataset.actionGroup) delete element.dataset.actionGroup;
