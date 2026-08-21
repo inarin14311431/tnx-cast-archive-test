@@ -12,6 +12,11 @@ test("iPhone幅で登録キャストカードが間延びしない", async ({ pa
   test.skip(await card.count() === 0, "登録キャストがないためスキップ");
   await expect(card).toBeVisible();
 
+  const links = card.locator(".owned-cast__links a");
+  await expect(links).toHaveCount(4);
+  await expect(card.locator('.owned-cast__links a[href*="#combos"]')).toHaveCount(0);
+  await expect(card.locator('[data-mobile-sheet-link="1"]')).toHaveCount(1);
+
   const layout = await card.evaluate(element => {
     const identity = element.querySelector(".owned-cast__identity");
     const meta = element.querySelector(".owned-cast__meta");
