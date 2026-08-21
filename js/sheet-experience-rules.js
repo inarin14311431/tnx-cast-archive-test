@@ -1,4 +1,7 @@
-export const INITIAL_GENERAL_SKILL_COST = 190;
+// Initial skill package: 13 levels of General skills (130 XP)
+// plus 7 levels of Social/Connection skills (35 XP) = 165 XP.
+// Character construction then grants 170 XP for further growth.
+export const INITIAL_GENERAL_SKILL_COST = 165;
 export const CREATION_ALLOWANCE = 170;
 
 export function numericValue(value) {
