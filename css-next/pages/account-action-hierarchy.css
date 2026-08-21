@@ -1,5 +1,5 @@
 /* Owned cast cards: compact identity + two-row action area.
-   This file owns desktop, mobile, management, and icon presentation for the card. */
+   This file owns desktop, mobile, management, icon, and interaction presentation for the card. */
 
 body[data-page="account.html"] .owned-cast-list {
   display: grid;
@@ -101,6 +101,50 @@ body[data-page="account.html"] .owned-cast__links > a:first-child {
 }
 body[data-page="account.html"] .owned-cast__links > [data-mobile-sheet-link] {
   display: none !important;
+}
+
+/* Explicit interaction feedback. Keep hover/focus theme-aware and layout-stable. */
+body[data-page="account.html"] .owned-cast :is(.owned-cast__links > a, .owned-cast__management > a, .owned-cast__management > button) {
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease;
+}
+body[data-page="account.html"] .owned-cast :is(.owned-cast__links > a, .owned-cast__management > a):is(:hover, :focus-visible) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-accent) 86%, var(--color-border-muted));
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 22%, transparent),
+    0 4px 14px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: color-mix(in srgb, var(--color-accent) 88%, var(--color-text));
+  outline: none;
+}
+body[data-page="account.html"] .owned-cast__links > a:first-child:is(:hover, :focus-visible) {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--color-accent) 42%, var(--color-surface)),
+    color-mix(in srgb, var(--color-accent) 19%, var(--color-bg)));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent),
+    0 4px 16px color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+body[data-page="account.html"] .owned-cast__management > button:is(:hover, :focus-visible) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, currentColor 68%, var(--color-border-muted));
+  background: color-mix(in srgb, currentColor 12%, var(--color-surface));
+  box-shadow: 0 3px 10px color-mix(in srgb, currentColor 14%, transparent);
+  outline: none;
+}
+body[data-page="account.html"] .owned-cast__management > button[data-delete]:is(:hover, :focus-visible) {
+  border-color: color-mix(in srgb, var(--color-danger) 82%, var(--color-border-muted));
+  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-surface));
+  box-shadow: 0 3px 12px color-mix(in srgb, var(--color-danger) 20%, transparent);
+}
+body[data-page="account.html"] .owned-cast :is(.owned-cast__links > a, .owned-cast__management > a, .owned-cast__management > button):active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 /* Theme-aware inline SVG icons */
