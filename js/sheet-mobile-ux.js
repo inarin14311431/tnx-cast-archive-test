@@ -13,7 +13,7 @@ function loadUxStyles(){
   if(document.querySelector("link[data-mobile-ux-style]"))return;
   const link=document.createElement("link");
   link.rel="stylesheet";
-  link.href="./css-next/pages/sheet-mobile-ux.css?v=1";
+  link.href="./css-next/pages/sheet-mobile-ux.css?v=2";
   link.dataset.mobileUxStyle="1";
   document.head.append(link);
 }
@@ -148,6 +148,13 @@ function moveVisibilityToProfile(){
   body.prepend(visibility);
 }
 
+function normalizeSectionLabels(){
+  const comboTitle=$("#mobile-combos-section > header h2");
+  if(comboTitle&&comboTitle.textContent!=="07 コンボ")comboTitle.textContent="07 コンボ";
+  const comboNav=$(".mobile-sheet-nav a[href='#mobile-combos-section']");
+  if(comboNav&&comboNav.textContent!=="07 コンボ")comboNav.textContent="07 コンボ";
+}
+
 function setupActiveNav(){
   const nav=$(".mobile-sheet-nav");
   if(!nav||!("IntersectionObserver" in window))return;
@@ -158,14 +165,14 @@ function setupActiveNav(){
     links.forEach(link=>{
       const active=link.getAttribute("href")===`#${id}`;
       link.classList.toggle("is-active",active);
-      if(active){link.setAttribute("aria-current","location");link.scrollIntoView({inline:"center",block:"nearest"});}
+      if(active)link.setAttribute("aria-current","location");
       else link.removeAttribute("aria-current");
     });
   };
   const observer=new IntersectionObserver(entries=>{
     const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
     if(visible)activate(visible.target.id);
-  },{rootMargin:"-118px 0px -58% 0px",threshold:[0,.15,.35,.6]});
+  },{rootMargin:"-72px 0px -58% 0px",threshold:[0,.15,.35,.6]});
   sections.forEach(section=>observer.observe(section));
 }
 
@@ -186,12 +193,14 @@ function init(){
   installAllExplicitActions();
   installReorderModes();
   moveVisibilityToProfile();
+  normalizeSectionLabels();
   setupActiveNav();
   syncSavingStatus();
   const observer=new MutationObserver(()=>{
     installAllExplicitActions();
     installReorderModes();
     moveVisibilityToProfile();
+    normalizeSectionLabels();
   });
   observer.observe(document.body,{childList:true,subtree:true});
 }

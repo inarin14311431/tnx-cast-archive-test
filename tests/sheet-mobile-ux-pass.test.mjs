@@ -37,11 +37,15 @@ test("new general skill cancel cleans the transient row without confirmation", (
   assert.match(ux, /restoreSaveVisual\(pendingGeneralSaveState\)/);
 });
 
-test("navigation is horizontal and keeps an active section visible", () => {
-  assert.match(css, /\.mobile-sheet-nav\{[\s\S]*display:flex/);
-  assert.match(css, /overflow-x:auto/);
+test("navigation shows all sections in a wrapped grid and keeps active highlighting", () => {
+  assert.match(css, /\.mobile-sheet-nav\{[\s\S]*display:grid/);
+  assert.match(css, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(css, /overflow:visible/);
+  assert.doesNotMatch(css, /overflow-x:auto/);
   assert.match(ux, /IntersectionObserver/);
   assert.match(ux, /aria-current/);
+  const activate = ux.match(/const activate=id=>\{[\s\S]*?\n  \};/)?.[0] || "";
+  assert.doesNotMatch(activate, /scrollIntoView/);
 });
 
 test("style skills and outfits hide reorder arrows outside reorder mode", () => {
