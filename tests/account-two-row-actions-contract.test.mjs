@@ -20,10 +20,10 @@ test('navigation accepts the mobile editor route', () => {
   assert.match(account, /\(cast\|sheet\|sheet-mobile\|acts\)/);
 });
 
-test('desktop action area stays exactly two compact rows', () => {
+test('desktop card uses compact identity plus two-row action layout', () => {
+  assert.match(css, /\.owned-cast \{[\s\S]*grid-template-columns:\s*minmax\(230px, \.8fr\) minmax\(500px, 1\.35fr\)/);
   assert.match(css, /\.owned-cast__links[\s\S]*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(css, /\.owned-cast__management[\s\S]*display:\s*flex/);
-  assert.match(css, /\.owned-cast__management > a[\s\S]*flex:\s*0 0 calc\(\(100% - 10px\) \/ 3\)/);
-  assert.match(css, /\.owned-cast__management-label[\s\S]*margin-left:\s*auto/);
-  assert.match(css, /\.owned-cast__management-label[\s\S]*font-size:\s*\.62rem/);
+  assert.match(css, /\.owned-cast__management[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 2fr\)/);
+  assert.match(css, /\.owned-cast__management > a[\s\S]*min-height:\s*46px/);
+  assert.match(css, /\.owned-cast__links > a[\s\S]*min-height:\s*46px/);
 });
