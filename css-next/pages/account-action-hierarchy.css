@@ -1,4 +1,4 @@
-/* Cast-management action hierarchy: two compact rows. */
+/* Cast-management action hierarchy: exactly two compact rows. */
 body[data-page="account.html"] .owned-cast__meta {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -12,14 +12,18 @@ body[data-page="account.html"] .owned-cast__status-row {
 /* Row 1: OPEN / EDIT SHEET / MOBILE EDIT */
 body[data-page="account.html"] .owned-cast__links {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
   align-items: stretch;
   margin-top: 0;
 }
 body[data-page="account.html"] .owned-cast__links > a {
   min-width: 0;
-  min-height: 48px;
+  min-height: 46px;
+}
+/* Old cached helper may still inject this legacy duplicate; never display it. */
+body[data-page="account.html"] .owned-cast__links > [data-mobile-sheet-link] {
+  display: none !important;
 }
 body[data-page="account.html"] .owned-cast__links > a:nth-child(1) {
   border-color: var(--color-accent);
@@ -38,10 +42,9 @@ body[data-page="account.html"] .owned-cast__links > a:nth-child(3) {
   background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
 }
 
-/* Row 2: ACTS | MANAGEMENT label | DUPLICATE | DELETE */
+/* Row 2: ACTS at one-button width, compact management cluster on the right. */
 body[data-page="account.html"] .owned-cast__management {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto 58px 58px;
+  display: flex;
   align-items: stretch;
   gap: 4px;
   width: 100%;
@@ -53,14 +56,15 @@ body[data-page="account.html"] .owned-cast__management {
 body[data-page="account.html"] .owned-cast__management > a,
 body[data-page="account.html"] .owned-cast__management > button {
   min-width: 0;
-  min-height: 38px;
+  min-height: 36px;
 }
 body[data-page="account.html"] .owned-cast__management > a {
   display: flex;
+  flex: 0 0 calc((100% - 10px) / 3);
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 5px 8px;
+  padding: 4px 8px;
   border: 1px solid var(--color-border-muted);
   background: color-mix(in srgb, var(--color-bg) 68%, var(--color-surface));
   color: inherit;
@@ -69,6 +73,7 @@ body[data-page="account.html"] .owned-cast__management > a {
 body[data-page="account.html"] .owned-cast__management-label {
   display: flex;
   min-width: 62px;
+  margin-left: auto;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -87,6 +92,7 @@ body[data-page="account.html"] .owned-cast__management-label small {
   opacity: .65;
 }
 body[data-page="account.html"] .owned-cast__management button {
+  flex: 0 0 58px;
   padding: 4px 3px;
 }
 body[data-page="account.html"] .owned-cast__management .action-label__jp {
@@ -106,7 +112,6 @@ body[data-page="account.html"] .owned-cast__management:hover {
 
 @media (max-width: 767px) {
   body[data-page="account.html"] .owned-cast__links {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
   }
   body[data-page="account.html"] .owned-cast__links > a {
@@ -121,11 +126,15 @@ body[data-page="account.html"] .owned-cast__management:hover {
     font-size: .46rem;
   }
   body[data-page="account.html"] .owned-cast__management {
-    grid-template-columns: minmax(0, 1fr) auto 46px 46px;
     gap: 3px;
   }
-  body[data-page="account.html"] .owned-cast__management > a,
+  body[data-page="account.html"] .owned-cast__management > a {
+    flex-basis: calc((100% - 8px) / 3);
+    min-height: 36px;
+    padding-inline: 4px;
+  }
   body[data-page="account.html"] .owned-cast__management > button {
+    flex-basis: 46px;
     min-height: 36px;
   }
   body[data-page="account.html"] .owned-cast__management-label {
@@ -133,14 +142,12 @@ body[data-page="account.html"] .owned-cast__management:hover {
     padding-inline: 3px;
     font-size: .55rem;
   }
-  body[data-page="account.html"] .owned-cast__management-label small {
+  body[data-page="account.html"] .owned-cast__management-label small,
+  body[data-page="account.html"] .owned-cast__management .action-label__en {
     display: none;
   }
   body[data-page="account.html"] .owned-cast__management .action-label__jp {
     font-size: .62rem;
-  }
-  body[data-page="account.html"] .owned-cast__management .action-label__en {
-    display: none;
   }
 }
 
@@ -148,12 +155,12 @@ body[data-page="account.html"] .owned-cast__management:hover {
   body[data-page="account.html"] .owned-cast__links .action-label__en {
     display: none;
   }
-  body[data-page="account.html"] .owned-cast__management {
-    grid-template-columns: minmax(0, 1fr) 44px 42px 42px;
-  }
   body[data-page="account.html"] .owned-cast__management-label {
-    min-width: 0;
+    min-width: 42px;
     font-size: .5rem;
     letter-spacing: 0;
+  }
+  body[data-page="account.html"] .owned-cast__management > button {
+    flex-basis: 42px;
   }
 }
