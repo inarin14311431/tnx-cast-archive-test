@@ -20,10 +20,11 @@ test("mobile general skills are normalized to the PC skill-kind rule",()=>{
   assert.match(normalizer,/tnx:mobile-skill-kind-normalized/);
 });
 
-test("mobile experience uses the shared 165-point initial skill allowance",()=>{
-  assert.match(mobileExp,/INITIAL_GENERAL_SKILL_COST/);
-  assert.match(mobileExp,/sheet-experience-rules\.js\?v=3/);
-  assert.match(mobileExp,/total-INITIAL_GENERAL_SKILL_COST/);
+test("mobile experience applies separate general and social/connection initial pools",()=>{
+  assert.match(mobileExp,/paidInitialSkillCost/);
+  assert.match(mobileExp,/socialConnection/);
+  assert.match(mobileExp,/sheet-experience-rules\.js\?v=4/);
+  assert.doesNotMatch(mobileExp,/total-INITIAL_GENERAL_SKILL_COST/);
 });
 
 test("mobile app loads skill-kind normalization before experience calculation",()=>{
