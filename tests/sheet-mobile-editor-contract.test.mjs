@@ -47,3 +47,11 @@ test("mobile modal delete actions are promoted to the top without replacing feat
   assert.match(ui, /source\.style\.display="none"/);
   assert.match(ui, /attributeFilter:\["hidden"\]/);
 });
+
+test("mobile general skill delete uses the same confirmation guard as other delete actions", () => {
+  assert.match(ui, /function confirmGeneralDelete\(event\)/);
+  assert.match(ui, /closest\?\.\("#mobile-general-delete"\)/);
+  assert.match(ui, /confirm\(`「\$\{name\}」を削除しますか？`\)/);
+  assert.match(ui, /stopImmediatePropagation\(\)/);
+  assert.match(ui, /addEventListener\("click",confirmGeneralDelete,true\)/);
+});

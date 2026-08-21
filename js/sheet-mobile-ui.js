@@ -47,6 +47,14 @@ function addEditNotice(){
   status.after(notice);
 }
 
+function confirmGeneralDelete(event){
+  if(!event.target?.closest?.("#mobile-general-delete"))return;
+  const name=$("#mobile-general-name")?.value.trim()||"名称未入力";
+  if(confirm(`「${name}」を削除しますか？`))return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
 function promoteDeleteAction(source){
   if(!source?.matches?.(".mobile-editor-dialog .mobile-danger-action")||source.dataset.mobileDeleteProxy==="1")return;
   const dialog=source.closest(".mobile-editor-dialog");
@@ -95,6 +103,7 @@ function init(){
   removeObsoleteControls();
   addEditNotice();
   normalizeNav();
+  document.addEventListener("click",confirmGeneralDelete,true);
   observeDeleteActions();
   document.addEventListener("tnx:mobile-section-ready",normalizeNav);
 }
