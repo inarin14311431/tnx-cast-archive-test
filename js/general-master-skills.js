@@ -6,10 +6,12 @@
  * - The built-in slot stays at its default position and cannot be deleted.
  * - The first saved specialization for each prefix occupies that built-in slot.
  * - Additional General skills are independent rows and remain deleteable.
+ * - Initial General skills stay at Lv1+ and keep their starting suit.
  * - This layer never rebuilds rows while the user is typing.
  */
 (async()=>{
-  const { GENERAL_MASTER_ROWS, MUTABLE_GENERAL_PREFIXES } = await import("./general-skill-catalog.js?v=1");
+  await import("./general-initial-skill-rules.js?v=1");
+  const { GENERAL_MASTER_ROWS, MUTABLE_GENERAL_PREFIXES } = await import("./general-skill-catalog.js?v=2");
   const masterNames = GENERAL_MASTER_ROWS.map(([name]) => name);
   const LEFT_MASTER = masterNames.slice(0, 8);
   const RIGHT_MASTER = masterNames.slice(8);
