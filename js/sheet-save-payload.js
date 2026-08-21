@@ -1,3 +1,5 @@
+import { initialGeneralSkillSuit } from "./general-skill-catalog.js?v=2";
+
 const ABILITY_KEYS = ["reason", "passion", "life", "mundane"];
 
 export function buildCharacterSavePayload({
@@ -69,6 +71,16 @@ export function buildSkillSavePayloads(skills = [], {
   styleSeparatorMarker = "[[STYLE_SEPARATOR]]"
 } = {}) {
   return skills
+    .map(item => {
+      if (item?.category !== "general") return item;
+      const requiredSuit = initialGeneralSkillSuit(item.name);
+      if (!requiredSuit) return item;
+      return {
+        ...item,
+        level: Math.max(1, Number(item.level || 0)),
+        [requiredSuit]: true
+      };
+    })
     .filter(item => Number(item?.level) > 0 && String(item?.name || "").trim())
     .map((item, index) => ({
       category: item.category,
