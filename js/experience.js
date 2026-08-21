@@ -1,5 +1,5 @@
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
-import { CREATION_ALLOWANCE, INITIAL_GENERAL_SKILL_COST, paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.js?v=2";
+import { CREATION_ALLOWANCE, INITIAL_GENERAL_SKILL_COST, paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.js?v=3";
 
 /* Single authoritative experience-point calculator. */
 (function(){
