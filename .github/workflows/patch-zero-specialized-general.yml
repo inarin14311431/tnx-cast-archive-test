@@ -1,0 +1,50 @@
+name: Patch zero-level specialized general import
+
+on:
+  push:
+    branches:
+      - fix/import-zero-specialized-general
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/import-zero-specialized-general
+      - name: Patch importer and add regression contract
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('js/sheet-import.js')
+          text = path.read_text()
+          needle = '''  const findGeneralRow=name=>{\n    const exact=findRow('一般技能',name);\n    if(exact)return exact;\n    const normalized=cleanName(name);\n    const prefix=GENERAL_SPECIALIZATION_PREFIXES.find(value=>normalized.startsWith(value));\n    return prefix?findRow('一般技能',prefix):null;\n  };\n\n  async function importGeneral(map,stats){\n    await clearRows(()=>skillRows('一般技能'),row=>!FIXED_GENERAL.has(rowName(row)));\n'''
+          replacement = '''  const findGeneralRow=name=>{\n    const exact=findRow('一般技能',name);\n    if(exact)return exact;\n    const normalized=cleanName(name);\n    const prefix=GENERAL_SPECIALIZATION_PREFIXES.find(value=>normalized.startsWith(value));\n    return prefix?findRow('一般技能',prefix):null;\n  };\n\n  async function resetSpecializedGeneralRows(){\n    for(const prefix of GENERAL_SPECIALIZATION_PREFIXES){\n      const row=skillRows('一般技能').find(candidate=>{\n        const name=rowName(candidate);\n        return (name===prefix||name.startsWith(prefix))&&!candidate.querySelector('[data-delete-skill]');\n      });\n      if(!row)continue;\n      await setSkillRow(row,{name:prefix,level:0,s:false,c:false,h:false,d:false,free_level:0},'proper');\n    }\n  }\n\n  async function importGeneral(map,stats){\n    await resetSpecializedGeneralRows();\n    await clearRows(()=>skillRows('一般技能'),row=>!FIXED_GENERAL.has(rowName(row)));\n'''
+          if needle not in text:
+              raise SystemExit('target importer block not found')
+          path.write_text(text.replace(needle, replacement, 1))
+
+          sheet = Path('sheet.html')
+          html = sheet.read_text()
+          if './js/sheet-import.js?v=102' not in html:
+              raise SystemExit('sheet-import cache key not found')
+          sheet.write_text(html.replace('./js/sheet-import.js?v=102', './js/sheet-import.js?v=103', 1))
+
+          test = Path('tests/import-zero-specialized-general-contract.test.mjs')
+          test.write_text('''import test from "node:test";\nimport assert from "node:assert/strict";\nimport { readFile } from "node:fs/promises";\n\nconst importer=await readFile(new URL("../js/sheet-import.js",import.meta.url),"utf8");\nconst sheet=await readFile(new URL("../sheet.html",import.meta.url),"utf8");\n\ntest("zero-level specialized general import clears stale fixed-slot specialization",()=>{\n  assert.match(importer,/async function resetSpecializedGeneralRows\\(\\)/);\n  assert.match(importer,/GENERAL_SPECIALIZATION_PREFIXES/);\n  assert.match(importer,/!candidate\\.querySelector\\('\\[data-delete-skill\\]'\\)/);\n  assert.match(importer,/name:prefix,level:0,s:false,c:false,h:false,d:false,free_level:0/);\n  assert.match(importer,/await resetSpecializedGeneralRows\\(\\);/);\n});\n\ntest("desktop and mobile iframe fetch the refreshed importer",()=>{\n  assert.match(sheet,/sheet-import\\.js\\?v=103/);\n});\n''')
+
+          Path('.github/workflows/patch-zero-specialized-general.yml').unlink()
+      - name: Commit patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Clear stale specialized general skills on zero-level import'
+          git push
