@@ -17,7 +17,7 @@ import {
   ensureOutfitStylesheet,
   ensureOutfitToolbar,
   renderOutfitCards
-} from "./sheet-mobile-outfit-ui.js?v=13";
+} from "./sheet-mobile-outfit-ui.js?v=14";
 
 const $ = selector => document.querySelector(selector);
 
@@ -99,11 +99,17 @@ function normalizeConfrontationOptionLabels() {
   }
 }
 
+function setOutfitMessage(text = "") {
+  const node = $("#mobile-outfit-message");
+  if (node) node.textContent = text;
+}
+
 function openEditor(id) {
   const item = outfits.find(row => String(row.id) === String(id));
   if (!item) return;
   activeId = String(item.id);
   activeDraft = cloneOutfit(item);
+  setOutfitMessage("");
   renderEditor();
   const dialog = $("#mobile-outfit-dialog");
   if (!dialog?.open) dialog?.showModal();
@@ -123,14 +129,12 @@ function addOutfit() {
   const maxOrder = outfits.length ? Math.max(...outfits.map(row => normalizeNumber(row.sort_order))) : -10;
   item.sort_order = maxOrder + 10;
   outfits.push(item);
-  dirtyIds.add(String(item.id));
-  markDirty();
-  render();
   openEditor(item.id);
 }
 
 function updateDraft(control) {
   if (!activeDraft) return;
+  setOutfitMessage("");
   const field = control.dataset.outfitField;
   const detail = control.dataset.outfitDetail;
   const transient = control.dataset.outfitTransient;
@@ -169,11 +173,32 @@ function commitDraft() {
   render();
 }
 
-function closeEditor() {
+function applyEditor() {
+  if (!activeDraft) {
+    $("#mobile-outfit-dialog")?.close();
+    return;
+  }
+  if (activeDraft._new && (!activeDraft.category || !String(activeDraft.name || "").trim())) {
+    setOutfitMessage("追加するアウトフィットは分類と名称を入力してください。");
+    return;
+  }
   commitDraft();
   activeId = "";
   activeDraft = null;
   $("#mobile-outfit-dialog")?.close();
+}
+
+function cancelEditor() {
+  const item = outfits.find(row => String(row.id) === String(activeId));
+  if (item?._new) {
+    outfits = outfits.filter(row => String(row.id) !== String(item.id));
+    dirtyIds.delete(String(item.id));
+  }
+  activeId = "";
+  activeDraft = null;
+  setOutfitMessage("");
+  $("#mobile-outfit-dialog")?.close();
+  render();
 }
 
 function stageDelete() {
@@ -181,8 +206,16 @@ function stageDelete() {
   if (!item) return;
   const label = activeDraft?.name || item.name || "名称未入力";
   if (!confirm(`「${label}」を削除しますか？`)) return;
-  if (item._new) outfits = outfits.filter(row => String(row.id) !== String(item.id));
-  else deletedIds.add(String(item.id));
+  if (item._new) {
+    outfits = outfits.filter(row => String(row.id) !== String(item.id));
+    dirtyIds.delete(String(item.id));
+    activeId = "";
+    activeDraft = null;
+    $("#mobile-outfit-dialog")?.close();
+    render();
+    return;
+  }
+  deletedIds.add(String(item.id));
   dirtyIds.delete(String(item.id));
   activeId = "";
   activeDraft = null;
@@ -234,10 +267,11 @@ function bindEvents() {
     const button = event.target.closest("[data-mobile-outfit]");
     if (button) openEditor(button.dataset.mobileOutfit);
   });
-  $("#mobile-outfit-close")?.addEventListener("click", closeEditor);
+  $("#mobile-outfit-apply")?.addEventListener("click", applyEditor);
+  $("#mobile-outfit-cancel")?.addEventListener("click", cancelEditor);
   $("#mobile-outfit-dialog")?.addEventListener("cancel", event => {
     event.preventDefault();
-    closeEditor();
+    cancelEditor();
   });
   $("#mobile-outfit-fields")?.addEventListener("input", event => {
     const control = event.target.closest("[data-outfit-field],[data-outfit-detail],[data-outfit-transient]");
