@@ -17,6 +17,21 @@ test("active cast transfer route uses the production bookmarklet adapter", async
   assert.match(exporter, /tnx-transfer-bookmarklet\.js\?v=2/);
 });
 
+test("desktop editor owns bookmarklet transfer through the shared router", async () => {
+  const features = await read("js/sheet-features.js");
+  const sidebar = await read("js/sheet-sidebar-actions.js");
+  const supabaseClient = await read("js/supabase-client.js");
+
+  assert.match(features, /import "\.\/direct-transfer-button\.js\?v=6"/);
+  assert.doesNotMatch(supabaseClient, /transfer-tsv-export\.js/);
+  assert.match(sidebar, /const VIEWER_ONLY_ACTION = \/ココフォリア\|ユドナリウム\//);
+  assert.match(sidebar, /transferTsv: \/転記TSV\//);
+  assert.match(sidebar, /transferBm: \/転記BM\//);
+  assert.match(sidebar, /#transfer-tsv-copy-button/);
+  assert.match(sidebar, /#transfer-bookmarklet-copy-button/);
+  assert.match(sidebar, /キャストを閲覧\|転記TSV\|転記BM\|データ取込/);
+});
+
 test("production bookmarklet exporter keeps armor control and SPI mapping", async () => {
   const exporter = await read("js/transfer-tsv-export.js");
 
