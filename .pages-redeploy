@@ -72,3 +72,4 @@ GitHub Pages redeploy trigger
 2026-08-20 bump armor total alignment cache contract
 2026-08-20 use shared general skill catalog in layout helper
 2026-08-20 remove export module dependency cycles
+2026-08-21 restore 165 XP initial skill package accounting
