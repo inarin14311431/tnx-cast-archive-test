@@ -16,7 +16,7 @@
 @import url("./components/panel.css");
 @import url("./components/table.css");
 @import url("./components/row-actions.css");
-@import url("./components/dialog.css");
+@import url("./components/dialog.css?v=2");
 @import url("./components/status.css");
 @import url("./components/help.css?v=1");
 @import url("./components/global-theme-picker.css?v=1");
