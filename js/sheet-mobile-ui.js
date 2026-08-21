@@ -13,7 +13,7 @@ const NAV_ITEMS=[
 
 function refreshUiStylesheet(){
   const link=document.querySelector("link[data-mobile-ui-style]");
-  if(link)link.href="./css-next/pages/sheet-mobile-ui.css?v=8";
+  if(link)link.href="./css-next/pages/sheet-mobile-ui.css?v=9";
 }
 
 function normalizeNav(){
@@ -32,10 +32,8 @@ function normalizeNav(){
   }
 }
 
-function removeObsoleteControls(){
+function removeLegacyChromeMutations(){
   document.querySelectorAll(".mobile-section-top").forEach(node=>node.remove());
-  ["#mobile-ability-dialog-apply","#mobile-cs-dialog-apply","#style-skill-dialog-apply"].forEach(selector=>$(selector)?.remove());
-  ["#mobile-ability-dialog","#mobile-cs-dialog","#style-skill-dialog"].forEach(selector=>$(selector)?.querySelector(".mobile-editor-dialog__header")?.classList.add("mobile-editor-dialog__header--close-only"));
   document.querySelectorAll(".mobile-sheet-section > header > small").forEach(node=>node.remove());
 }
 
@@ -54,7 +52,7 @@ function ensureSaveStatus(){
 }
 
 function addEditNotice(){
-  const text="各項目はタップして編集できます。対応モーダルでは「反映」で確定、「キャンセル」で破棄できます。最後に画面下部の保存ボタンでデータを保存します。";
+  const text="各項目はタップして編集できます。編集画面は「反映」で確定、「キャンセル」で破棄します。最後に画面下部の保存ボタンでデータを保存します。";
   const current=$("#mobile-edit-notice");
   if(current){current.textContent=text;return;}
   const status=$("#mobile-save-status");
@@ -67,7 +65,8 @@ function addEditNotice(){
 }
 
 function confirmGeneralDelete(event){
-  if(!event.target?.closest?.("#mobile-general-delete"))return;
+  const source=event.target?.closest?.("#mobile-general-delete");
+  if(!source||source.dataset.mobileSilentDelete==="1")return;
   const name=$("#mobile-general-name")?.value.trim()||"名称未入力";
   if(confirm(`「${name}」を削除しますか？`))return;
   event.preventDefault();
@@ -120,7 +119,7 @@ function observeDeleteActions(){
 
 function init(){
   refreshUiStylesheet();
-  removeObsoleteControls();
+  removeLegacyChromeMutations();
   ensureSaveStatus();
   addEditNotice();
   normalizeNav();
