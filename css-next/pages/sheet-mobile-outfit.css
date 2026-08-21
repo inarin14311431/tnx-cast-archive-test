@@ -1,7 +1,7 @@
 body[data-page="sheet-mobile.html"] #mobile-outfits{display:grid;gap:6px}
-body[data-page="sheet-mobile.html"] .mobile-outfit-order-row{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:stretch;gap:5px;min-width:0}
+body[data-page="sheet-mobile.html"] .mobile-outfit-order-row{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:stretch;gap:5px;min-width:0}
 body[data-page="sheet-mobile.html"] .mobile-outfit-order-row__actions{display:grid;grid-template-rows:1fr 1fr;gap:4px}
-body[data-page="sheet-mobile.html"] .mobile-outfit-order-row__actions button{display:grid;place-items:center;min-width:38px;min-height:30px;padding:0;border:1px solid var(--color-border-muted);background:var(--color-surface);color:inherit}
+body[data-page="sheet-mobile.html"] .mobile-outfit-order-row__actions button{display:grid;place-items:center;min-width:44px;min-height:44px;padding:0;border:1px solid var(--color-border-muted);background:var(--color-surface);color:inherit}
 body[data-page="sheet-mobile.html"] .mobile-outfit-card{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;width:100%;min-width:0;min-height:48px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--color-section-outfits) 42%,var(--color-border-muted));background:color-mix(in srgb,var(--color-surface) 94%,transparent);color:inherit;text-align:left}
 body[data-page="sheet-mobile.html"] .mobile-outfit-card.is-pending{border-style:dashed;border-color:color-mix(in srgb,var(--color-section-outfits) 72%,var(--color-border-muted))}
 body[data-page="sheet-mobile.html"] .mobile-outfit-card>*{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
