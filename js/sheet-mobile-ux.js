@@ -157,7 +157,7 @@ function ensureNavLink(href,label){
     link.href=href;
     nav.append(link);
   }
-  link.textContent=label;
+  if(link.textContent!==label)link.textContent=label;
   return link;
 }
 
