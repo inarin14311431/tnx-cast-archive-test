@@ -148,11 +148,25 @@ function moveVisibilityToProfile(){
   body.prepend(visibility);
 }
 
+function ensureNavLink(href,label){
+  const nav=$(".mobile-sheet-nav");
+  if(!nav||!$(href))return null;
+  let link=nav.querySelector(`a[href='${href}']`);
+  if(!link){
+    link=document.createElement("a");
+    link.href=href;
+    nav.append(link);
+  }
+  link.textContent=label;
+  return link;
+}
+
 function normalizeSectionLabels(){
   const comboTitle=$("#mobile-combos-section > header h2");
   if(comboTitle&&comboTitle.textContent!=="07 コンボ")comboTitle.textContent="07 コンボ";
-  const comboNav=$(".mobile-sheet-nav a[href='#mobile-combos-section']");
-  if(comboNav&&comboNav.textContent!=="07 コンボ")comboNav.textContent="07 コンボ";
+  ensureNavLink("#mobile-combos-section","07 コンボ");
+  ensureNavLink("#mobile-snapshots-section","08 スナップショット");
+  ensureNavLink("#mobile-image-section","09 キャスト画像");
 }
 
 function setupActiveNav(){
