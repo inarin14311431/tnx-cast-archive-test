@@ -1,0 +1,99 @@
+/* Theme-aware cast action icons. Inline SVG uses currentColor so each theme controls the palette. */
+body[data-page="account.html"] .owned-cast :is(.owned-cast__links a, .owned-cast__management a, .owned-cast__management button).has-action-icon {
+  position: relative;
+}
+body[data-page="account.html"] .owned-cast .action-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  color: currentColor;
+  opacity: .95;
+  pointer-events: none;
+}
+body[data-page="account.html"] .owned-cast__links > a,
+body[data-page="account.html"] .owned-cast__management > a {
+  color: var(--color-accent);
+}
+body[data-page="account.html"] .owned-cast__links > a.has-action-icon,
+body[data-page="account.html"] .owned-cast__management > a.has-action-icon {
+  display: grid;
+  grid-template-columns: 22px auto;
+  grid-template-rows: auto auto;
+  column-gap: 7px;
+  align-content: center;
+  justify-content: center;
+  place-items: initial;
+}
+body[data-page="account.html"] .owned-cast__links > a.has-action-icon .action-icon,
+body[data-page="account.html"] .owned-cast__management > a.has-action-icon .action-icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+  justify-self: center;
+}
+body[data-page="account.html"] .owned-cast__links > a.has-action-icon .action-label__jp,
+body[data-page="account.html"] .owned-cast__management > a.has-action-icon .action-label__jp {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  text-align: left;
+}
+body[data-page="account.html"] .owned-cast__links > a.has-action-icon .action-label__en,
+body[data-page="account.html"] .owned-cast__management > a.has-action-icon .action-label__en {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  text-align: left;
+}
+body[data-page="account.html"] .owned-cast__management button.has-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+body[data-page="account.html"] .owned-cast__management button.has-action-icon .action-icon {
+  width: 15px;
+  height: 15px;
+  flex-basis: 15px;
+}
+body[data-page="account.html"] .owned-cast__management button[data-duplicate] {
+  color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text));
+}
+body[data-page="account.html"] .owned-cast__management button[data-delete] {
+  color: var(--color-danger);
+}
+body[data-page="account.html"] .owned-cast__management button.has-action-icon .action-label__jp {
+  font-size: .66rem;
+}
+
+@media (max-width: 767px) {
+  body[data-page="account.html"] .owned-cast .action-icon {
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+  }
+  body[data-page="account.html"] .owned-cast__links > a.has-action-icon,
+  body[data-page="account.html"] .owned-cast__management > a.has-action-icon {
+    grid-template-columns: 18px auto;
+    column-gap: 4px;
+  }
+  body[data-page="account.html"] .owned-cast__management button.has-action-icon {
+    gap: 2px;
+  }
+  body[data-page="account.html"] .owned-cast__management button.has-action-icon .action-icon {
+    width: 13px;
+    height: 13px;
+    flex-basis: 13px;
+  }
+}
+
+@media (max-width: 390px) {
+  body[data-page="account.html"] .owned-cast__links > a.has-action-icon,
+  body[data-page="account.html"] .owned-cast__management > a.has-action-icon {
+    grid-template-columns: 16px auto;
+    column-gap: 3px;
+  }
+  body[data-page="account.html"] .owned-cast__management button.has-action-icon .action-label__jp {
+    font-size: .6rem;
+  }
+}
