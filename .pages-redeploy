@@ -74,3 +74,4 @@ GitHub Pages redeploy trigger
 2026-08-20 remove export module dependency cycles
 2026-08-21 restore 165 XP initial skill package accounting
 2026-08-21 lock initial general skill level and starting suit
+2026-08-21 fix outfit name column width across categories
