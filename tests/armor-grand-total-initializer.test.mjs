@@ -5,13 +5,16 @@ import { readFile } from "node:fs/promises";
 const aligner = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
 const tables = await readFile(new URL("../js/outfit-tables.js", import.meta.url), "utf8");
 
-test("armor total alignment helper owns layout only, not defense calculation", () => {
-  assert.match(aligner, /function alignArmorFooter\(\)/);
+test("armor alignment helper owns layout only, not defense calculation", () => {
+  assert.match(aligner, /function alignArmorLayout\(\)/);
+  assert.match(aligner, /function fitArmorDescription\(table, header\)/);
   assert.match(aligner, /dataset\.ofcHead === "defense_s"/);
   assert.match(aligner, /dataset\.ofcHead === "defense_p"/);
   assert.match(aligner, /dataset\.ofcHead === "defense_i"/);
   assert.match(aligner, /label\.colSpan = Math\.max\(1, sIndex\)/);
+  assert.match(aligner, /targetWidth - fixedWidth/);
   assert.match(aligner, /root\.addEventListener\("tnx:outfit-tables-rendered", queue\)/);
+  assert.match(aligner, /window\.addEventListener\("resize", queue/);
   assert.doesNotMatch(aligner, /MutationObserver/);
   assert.doesNotMatch(aligner, /\[data-ofc="defense_\$\{key\}"\]|Number\(input\.value|totals\[key\]/);
 });
