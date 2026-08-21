@@ -41,9 +41,10 @@ test("PC save payload canonicalizes invalid legacy initial-skill rows", async ()
   assert.match(source, /\[requiredSuit\]: true/);
 });
 
-test("armor uses the shared name width and gives spare width to description", async () => {
+test("armor uses the shared fixed name width and gives all spare width to description", async () => {
   const css = await read("css-next/editor/outfits.css");
-  assert.match(css, /outfit-table-head--name[\s\S]*width: 11%/);
-  assert.doesNotMatch(css, /outfit-table-group--armor[\s\S]{0,180}outfit-table-head--name/);
-  assert.match(css, /outfit-table-group--armor[\s\S]*outfit-table-head--description[\s\S]*width: 42%/);
+  assert.match(css, /--outfit-name-column:\s*150px/);
+  assert.match(css, /outfit-table-head--name, \.outfit-table-cell--name\) \{ width: var\(--outfit-name-column\); min-width: var\(--outfit-name-column\); max-width: var\(--outfit-name-column\); \}/);
+  assert.doesNotMatch(css, /outfit-table-group--armor[^\n]*outfit-table-head--name/);
+  assert.match(css, /outfit-table-group--armor[\s\S]*outfit-table-head--description[\s\S]*width:\s*calc\(52\.8% - var\(--outfit-name-column\) - var\(--row-action-column\)\)/);
 });
