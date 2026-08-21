@@ -16,6 +16,20 @@ export const MUTABLE_GENERAL_PREFIXES = Object.freeze(
   GENERAL_MASTER_ROWS.filter(([, , kind]) => kind === "proper").map(([name]) => name)
 );
 
+export const INITIAL_GENERAL_SKILL_SUITS = Object.freeze(Object.fromEntries(
+  GENERAL_MASTER_ROWS
+    .filter(([, , kind]) => kind === "general")
+    .map(([name, suit]) => [name, suit])
+));
+
+export function initialGeneralSkillSuit(name) {
+  return INITIAL_GENERAL_SKILL_SUITS[String(name || "").trim()] || "";
+}
+
+export function isInitialGeneralSkill(name) {
+  return Boolean(initialGeneralSkillSuit(name));
+}
+
 export const STARRED_GENERAL_NAMES = new Set([
   "射撃", "心理", "自我", "回避", "操縦：", "白兵", "信用", "圧力"
 ]);
