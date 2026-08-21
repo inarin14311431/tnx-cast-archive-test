@@ -65,3 +65,18 @@ test("PC編集画面のBM転記は編集DOMからTSVとBMを生成する", async
   expect(bookmarklet).toMatch(/^javascript:/);
   expect(bookmarklet).toContain("/js/tnx-transfer-bookmarklet.js?v=2");
 });
+
+test("BMスタイル技能転記は転記元より多い既存行を削除して経験点を一致させる", async ({ page }) => {
+  await page.goto("/tests/e2e/fixtures/bookmarklet-style-row-trim.html");
+  await expect(page.locator("html")).toHaveAttribute("data-fixture-ready", "1");
+
+  const rows = page.locator("#superhumanskills tbody tr");
+  await expect(rows).toHaveCount(2);
+  await expect(page.locator("#superhumanskills\\.0\\.name")).toHaveValue("†転記秘技");
+  await expect(page.locator("#superhumanskills\\.001\\.name")).toHaveValue("転記特技");
+  await expect(page.locator("#superhumanskills\\.0\\.expbase")).toHaveValue("20");
+  await expect(page.locator("#superhumanskills\\.001\\.expbase")).toHaveValue("10");
+  await expect(page.locator("#exp\\.superhumanskills")).toHaveValue("50");
+  await expect(page.locator('input[value="余剰技能C"]')).toHaveCount(0);
+  await expect(page.locator('input[value="余剰技能D"]')).toHaveCount(0);
+});
