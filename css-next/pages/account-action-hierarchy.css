@@ -1,0 +1,49 @@
+/* Make the cast-management action order visible without changing behavior. */
+body[data-page="account.html"] .owned-cast__links {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, .86fr);
+  align-items: stretch;
+}
+body[data-page="account.html"] .owned-cast__links > a:nth-child(1) {
+  min-height: 56px;
+  border-color: var(--color-accent);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--color-accent) 32%, var(--color-surface)),
+    color-mix(in srgb, var(--color-accent) 13%, var(--color-bg)));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 15%, transparent);
+}
+body[data-page="account.html"] .owned-cast__links > a:nth-child(1) .action-label__jp {
+  color: var(--color-accent);
+  font-size: 1rem;
+}
+body[data-page="account.html"] .owned-cast__links > a:nth-child(2) {
+  border-color: color-mix(in srgb, var(--color-accent) 58%, var(--color-border-muted));
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+}
+body[data-page="account.html"] .owned-cast__links > a:nth-child(3) {
+  border-color: var(--color-border-muted);
+  background: color-mix(in srgb, var(--color-bg) 68%, var(--color-surface));
+}
+body[data-page="account.html"] .owned-cast__links > a:nth-child(3) .action-label__en {
+  opacity: .72;
+}
+body[data-page="account.html"] .owned-cast__management {
+  opacity: .82;
+}
+body[data-page="account.html"] .owned-cast__management:focus-within,
+body[data-page="account.html"] .owned-cast__management:hover {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  body[data-page="account.html"] .owned-cast__links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body[data-page="account.html"] .owned-cast__links > a:nth-child(1) {
+    grid-column: 1 / -1;
+    min-height: 52px;
+  }
+  body[data-page="account.html"] .owned-cast__links > a:nth-child(2),
+  body[data-page="account.html"] .owned-cast__links > a:nth-child(3) {
+    min-height: 44px;
+  }
+}
