@@ -23,7 +23,7 @@ test("mobile cast gameplay text is promoted above legacy micro-text sizes", () =
 });
 
 test("account cast cards use one consolidated responsive stylesheet", () => {
-  assert.match(accountHtml, /account-action-hierarchy\.css\?v=5/);
+  assert.match(accountHtml, /account-action-hierarchy\.css\?v=6/);
   assert.doesNotMatch(accountHtml, /account-mobile-compact\.css/);
   assert.doesNotMatch(accountHtml, /account-action-icons\.css/);
   assert.match(accountHierarchy, /\.owned-cast \{[\s\S]*display: grid;/);
