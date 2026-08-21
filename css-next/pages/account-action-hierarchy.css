@@ -21,6 +21,10 @@ body[data-page="account.html"] .owned-cast__links > a {
   min-width: 0;
   min-height: 46px;
 }
+/* Old cached helper may still inject this legacy duplicate; never display it. */
+body[data-page="account.html"] .owned-cast__links > [data-mobile-sheet-link] {
+  display: none !important;
+}
 body[data-page="account.html"] .owned-cast__links > a:nth-child(1) {
   border-color: var(--color-accent);
   background: linear-gradient(180deg,
