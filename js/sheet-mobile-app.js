@@ -14,5 +14,5 @@ import "./sheet-mobile-snapshots.js?v=20260818-3";
 import "./sheet-mobile-image.js?v=20260818-3";
 import "./sheet-mobile-import.js?v=20260818-4";
 import "./sheet-mobile-summary-text.js?v=20260818-3";
-import "./sheet-mobile-header-exp.js?v=20260820-3";
+import "./sheet-mobile-header-exp.js?v=20260821-1";
 import "./sheet-mobile-ui.js?v=20260818-11";
