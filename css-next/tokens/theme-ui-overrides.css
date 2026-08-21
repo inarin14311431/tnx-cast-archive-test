@@ -1,4 +1,8 @@
 /* Theme-specific UI token refinements. Section colors intentionally remain fixed. */
+:root {
+  --color-panel: var(--color-surface);
+}
+
 :root:not([data-theme="intron"]):not([data-theme="orbital"]):not([data-theme="japanese-army"]) {
   --color-success: color-mix(in srgb, #75ffb4 68%, var(--color-accent));
   --color-warning: color-mix(in srgb, #ffd166 70%, var(--color-accent));
