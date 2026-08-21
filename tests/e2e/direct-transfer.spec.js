@@ -37,7 +37,31 @@ test("通常キャスト転記はBM式を表示しPOSTトリガーを除去す�
   await page.goto("/tests/e2e/fixtures/bookmarklet-transfer-mode.html?id=TNX-E2E");
 
   await expect(page.locator("html")).toHaveAttribute("data-transfer-mode", "bookmarklet");
-  await expect(page.locator("#direct-transfer-button")) .toHaveCount(0);
+  await expect(page.locator("#direct-transfer-button")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /転記TSV/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /転記BM/ })).toBeVisible();
+});
+
+test("PC編集画面のBM転記は編集DOMからTSVとBMを生成する", async ({ page }) => {
+  await page.goto("/tests/e2e/fixtures/bookmarklet-transfer-editor.html?id=TNX-E2E");
+
+  await expect(page.locator("html")).toHaveAttribute("data-transfer-mode", "bookmarklet");
+  const tsvButton = page.locator("#transfer-tsv-copy-button");
+  const bmButton = page.locator("#transfer-bookmarklet-copy-button");
+  await expect(tsvButton).toBeVisible();
+  await expect(bmButton).toBeVisible();
+
+  await tsvButton.click();
+  const tsv = await page.evaluate(() => window.__copiedText);
+  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\tbase\t0\tname\t転記テスト");
+  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\tstyle_skill\t0\tconfrontation\t回避");
+  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tcontrol\t-2");
+  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tprotecS\t3");
+  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tprotecP\t4");
+  expect(tsv).toContain("TNX_CAST_TRANSFER_TSV\t1\toutfit\t0\tprotecI\t5");
+
+  await bmButton.click();
+  const bookmarklet = await page.evaluate(() => window.__copiedText);
+  expect(bookmarklet).toMatch(/^javascript:/);
+  expect(bookmarklet).toContain("/js/tnx-transfer-bookmarklet.js?v=2");
 });
