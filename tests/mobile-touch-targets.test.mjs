@@ -9,6 +9,11 @@ test("mobile primary add controls keep a 44px touch target", async () => {
   assert.match(css, /\.mobile-section-add\{[^}]*min-height:44px/);
 });
 
+test("mobile ability value cells keep a 44px tap target", async () => {
+  const css = await read("css-next/pages/sheet-mobile-ability.css");
+  assert.match(css, /\.mobile-ability-matrix__value\{[^}]*min-height:44px/);
+});
+
 test("mobile general skill rows keep a 44px tap target", async () => {
   const css = await read("css-next/pages/sheet-mobile-skills.css");
   assert.match(css, /\.mobile-general-row--button\{[^}]*min-height:44px/);
