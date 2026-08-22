@@ -9,6 +9,16 @@ function prepareSectionToggle(toggle) {
     toggle.classList.add("section-toggle");
   }
 
+  if (toggle.matches(".sheet-combo-entry__header")) {
+    toggle.style.paddingRight = "58px";
+    toggle.style.cursor = "pointer";
+    const tag = toggle.querySelector(".sheet-combo-entry__tag");
+    if (tag) {
+      tag.style.marginLeft = "auto";
+      tag.style.marginRight = "10px";
+    }
+  }
+
   if (toggle.tagName !== "BUTTON") {
     toggle.setAttribute("role", "button");
     toggle.setAttribute("tabindex", "0");
