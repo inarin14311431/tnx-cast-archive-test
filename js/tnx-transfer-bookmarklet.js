@@ -39,37 +39,61 @@
     }).join("\n");
   }
 
+  function countTransferRows(text){
+    return String(text||"")
+      .replace(/\r/g,"")
+      .split("\n")
+      .filter(line=>line.startsWith(`${FORMAT}\t`))
+      .length;
+  }
+
   function installClipboardBridge(){
-    const originalDescriptor=Object.getOwnPropertyDescriptor(navigator,"clipboard");
     const nativeClipboard=navigator.clipboard;
-    const shim=Object.create(nativeClipboard||null);
-    Object.defineProperty(shim,"readText",{
-      configurable:true,
-      value:async()=>String(window.__TNX_TRANSFER_TSV__||"")
-    });
+    const restore=[];
+    const bridgeReadText=async()=>String(window.__TNX_TRANSFER_TSV__||"");
 
-    try{
-      Object.defineProperty(navigator,"clipboard",{configurable:true,value:shim});
-      return ()=>{
-        try{
-          if(originalDescriptor)Object.defineProperty(navigator,"clipboard",originalDescriptor);
-          else delete navigator.clipboard;
-        }catch{}
-      };
-    }catch{}
-
+    const navigatorDescriptor=Object.getOwnPropertyDescriptor(navigator,"clipboard");
     if(nativeClipboard){
-      const originalReadText=nativeClipboard.readText?.bind(nativeClipboard);
       try{
-        Object.defineProperty(nativeClipboard,"readText",{
-          configurable:true,
-          value:async()=>String(window.__TNX_TRANSFER_TSV__||"")
+        const shim=Object.create(nativeClipboard);
+        Object.defineProperty(shim,"readText",{configurable:true,value:bridgeReadText});
+        Object.defineProperty(navigator,"clipboard",{configurable:true,value:shim});
+        restore.push(()=>{
+          try{
+            if(navigatorDescriptor)Object.defineProperty(navigator,"clipboard",navigatorDescriptor);
+            else delete navigator.clipboard;
+          }catch{}
         });
-        return ()=>{
-          if(!originalReadText)return;
-          try{Object.defineProperty(nativeClipboard,"readText",{configurable:true,value:originalReadText})}catch{}
-        };
+        return ()=>restore.reverse().forEach(fn=>fn());
       }catch{}
+
+      const ownDescriptor=Object.getOwnPropertyDescriptor(nativeClipboard,"readText");
+      try{
+        Object.defineProperty(nativeClipboard,"readText",{configurable:true,value:bridgeReadText});
+        restore.push(()=>{
+          try{
+            if(ownDescriptor)Object.defineProperty(nativeClipboard,"readText",ownDescriptor);
+            else delete nativeClipboard.readText;
+          }catch{}
+        });
+        return ()=>restore.reverse().forEach(fn=>fn());
+      }catch{}
+
+      const prototype=Object.getPrototypeOf(nativeClipboard);
+      const prototypeDescriptor=prototype&&Object.getOwnPropertyDescriptor(prototype,"readText");
+      if(prototype&&prototypeDescriptor){
+        try{
+          Object.defineProperty(prototype,"readText",{
+            ...prototypeDescriptor,
+            configurable:true,
+            value:bridgeReadText
+          });
+          restore.push(()=>{
+            try{Object.defineProperty(prototype,"readText",prototypeDescriptor)}catch{}
+          });
+          return ()=>restore.reverse().forEach(fn=>fn());
+        }catch{}
+      }
     }
 
     return ()=>{};
@@ -116,6 +140,10 @@
     }
 
     transferText=normalizeStyleSeparatorLevels(transferText);
+    const transferRows=countTransferRows(transferText);
+    if(transferRows<=1){
+      throw new Error("転記TSVに実データがありません。スマホ転記画面へ戻り、転記TSVをもう一度コピーしてください。");
+    }
     window.__TNX_TRANSFER_TSV__=transferText;
 
     const restoreClipboard=installClipboardBridge();
