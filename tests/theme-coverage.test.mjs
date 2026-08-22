@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const indexCss = await readFile(new URL("../css-next/index.css", import.meta.url), "utf8");
 const uiTheme = await readFile(new URL("../css-next/tokens/theme-ui-overrides.css", import.meta.url), "utf8");
+const themeContrast = await readFile(new URL("../css-next/components/theme-contrast.css", import.meta.url), "utf8");
 const mobileTheme = await readFile(new URL("../css-next/pages/cast-mobile-theme.css", import.meta.url), "utf8");
 
 function rgb(hex) {
@@ -19,9 +20,11 @@ function contrast(a, b) {
   return (high + 0.05) / (low + 0.05);
 }
 
-test("theme compatibility layers are loaded", () => {
-  assert.match(indexCss, /tokens\/theme-ui-overrides\.css\?v=1/);
+test("theme compatibility and contrast layers are loaded", () => {
+  assert.match(indexCss, /tokens\/theme-ui-overrides\.css\?v=2/);
+  assert.match(indexCss, /components\/theme-contrast\.css\?v=1/);
   assert.match(indexCss, /pages\/cast-mobile-theme\.css\?v=1/);
+  assert.ok(indexCss.indexOf("theme-contrast.css") > indexCss.indexOf("pages/account.css"));
 });
 
 test("mobile cast theme bridge uses canonical theme surfaces", () => {
@@ -37,6 +40,20 @@ test("semantic UI colors follow theme accents without changing fixed section col
   assert.match(uiTheme, /--color-feature:/);
   assert.doesNotMatch(uiTheme, /--color-section-/);
   assert.match(uiTheme, /:not\(\[data-theme="japanese-army"\]\)/);
+});
+
+test("every theme receives readable secondary, placeholder, and filled-control foreground tokens", () => {
+  assert.match(uiTheme, /--color-text-muted:\s*color-mix\(in srgb, var\(--color-muted\) 82%, var\(--color-text\)\)/);
+  assert.match(uiTheme, /--color-placeholder:\s*color-mix\(in srgb, var\(--color-muted\) 86%, var\(--color-text\)\)/);
+  assert.match(uiTheme, /--color-on-accent:\s*var\(--color-bg\)/);
+  assert.match(uiTheme, /data-theme="intron"[\s\S]*data-theme="orbital"[\s\S]*--color-on-accent:\s*var\(--color-surface\)/);
+});
+
+test("interactive secondary labels follow the readable foreground during hover and focus", () => {
+  assert.match(themeContrast, /\.action-label__en[\s\S]*color:\s*var\(--color-text-muted\)/);
+  assert.match(themeContrast, /\.owned-cast[\s\S]*:is\(:hover, :focus-visible\)[\s\S]*\.action-label__en[\s\S]*color:\s*inherit/);
+  assert.match(themeContrast, /button:is\(:hover, :focus-visible\)[\s\S]*color:\s*var\(--color-on-accent\)/);
+  assert.match(themeContrast, /button:is\(:hover, :focus-visible\) small[\s\S]*color:\s*inherit/);
 });
 
 test("low contrast theme accents meet normal-text contrast target", () => {
