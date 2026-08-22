@@ -18,10 +18,9 @@ body[data-page="mobile-transfer.html"] {
 }
 
 .mobile-transfer-intro,
-.mobile-transfer-step,
-.mobile-transfer-safety {
-  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
-  background: color-mix(in srgb, var(--color-panel) 94%, transparent);
+.mobile-transfer-step {
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  background: var(--theme-panel-bg, var(--color-surface));
   box-shadow: 0 14px 30px rgb(0 0 0 / 14%);
 }
 
@@ -29,26 +28,23 @@ body[data-page="mobile-transfer.html"] {
   padding: 16px;
 }
 
-.mobile-transfer-intro__label,
-.mobile-transfer-step > header > span {
+.mobile-transfer-intro__label {
   display: block;
-  margin-bottom: 4px;
+  margin: 0 0 4px;
   color: var(--color-accent);
-  font-family: monospace;
+  font-family: var(--font-data, monospace);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: .08em;
 }
 
 .mobile-transfer-intro h2,
-.mobile-transfer-step h2,
-.mobile-transfer-safety h2 {
+.mobile-transfer-step h2 {
   margin: 0;
 }
 
 .mobile-transfer-intro > p:not(.mobile-transfer-intro__label),
 .mobile-transfer-step > p,
-.mobile-transfer-safety p,
 .mobile-transfer-help p {
   line-height: 1.7;
 }
@@ -58,14 +54,65 @@ body[data-page="mobile-transfer.html"] {
   padding: 8px 10px;
   border-left: 3px solid var(--color-accent);
   background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-  font-family: monospace;
+  color: var(--color-text);
+  font-family: var(--font-data, monospace);
   font-weight: 800;
 }
 
+.mobile-transfer-step {
+  --step-color: var(--color-accent);
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--step-color) 55%, transparent);
+}
+
+.mobile-transfer-step--bookmarklet {
+  --step-color: var(--color-export-bookmarklet, var(--color-section-style-skills));
+}
+
+.mobile-transfer-step--data {
+  --step-color: var(--color-export-tsv, var(--color-section-profile));
+}
+
+.mobile-transfer-step--warehouse {
+  --step-color: var(--color-export-success, var(--color-section-skills));
+}
+
 .mobile-transfer-step > header {
-  padding: 12px 14px 10px;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--step-color) 35%, transparent);
+  background: color-mix(in srgb, var(--step-color) 12%, var(--color-surface));
+}
+
+.mobile-transfer-step__number {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid var(--step-color);
+  background: color-mix(in srgb, var(--step-color) 16%, var(--color-surface));
+  color: var(--step-color);
+  font-family: var(--font-data, monospace);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.mobile-transfer-step > header small {
+  display: block;
+  margin-bottom: 2px;
+  color: color-mix(in srgb, var(--step-color) 78%, var(--color-text));
+  font-family: var(--font-data, monospace);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.mobile-transfer-step > header h2 {
+  color: var(--color-text);
 }
 
 .mobile-transfer-step > p,
@@ -78,6 +125,7 @@ body[data-page="mobile-transfer.html"] {
 .mobile-transfer-step > p {
   margin-top: 12px;
   margin-bottom: 12px;
+  color: var(--color-text);
 }
 
 .mobile-transfer-actions {
@@ -94,21 +142,26 @@ body[data-page="mobile-transfer.html"] {
   width: 100%;
   min-height: 54px;
   padding: 9px 12px;
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--step-color);
   border-radius: 0;
-  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-panel));
+  background: color-mix(in srgb, var(--step-color) 13%, var(--color-surface));
   color: var(--color-text);
   text-align: center;
   text-decoration: none;
   cursor: pointer;
+  transition:
+    background var(--transition-fast, 160ms ease),
+    color var(--transition-fast, 160ms ease),
+    box-shadow var(--transition-fast, 160ms ease);
 }
 
 .mobile-transfer-actions button:hover,
 .mobile-transfer-actions button:focus-visible,
 .mobile-transfer-open:hover,
 .mobile-transfer-open:focus-visible {
-  background: var(--color-accent);
-  color: var(--color-on-accent);
+  background: var(--step-color);
+  color: var(--color-bg);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--step-color) 28%, transparent);
 }
 
 .mobile-transfer-actions button span,
@@ -133,52 +186,50 @@ body[data-page="mobile-transfer.html"] {
 .mobile-transfer-step details {
   margin-top: 0;
   margin-bottom: 14px;
-  border-top: 1px dashed color-mix(in srgb, var(--color-accent) 25%, transparent);
   padding-top: 10px;
+  border-top: 1px dashed color-mix(in srgb, var(--step-color) 32%, transparent);
 }
 
 .mobile-transfer-step summary {
-  color: var(--color-accent);
+  color: var(--step-color);
   font-weight: 800;
   cursor: pointer;
 }
 
 .mobile-transfer-help {
   padding: 2px 2px 0;
-}
-
-.mobile-transfer-note {
-  padding: 9px 10px;
-  border-left: 3px solid var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+  color: var(--color-muted);
 }
 
 .mobile-transfer-status {
   min-height: 1.5em;
+  margin-top: -2px;
+  margin-bottom: 14px !important;
+  padding: 8px 10px;
+  border-left: 3px solid color-mix(in srgb, var(--step-color) 55%, transparent);
+  background: color-mix(in srgb, var(--step-color) 7%, transparent);
+  color: var(--color-muted);
   font-weight: 800;
 }
 
+.mobile-transfer-status:empty {
+  display: none;
+}
+
+.mobile-transfer-status[data-state="working"] {
+  color: var(--step-color);
+}
+
 .mobile-transfer-status[data-state="success"] {
-  color: var(--color-accent);
+  border-left-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  color: var(--color-success);
 }
 
 .mobile-transfer-status[data-state="error"] {
-  color: var(--color-danger, #ff6b6b);
-}
-
-.mobile-transfer-safety {
-  padding: 14px;
-  border-color: color-mix(in srgb, var(--color-text-muted) 30%, transparent);
-}
-
-.mobile-transfer-safety p {
-  margin-bottom: 0;
-  color: var(--color-text-muted);
-}
-
-.mobile-transfer-step code {
-  font-family: monospace;
-  color: var(--color-accent);
+  border-left-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  color: var(--color-danger);
 }
 
 @media (max-width: 640px) {
@@ -198,7 +249,15 @@ body[data-page="mobile-transfer.html"] {
   }
 
   .mobile-transfer-step > header {
+    gap: 10px;
     padding: 10px;
+  }
+
+  .mobile-transfer-step__number {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+    font-size: 16px;
   }
 
   .mobile-transfer-step > p,
