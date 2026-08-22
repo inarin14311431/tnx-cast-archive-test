@@ -3,7 +3,7 @@
 <head>
   <script src="./js/css-next-theme.js?v=3"></script>
   <link rel="stylesheet" href="./css-next/index.css?v=58" data-css-system="next">
-  <link rel="stylesheet" href="./css-next/pages/mobile-transfer.css?v=2">
+  <link rel="stylesheet" href="./css-next/pages/mobile-transfer.css?v=3">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -26,74 +26,88 @@
     <section class="mobile-transfer-intro">
       <p class="mobile-transfer-intro__label">CHARACTER SHEETS TRANSFER</p>
       <h2>キャラクターシート倉庫へ転記</h2>
-      <p>
-        初回だけブックマークを登録します。
-        2回目以降は「転記データをコピー」→「倉庫でBMを実行」の2操作です。
+      <p class="mobile-transfer-intro__lead">
+        初回にBMを登録した後は、データをコピーして倉庫でBMを実行するだけです。
       </p>
       <p id="mobile-transfer-cast" class="mobile-transfer-cast-id">CAST ID 読み込み中…</p>
     </section>
 
     <section class="mobile-transfer-step mobile-transfer-step--bookmarklet" aria-labelledby="mobile-transfer-step-1">
-      <header>
+      <header class="mobile-transfer-step__header">
         <span class="mobile-transfer-step__number">01</span>
-        <div>
-          <small>FIRST TIME ONLY</small>
-          <h2 id="mobile-transfer-step-1">転記BMを登録</h2>
+        <div class="mobile-transfer-step__heading">
+          <div class="mobile-transfer-step__meta">
+            <span>STEP 01</span>
+            <small>初回のみ</small>
+          </div>
+          <h2 id="mobile-transfer-step-1">転記BMをブックマークへ登録</h2>
         </div>
       </header>
-      <p>
-        初回のみ「転記BM」をコピーし、ブラウザのブックマークURLへ登録します。
-        BM更新の案内が出た場合も、同じ手順で登録し直してください。
-      </p>
-      <div id="mobile-transfer-bookmarklet-slot" class="mobile-transfer-actions"></div>
-      <details>
-        <summary>登録手順を見る</summary>
-        <div class="mobile-transfer-help">
-          <p><strong>iPhone / Safari：</strong>任意のページをブックマークし、そのブックマークを編集してURLをコピーした「転記BM」に置き換えます。</p>
-          <p><strong>Android / Chrome：</strong>任意のページをブックマークし、編集画面でURLをコピーした「転記BM」に置き換えます。</p>
-        </div>
-      </details>
+      <div class="mobile-transfer-step__body">
+        <p class="mobile-transfer-step__summary">最初の1回だけ行います。登録済みでも、更新案内が出た場合は登録し直してください。</p>
+        <div id="mobile-transfer-bookmarklet-slot" class="mobile-transfer-actions"></div>
+        <details>
+          <summary>スマホでの登録手順</summary>
+          <div class="mobile-transfer-help">
+            <p><strong>iPhone / Safari：</strong>任意のページをブックマークし、そのブックマークを編集してURLをコピーした「転記BM」に置き換えます。</p>
+            <p><strong>Android / Chrome：</strong>任意のページをブックマークし、編集画面でURLをコピーした「転記BM」に置き換えます。</p>
+          </div>
+        </details>
+      </div>
     </section>
 
     <section class="mobile-transfer-step mobile-transfer-step--data" aria-labelledby="mobile-transfer-step-2">
-      <header>
+      <header class="mobile-transfer-step__header">
         <span class="mobile-transfer-step__number">02</span>
-        <div>
-          <small>EVERY TRANSFER</small>
-          <h2 id="mobile-transfer-step-2">転記データをコピー</h2>
+        <div class="mobile-transfer-step__heading">
+          <div class="mobile-transfer-step__meta">
+            <span>STEP 02</span>
+            <small>転記のたびに</small>
+          </div>
+          <h2 id="mobile-transfer-step-2">このキャストの転記データをコピー</h2>
         </div>
       </header>
-      <p>
-        「転記TSV」を押して、このキャストの最新データをコピーします。
-        キャストを更新した後は、もう一度コピーしてください。
-      </p>
-      <div id="mobile-transfer-tsv-slot" class="mobile-transfer-actions"></div>
-      <p id="mobile-transfer-status" class="mobile-transfer-status" aria-live="polite"></p>
+      <div class="mobile-transfer-step__body">
+        <p class="mobile-transfer-step__summary">下のボタンを押すと、このキャストの最新データがコピーされます。</p>
+        <div id="mobile-transfer-tsv-slot" class="mobile-transfer-actions"></div>
+        <p id="mobile-transfer-status" class="mobile-transfer-status" aria-live="polite"></p>
+      </div>
     </section>
 
     <section class="mobile-transfer-step mobile-transfer-step--warehouse" aria-labelledby="mobile-transfer-step-3">
-      <header>
+      <header class="mobile-transfer-step__header">
         <span class="mobile-transfer-step__number">03</span>
-        <div>
-          <small>CHARACTER SHEETS</small>
-          <h2 id="mobile-transfer-step-3">倉庫で転記BMを実行</h2>
+        <div class="mobile-transfer-step__heading">
+          <div class="mobile-transfer-step__meta">
+            <span>STEP 03</span>
+            <small>倉庫で実行</small>
+          </div>
+          <h2 id="mobile-transfer-step-3">倉庫を開いて転記BMを実行</h2>
         </div>
       </header>
-      <p>
-        「キャラクターシート倉庫を開く」を押し、倉庫の画面で登録した「N◎VA転記」BMを実行します。
-        転記後は内容を確認して、倉庫側で保存してください。
-      </p>
-      <div class="mobile-transfer-actions">
-        <a
-          id="mobile-transfer-open"
-          class="mobile-transfer-open"
-          href="https://character-sheets.appspot.com/tnx/edit.html"
-        >
-          <span>キャラクターシート倉庫を開く</span>
-          <small>OPEN CHARACTER SHEETS</small>
-        </a>
+      <div class="mobile-transfer-step__body">
+        <ol class="mobile-transfer-checklist">
+          <li>キャラクターシート倉庫を開く</li>
+          <li>ブックマークから「N◎VA転記」を実行</li>
+          <li>転記内容を確認して保存</li>
+        </ol>
+        <div class="mobile-transfer-actions">
+          <a
+            id="mobile-transfer-open"
+            class="mobile-transfer-open"
+            href="https://character-sheets.appspot.com/tnx/edit.html"
+          >
+            <span>キャラクターシート倉庫を開く</span>
+            <small>OPEN CHARACTER SHEETS</small>
+          </a>
+        </div>
       </div>
     </section>
+
+    <aside class="mobile-transfer-note" aria-label="転記時の注意">
+      <strong>転記が終わるまでこの画面は閉じないでください。</strong>
+      <span>STEP 03の保存が終われば閉じて構いません。</span>
+    </aside>
 
     <div id="mobile-transfer-export-host" class="exp-panel" hidden aria-hidden="true"></div>
   </main>
