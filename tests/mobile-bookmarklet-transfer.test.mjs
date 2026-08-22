@@ -10,8 +10,8 @@ test("mobile transfer helper uses bookmarklet and clipboard flow without direct 
     read("js/mobile-bookmarklet-transfer.js")
   ]);
 
-  assert.match(html, /MOBILE BOOKMARKLET TRANSFER/);
-  assert.match(html, /transfer-bookmarklet-copy-button|mobile-transfer-bookmarklet-slot/);
+  assert.match(html, /MOBILE TRANSFER/);
+  assert.match(html, /mobile-transfer-bookmarklet-slot/);
   assert.match(html, /character-sheets\.appspot\.com\/tnx\/edit\.html/);
   assert.doesNotMatch(html, /character-sheets\.appspot\.com\/tnx\/register/);
   assert.doesNotMatch(controller, /fetch\s*\(.*character-sheets/);
