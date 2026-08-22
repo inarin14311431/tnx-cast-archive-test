@@ -1,0 +1,29 @@
+/* Combo section collapse affordance.
+   The combo header is promoted to the shared section-toggle interaction by JavaScript. */
+body[data-page="sheet.html"] .sheet-combo-entry__header.section-toggle {
+  box-sizing: border-box;
+  width: 100%;
+  padding-right: 58px;
+  cursor: pointer;
+  text-align: left;
+}
+
+body[data-page="sheet.html"] .sheet-combo-entry__header.section-toggle .sheet-combo-entry__tag {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+body[data-page="sheet.html"] .sheet-combo-entry__header.section-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -3px;
+}
+
+@media (max-width: 767px) {
+  body[data-page="sheet.html"] .sheet-combo-entry__header.section-toggle {
+    padding-right: 52px;
+  }
+
+  body[data-page="sheet.html"] .sheet-combo-entry__header.section-toggle .sheet-combo-entry__tag {
+    margin-right: 4px;
+  }
+}
