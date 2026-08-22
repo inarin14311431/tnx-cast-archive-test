@@ -6,15 +6,18 @@ import {
 } from "./helpers.js";
 
 const THEMES = [
-  "default",
+  "nova",
   "intron",
   "orbital"
 ];
 
 async function setTheme(page, theme) {
   await page.evaluate((value) => {
-    localStorage.setItem("tnx-theme", value);
+    localStorage.setItem("tnx-cast-site-theme", value);
     document.documentElement.dataset.theme = value;
+    document.documentElement.style.colorScheme = ["intron", "orbital"].includes(value)
+      ? "light"
+      : "dark";
   }, theme);
 }
 
@@ -27,6 +30,7 @@ async function disableMotion(page) {
         transition: none !important;
         caret-color: transparent !important;
       }
+
       .scanlines,
       .background-grid {
         animation: none !important;
