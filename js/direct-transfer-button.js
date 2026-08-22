@@ -1,20 +1,24 @@
 (() => {
   const ACTIVE_MODE = "post";
-  const POST_ADAPTER = "./direct-transfer-button-post.js?v=2";
+  const POST_ADAPTER = "./direct-transfer-button-post.js?v=3";
   const TRIGGER_SELECTOR = "[data-direct-transfer-trigger], #direct-transfer-button";
 
   function removeInactiveBookmarkletActions(root = document) {
     root.querySelectorAll?.("#transfer-tsv-copy-button, #transfer-bookmarklet-copy-button").forEach(node => {
       const wrapper = node.parentElement;
       node.remove();
-      if (wrapper && wrapper !== document.body && !wrapper.children.length && !wrapper.textContent.trim()) wrapper.remove();
+      if (wrapper && wrapper !== document.body && !wrapper.children.length && !wrapper.textContent.trim()) {
+        wrapper.remove();
+      }
     });
   }
 
   function ensureEditorTrigger() {
     if (document.body?.dataset.page !== "sheet.html") return null;
+
     const panel = document.querySelector(".exp-panel");
     if (!panel) return null;
+
     const existing = panel.querySelector(TRIGGER_SELECTOR);
     if (existing) return existing;
 
@@ -26,8 +30,12 @@
     button.innerHTML = "<span>データ転記</span><small>CHARACTER SHEETS / POST</small>";
 
     const view = panel.querySelector("#cast-view-button");
-    if (view?.parentElement === panel && view.nextSibling) panel.insertBefore(button, view.nextSibling);
-    else panel.append(button);
+    if (view?.parentElement === panel && view.nextSibling) {
+      panel.insertBefore(button, view.nextSibling);
+    } else {
+      panel.append(button);
+    }
+
     return button;
   }
 
