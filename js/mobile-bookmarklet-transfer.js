@@ -2,10 +2,10 @@ const params = new URLSearchParams(location.search);
 const publicId = params.get("id")?.trim() || "";
 
 const FORMAT = "TNX_CAST_TRANSFER_TSV";
-const WINDOW_NAME_PREFIX = "TNX_CAST_TRANSFER_V1:";
+const FRAGMENT_PREFIX = "tnx-transfer=";
 const WAREHOUSE_URL = "https://character-sheets.appspot.com/tnx/edit.html";
 const MOBILE_LOADER_URL = new URL(
-  "./tnx-transfer-mobile-loader.js?v=1",
+  "./tnx-transfer-mobile-loader.js?v=2",
   import.meta.url
 ).href;
 
@@ -56,7 +56,6 @@ async function initialize() {
   observeTransferState(transferButton);
 
   transferButton.addEventListener("click", () => {
-    window.name = "";
     setStatus("転記データをコピーしています…", "working");
   });
 
@@ -74,7 +73,7 @@ async function copyMobileBookmarklet() {
   try {
     await writeClipboard(bookmarklet);
     setStatus(
-      "スマホ用転記BMをコピーしました。初回だけブックマークURLへ登録してください。",
+      "スマホ用転記BMをコピーしました。ブックマークURLを最新版へ更新してください。",
       "success"
     );
   } catch (error) {
@@ -88,24 +87,24 @@ async function copyMobileBookmarklet() {
 
 async function prepareAndOpenWarehouse(event) {
   event.preventDefault();
-  setStatus("転記データを確認しています…", "working");
+  setStatus("転記データを確認・圧縮しています…", "working");
 
   try {
     const transferText = await readClipboard();
     const stats = validateTransferText(transferText);
+    const payload = await compressToBase64Url(transferText);
+    const targetUrl = `${WAREHOUSE_URL}#${FRAGMENT_PREFIX}${payload}`;
 
-    window.name = `${WINDOW_NAME_PREFIX}${transferText}`;
     setStatus(
       `転記データ確認済み：${stats.rows}行 / ${stats.characters.toLocaleString()}文字。倉庫を開きます…`,
       "success"
     );
 
     window.setTimeout(() => {
-      location.href = WAREHOUSE_URL;
+      location.href = targetUrl;
     }, 120);
   } catch (error) {
     console.error("Mobile transfer preparation failed", error);
-    window.name = "";
     setStatus(
       error instanceof Error ? error.message : "転記データを確認できませんでした。",
       "error"
@@ -134,6 +133,26 @@ function validateTransferText(text) {
     rows: rows - 1,
     characters: normalized.length
   };
+}
+
+async function compressToBase64Url(text) {
+  if (typeof CompressionStream !== "function") {
+    throw new Error("このブラウザはスマホ転記用の圧縮機能に対応していません。最新のSafari / Chromeを使用してください。");
+  }
+
+  const source = new Blob([new TextEncoder().encode(text)]).stream();
+  const compressed = source.pipeThrough(new CompressionStream("gzip"));
+  const bytes = new Uint8Array(await new Response(compressed).arrayBuffer());
+
+  let binary = "";
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+  }
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
 }
 
 async function readClipboard() {
