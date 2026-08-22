@@ -28,7 +28,7 @@
       <h2>キャラクターシート倉庫へ転記</h2>
       <p>
         CAST ARCHIVEから倉庫へ直接POSTせず、現在の正規BM方式と同じ転記処理をスマートフォンから実行します。
-        転記データはクリップボードだけを経由し、中間サーバーには保存しません。
+        転記データは端末内だけで受け渡しし、中間サーバーには保存しません。
       </p>
       <p id="mobile-transfer-cast" class="mobile-transfer-cast-id">CAST ID 読み込み中…</p>
     </section>
@@ -71,21 +71,22 @@
         <h2 id="mobile-transfer-step-3">倉庫を開いてBMを実行</h2>
       </header>
       <p>
-        キャラクターシート倉庫の新規作成画面、または更新したいキャラクターの編集画面を開き、登録した「N◎VA転記」BMを実行します。
+        「キャラクターシート倉庫を開く」を押すと、コピー済みTSVをその場で検証してから同じタブで倉庫へ移動します。
+        倉庫を開いた後、登録した「N◎VA転記」BMを実行してください。
       </p>
       <div class="mobile-transfer-actions">
         <a
+          id="mobile-transfer-open"
           class="mobile-transfer-open"
           href="https://character-sheets.appspot.com/tnx/edit.html"
-          target="_blank"
-          rel="noopener noreferrer"
         >
           <span>キャラクターシート倉庫を開く</span>
-          <small>OPEN CHARACTER SHEETS</small>
+          <small>VERIFY DATA / OPEN CHARACTER SHEETS</small>
         </a>
       </div>
       <p class="mobile-transfer-note">
-        ブラウザがクリップボード読取を許可しなかった場合、転記BMが貼り付け欄を表示します。STEP 02でコピーしたTSVをその欄へ貼り付けて続行できます。
+        倉庫へ移動する直前にTSVの実データ行数を確認します。検証できない場合は移動せず、この画面にエラーを表示します。
+        データは同じタブの一時領域へ保持され、BM実行後に消去されます。
       </p>
     </section>
 
@@ -97,6 +98,6 @@
     <div id="mobile-transfer-export-host" class="exp-panel" hidden aria-hidden="true"></div>
   </main>
 
-  <script type="module" src="./js/mobile-bookmarklet-transfer.js?v=1"></script>
+  <script type="module" src="./js/mobile-bookmarklet-transfer.js?v=2"></script>
 </body>
 </html>
