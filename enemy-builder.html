@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <script src="./js/css-next-theme.js?v=3"></script>
+  <link rel="stylesheet" href="./css-next/index.css?v=56" data-css-system="next">
+  <link rel="stylesheet" href="./css-next/pages/enemy-builder.css?v=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>エネミービルダー // N◎VA CAST ARCHIVE</title>
+</head>
+<body data-page="enemy-builder.html">
+  <div class="background-grid"></div>
+  <div class="scanlines"></div>
+
+  <header class="auth-header app-header">
+    <a class="app-back-link" href="./account.html">
+      <span>&lt; アカウントへ</span>
+      <small>RETURN TO OPERATOR</small>
+    </a>
+    <p>N◎VA MUNICIPAL DATABASE</p>
+    <h1>
+      エネミービルダー
+      <small>ENEMY DATA BUILDER</small>
+    </h1>
+  </header>
+
+  <main class="enemy-builder-layout">
+    <section class="enemy-panel enemy-panel--setup">
+      <header class="enemy-panel__header">
+        <div>
+          <p class="enemy-panel__index">01</p>
+          <h2>設計条件 <small>DESIGN PROFILE</small></h2>
+        </div>
+        <p>公式の自動作成ルールではなく、ルーラーが実戦用データを整理するための補助機能です。</p>
+      </header>
+
+      <div class="enemy-form-grid enemy-form-grid--setup">
+        <label>
+          <span>名称 <small>NAME</small></span>
+          <input id="enemy-name" type="text" placeholder="企業警備チームリーダー">
+        </label>
+        <label>
+          <span>ハンドル <small>HANDLE</small></span>
+          <input id="enemy-handle" type="text" placeholder="任意">
+        </label>
+        <label>
+          <span>立場 <small>CLASS</small></span>
+          <select id="enemy-class">
+            <option value="troop">トループ／雑魚</option>
+            <option value="guest" selected>ゲスト／標準</option>
+            <option value="boss">ボス／クライマックス</option>
+          </select>
+        </label>
+        <label>
+          <span>役割 <small>ROLE</small></span>
+          <select id="enemy-role">
+            <option value="striker">アタッカー</option>
+            <option value="shooter">射撃</option>
+            <option value="defender">防御・護衛</option>
+            <option value="controller">妨害・制御</option>
+            <option value="support">支援</option>
+            <option value="neuro">ニューロ</option>
+            <option value="custom">自由設定</option>
+          </select>
+        </label>
+        <label>
+          <span>想定PC人数 <small>CASTS</small></span>
+          <input id="party-size" type="number" min="1" max="8" value="4">
+        </label>
+        <label>
+          <span>想定達成値帯 <small>TARGET RANGE</small></span>
+          <select id="target-band">
+            <option value="low">低め（～14）</option>
+            <option value="standard" selected>標準（15～18）</option>
+            <option value="high">高め（19～22）</option>
+            <option value="extreme">非常に高い（23～）</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="enemy-toolbar">
+        <button id="apply-preset" type="button">目安値を適用 <small>APPLY GUIDE</small></button>
+        <button id="clear-enemy" type="button">クリア <small>CLEAR</small></button>
+      </div>
+    </section>
+
+    <section class="enemy-panel">
+      <header class="enemy-panel__header">
+        <div>
+          <p class="enemy-panel__index">02</p>
+          <h2>戦闘基礎値 <small>COMBAT PROFILE</small></h2>
+        </div>
+      </header>
+
+      <div class="enemy-stats-grid">
+        <label><span>攻撃達成値 <small>ATTACK</small></span><input id="attack-value" type="number" value="17"></label>
+        <label><span>防御達成値 <small>REACTION</small></span><input id="reaction-value" type="number" value="15"></label>
+        <label><span>攻撃力 <small>DAMAGE</small></span><input id="damage-value" type="number" value="10"></label>
+        <label><span>防御値 S <small>ARMOR S</small></span><input id="armor-s" type="number" value="5"></label>
+        <label><span>防御値 P <small>ARMOR P</small></span><input id="armor-p" type="number" value="5"></label>
+        <label><span>防御値 I <small>ARMOR I</small></span><input id="armor-i" type="number" value="4"></label>
+        <label><span>CS <small>CS</small></span><input id="cs-value" type="number" value="8"></label>
+        <label><span>AR <small>AR</small></span><input id="ar-value" type="number" value="1"></label>
+      </div>
+
+      <div class="enemy-form-grid">
+        <label class="enemy-field--wide">
+          <span>主判定 <small>PRIMARY CHECK</small></span>
+          <input id="primary-check" type="text" placeholder="〈白兵〉＋〈居合い〉">
+        </label>
+        <label>
+          <span>射程 <small>RANGE</small></span>
+          <input id="range-value" type="text" placeholder="至近">
+        </label>
+        <label>
+          <span>対象 <small>TARGET</small></span>
+          <input id="target-value" type="text" placeholder="単体">
+        </label>
+      </div>
+    </section>
+
+    <section class="enemy-panel">
+      <header class="enemy-panel__header">
+        <div>
+          <p class="enemy-panel__index">03</p>
+          <h2>主要行動 <small>ACTION PACKAGE</small></h2>
+        </div>
+        <button id="add-action" type="button">＋ 行動追加</button>
+      </header>
+      <div id="enemy-actions" class="enemy-actions"></div>
+    </section>
+
+    <section class="enemy-panel">
+      <header class="enemy-panel__header">
+        <div>
+          <p class="enemy-panel__index">04</p>
+          <h2>神業・運用 <small>TRUMP / TACTICS</small></h2>
+        </div>
+      </header>
+
+      <div class="enemy-form-grid">
+        <label class="enemy-field--wide">
+          <span>神業 <small>DIVINE WORKS</small></span>
+          <input id="divine-works" type="text" placeholder="《死の舞踏》《難攻不落》《電脳神》">
+        </label>
+        <label class="enemy-field--wide">
+          <span>神業の使用目的 <small>TRUMP PLAN</small></span>
+          <textarea id="divine-plan" rows="3" placeholder="誰を守る／どの攻撃を通す／どの情報を確保する、など"></textarea>
+        </label>
+        <label class="enemy-field--wide">
+          <span>行動指針 <small>TACTICS</small></span>
+          <textarea id="tactics" rows="4" placeholder="1カット目、追い詰められた時、撤退条件など"></textarea>
+        </label>
+        <label class="enemy-field--wide">
+          <span>メモ <small>NOTES</small></span>
+          <textarea id="notes" rows="4" placeholder="スタイル技能、アウトフィット、演出上の注意など"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="enemy-panel enemy-panel--diagnostic">
+      <header class="enemy-panel__header">
+        <div>
+          <p class="enemy-panel__index">05</p>
+          <h2>簡易診断 <small>THREAT CHECK</small></h2>
+        </div>
+      </header>
+      <div id="enemy-diagnostics" class="enemy-diagnostics" aria-live="polite"></div>
+    </section>
+
+    <section class="enemy-panel enemy-panel--output">
+      <header class="enemy-panel__header">
+        <div>
+          <p class="enemy-panel__index">06</p>
+          <h2>戦闘用表示 <small>RULER VIEW</small></h2>
+        </div>
+      </header>
+      <article id="enemy-preview" class="enemy-preview"></article>
+      <div class="enemy-toolbar">
+        <button id="copy-enemy" type="button">テキストをコピー <small>COPY TEXT</small></button>
+        <button id="save-enemy" type="button">端末に保存 <small>SAVE LOCAL</small></button>
+        <button id="load-enemy" type="button">保存データ読込 <small>LOAD LOCAL</small></button>
+      </div>
+      <p id="enemy-status" class="enemy-status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <template id="enemy-action-template">
+    <article class="enemy-action-row">
+      <label><span>行動名 <small>ACTION</small></span><input data-field="name" type="text" placeholder="通常攻撃"></label>
+      <label><span>判定／達成値 <small>CHECK</small></span><input data-field="check" type="text" placeholder="〈白兵〉 17"></label>
+      <label><span>効果 <small>EFFECT</small></span><input data-field="effect" type="text" placeholder="攻撃力S+10"></label>
+      <label class="enemy-action-row__detail"><span>詳細 <small>DETAIL</small></span><input data-field="detail" type="text" placeholder="対象、射程、使用制限など"></label>
+      <button data-action="remove" type="button" aria-label="行動を削除">×</button>
+    </article>
+  </template>
+
+  <script type="module" src="./js/enemy-builder.js?v=1"></script>
+</body>
+</html>
