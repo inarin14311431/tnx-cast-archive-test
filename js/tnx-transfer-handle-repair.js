@@ -52,16 +52,26 @@
     return true;
   }
 
+  function joinHandleAndName(handle, name) {
+    return [clean(handle), clean(name)].filter(Boolean).join(" ");
+  }
+
   function repair() {
     const base = parseBase(window.__TNX_TRANSFER_TSV__);
     if (!base) return false;
+
+    const name = clean(base.name);
+    const kana = clean(base.kana);
     const handle = clean(base.handle);
     const handleKana = clean(base.handle_kana ?? base.handlekana ?? base.handleKana);
-    if (!handle && !handleKana) return false;
+    const displayName = joinHandleAndName(handle, name);
+    const displayKana = joinHandleAndName(handleKana, kana);
+
+    if (!displayName && !displayKana) return false;
 
     const map = controlMap();
-    if (handle) setValue(find(map, ["base.name", "name"]), handle);
-    if (handleKana) setValue(find(map, ["base.namekana", "base.kana", "kana"]), handleKana);
+    if (displayName) setValue(find(map, ["base.name", "name"]), displayName);
+    if (displayKana) setValue(find(map, ["base.namekana", "base.kana", "kana"]), displayKana);
     return true;
   }
 
