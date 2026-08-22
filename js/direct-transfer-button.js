@@ -39,29 +39,9 @@
     return button;
   }
 
-  function ensureGuestGeneratorTrigger() {
-    if (document.body?.dataset.page !== "cast.html") return null;
-    const actions = document.querySelector(".cast-header__export-actions");
-    if (!actions) return null;
-
-    let link = actions.querySelector("#simple-guest-generator-link");
-    if (!link) {
-      link = document.createElement("a");
-      link.id = "simple-guest-generator-link";
-      link.className = "direct-transfer-button simple-guest-generator-link";
-      link.innerHTML = "<span>簡易ゲスト化</span><small>GUEST DATA / POC</small>";
-      actions.append(link);
-    }
-
-    const id = new URLSearchParams(location.search).get("id")?.trim() || "";
-    link.href = id ? `./guest-generator.html?id=${encodeURIComponent(id)}` : "./guest-generator.html";
-    return link;
-  }
-
   function syncPostUi(root = document) {
     removeInactiveBookmarkletActions(root);
     ensureEditorTrigger();
-    ensureGuestGeneratorTrigger();
     window.TNXDirectTransfer?.sync?.(root);
   }
 
@@ -69,7 +49,6 @@
     document.documentElement.dataset.transferMode = ACTIVE_MODE;
     removeInactiveBookmarkletActions();
     ensureEditorTrigger();
-    ensureGuestGeneratorTrigger();
 
     try {
       await import(POST_ADAPTER);
