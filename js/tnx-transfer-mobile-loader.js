@@ -1,15 +1,19 @@
 (async () => {
-  const WINDOW_NAME_PREFIX = "TNX_CAST_TRANSFER_V1:";
+  const FRAGMENT_PREFIX = "#tnx-transfer=";
   const FALLBACK_URL = new URL(
     "./tnx-transfer-bookmarklet.js?v=2",
     document.currentScript?.src || location.href
   );
 
   try {
-    if (String(window.name || "").startsWith(WINDOW_NAME_PREFIX)) {
-      const transferText = String(window.name).slice(WINDOW_NAME_PREFIX.length);
-      window.name = "";
+    if (location.hash.startsWith(FRAGMENT_PREFIX)) {
+      const payload = location.hash.slice(FRAGMENT_PREFIX.length);
+      const transferText = await decompressBase64Url(payload);
       window.__TNX_TRANSFER_TSV__ = transferText;
+
+      try {
+        history.replaceState(null, "", `${location.pathname}${location.search}`);
+      } catch {}
     }
 
     const script = document.createElement("script");
@@ -28,5 +32,26 @@
         error instanceof Error ? error.message : String(error)
       }`
     );
+  }
+
+  async function decompressBase64Url(value) {
+    if (typeof DecompressionStream !== "function") {
+      throw new Error("このブラウザは転記データの展開に対応していません。");
+    }
+
+    const padded = String(value || "")
+      .replace(/-/g, "+")
+      .replace(/_/g, "/")
+      .padEnd(Math.ceil(String(value || "").length / 4) * 4, "=");
+
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    const source = new Blob([bytes]).stream();
+    const decompressed = source.pipeThrough(new DecompressionStream("gzip"));
+    return await new Response(decompressed).text();
   }
 })();
