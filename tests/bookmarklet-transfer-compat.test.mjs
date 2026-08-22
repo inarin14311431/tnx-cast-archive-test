@@ -11,7 +11,7 @@ test("active cast transfer route uses the preserved POST adapter", async () => {
   const postScript = await read("js/transfer.js");
 
   assert.match(router, /ACTIVE_MODE = "post"/);
-  assert.match(router, /POST_ADAPTER = "\.\/direct-transfer-button-post\.js\?v=2"/);
+  assert.match(router, /POST_ADAPTER = "\.\/direct-transfer-button-post\.js\?v=3"/);
   assert.match(router, /ensureEditorTrigger/);
   assert.match(router, /data-direct-transfer-trigger/);
   assert.match(postDialog, /transfer\.html\?embed=1/);
