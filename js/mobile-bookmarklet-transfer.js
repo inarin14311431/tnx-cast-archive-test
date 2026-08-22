@@ -9,7 +9,10 @@ const status = document.querySelector("#mobile-transfer-status");
 
 initialize().catch(error => {
   console.error("Mobile bookmarklet transfer initialization failed", error);
-  setStatus(error instanceof Error ? error.message : "スマホ転記を初期化できませんでした。", "error");
+  setStatus(
+    error instanceof Error ? error.message : "スマホ転記を初期化できませんでした。",
+    "error"
+  );
 });
 
 async function initialize() {
@@ -27,7 +30,10 @@ async function initialize() {
   const transferButton = document.querySelector("#transfer-tsv-copy-button");
   const bookmarkletButton = document.querySelector("#transfer-bookmarklet-copy-button");
 
-  if (!(transferButton instanceof HTMLButtonElement) || !(bookmarkletButton instanceof HTMLButtonElement)) {
+  if (
+    !(transferButton instanceof HTMLButtonElement) ||
+    !(bookmarkletButton instanceof HTMLButtonElement)
+  ) {
     throw new Error("転記ツールを読み込めませんでした。");
   }
 
@@ -35,19 +41,62 @@ async function initialize() {
   tsvSlot?.append(transferButton);
 
   bookmarkletButton.addEventListener("click", () => {
-    setStatus("転記BMをコピーしました。初回だけブックマークURLへ登録してください。", "success");
+    setStatus(
+      "転記BMをコピーしました。初回だけブックマークURLへ登録してください。",
+      "success"
+    );
   });
+
+  observeTransferState(transferButton);
 
   transferButton.addEventListener("click", () => {
     setStatus("転記データをコピーしています…", "working");
-    window.setTimeout(() => {
-      if (transferButton.dataset.copyState === "success") {
-        setStatus("転記TSVをコピーしました。倉庫を開いて転記BMを実行してください。", "success");
-      } else if (transferButton.dataset.copyState === "error") {
-        setStatus(transferButton.title || "転記TSVをコピーできませんでした。", "error");
-      }
-    }, 150);
   });
+}
+
+function observeTransferState(transferButton) {
+  const updateFromButton = () => {
+    const copyState = transferButton.dataset.copyState || "";
+
+    if (copyState === "copying") {
+      setStatus("転記データをコピーしています…", "working");
+      return;
+    }
+
+    if (copyState === "success") {
+      setStatus(
+        "転記TSVをコピーしました。倉庫を開いて転記BMを実行してください。",
+        "success"
+      );
+      return;
+    }
+
+    if (copyState === "error") {
+      setStatus(
+        transferButton.title || "転記TSVをコピーできませんでした。",
+        "error"
+      );
+    }
+  };
+
+  const observer = new MutationObserver(mutations => {
+    if (
+      mutations.some(
+        mutation =>
+          mutation.type === "attributes" &&
+          mutation.attributeName === "data-copy-state"
+      )
+    ) {
+      updateFromButton();
+    }
+  });
+
+  observer.observe(transferButton, {
+    attributes: true,
+    attributeFilter: ["data-copy-state"]
+  });
+
+  updateFromButton();
 }
 
 function setStatus(message, state = "") {
