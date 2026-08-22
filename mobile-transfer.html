@@ -40,7 +40,7 @@
       </header>
       <p>
         初回だけ「転記BM」をコピーし、ブラウザのブックマークURLをコピーした <code>javascript:</code> から始まる文字列へ置き換えます。
-        ブックマーク名は「N◎VA転記」など分かりやすい名前にしてください。
+        既にスマホ用BMを登録済みの場合も、今回の更新後は一度だけ最新版へ更新してください。
       </p>
       <div id="mobile-transfer-bookmarklet-slot" class="mobile-transfer-actions"></div>
       <details>
@@ -71,7 +71,7 @@
         <h2 id="mobile-transfer-step-3">倉庫を開いてBMを実行</h2>
       </header>
       <p>
-        「キャラクターシート倉庫を開く」を押すと、コピー済みTSVをその場で検証してから同じタブで倉庫へ移動します。
+        「キャラクターシート倉庫を開く」を押すと、コピー済みTSVを検証・圧縮して倉庫へ移動します。
         倉庫を開いた後、登録した「N◎VA転記」BMを実行してください。
       </p>
       <div class="mobile-transfer-actions">
@@ -85,8 +85,7 @@
         </a>
       </div>
       <p class="mobile-transfer-note">
-        倉庫へ移動する直前にTSVの実データ行数を確認します。検証できない場合は移動せず、この画面にエラーを表示します。
-        データは同じタブの一時領域へ保持され、BM実行後に消去されます。
+        転記データはURLのフラグメント部分へ一時的に保持されます。フラグメントはサーバーへ送信されず、BMが読み取った直後にURLから消去します。
       </p>
     </section>
 
@@ -98,6 +97,6 @@
     <div id="mobile-transfer-export-host" class="exp-panel" hidden aria-hidden="true"></div>
   </main>
 
-  <script type="module" src="./js/mobile-bookmarklet-transfer.js?v=2"></script>
+  <script type="module" src="./js/mobile-bookmarklet-transfer.js?v=3"></script>
 </body>
 </html>
