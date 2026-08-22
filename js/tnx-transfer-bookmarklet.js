@@ -39,12 +39,47 @@
     }).join("\n");
   }
 
+  function installClipboardBridge(){
+    const originalDescriptor=Object.getOwnPropertyDescriptor(navigator,"clipboard");
+    const nativeClipboard=navigator.clipboard;
+    const shim=Object.create(nativeClipboard||null);
+    Object.defineProperty(shim,"readText",{
+      configurable:true,
+      value:async()=>String(window.__TNX_TRANSFER_TSV__||"")
+    });
+
+    try{
+      Object.defineProperty(navigator,"clipboard",{configurable:true,value:shim});
+      return ()=>{
+        try{
+          if(originalDescriptor)Object.defineProperty(navigator,"clipboard",originalDescriptor);
+          else delete navigator.clipboard;
+        }catch{}
+      };
+    }catch{}
+
+    if(nativeClipboard){
+      const originalReadText=nativeClipboard.readText?.bind(nativeClipboard);
+      try{
+        Object.defineProperty(nativeClipboard,"readText",{
+          configurable:true,
+          value:async()=>String(window.__TNX_TRANSFER_TSV__||"")
+        });
+        return ()=>{
+          if(!originalReadText)return;
+          try{Object.defineProperty(nativeClipboard,"readText",{configurable:true,value:originalReadText})}catch{}
+        };
+      }catch{}
+    }
+
+    return ()=>{};
+  }
+
   function startResponsibilityRepairs(data){
     const common=window.TNXTransferRepairCommon;
     const repairs=window.TNXTransferRepairs;
     if(!common||!repairs)throw new Error("転記補正モジュールを初期化できませんでした。");
 
-    /* Preserve the former v3 pass order: social/connection -> style skill -> totals. */
     (async()=>{
       for(const delay of [250,700,1400,2800,5200]){
         await common.wait(delay);
@@ -56,7 +91,6 @@
       }
     })().catch(error=>console.error("TNX exact transfer repair failed",error));
 
-    /* Preserve the former v4 cumulative general-skill repair cadence. */
     (async()=>{
       for(const delay of [350,900,1800,3400,6000]){
         await common.wait(delay);
@@ -64,7 +98,6 @@
       }
     })().catch(error=>console.error("TNX general-skill mapping failed",error));
 
-    /* Preserve the former v5 absolute separator repair schedule. */
     for(const delay of [450,1000,2200,4500,8000,11000,12500]){
       window.setTimeout(()=>{
         repairs.repairStyleSeparators(data).catch(error=>console.error("TNX style-separator level-zero repair failed",error));
@@ -85,32 +118,19 @@
     transferText=normalizeStyleSeparatorLevels(transferText);
     window.__TNX_TRANSFER_TSV__=transferText;
 
-    const clipboard=navigator.clipboard;
-    const originalReadText=clipboard?.readText?.bind(clipboard);
-    let overridden=false;
-    if(clipboard){
-      try{
-        Object.defineProperty(clipboard,"readText",{configurable:true,value:async()=>window.__TNX_TRANSFER_TSV__});
-        overridden=true;
-      }catch{
-        try{clipboard.readText=async()=>window.__TNX_TRANSFER_TSV__;overridden=true}catch{}
-      }
-    }
+    const restoreClipboard=installClipboardBridge();
+    try{
+      await load("https://cdn.jsdelivr.net/gh/inarin14311431/tnx_cast_list@893d5243ca5dedd2f525f23d6a4536f96d9fd772/js/tnx-transfer-bookmarklet.js");
+      await load(localResource("tnx-transfer-bookmarklet-fixes.js"));
+      await load(localResource("tnx-transfer-common.js"));
+      await load(localResource("tnx-transfer-social-connection.js"));
+      await load(localResource("tnx-transfer-style-skills.js"));
+      await load(localResource("tnx-transfer-general-skills.js"));
+      await load(localResource("tnx-transfer-handle-repair.js"));
 
-    await load("https://cdn.jsdelivr.net/gh/inarin14311431/tnx_cast_list@893d5243ca5dedd2f525f23d6a4536f96d9fd772/js/tnx-transfer-bookmarklet.js");
-    await load(localResource("tnx-transfer-bookmarklet-fixes.js"));
-    await load(localResource("tnx-transfer-common.js"));
-    await load(localResource("tnx-transfer-social-connection.js"));
-    await load(localResource("tnx-transfer-style-skills.js"));
-    await load(localResource("tnx-transfer-general-skills.js"));
-    await load(localResource("tnx-transfer-handle-repair.js"));
-
-    startResponsibilityRepairs(window.TNXTransferRepairCommon.parse(window.__TNX_TRANSFER_TSV__));
-
-    if(overridden&&clipboard&&originalReadText){
-      window.setTimeout(()=>{
-        try{Object.defineProperty(clipboard,"readText",{configurable:true,value:originalReadText})}catch{}
-      },20000);
+      startResponsibilityRepairs(window.TNXTransferRepairCommon.parse(window.__TNX_TRANSFER_TSV__));
+    }finally{
+      window.setTimeout(restoreClipboard,20000);
     }
   }catch(error){
     console.error("TNX transfer loader failed",error);
