@@ -1,0 +1,46 @@
+body[data-page="guest-generator.html"] { min-width: 0; }
+.guest-generator-header { gap: 4px; }
+.guest-generator-layout { display: grid; gap: 14px; width: min(880px, calc(100% - 20px)); margin: 18px auto 40px; }
+.guest-generator-intro,
+.guest-generator-output,
+.guest-generator-error { border: 1px solid color-mix(in srgb, var(--color-accent) 34%, transparent); background: var(--theme-panel-bg, var(--color-surface)); box-shadow: 0 14px 30px rgb(0 0 0 / 14%); }
+.guest-generator-intro { padding: 18px; }
+.guest-generator-kicker { margin: 0 0 5px; color: var(--color-accent); font-family: var(--font-data, monospace); font-size: 10px; font-weight: 900; letter-spacing: .12em; }
+.guest-generator-intro h2,
+.guest-generator-output h2 { margin: 0; }
+.guest-generator-intro > p:last-child { color: var(--color-muted); font-size: 13px; line-height: 1.65; }
+.guest-generator-output { overflow: hidden; }
+.guest-generator-output__header { display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 16px; border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent); background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)); }
+.guest-generator-output__header button { min-width: 220px; padding: 10px 14px; border: 1px solid var(--color-accent); background: color-mix(in srgb, var(--color-accent) 16%, var(--color-surface)); color: var(--color-text); cursor: pointer; }
+.guest-generator-output__header button span,
+.guest-generator-output__header button small { display: block; font-weight: 900; }
+.guest-generator-output__header button small { margin-top: 3px; font-size: 8px; letter-spacing: .1em; }
+.guest-styles { margin: 6px 0 0; color: var(--color-muted); font-size: 12px; }
+.guest-block { padding: 15px 16px; border-top: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.guest-block h3 { margin: 0 0 10px; font-size: 15px; }
+.guest-block h3 small { color: var(--color-muted); font-size: 9px; letter-spacing: .08em; }
+.guest-ability-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.guest-ability-card { padding: 10px; border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent); background: color-mix(in srgb, var(--color-accent) 6%, transparent); text-align: center; }
+.guest-ability-card span,
+.guest-ability-card small { display: block; }
+.guest-ability-card strong { display: block; margin: 3px 0; font-size: 22px; }
+.guest-ability-card small { color: var(--color-muted); font-size: 10px; }
+.guest-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.guest-list__item { padding: 9px 10px; border-left: 3px solid var(--color-accent); background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+.guest-list__item strong,
+.guest-list__item span { display: block; }
+.guest-list__item span { margin-top: 3px; color: var(--color-muted); font-size: 11px; }
+.guest-list__empty { margin: 0; color: var(--color-muted); }
+.guest-armor-total { display: grid; gap: 3px; margin-top: 10px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--color-success) 40%, transparent); background: color-mix(in srgb, var(--color-success) 7%, transparent); }
+.guest-armor-total strong { color: color-mix(in srgb, var(--color-success) 80%, var(--color-text)); font-size: 15px; }
+.guest-armor-total span { color: var(--color-muted); font-size: 11px; }
+#guest-text { box-sizing: border-box; width: 100%; resize: vertical; padding: 12px; border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent); background: color-mix(in srgb, var(--color-surface) 88%, transparent); color: var(--color-text); font-family: var(--font-data, monospace); line-height: 1.6; }
+.guest-generator-error { padding: 16px; border-color: color-mix(in srgb, var(--color-danger) 45%, transparent); color: var(--color-danger); }
+@media (max-width: 640px) {
+  .guest-generator-layout { width: calc(100% - 14px); margin-top: 9px; gap: 10px; }
+  .guest-generator-output__header { align-items: stretch; flex-direction: column; }
+  .guest-generator-output__header button { min-width: 0; width: 100%; }
+  .guest-ability-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guest-ability-card:last-child { grid-column: 1 / -1; }
+  .guest-list { grid-template-columns: 1fr; }
+}
