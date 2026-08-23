@@ -51,11 +51,8 @@ async function renderLevelWeightedGeneralSkills() {
       const name = String(skill.name ?? "").trim();
       if (!name) continue;
 
-      incrementBy(
-        generalSkillLevels,
-        name,
-        Math.max(0, numberOrZero(skill.level))
-      );
+      const skillLevel = Math.max(0, numberOrZero(skill.level));
+      incrementBy(generalSkillLevels, name, skillLevel);
     }
 
     renderPodium(generalSkillLevels, 10);
