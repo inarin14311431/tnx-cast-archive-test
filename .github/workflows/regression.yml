@@ -35,6 +35,9 @@ jobs:
       - name: Audit mobile editor runtime
         run: npm run audit:mobile
 
+      - name: Audit security invariants
+        run: npm run audit:security
+
       - name: Report sheet DOM ownership
         run: npm run report:sheet-ownership
 
