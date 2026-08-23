@@ -16,7 +16,7 @@ const SUIT_LABELS = { reason:"♠", passion:"♣", life:"♥", mundane:"♦" };
 const STYLE_COST = { none:0, normal:10, secret:20, ultimate:50, direction:2 };
 const STYLE_KIND_LABEL = { none:"なし", normal:"通常", secret:"秘技", ultimate:"奥義", direction:"演出" };
 const GENERAL_KIND_COST = { general:10, proper:5, social:5, connection:5 };
-const GENERAL_KIND_LABEL = { general:"一般", proper:"固有名詞", social:"社会", connection:"コネ" };
+const GENERAL_KIND_LABEL = { general:"一般", proper:"固有名詞" };
 let user = null;
 let troop = null;
 let ownedCharacters = [];
@@ -55,7 +55,7 @@ function renderEditor() {
   setupStyleSelect();
   setValue("#troop-style", troop?.style_1 || ""); setValue("#troop-utsuwa-attribute", troop?.utsuwa_attribute || ""); updateStyleUI();
   const legacySkills = Array.isArray(troop?.skills) ? troop.skills : [];
-  const generalSkills = legacySkills.filter(s => s.category === "general" || ["general","proper","social","connection"].includes(s.kind));
+  const generalSkills = legacySkills.filter(s => (s.category === "general" || ["general","proper"].includes(s.kind)) && !String(s.name || "").startsWith("社会：") && !String(s.name || "").startsWith("コネ："));
   const styleSkills = legacySkills.filter(s => s.category === "style" || (!s.category && ["normal","secret","ultimate","direction","none"].includes(s.type)));
   generalSkills.forEach(addGeneralSkillRow); styleSkills.forEach(addStyleSkillRow);
   (troop?.combos ?? []).forEach(addComboRow); (troop?.outfits ?? []).forEach(addOutfitRow);
@@ -90,12 +90,6 @@ function updateStyleUI() {
   if (!isUtsuwa) setValue("#troop-utsuwa-attribute", "");
 }
 
-function styleRecord() {
-  const name = value("#troop-style");
-  if (name === "ウツワ") return UTSUWA_ATTRIBUTES.find(item => item.name === value("#troop-utsuwa-attribute")) || null;
-  return STYLE_DATA.find(item => item.name === name) || null;
-}
-
 function calculateAbilities(styleName = value("#troop-style"), utsuwaAttribute = value("#troop-utsuwa-attribute"), level = intValue("#troop-level")) {
   const record = styleName === "ウツワ" ? UTSUWA_ATTRIBUTES.find(item => item.name === utsuwaAttribute) : STYLE_DATA.find(item => item.name === styleName);
   return Object.fromEntries(ABILITIES.map(key => [key, { value:(Number(record?.[key]?.[0]) || 0) + level, control:(Number(record?.[key]?.[1]) || 0) + level }]));
@@ -104,8 +98,7 @@ function calculateAbilities(styleName = value("#troop-style"), utsuwaAttribute =
 function recalculateEditor() {
   const abilities = calculateAbilities();
   document.querySelector("#troop-ability-preview").innerHTML = abilityMarkup(abilities);
-  const exp = calculateExperience();
-  setValue("#troop-exp", exp);
+  setValue("#troop-exp", calculateExperience());
 }
 
 function calculateExperience() {
@@ -113,7 +106,6 @@ function calculateExperience() {
   document.querySelectorAll("#troop-general-skills-editor .troop-skill-row").forEach(row => {
     const level = rowInt(row, "level"); const kind = rowValue(row, "kind") || "general";
     total += level * (GENERAL_KIND_COST[kind] ?? 10);
-    const exp = row.querySelector('[data-field="exp"]'); if (exp) exp.value = level * (GENERAL_KIND_COST[kind] ?? 10);
   });
   document.querySelectorAll("#troop-style-skills-editor .troop-skill-row").forEach(row => {
     const level = rowInt(row, "level"); const kind = rowValue(row, "kind") || "normal";
@@ -144,7 +136,8 @@ function addSkillRow(selector, data={}, category) {
   const kindOptions = category === "style"
     ? Object.entries(STYLE_KIND_LABEL).map(([v,l]) => `<option value="${v}">${l}</option>`).join("")
     : Object.entries(GENERAL_KIND_LABEL).map(([v,l]) => `<option value="${v}">${l}</option>`).join("");
-  row.innerHTML = `<input data-field="name" placeholder="技能名" value="${escapeAttr(data.name || "")}"><select data-field="kind">${kindOptions}</select><input data-field="level" type="number" min="0" value="${Number(data.level ?? 1)}" aria-label="技能レベル"><div class="troop-suits">${ABILITIES.map(key => `<label><input type="checkbox" data-suit="${key}" ${data[key] ? "checked" : ""}><span>${SUIT_LABELS[key]}</span></label>`).join("")}</div><input data-field="exp" type="number" readonly aria-label="消費経験点"><input data-field="notes" placeholder="解説／メモ" value="${escapeAttr(data.notes || "")}"><button type="button" data-remove>×</button>`;
+  const expField = category === "style" ? `<input data-field="exp" type="number" readonly aria-label="消費経験点">` : "";
+  row.innerHTML = `<input data-field="name" placeholder="技能名" value="${escapeAttr(data.name || "")}"><select data-field="kind">${kindOptions}</select><input data-field="level" type="number" min="0" value="${Number(data.level ?? 1)}" aria-label="技能レベル"><div class="troop-suits">${ABILITIES.map(key => `<label><input type="checkbox" data-suit="${key}" ${data[key] ? "checked" : ""}><span>${SUIT_LABELS[key]}</span></label>`).join("")}</div>${expField}<input data-field="notes" placeholder="解説／メモ" value="${escapeAttr(data.notes || "")}"><button type="button" data-remove>×</button>`;
   row.querySelector('[data-field="kind"]').value = data.kind || data.type || (category === "style" ? "normal" : "general");
   if (Number(data.level) >= 4) row.querySelectorAll("[data-suit]").forEach(box => box.checked = true);
   row.querySelector("[data-remove]").addEventListener("click", () => { row.remove(); recalculateEditor(); });
@@ -153,13 +146,14 @@ function addSkillRow(selector, data={}, category) {
 
 function addComboRow(data={}) {
   const row = document.createElement("div"); row.className = "troop-editor-row troop-editor-row--combo";
-  row.innerHTML = `<input data-field="name" placeholder="コンボ名" value="${escapeAttr(data.name || "")}"><input data-field="skills" placeholder="組み合わせ技能" value="${escapeAttr(data.skills || "")}"><select data-field="ability"><option value="">能力</option>${ABILITIES.map(k=>`<option value="${k}">${SUIT_LABELS[k]} ${ABILITY_LABELS[k]}</option>`).join("")}</select><input data-field="modifier" placeholder="判定修正" value="${escapeAttr(data.modifier || "")}"><input data-field="target_value" placeholder="達成値目安" value="${escapeAttr(data.target_value || "")}"><input data-field="timing" placeholder="タイミング" value="${escapeAttr(data.timing || "")}"><input data-field="target" placeholder="対象" value="${escapeAttr(data.target || "")}"><input data-field="range" placeholder="射程" value="${escapeAttr(data.range || "")}"><input data-field="act_use_limit" type="number" min="1" placeholder="1アクト回数" value="${escapeAttr(data.act_use_limit || "")}"><input data-field="description" placeholder="解説" value="${escapeAttr(data.description || "")}"><button type="button" data-remove>×</button>`;
-  row.querySelector('[data-field="ability"]').value = data.ability || "";
+  const abilityValue = Array.isArray(data.abilities) ? data.abilities.join(",") : (data.ability || "");
+  row.innerHTML = `<input data-field="name" value="${escapeAttr(data.name || "")}"><input data-field="skills" value="${escapeAttr(data.skills || "")}"><input data-field="ability" value="${escapeAttr(abilityValue)}"><input data-field="modifier" value="${escapeAttr(data.modifier || "")}"><input data-field="target_value" value="${escapeAttr(data.target_value || "")}"><input data-field="timing" value="${escapeAttr(data.timing || "")}"><input data-field="target" value="${escapeAttr(data.target || "")}"><input data-field="range" value="${escapeAttr(data.range || "")}"><input data-field="act_use_limit" type="number" min="1" value="${escapeAttr(data.act_use_limit || "")}"><input data-field="description" value="${escapeAttr(data.description || "")}"><button type="button" data-remove>×</button>`;
   row.querySelector("[data-remove]").addEventListener("click", () => row.remove()); document.querySelector("#troop-combos-editor").append(row);
 }
+
 function addOutfitRow(data={}) {
   const row = document.createElement("div"); row.className = "troop-editor-row troop-editor-row--outfit";
-  row.innerHTML = `<input data-field="name" placeholder="アウトフィット名" value="${escapeAttr(data.name || "")}"><input data-field="notes" placeholder="性能／メモ" value="${escapeAttr(data.notes || "")}"><button type="button" data-remove>×</button>`;
+  row.innerHTML = `<input data-field="name" placeholder="アウトフィット名" value="${escapeAttr(data.name || "")}"><input data-field="attack" placeholder="攻撃" value="${escapeAttr(data.attack || "")}"><input data-field="defense_s" placeholder="S" value="${escapeAttr(data.defense_s ?? data.s ?? "")}"><input data-field="defense_p" placeholder="P" value="${escapeAttr(data.defense_p ?? data.p ?? "")}"><input data-field="defense_i" placeholder="I" value="${escapeAttr(data.defense_i ?? data.i ?? "")}"><input data-field="notes" placeholder="性能／メモ" value="${escapeAttr(data.notes || "")}"><button type="button" data-remove>×</button>`;
   row.querySelector("[data-remove]").addEventListener("click", () => row.remove()); document.querySelector("#troop-outfits-editor").append(row);
 }
 
@@ -173,10 +167,10 @@ async function renderView() {
   const abilities = calculateAbilities(troop.style_1, troop.utsuwa_attribute, Number(troop.level || 0));
   document.querySelector("#troop-abilities-view").innerHTML = abilityMarkup(abilities);
   const skills = Array.isArray(troop.skills) ? troop.skills : [];
-  renderSkillList("#troop-general-skills-view", skills.filter(s => s.category === "general" || ["general","proper","social","connection"].includes(s.kind)));
+  renderSkillList("#troop-general-skills-view", skills.filter(s => (s.category === "general" || ["general","proper"].includes(s.kind)) && !String(s.name || "").startsWith("社会：") && !String(s.name || "").startsWith("コネ：")));
   renderSkillList("#troop-style-skills-view", skills.filter(s => s.category === "style" || (!s.category && ["normal","secret","ultimate","direction","none"].includes(s.type))));
   renderDataList("#troop-combos-view", troop.combos, comboMarkup);
-  renderDataList("#troop-outfits-view", troop.outfits, item => `<strong>${escapeHtml(item.name || "名称未設定")}</strong><p>${escapeHtml(item.notes || "")}</p>`);
+  renderDataList("#troop-outfits-view", troop.outfits, outfitMarkup);
   document.querySelector("#troop-notes-view").textContent = troop.notes || "—";
   const owner = user && troop.owner_id === user.id; const editLink = document.querySelector("#troop-edit-link"); editLink.hidden = !owner;
   if (owner) editLink.href = `./troop.html?id=${encodeURIComponent(troop.public_id)}&edit=1`;
@@ -185,9 +179,24 @@ async function renderView() {
 
 function abilityMarkup(abilities) { return ABILITIES.map(key => `<article><span>${ABILITY_LABELS[key]}</span><strong>${abilities[key].value}</strong><small>制御 ${abilities[key].control}</small></article>`).join(""); }
 function renderSkillList(selector, items) {
-  renderDataList(selector, items, item => { const suits = ABILITIES.filter(k => item[k]).map(k => SUIT_LABELS[k]).join("") || "—"; const category = item.category === "style" || ["normal","secret","ultimate","direction","none"].includes(item.kind || item.type) ? "style" : "general"; const kind = item.kind || item.type || (category === "style" ? "normal" : "general"); const cost = Number(item.exp_cost ?? (Number(item.level||0) * (category === "style" ? (STYLE_COST[kind]??10) : (GENERAL_KIND_COST[kind]??10)))); return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(category === "style" ? (STYLE_KIND_LABEL[kind]||kind) : (GENERAL_KIND_LABEL[kind]||kind))} / Lv.${Number(item.level||0)} / ${suits} / EXP ${cost}</span><p>${escapeHtml(item.notes || "")}</p>`; });
+  renderDataList(selector, items, item => {
+    const suits = ABILITIES.filter(k => item[k]).map(k => SUIT_LABELS[k]).join("") || "—";
+    const category = item.category === "style" || ["normal","secret","ultimate","direction","none"].includes(item.kind || item.type) ? "style" : "general";
+    const kind = item.kind || item.type || (category === "style" ? "normal" : "general");
+    const detail = category === "style" ? `${STYLE_KIND_LABEL[kind]||kind} / Lv.${Number(item.level||0)} / ${suits} / EXP ${Number(item.exp_cost ?? Number(item.level||0)*(STYLE_COST[kind]??10))}` : `Lv.${Number(item.level||0)} / ${suits}`;
+    return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(detail)}</span><p>${escapeHtml(item.notes || "")}</p>`;
+  });
 }
-function comboMarkup(item) { const ability = item.ability ? `${SUIT_LABELS[item.ability]||""} ${ABILITY_LABELS[item.ability]||item.ability}` : "能力未指定"; const detail = [item.timing&&`タイミング：${item.timing}`,item.target&&`対象：${item.target}`,item.range&&`射程：${item.range}`,item.act_use_limit&&`1アクト：${item.act_use_limit}回`].filter(Boolean).join(" / "); return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(ability)} / 修正 ${escapeHtml(item.modifier || "—")} / 達成値 ${escapeHtml(item.target_value || "—")}</span><p>${escapeHtml(item.skills || "")}${detail ? `<br>${escapeHtml(detail)}` : ""}${item.description ? `<br>${escapeHtml(item.description)}` : ""}</p>`; }
+function comboMarkup(item) {
+  const raw = Array.isArray(item.abilities) ? item.abilities : String(item.ability || "").split(",").filter(Boolean);
+  const ability = raw.length ? raw.map(key => `${SUIT_LABELS[key]||""} ${ABILITY_LABELS[key]||key}`).join(" / ") : "能力未指定";
+  const detail = [item.timing&&`タイミング：${item.timing}`,item.target&&`対象：${item.target}`,item.range&&`射程：${item.range}`,item.act_use_limit&&`1アクト：${item.act_use_limit}回`].filter(Boolean).join(" / ");
+  return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(ability)} / 修正 ${escapeHtml(item.modifier || "—")} / 達成値 ${escapeHtml(item.target_value || "—")}</span><p>${escapeHtml(item.skills || "")}${detail ? `<br>${escapeHtml(detail)}` : ""}${item.description ? `<br>${escapeHtml(item.description)}` : ""}</p>`;
+}
+function outfitMarkup(item) {
+  const stats = [item.attack && `攻撃 ${item.attack}`, (item.defense_s!==undefined||item.defense_p!==undefined||item.defense_i!==undefined) && `S ${item.defense_s || 0} / P ${item.defense_p || 0} / I ${item.defense_i || 0}`].filter(Boolean).join(" / ");
+  return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(stats || "—")}</span><p>${escapeHtml(item.notes || "")}</p>`;
+}
 function calculateStoredExperience(skills=[]) { return (skills||[]).reduce((sum,item)=>sum+Number(item.exp_cost||0),0); }
 
 async function renderLinkedCharacter() {
@@ -203,7 +212,7 @@ async function saveTroop(event) {
   if (style.filter(i => i.kind === "secret").length > 2) return setStatus("秘技は2つまでです。", true);
   if (style.filter(i => i.kind === "ultimate").length > 1) return setStatus("奥義は1つまでです。", true);
   const level = intValue("#troop-level"); const abilities = calculateAbilities(styleName, value("#troop-utsuwa-attribute"), level); const exp = calculateExperience();
-  const payload = { owner_id:user.id, character_id:value("#troop-character")||null, name:value("#troop-name"), visibility:value("#troop-visibility"), level, member_max:Math.max(1,intValue("#troop-member-max")), member_current:Math.max(1,intValue("#troop-member-max")), style_1:styleName, style_2:"", style_3:"", utsuwa_attribute:value("#troop-utsuwa-attribute"), reason_value:abilities.reason.value, reason_control:abilities.reason.control, passion_value:abilities.passion.value, passion_control:abilities.passion.control, life_value:abilities.life.value, life_control:abilities.life.control, mundane_value:abilities.mundane.value, mundane_control:abilities.mundane.control, skills:[...general,...style], combos:collectRows("#troop-combos-editor",["name","skills","ability","modifier","target_value","timing","target","range","act_use_limit","description"]).filter(i=>i.name), outfits:collectRows("#troop-outfits-editor",["name","notes"]).filter(i=>i.name), experience_spent:exp, notes:value("#troop-notes") };
+  const payload = { owner_id:user.id, character_id:value("#troop-character")||null, name:value("#troop-name"), visibility:value("#troop-visibility"), level, member_max:Math.max(1,intValue("#troop-member-max")), member_current:Math.max(1,intValue("#troop-member-max")), style_1:styleName, style_2:"", style_3:"", utsuwa_attribute:value("#troop-utsuwa-attribute"), reason_value:abilities.reason.value, reason_control:abilities.reason.control, passion_value:abilities.passion.value, passion_control:abilities.passion.control, life_value:abilities.life.value, life_control:abilities.life.control, mundane_value:abilities.mundane.value, mundane_control:abilities.mundane.control, skills:[...general,...style], combos:collectRows("#troop-combos-editor",["name","skills","ability","modifier","target_value","timing","target","range","act_use_limit","description"]).filter(i=>i.name), outfits:collectRows("#troop-outfits-editor",["name","attack","defense_s","defense_p","defense_i","notes"]).filter(i=>i.name), experience_spent:exp, notes:value("#troop-notes") };
   setStatus("保存中…");
   const result = troop ? await supabase.from("troops").update(payload).eq("id",troop.id).eq("owner_id",user.id).select("public_id").single() : await supabase.from("troops").insert(payload).select("public_id").single();
   if (result.error) return setStatus(result.error.message,true); location.href=`./troop.html?id=${encodeURIComponent(result.data.public_id)}`;
