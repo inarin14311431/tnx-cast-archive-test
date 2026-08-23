@@ -1,4 +1,4 @@
-import { GENERAL_MASTER_ROWS } from "./general-skill-catalog.js";
+import { GENERAL_MASTER_ROWS, initialGeneralSkillSuit } from "./general-skill-catalog.js";
 
 const ABILITIES = ["reason", "passion", "life", "mundane"];
 const SUITS = {
@@ -125,6 +125,7 @@ function enhanceGeneralSkillName(row) {
     detail.hidden = !open;
     original.value = open ? `${base}${detail.value.trim()}` : base;
     syncGeneralKind(row, base);
+    syncGeneralAutoSuit(row, base);
     original.dispatchEvent(new Event("input", { bubbles:true }));
   };
   select.addEventListener("change", sync);
@@ -139,6 +140,37 @@ function syncGeneralKind(row, name) {
   kind.classList.add("troop-skill-kind-auto");
   kind.tabIndex = -1;
   kind.setAttribute("aria-hidden", "true");
+}
+
+function syncGeneralAutoSuit(row, name) {
+  const previous = row.dataset.autoSuit || "";
+  if (previous) {
+    const previousInput = row.querySelector(`[data-suit="${previous}"]`);
+    const previousLabel = previousInput?.closest("label");
+    if (previousInput) {
+      previousInput.disabled = false;
+      previousInput.removeAttribute("data-auto-suit");
+      previousInput.checked = false;
+    }
+    previousLabel?.classList.remove("troop-suit-toggle--fixed");
+    previousLabel?.removeAttribute("title");
+  }
+
+  const fixedSuit = initialGeneralSkillSuit(name);
+  row.dataset.autoSuit = fixedSuit;
+  if (!fixedSuit) return;
+
+  const input = row.querySelector(`[data-suit="${fixedSuit}"]`);
+  const label = input?.closest("label");
+  if (!input) return;
+  input.checked = true;
+  input.disabled = true;
+  input.dataset.autoSuit = "1";
+  label?.classList.add("troop-suit-toggle--fixed");
+  label?.setAttribute("title", `${SUITS[fixedSuit]?.label || fixedSuit}：自動取得スート`);
+
+  const level = row.querySelector('[data-field="level"]');
+  if (level && Number(level.value || 0) < 1) level.value = "1";
 }
 
 function initializeComboDialog() {
