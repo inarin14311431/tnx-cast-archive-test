@@ -1,8 +1,28 @@
 import { supabase } from "./supabase-client.js";
 
 const root = document.querySelector("#statistics-general-skills");
+const statusNode = document.querySelector("#statistics-status");
 
-if (root) void renderLevelWeightedGeneralSkills();
+if (root) waitForBaseStatisticsThenRender();
+
+function waitForBaseStatisticsThenRender() {
+  if (!statusNode || String(statusNode.textContent ?? "").includes("集計完了")) {
+    void renderLevelWeightedGeneralSkills();
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    if (!String(statusNode.textContent ?? "").includes("集計完了")) return;
+    observer.disconnect();
+    void renderLevelWeightedGeneralSkills();
+  });
+
+  observer.observe(statusNode, {
+    childList: true,
+    characterData: true,
+    subtree: true
+  });
+}
 
 async function renderLevelWeightedGeneralSkills() {
   try {
@@ -27,8 +47,10 @@ async function renderLevelWeightedGeneralSkills() {
     const generalSkillLevels = new Map();
     for (const skill of skills ?? []) {
       if (String(skill.category ?? "").trim() === "style") continue;
+
       const name = String(skill.name ?? "").trim();
       if (!name) continue;
+
       const skillLevel = Math.max(0, numberOrZero(skill.level));
       incrementBy(generalSkillLevels, name, skillLevel);
     }
@@ -81,9 +103,14 @@ function numberOrZero(value) {
 }
 
 function formatNumber(value) {
-  return Number(value).toLocaleString("ja-JP", { maximumFractionDigits: 2 });
+  return Number(value).toLocaleString("ja-JP", {
+    maximumFractionDigits: 2
+  });
 }
 
 function localeCompareJa(a, b) {
-  return String(a).localeCompare(String(b), "ja", { sensitivity: "base", numeric: true });
+  return String(a).localeCompare(String(b), "ja", {
+    sensitivity: "base",
+    numeric: true
+  });
 }
