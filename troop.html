@@ -5,7 +5,7 @@
   <link rel="stylesheet" href="./css-next/index.css?v=58" data-css-system="next">
   <link rel="stylesheet" href="./css-next/pages/troops.css?v=4">
   <link rel="stylesheet" href="./css-next/pages/troops-v4.css?v=1">
-  <link rel="stylesheet" href="./css-next/pages/troop-combo-dialog.css?v=2">
+  <link rel="stylesheet" href="./css-next/pages/troop-combo-dialog.css?v=3">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -59,12 +59,11 @@
         <label><span>コンボ名 * <small>COMBO NAME</small></span><input name="name" type="text" maxlength="120" required></label>
         <fieldset class="troop-combo-abilities"><legend>使用能力 <small>ABILITIES</small></legend><label><input type="checkbox" name="ability_choice" value="reason">♠ 理性</label><label><input type="checkbox" name="ability_choice" value="passion">♣ 感情</label><label><input type="checkbox" name="ability_choice" value="life">♥ 生命</label><label><input type="checkbox" name="ability_choice" value="mundane">♦ 外界</label></fieldset>
         <fieldset class="combo-form-grid__wide troop-combo-skills"><legend>組み合わせ技能 <small>SKILL COMBINATION</small></legend><div id="troop-combo-skill-options" class="troop-combo-skill-options"></div></fieldset>
-        <label><span>判定修正 <small>MODIFIER</small></span><input name="modifier" type="text" maxlength="60"></label>
-        <label><span>達成値目安 <small>EXPECTED VALUE</small></span><input name="target_value" type="text" maxlength="60"></label>
+        <label><span>判定修正 <small>MODIFIER</small></span><input name="modifier" type="number" step="1" inputmode="numeric"></label>
+        <label><span>達成値目安 <small>EXPECTED VALUE</small></span><input name="target_value" type="number" step="1" inputmode="numeric"></label>
         <label><span>タイミング <small>TIMING</small></span><input name="timing" type="text" maxlength="100"></label>
         <label><span>対象 <small>TARGET</small></span><input name="target" type="text" maxlength="100"></label>
         <label><span>射程 <small>RANGE</small></span><input name="range" type="text" maxlength="100"></label>
-        <label><span>1アクト使用上限 <small>USES / ACT</small></span><input name="act_use_limit" type="number" min="1" inputmode="numeric"></label>
         <label class="combo-form-grid__wide"><span>効果・解説 <small>EFFECT / DESCRIPTION</small></span><textarea name="description" rows="3" maxlength="5000"></textarea></label>
       </div>
       <footer class="combo-dialog__actions"><button id="troop-combo-delete" type="button" class="danger" hidden><span>削除</span><small>DELETE</small></button><button id="troop-combo-cancel" type="button"><span>キャンセル</span><small>CANCEL</small></button><button type="submit"><span>保存</span><small>SAVE</small></button></footer>
