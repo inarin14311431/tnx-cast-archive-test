@@ -19,9 +19,9 @@
 
 #troop-combo-dialog .combo-form-grid {
   display:grid;
-  grid-template-columns:80px 90px minmax(120px,1fr) minmax(100px,1fr) 76px 88px;
+  grid-template-columns:84px 96px minmax(132px,1.18fr) minmax(116px,1fr) 84px;
   align-content:start;
-  gap:7px 7px;
+  gap:8px 8px;
   min-width:0;
   padding:9px 11px 10px;
   overflow-x:hidden;
@@ -30,22 +30,21 @@
 }
 #troop-combo-dialog .combo-form-grid > label,
 #troop-combo-dialog .combo-form-grid > fieldset { min-width:0; max-width:100%; box-sizing:border-box; }
-#troop-combo-dialog .combo-form-grid > label { display:grid; align-content:start; gap:3px; font-size:.66rem; }
-#troop-combo-dialog .combo-form-grid > label > span { white-space:nowrap; }
-#troop-combo-dialog .combo-form-grid > label small { margin-left:2px; font-size:.46rem; }
+#troop-combo-dialog .combo-form-grid > label { display:grid; align-content:start; gap:4px; font-size:.66rem; }
+#troop-combo-dialog .combo-form-grid > label > span { display:flex; align-items:baseline; gap:4px; min-width:0; white-space:nowrap; }
+#troop-combo-dialog .combo-form-grid > label small { margin-left:0; font-size:.42rem; letter-spacing:.025em; white-space:nowrap; }
 
 /* 1段目 */
 #troop-combo-dialog .combo-form-grid > label:first-of-type { grid-column:1 / 4; }
 #troop-combo-dialog .troop-combo-abilities { grid-column:4 / -1; }
 /* 2段目 */
 #troop-combo-dialog .troop-combo-skills { grid-column:1 / -1; }
-/* 3段目：値の長さに合わせた固定寄りの幅 */
+/* 3段目 */
 #troop-combo-dialog label:has([name="modifier"]) { grid-column:1; }
 #troop-combo-dialog label:has([name="target_value"]) { grid-column:2; }
 #troop-combo-dialog label:has([name="timing"]) { grid-column:3; }
 #troop-combo-dialog label:has([name="target"]) { grid-column:4; }
 #troop-combo-dialog label:has([name="range"]) { grid-column:5; }
-#troop-combo-dialog label:has([name="act_use_limit"]) { grid-column:6; }
 /* 4段目 */
 #troop-combo-dialog .combo-form-grid__wide { grid-column:1 / -1; }
 
@@ -53,7 +52,7 @@
 #troop-combo-dialog textarea { width:100%; max-width:100%; box-sizing:border-box; }
 #troop-combo-dialog input:not([type="checkbox"]) { min-height:30px; padding:4px 6px; }
 #troop-combo-dialog input[type="checkbox"] { flex:0 0 auto; width:auto; min-width:0; margin:0; }
-#troop-combo-dialog textarea { height:4.8em; min-height:4.8em; max-height:8em; padding:5px 6px; resize:vertical; }
+#troop-combo-dialog textarea { height:4.2em; min-height:4.2em; max-height:7em; padding:5px 6px; resize:vertical; }
 
 #troop-combo-dialog .troop-combo-abilities,
 #troop-combo-dialog .troop-combo-skills { display:grid; gap:4px; margin:0; padding:5px 6px 6px; border:1px solid var(--color-border-muted); background:var(--color-surface-alt); overflow:hidden; }
