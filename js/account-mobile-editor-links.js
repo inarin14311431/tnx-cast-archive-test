@@ -66,12 +66,8 @@ function decorateCastCard(card, linkedPublicIds) {
   }
   if (existing) return;
 
-  const troopLink = document.createElement("a");
-  troopLink.href = `./troops.html?character=${encodeURIComponent(publicId)}`;
-  troopLink.className = "owned-cast__troops";
-  troopLink.dataset.castTroopsLink = "1";
-  troopLink.innerHTML = '<span class="action-label__jp">トループ</span><small class="action-label__en">TROOPS</small>';
+  const troopMarkup = `<a href="./troops.html?character=${encodeURIComponent(publicId)}" class="owned-cast__troops" data-cast-troops-link="1"><span class="action-label__jp">トループ</span><small class="action-label__en">TROOPS</small></a>`;
   const acts = management.querySelector(".owned-cast__acts");
-  if (acts) acts.insertAdjacentElement("afterend", troopLink);
-  else management.prepend(troopLink);
+  if (acts) acts.insertAdjacentHTML("afterend", troopMarkup);
+  else management.insertAdjacentHTML("afterbegin", troopMarkup);
 }
