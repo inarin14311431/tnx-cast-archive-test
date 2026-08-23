@@ -4,12 +4,10 @@ if (createLabel) createLabel.textContent = "Mobile版 新規作成";
 
 const accountActions = document.querySelector(".account-actions");
 if (accountActions && !accountActions.querySelector('[data-troop-management-link]')) {
-  const link = document.createElement("a");
-  link.href = "./troops.html";
-  link.dataset.troopManagementLink = "1";
-  link.innerHTML = "<span>トループ管理</span><small>TROOP CONTROL</small>";
+  const markup = '<a href="./troops.html" data-troop-management-link="1"><span>トループ管理</span><small>TROOP CONTROL</small></a>';
   const actsLink = accountActions.querySelector('a[href="./acts.html"]');
-  if (actsLink) actsLink.after(link); else accountActions.append(link);
+  if (actsLink) actsLink.insertAdjacentHTML("afterend", markup);
+  else accountActions.insertAdjacentHTML("beforeend", markup);
 }
 
 function installCastTroopLinks(root = document) {
@@ -21,13 +19,10 @@ function installCastTroopLinks(root = document) {
     const href = new URL(castLink.href, location.href);
     const publicId = href.searchParams.get("id");
     if (!publicId) return;
-    const link = document.createElement("a");
-    link.href = `./troops.html?character=${encodeURIComponent(publicId)}`;
-    link.className = "owned-cast__troops";
-    link.dataset.castTroopsLink = "1";
-    link.innerHTML = '<span class="action-label__jp">トループ</span><small class="action-label__en">TROOPS</small>';
+    const markup = `<a href="./troops.html?character=${encodeURIComponent(publicId)}" class="owned-cast__troops" data-cast-troops-link="1"><span class="action-label__jp">トループ</span><small class="action-label__en">TROOPS</small></a>`;
     const acts = management.querySelector(".owned-cast__acts");
-    if (acts) acts.after(link); else management.prepend(link);
+    if (acts) acts.insertAdjacentHTML("afterend", markup);
+    else management.insertAdjacentHTML("afterbegin", markup);
   });
 }
 
