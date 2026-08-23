@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="./css-next/pages/troops.css?v=4">
   <link rel="stylesheet" href="./css-next/pages/troops-v4.css?v=1">
   <link rel="stylesheet" href="./css-next/pages/troop-combo-dialog.css?v=3">
+  <link rel="stylesheet" href="./css-next/pages/troop-combo-rule-v2.css?v=1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -42,7 +43,7 @@
       <section class="troop-section"><header><h2>能力値／制御値 <small>ABILITY / CONTROL</small></h2></header><div id="troop-ability-preview" class="troop-ability-grid"></div></section>
       <section class="troop-section"><header><h2>一般技能 <small>GENERAL SKILLS</small></h2><button id="troop-general-skill-add" type="button">+ 一般技能</button></header><p class="troop-rule-note">必要な技能だけ登録します。通常の一般技能から選択し、製作・芸術・操縦は個別名称を入力できます。</p><div id="troop-general-skills-editor" class="troop-editor-list"></div></section>
       <section class="troop-section"><header><h2>スタイル技能 <small>STYLE SKILLS</small></h2><button id="troop-style-skill-add" type="button">+ スタイル技能</button></header><p class="troop-rule-note">通常10点、秘技20点、奥義50点、演出2点／レベル。秘技は2つまで、奥義は1つまでです。</p><div id="troop-style-skills-editor" class="troop-editor-list"></div></section>
-      <section class="troop-section"><header><h2>コンボ <small>COMBOS</small></h2><button id="troop-combo-add" type="button">+ コンボ</button></header><p class="troop-rule-note">所持技能を選択して組み合わせます。使用能力は複数選択できます。</p><div id="troop-combo-cards" class="combo-list troop-combo-cards"></div><div id="troop-combos-editor" class="troop-combo-storage" hidden></div></section>
+      <section class="troop-section"><header><h2>コンボ <small>COMBOS</small></h2><button id="troop-combo-add" type="button">+ コンボ</button></header><p class="troop-rule-note">所持技能を組み合わせ、アクト中に使う判定条件を登録します。使用能力は複数選択できます。</p><div id="troop-combo-cards" class="combo-list troop-combo-cards"></div><div id="troop-combos-editor" class="troop-combo-storage" hidden></div></section>
       <section class="troop-section"><header><h2>アウトフィット <small>OUTFITS</small></h2><button id="troop-outfit-add" type="button">+ アウトフィット</button></header><div id="troop-outfits-editor" class="troop-editor-list"></div></section>
       <section class="troop-section"><header><h2>メモ <small>NOTES</small></h2></header><textarea id="troop-notes" rows="7"></textarea></section>
       <p id="troop-editor-status" class="troop-editor-status" aria-live="polite"></p>
@@ -53,18 +54,20 @@
 
   <dialog id="troop-combo-dialog" class="combo-dialog">
     <form id="troop-combo-form" method="dialog">
-      <header class="combo-dialog__header"><div><p>トループ・コンボデータベース <small>TROOP COMBO DATABASE</small></p><h2 id="troop-combo-dialog-title">コンボを追加 <small>ADD COMBO</small></h2></div><button id="troop-combo-close" type="button" aria-label="閉じる">×</button></header>
+      <header class="combo-dialog__header"><div><p>トループ・判定プリセット <small>TROOP CHECK PRESET</small></p><h2 id="troop-combo-dialog-title">コンボを追加 <small>ADD COMBO</small></h2></div><button id="troop-combo-close" type="button" aria-label="閉じる">×</button></header>
       <input name="row_index" type="hidden">
+      <input name="target_value" type="hidden">
       <div class="combo-form-grid">
-        <label><span>コンボ名 * <small>COMBO NAME</small></span><input name="name" type="text" maxlength="120" required></label>
+        <label class="combo-field combo-field--name"><span>コンボ名 * <small>COMBO NAME</small></span><input name="name" type="text" maxlength="120" required></label>
         <fieldset class="troop-combo-abilities"><legend>使用能力 <small>ABILITIES</small></legend><label><input type="checkbox" name="ability_choice" value="reason">♠ 理性</label><label><input type="checkbox" name="ability_choice" value="passion">♣ 感情</label><label><input type="checkbox" name="ability_choice" value="life">♥ 生命</label><label><input type="checkbox" name="ability_choice" value="mundane">♦ 外界</label></fieldset>
         <fieldset class="combo-form-grid__wide troop-combo-skills"><legend>組み合わせ技能 <small>SKILL COMBINATION</small></legend><div id="troop-combo-skill-options" class="troop-combo-skill-options"></div></fieldset>
-        <label><span>判定修正 <small>MODIFIER</small></span><input name="modifier" type="number" step="1" inputmode="numeric"></label>
-        <label><span>達成値目安 <small>EXPECTED VALUE</small></span><input name="target_value" type="number" step="1" inputmode="numeric"></label>
-        <label><span>タイミング <small>TIMING</small></span><input name="timing" type="text" maxlength="100"></label>
-        <label><span>対象 <small>TARGET</small></span><input name="target" type="text" maxlength="100"></label>
-        <label><span>射程 <small>RANGE</small></span><input name="range" type="text" maxlength="100"></label>
-        <label class="combo-form-grid__wide"><span>効果・解説 <small>EFFECT / DESCRIPTION</small></span><textarea name="description" rows="3" maxlength="5000"></textarea></label>
+        <label class="combo-field combo-field--rule"><span>判定修正 <small>MODIFIER</small></span><input name="modifier" type="number" step="1" inputmode="numeric"></label>
+        <label class="combo-field combo-field--rule"><span>目標値 <small>DIFFICULTY</small></span><input name="difficulty" type="text" maxlength="60" placeholder="制御値 / 10 / なし"></label>
+        <label class="combo-field combo-field--rule"><span>対決 <small>CONFRONTATION</small></span><input name="confrontation" type="text" maxlength="80" placeholder="〈回避〉 / なし"></label>
+        <label class="combo-field combo-field--rule"><span>タイミング <small>TIMING</small></span><input name="timing" type="text" maxlength="100"></label>
+        <label class="combo-field combo-field--rule"><span>対象 <small>TARGET</small></span><input name="target" type="text" maxlength="100"></label>
+        <label class="combo-field combo-field--rule"><span>射程 <small>RANGE</small></span><input name="range" type="text" maxlength="100"></label>
+        <label class="combo-form-grid__wide combo-field--description"><span>効果・解説 <small>EFFECT / DESCRIPTION</small></span><textarea name="description" rows="3" maxlength="5000"></textarea></label>
       </div>
       <footer class="combo-dialog__actions"><button id="troop-combo-delete" type="button" class="danger" hidden><span>削除</span><small>DELETE</small></button><button id="troop-combo-cancel" type="button"><span>キャンセル</span><small>CANCEL</small></button><button type="submit"><span>保存</span><small>SAVE</small></button></footer>
     </form>
@@ -72,5 +75,6 @@
 
   <script type="module" src="./js/troop.js?v=3"></script>
   <script type="module" src="./js/troop-editor-ui.js?v=2"></script>
+  <script type="module" src="./js/troop-combo-rule-v2.js?v=1"></script>
 </body>
 </html>
