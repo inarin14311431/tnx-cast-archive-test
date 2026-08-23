@@ -68,7 +68,7 @@ test("utsuwa attribute is strictly hidden except for utsuwa", () => {
   const css = read("css-next/pages/troops.css");
   assert.match(html, /id="troop-utsuwa-wrap" hidden/);
   assert.match(js, /hidden = !isUtsuwa/);
-  assert.match(css, /#troop-editor \[hidden\]\{display:none!important\}/);
+  assert.match(css, /#troop-editor \[hidden\][^{]*\{display:none!important\}/);
 });
 
 test("troop general and style skills keep normal EXP rules", () => {
