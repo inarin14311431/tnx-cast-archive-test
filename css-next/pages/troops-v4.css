@@ -1,0 +1,13 @@
+/* Troop editor v4 refinements */
+#troop-general-skills-editor .troop-skill-row:has(.troop-general-skill-picker){grid-template-columns:minmax(230px,1.7fr) 64px 154px minmax(150px,1.4fr) 38px}
+.troop-combo-abilities,.troop-combo-skills{margin:0;padding:10px;border:1px solid var(--color-border-muted)}
+.troop-combo-abilities legend,.troop-combo-skills legend{padding:0 5px;font-weight:900}
+.troop-combo-abilities{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.troop-combo-abilities label,.troop-combo-skill-options label{display:flex;align-items:center;gap:7px;min-height:38px;padding:6px 9px;border:1px solid var(--color-border-muted);cursor:pointer}
+.troop-combo-abilities label:has(input:checked),.troop-combo-skill-options label:has(input:checked){border-color:var(--color-accent);background:var(--color-accent-soft);font-weight:900}
+.troop-combo-skill-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.troop-editor-row--outfit{grid-template-columns:minmax(150px,1.2fr) 110px 64px 64px 64px minmax(180px,1.6fr) 38px}
+.troop-editor-row--outfit [data-field="attack"]{font-weight:900}
+.troop-editor-row--outfit [data-field^="defense_"]{text-align:center;font-weight:900}
+@media(max-width:900px){.troop-combo-abilities{grid-template-columns:repeat(2,minmax(0,1fr))}.troop-combo-skill-options{grid-template-columns:1fr}.troop-editor-row--outfit{grid-template-columns:repeat(2,minmax(0,1fr))}.troop-editor-row--outfit [data-remove]{grid-column:2;justify-self:end}}
+@media(max-width:760px){.troop-combo-abilities,.troop-editor-row--outfit{grid-template-columns:1fr}.troop-editor-row--outfit [data-remove]{grid-column:auto}}

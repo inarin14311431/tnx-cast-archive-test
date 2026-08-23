@@ -53,6 +53,18 @@ test("troop general skills are selected and named skills support details", () =>
   assert.match(ui, /troop-general-skill-detail/);
 });
 
+test("troop general skills omit social connection and per-row EXP", () => {
+  const html = read("troop.html");
+  const js = read("js/troop.js");
+  const ui = read("js/troop-editor-ui.js");
+  assert.doesNotMatch(html, /社会・コネ|社会、コネ/);
+  assert.match(ui, /OPEN_PREFIXES = \["製作：", "芸術：", "操縦："\]/);
+  assert.doesNotMatch(ui, /OPEN_PREFIXES = \[[^\]]*社会：/);
+  assert.doesNotMatch(ui, /OPEN_PREFIXES = \[[^\]]*コネ：/);
+  assert.match(js, /const expField = category === "style"/);
+  assert.match(js, /category === "style" \? .*EXP/s);
+});
+
 test("troop suits use outline and filled suit toggles", () => {
   const ui = read("js/troop-editor-ui.js");
   const css = read("css-next/pages/troops.css");
@@ -80,14 +92,28 @@ test("troop general and style skills keep normal EXP rules", () => {
   assert.match(js, /length > 1/);
 });
 
-test("troop combos reuse the existing combo-card and combo-dialog UI model", () => {
+test("troop combos reuse the combo card dialog and select owned skills", () => {
   const html = read("troop.html");
   const ui = read("js/troop-editor-ui.js");
   assert.match(html, /class="combo-dialog"/);
-  assert.match(html, /class="combo-form-grid"/);
-  assert.match(ui, /class="combo-card"/);
+  assert.match(html, /id="troop-combo-skill-options"/);
+  assert.match(html, /name="ability_choice"/);
+  assert.match(ui, /ownedSkillNames/);
+  assert.match(ui, /name="skill_choice"/);
+  assert.match(ui, /querySelectorAll\('input\[name="ability_choice"\]:checked'\)/);
+  assert.match(ui, /join\(","\)/);
   assert.match(ui, /target_value/);
   assert.match(ui, /act_use_limit/);
+});
+
+test("troop outfits expose attack and SPI values", () => {
+  const js = read("js/troop.js");
+  assert.match(js, /data-field="attack"/);
+  assert.match(js, /data-field="defense_s"/);
+  assert.match(js, /data-field="defense_p"/);
+  assert.match(js, /data-field="defense_i"/);
+  assert.match(js, /\["name","attack","defense_s","defense_p","defense_i","notes"\]/);
+  assert.match(js, /S \$\{item\.defense_s/);
 });
 
 test("account and cast have troop navigation adapters", () => {

@@ -7,17 +7,16 @@ const SUITS = {
   life:   { off:"♡", on:"♥", label:"生命" },
   mundane:{ off:"♢", on:"♦", label:"外界" }
 };
-const GENERAL_NAMES = GENERAL_MASTER_ROWS.map(([name]) => name);
-const OPEN_PREFIXES = ["製作：", "芸術：", "操縦：", "社会：", "コネ："];
+const GENERAL_NAMES = GENERAL_MASTER_ROWS.map(([name]) => name).filter(name => !name.startsWith("社会：") && !name.startsWith("コネ："));
+const OPEN_PREFIXES = ["製作：", "芸術：", "操縦："];
 const COMBO_FIELDS = ["name","skills","ability","modifier","target_value","timing","target","range","act_use_limit","description"];
 
 const editor = document.querySelector("#troop-editor");
-const generalRoot = document.querySelector("#troop-general-skills-editor");
-const styleRoot = document.querySelector("#troop-style-skills-editor");
 const comboStorage = document.querySelector("#troop-combos-editor");
 const comboCards = document.querySelector("#troop-combo-cards");
 const comboDialog = document.querySelector("#troop-combo-dialog");
 const comboForm = document.querySelector("#troop-combo-form");
+const comboSkillOptions = document.querySelector("#troop-combo-skill-options");
 
 installCaptureHandlers();
 observeEditorRows();
@@ -94,7 +93,7 @@ function enhanceGeneralSkillName(row) {
   const select = document.createElement("select");
   select.dataset.generalSkillSelect = "1";
   select.setAttribute("aria-label", "一般技能名");
-  select.innerHTML = `<option value="">技能を選択</option>${GENERAL_NAMES.map(name => `<option value="${escapeAttr(name)}">${escapeHtml(name)}</option>`).join("")}<option value="社会：">社会：</option><option value="コネ：">コネ：</option>`;
+  select.innerHTML = `<option value="">技能を選択</option>${GENERAL_NAMES.map(name => `<option value="${escapeAttr(name)}">${escapeHtml(name)}</option>`).join("")}`;
   const detail = document.createElement("input");
   detail.type = "text";
   detail.className = "troop-general-skill-detail";
@@ -108,7 +107,7 @@ function enhanceGeneralSkillName(row) {
     detail.value = current.slice(matchedPrefix.length);
   } else if (GENERAL_NAMES.includes(current)) {
     select.value = current;
-  } else if (current) {
+  } else if (current && !current.startsWith("社会：") && !current.startsWith("コネ：")) {
     const option = document.createElement("option");
     option.value = current;
     option.textContent = current;
@@ -136,10 +135,7 @@ function enhanceGeneralSkillName(row) {
 function syncGeneralKind(row, name) {
   const kind = row.querySelector('select[data-field="kind"]');
   if (!kind) return;
-  if (["製作：","芸術：","操縦："].includes(name)) kind.value = "proper";
-  else if (name === "社会：") kind.value = "social";
-  else if (name === "コネ：") kind.value = "connection";
-  else kind.value = "general";
+  kind.value = ["製作：","芸術：","操縦："].includes(name) ? "proper" : "general";
   kind.classList.add("troop-skill-kind-auto");
   kind.tabIndex = -1;
   kind.setAttribute("aria-hidden", "true");
@@ -153,15 +149,35 @@ function initializeComboDialog() {
   comboForm.addEventListener("submit", saveComboFromDialog);
 }
 
+function ownedSkillNames() {
+  const names = [...document.querySelectorAll("#troop-general-skills-editor .troop-skill-row, #troop-style-skills-editor .troop-skill-row")]
+    .map(row => rowValue(row, "name"))
+    .filter(Boolean);
+  return [...new Set(names)];
+}
+
+function renderComboSkillChoices(selected = []) {
+  if (!comboSkillOptions) return;
+  const selectedSet = new Set(selected);
+  const names = ownedSkillNames();
+  comboSkillOptions.innerHTML = names.length
+    ? names.map(name => `<label><input type="checkbox" name="skill_choice" value="${escapeAttr(name)}" ${selectedSet.has(name) ? "checked" : ""}><span>${escapeHtml(name)}</span></label>`).join("")
+    : `<p class="empty-data">先に技能を登録してください。</p>`;
+}
+
 function openComboDialog(index = null) {
   if (!comboDialog || !comboForm) return;
   comboForm.reset();
   comboForm.elements.namedItem("row_index").value = index === null ? "" : String(index);
   const row = index === null ? null : comboRows()[index];
-  COMBO_FIELDS.forEach(field => {
+  ["name","modifier","target_value","timing","target","range","act_use_limit","description"].forEach(field => {
     const control = comboForm.elements.namedItem(field);
     if (control) control.value = row ? rowValue(row, field) : "";
   });
+  const abilities = row ? rowValue(row, "ability").split(",").filter(Boolean) : [];
+  comboForm.querySelectorAll('input[name="ability_choice"]').forEach(input => { input.checked = abilities.includes(input.value); });
+  const skills = row ? rowValue(row, "skills").split("＋").map(value => value.trim()).filter(Boolean) : [];
+  renderComboSkillChoices(skills);
   const editing = Boolean(row);
   document.querySelector("#troop-combo-dialog-title").innerHTML = editing ? "コンボを編集 <small>EDIT COMBO</small>" : "コンボを追加 <small>ADD COMBO</small>";
   document.querySelector("#troop-combo-delete").hidden = !editing;
@@ -178,11 +194,14 @@ function saveComboFromDialog(event) {
     row = createComboStorageRow();
     comboStorage.append(row);
   }
-  COMBO_FIELDS.forEach(field => {
+  const directFields = ["name","modifier","target_value","timing","target","range","act_use_limit","description"];
+  directFields.forEach(field => {
     const target = row.querySelector(`[data-field="${field}"]`);
     const source = comboForm.elements.namedItem(field);
     if (target && source) target.value = source.value;
   });
+  row.querySelector('[data-field="ability"]').value = [...comboForm.querySelectorAll('input[name="ability_choice"]:checked')].map(input => input.value).join(",");
+  row.querySelector('[data-field="skills"]').value = [...comboForm.querySelectorAll('input[name="skill_choice"]:checked')].map(input => input.value).join("＋");
   comboDialog.close();
   renderComboCards();
   editor?.dispatchEvent(new Event("input", { bubbles:true }));
@@ -217,8 +236,8 @@ function renderComboCards() {
   }
   comboCards.innerHTML = rows.map((row, index) => {
     const name = rowValue(row, "name") || "名称未設定";
-    const ability = rowValue(row, "ability");
-    const abilityLabel = ability ? `${SUITS[ability]?.on || ""} ${SUITS[ability]?.label || ability}` : "能力未指定";
+    const abilities = rowValue(row, "ability").split(",").filter(Boolean);
+    const abilityLabel = abilities.length ? abilities.map(key => `${SUITS[key]?.on || ""} ${SUITS[key]?.label || key}`).join(" / ") : "能力未指定";
     const skills = rowValue(row, "skills") || "組み合わせ技能なし";
     const detail = [
       rowValue(row,"timing") && `タイミング：${rowValue(row,"timing")}`,
