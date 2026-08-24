@@ -2,6 +2,11 @@ import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
 import { registerTroopSave } from "./troop-save.js";
+import { initializeTroopEditorUi, refreshTroopEditorUi } from "./troop-editor-ui.js";
+import { initializeTroopLayout, refreshTroopAbilityPairs } from "./troop-layout-refine.js";
+import { refreshTroopComboRules } from "./troop-combo-rule-v2.js";
+import { unpackTroopComboRule } from "./troop-combo-codec.js";
+import { initialGeneralSkillSuit } from "./general-skill-catalog.js";
 
 const params = new URLSearchParams(location.search);
 const publicId = params.get("id")?.trim() || "";
@@ -60,7 +65,11 @@ function renderEditor() {
   const styleSkills = legacySkills.filter(s => s.category === "style" || (!s.category && ["normal","secret","ultimate","direction","none"].includes(s.type)));
   generalSkills.forEach(addGeneralSkillRow); styleSkills.forEach(addStyleSkillRow);
   (troop?.combos ?? []).forEach(addComboRow); (troop?.outfits ?? []).forEach(addOutfitRow);
-  bindEditorEvents(); recalculateEditor();
+  initializeTroopLayout(editor);
+  initializeTroopEditorUi();
+  bindEditorEvents();
+  refreshTroopEditorUi();
+  recalculateEditor();
   const deleteButton = document.querySelector("#troop-delete"); deleteButton.hidden = !troop; deleteButton.addEventListener("click", deleteTroop);
   if (troop) document.querySelector("#troop-cancel").href = `./troop.html?id=${encodeURIComponent(troop.public_id)}`;
 }
@@ -76,9 +85,8 @@ function bindEditorEvents() {
   document.querySelector("#troop-style").addEventListener("change", () => { updateStyleUI(); recalculateEditor(); });
   document.querySelector("#troop-utsuwa-attribute").addEventListener("change", recalculateEditor);
   document.querySelector("#troop-level").addEventListener("input", recalculateEditor);
-  document.querySelector("#troop-general-skill-add").addEventListener("click", () => { addGeneralSkillRow(); recalculateEditor(); });
+  document.querySelector("#troop-general-skill-add")?.addEventListener("click", () => { addGeneralSkillRow(); recalculateEditor(); });
   document.querySelector("#troop-style-skill-add").addEventListener("click", () => { addStyleSkillRow(); recalculateEditor(); });
-  document.querySelector("#troop-combo-add").addEventListener("click", () => addComboRow());
   document.querySelector("#troop-outfit-add").addEventListener("click", () => addOutfitRow());
   editor.addEventListener("input", event => { if (event.target.closest(".troop-skill-row")) syncSkillRow(event.target); recalculateEditor(); });
   editor.addEventListener("change", event => { if (event.target.closest(".troop-skill-row")) syncSkillRow(event.target); recalculateEditor(); });
@@ -99,6 +107,7 @@ function calculateAbilities(styleName = value("#troop-style"), utsuwaAttribute =
 function recalculateEditor() {
   const abilities = calculateAbilities();
   document.querySelector("#troop-ability-preview").innerHTML = abilityMarkup(abilities);
+  refreshTroopAbilityPairs("#troop-ability-preview", "#troop-level");
   setValue("#troop-exp", calculateExperience());
 }
 
@@ -106,12 +115,12 @@ function calculateExperience() {
   let total = 0;
   document.querySelectorAll("#troop-general-skills-editor .troop-skill-row").forEach(row => {
     const level = rowInt(row, "level"); const kind = rowValue(row, "kind") || "general";
-    total += level * (GENERAL_KIND_COST[kind] ?? 10);
+    const freeLevel = kind === "general" && initialGeneralSkillSuit(rowValue(row, "name")) ? 1 : 0;
+    total += Math.max(0, level - freeLevel) * (GENERAL_KIND_COST[kind] ?? 10);
   });
   document.querySelectorAll("#troop-style-skills-editor .troop-skill-row").forEach(row => {
     const level = rowInt(row, "level"); const kind = rowValue(row, "kind") || "normal";
     total += level * (STYLE_COST[kind] ?? 10);
-    const exp = row.querySelector('[data-field="exp"]'); if (exp) exp.value = level * (STYLE_COST[kind] ?? 10);
   });
   return total;
 }
@@ -134,22 +143,26 @@ function addGeneralSkillRow(data={}) { addSkillRow("#troop-general-skills-editor
 function addStyleSkillRow(data={}) { addSkillRow("#troop-style-skills-editor", data, "style"); }
 function addSkillRow(selector, data={}, category) {
   const row = document.createElement("div"); row.className = "troop-editor-row troop-skill-row"; row.dataset.category = category;
+  if (category === "style") row.classList.add("troop-style-row-v6");
   const kindOptions = category === "style"
     ? Object.entries(STYLE_KIND_LABEL).map(([v,l]) => `<option value="${v}">${l}</option>`).join("")
     : Object.entries(GENERAL_KIND_LABEL).map(([v,l]) => `<option value="${v}">${l}</option>`).join("");
-  const expField = category === "style" ? `<input data-field="exp" type="number" readonly aria-label="消費経験点">` : "";
-  row.innerHTML = `<input data-field="name" placeholder="技能名" value="${escapeAttr(data.name || "")}"><select data-field="kind">${kindOptions}</select><input data-field="level" type="number" min="0" value="${Number(data.level ?? 1)}" aria-label="技能レベル"><div class="troop-suits">${ABILITIES.map(key => `<label><input type="checkbox" data-suit="${key}" ${data[key] ? "checked" : ""}><span>${SUIT_LABELS[key]}</span></label>`).join("")}</div>${expField}<input data-field="notes" placeholder="解説／メモ" value="${escapeAttr(data.notes || "")}"><button type="button" data-remove>×</button>`;
+  const styleMeta = category === "style" ? `<input data-field="timing" class="troop-style-meta-input" placeholder="タイミング" value="${escapeAttr(data.timing || "")}" aria-label="タイミング"><input data-field="confrontation" class="troop-style-meta-input" placeholder="対決" value="${escapeAttr(data.confrontation || "")}" aria-label="対決">` : "";
+  row.innerHTML = `<input data-field="name" placeholder="技能名" value="${escapeAttr(data.name || "")}"><select data-field="kind">${kindOptions}</select><input data-field="level" type="number" min="0" value="${Number(data.level ?? 1)}" aria-label="技能レベル"><div class="troop-suits">${ABILITIES.map(key => `<label><input type="checkbox" data-suit="${key}" ${data[key] ? "checked" : ""}><span>${SUIT_LABELS[key]}</span></label>`).join("")}</div>${styleMeta}<input data-field="notes" placeholder="解説／メモ" value="${escapeAttr(data.notes || "")}"><button type="button" data-remove>×</button>`;
   row.querySelector('[data-field="kind"]').value = data.kind || data.type || (category === "style" ? "normal" : "general");
   if (Number(data.level) >= 4) row.querySelectorAll("[data-suit]").forEach(box => box.checked = true);
   row.querySelector("[data-remove]").addEventListener("click", () => { row.remove(); recalculateEditor(); });
   document.querySelector(selector).append(row);
+  refreshTroopEditorUi();
 }
 
 function addComboRow(data={}) {
   const row = document.createElement("div"); row.className = "troop-editor-row troop-editor-row--combo";
   const abilityValue = Array.isArray(data.abilities) ? data.abilities.join(",") : (data.ability || "");
   row.innerHTML = `<input data-field="name" value="${escapeAttr(data.name || "")}"><input data-field="skills" value="${escapeAttr(data.skills || "")}"><input data-field="ability" value="${escapeAttr(abilityValue)}"><input data-field="modifier" value="${escapeAttr(data.modifier || "")}"><input data-field="target_value" value="${escapeAttr(data.target_value || "")}"><input data-field="timing" value="${escapeAttr(data.timing || "")}"><input data-field="target" value="${escapeAttr(data.target || "")}"><input data-field="range" value="${escapeAttr(data.range || "")}"><input data-field="act_use_limit" type="number" min="1" value="${escapeAttr(data.act_use_limit || "")}"><input data-field="description" value="${escapeAttr(data.description || "")}"><button type="button" data-remove>×</button>`;
-  row.querySelector("[data-remove]").addEventListener("click", () => row.remove()); document.querySelector("#troop-combos-editor").append(row);
+  row.querySelector("[data-remove]").addEventListener("click", () => { row.remove(); refreshTroopComboRules(); });
+  document.querySelector("#troop-combos-editor").append(row);
+  refreshTroopComboRules();
 }
 
 function addOutfitRow(data={}) {
@@ -176,6 +189,7 @@ async function renderView() {
     control: storedNumber(`${key}_control`, calculatedAbilities[key].control)
   }]));
   document.querySelector("#troop-abilities-view").innerHTML = abilityMarkup(abilities);
+  refreshTroopAbilityPairs("#troop-abilities-view", "#troop-level-view");
   const skills = Array.isArray(troop.skills) ? troop.skills : [];
   renderSkillList("#troop-general-skills-view", skills.filter(s => (s.category === "general" || ["general","proper"].includes(s.kind)) && !String(s.name || "").startsWith("社会：") && !String(s.name || "").startsWith("コネ：")), "general");
   renderSkillList("#troop-style-skills-view", skills.filter(s => s.category === "style" || (!s.category && ["normal","secret","ultimate","direction","none"].includes(s.type))), "style");
@@ -218,7 +232,7 @@ function comboMarkup(item) {
   const raw = Array.isArray(item.abilities) ? item.abilities : String(item.ability || "").split(",").filter(Boolean);
   const ability = raw.length ? raw.map(key => `${SUIT_LABELS[key]||""} ${ABILITY_LABELS[key]||key}`).join(" / ") : "能力未指定";
   const detail = [item.timing&&`タイミング：${item.timing}`,item.target&&`対象：${item.target}`,item.range&&`射程：${item.range}`,item.act_use_limit&&`1アクト：${item.act_use_limit}回`].filter(Boolean).join(" / ");
-  const rule = unpackComboRule(item.target_value);
+  const rule = unpackTroopComboRule(item.target_value);
   return `<article class="troop-view-combo"><div class="troop-view-combo__identity"><strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(ability)} / ${escapeHtml(item.skills || "技能未設定")}</span></div><dl><div><dt>判定修正</dt><dd>${escapeHtml(item.modifier || "—")}</dd></div><div><dt>達成値目安</dt><dd>${escapeHtml(rule.expected_value || "—")}</dd></div><div><dt>対決</dt><dd>${escapeHtml(rule.confrontation || "—")}</dd></div></dl><p class="troop-view-combo__detail">${escapeHtml(detail || "詳細未登録")}</p><p class="troop-view-combo__description">${escapeHtml(item.description || "—")}</p></article>`;
 }
 
@@ -235,22 +249,6 @@ function calculateStoredExperience(skills=[]) { return (skills||[]).reduce((sum,
 function storedNumber(field, fallback) {
   const parsed = Number(troop?.[field]);
   return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function unpackComboRule(value) {
-  const prefix = "@@TNX_COMBO_CHECK_V2@@";
-  const text = String(value || "").trim();
-  if (!text) return { expected_value:"", confrontation:"" };
-  if (!text.startsWith(prefix)) return { expected_value:/^[-+]?\d+$/.test(text) ? text : "", confrontation:"" };
-  try {
-    const parsed = JSON.parse(text.slice(prefix.length));
-    return {
-      expected_value:String(parsed?.expected_value || parsed?.difficulty || "").trim(),
-      confrontation:String(parsed?.confrontation || "").trim()
-    };
-  } catch {
-    return { expected_value:"", confrontation:"" };
-  }
 }
 
 async function renderLinkedCharacter() {
