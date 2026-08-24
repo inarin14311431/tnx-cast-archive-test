@@ -116,8 +116,17 @@ test("troop outfits expose attack and SPI values", () => {
   assert.match(js, /S \$\{item\.defense_s/);
 });
 
-test("account and cast have troop navigation adapters", () => {
+test("account and cast have responsive troop navigation adapters", () => {
+  const cast = read("js/cast-troops-link.js");
+  const castHtml = read("cast.html");
+  const mobileCss = read("css-next/pages/troops-v4.css");
   assert.match(read("js/account-mobile-editor-links.js"), /troops\.html/);
   assert.match(read("js/cast-mobile-level-labels.js"), /cast-troops-link\.js/);
-  assert.match(read("js/cast-troops-link.js"), /ASSIGNED TROOPS/);
+  assert.match(cast, /matchMedia\("\(min-width: 761px\)"\)/);
+  assert.match(cast, /cast-troop-dialog/);
+  assert.match(cast, /showModal\(\)/);
+  assert.match(cast, /troops\.length === 1.*troop\.html/s);
+  assert.match(cast, /troops\.html\?character=/);
+  assert.match(castHtml, /cast-troop-modal\.css/);
+  assert.match(mobileCss, /body\[data-page="troop\.html"\].*troop-vitals/s);
 });
