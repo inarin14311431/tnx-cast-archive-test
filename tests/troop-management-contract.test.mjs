@@ -38,7 +38,7 @@ test("troop abilities use four compact two-digit pairs followed by CS", () => {
   const html = read("troop.html");
   const layout = read("js/troop-layout-refine.js");
   const css = read("css-next/pages/troop-screen.css");
-  assert.match(html, /troop-layout-refine\.js\?v=5/);
+  assert.match(html, /troop-layout-refine\.js\?v=6/);
   assert.match(layout, /installAbilityPairs\("#troop-ability-preview", "#troop-level"\)/);
   assert.match(layout, /installAbilityPairs\("#troop-abilities-view", "#troop-level-view"\)/);
   assert.match(layout, /troop-ability-grid--compact-pairs/);
