@@ -20,9 +20,11 @@ PowerShellのExecution Policyで `npm.ps1` / `npx.ps1` が拒否される環境�
 $env:E2E_EMAIL="テスト用メールアドレス"
 $env:E2E_PASSWORD="テスト用パスワード"
 $env:E2E_CAST_ID="TNX-000091"
+$env:E2E_TROOP_ID="TRP-56F796299BEC"
 ```
 
 `E2E_EMAIL` / `E2E_PASSWORD` が未設定の場合、認証必須テストは失敗ではなくskipになります。`E2E_CAST_ID` は未設定時に `TNX-000091` を使用します。
+`E2E_TROOP_ID` は公開閲覧テスト用で、未設定時は `TRP-56F796299BEC` を使用します。
 
 旧ローカル環境との互換用に `TEST_EMAIL` / `TEST_PASSWORD` / `TEST_CAST_ID` も利用できます。
 
@@ -58,6 +60,13 @@ npx.cmd playwright test --headed
 npx.cmd playwright test tests/e2e/editor-help.spec.js --project=mobile --headed
 ```
 
+トループ関連のみ:
+
+```powershell
+npm.cmd run test:troop
+npm.cmd run e2e:troop
+```
+
 HTMLレポート:
 
 ```powershell
@@ -73,6 +82,7 @@ npx.cmd playwright show-report
 - index/accountの◎・●は10px固定のCSS図形であることを検査する。
 - iPhone幅のaccountカードはdesktop用flex-basisが残っていないことを検査する。
 - 編集画面は右上HELPボタンとダイアログの表示を検査する。
+- トループ編集はテスト専用データを作成し、再読込・更新・閲覧後に削除するCRUDフローを検査する。
 
 ## GitHub Actions
 
@@ -83,5 +93,6 @@ npx.cmd playwright show-report
 - `E2E_EMAIL`
 - `E2E_PASSWORD`
 - `E2E_CAST_ID`
+- `E2E_TROOP_ID`
 
 Secretsが未登録でも公開画面のテストは実行され、認証必須テストはskipされます。
