@@ -11,20 +11,36 @@ const STYLE_COST = { none:0, normal:10, secret:20, ultimate:50, direction:2 };
 
 if (document.body.dataset.page === "troop.html") {
   installStylesheet();
-  requestAnimationFrame(refineTroopEditor);
+  installEditorReadyWatcher();
 }
 
 function installStylesheet() {
   if (document.querySelector('link[href*="troop-density-v3.css"]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/troop-density-v3.css?v=1";
+  link.href = "./css-next/pages/troop-density-v3.css?v=2";
   document.head.append(link);
 }
 
-function refineTroopEditor() {
+function installEditorReadyWatcher() {
   const editor = document.querySelector("#troop-editor");
-  if (!editor || editor.hidden) return;
+  if (!editor) return;
+  const run = () => {
+    if (editor.hidden || editor.dataset.layoutRefined === "1") return;
+    refineTroopEditor(editor);
+  };
+  run();
+  if (editor.dataset.layoutWatcher === "1") return;
+  editor.dataset.layoutWatcher = "1";
+  const observer = new MutationObserver(() => {
+    run();
+    if (editor.dataset.layoutRefined === "1") observer.disconnect();
+  });
+  observer.observe(editor, { attributes:true, attributeFilter:["hidden"], childList:true, subtree:true });
+}
+
+function refineTroopEditor(editor) {
+  editor.dataset.layoutRefined = "1";
   refineBasicFields();
   refineStyleSection();
   rebuildGeneralSkills();
