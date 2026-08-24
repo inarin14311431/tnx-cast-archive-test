@@ -22,8 +22,8 @@ test("troop v2 migration adds combos and spent experience", () => {
 test("troop rules use one style, derived stats, max members and EXP", () => {
   const html = read("troop.html");
   const js = read("js/troop.js");
-  assert.match(html, /CS = TROOP LEVEL/);
-  assert.match(html, />AR</);
+  assert.match(html, /CSはトループレベルと同値/);
+  assert.match(html, /ARは1/);
   assert.match(html, /id="troop-style"/);
   assert.doesNotMatch(html, /id="troop-style-2"/);
   assert.doesNotMatch(html, /troop-member-current/);
@@ -32,27 +32,34 @@ test("troop rules use one style, derived stats, max members and EXP", () => {
   assert.match(js, /record\?\.\[key\]\?\.\[1\].*\+ level/);
 });
 
-test("troop abilities use four compact two-digit pairs without an extra CS card", () => {
+test("troop abilities use four compact two-digit pairs followed by CS", () => {
   const html = read("troop.html");
   const layout = read("js/troop-layout-refine.js");
   const css = read("css-next/pages/troop-layout-v6.css");
-  assert.match(html, /troop-layout-refine\.js\?v=4/);
-  assert.match(layout, /installAbilityPairs\("#troop-ability-preview"\)/);
-  assert.match(layout, /installAbilityPairs\("#troop-abilities-view"\)/);
+  assert.match(html, /troop-layout-refine\.js\?v=5/);
+  assert.match(layout, /installAbilityPairs\("#troop-ability-preview", "#troop-level"\)/);
+  assert.match(layout, /installAbilityPairs\("#troop-abilities-view", "#troop-level-view"\)/);
   assert.match(layout, /troop-ability-grid--compact-pairs/);
   assert.match(layout, /<i>／<\/i>/);
-  assert.doesNotMatch(layout, /createElement\("article"\)[\s\S]*troop-cs-card/);
-  assert.match(css, /grid-template-columns:repeat\(4,minmax\(68px,1fr\)\)/);
+  assert.match(layout, /createElement\("article"\)[\s\S]*troop-cs-card/);
+  assert.match(layout, /cs\.querySelector\("strong"\)\.textContent/);
+  assert.match(css, /grid-template-columns:repeat\(4,minmax\(68px,1fr\)\) minmax\(46px,\.62fr\)/);
   assert.match(css, /min-width:5\.2ch/);
   assert.match(css, /font-variant-numeric:tabular-nums/);
 });
 
-test("troop read view uses the compact mobile-width sheet", () => {
+test("troop read view mirrors the full editor structure", () => {
   const html = read("troop.html");
   const css = read("css-next/pages/troop-layout-v6.css");
-  assert.match(html, /id="troop-view" class="troop-sheet troop-sheet--compact"/);
-  assert.match(css, /#troop-view\.troop-sheet--compact\{[\s\S]*width:min\(720px,100%\)/);
-  assert.match(css, /troop-sheet--compact \.troop-vitals\{[\s\S]*repeat\(4,minmax\(0,1fr\)\)/);
+  assert.match(html, /id="troop-view" class="troop-view-readonly"/);
+  assert.match(html, /troop-view-form-grid--basic/);
+  assert.match(html, /troop-view-form-grid--management/);
+  assert.match(html, /troop-view-general-field-heads/);
+  assert.match(html, /troop-view-style-field-heads/);
+  assert.match(html, /troop-view-outfit-fields/);
+  assert.match(css, /grid-template-columns:minmax\(0,4fr\) minmax\(0,6fr\)/);
+  assert.match(css, /#troop-view\.troop-view-readonly:not\(\[hidden\]\)[\s\S]*width:100%/);
+  assert.doesNotMatch(css, /troop-sheet--compact/);
 });
 
 test("troop editor separates management and basic data", () => {
@@ -85,7 +92,8 @@ test("troop general skills omit social connection and per-row EXP", () => {
   assert.doesNotMatch(ui, /OPEN_PREFIXES = \[[^\]]*社会：/);
   assert.doesNotMatch(ui, /OPEN_PREFIXES = \[[^\]]*コネ：/);
   assert.match(js, /const expField = category === "style"/);
-  assert.match(js, /category === "style" \? .*EXP/s);
+  assert.match(js, /troop-view-general-row/);
+  assert.doesNotMatch(html, /troop-view-general-field-heads[^\n]*EXP/);
 });
 
 test("troop suits use outline and filled suit toggles", () => {
@@ -136,7 +144,42 @@ test("troop outfits expose attack and SPI values", () => {
   assert.match(js, /data-field="defense_p"/);
   assert.match(js, /data-field="defense_i"/);
   assert.match(js, /\["name","attack","defense_s","defense_p","defense_i","notes"\]/);
-  assert.match(js, /S \$\{item\.defense_s/);
+  assert.match(js, /troop-view-outfit-row/);
+  assert.match(js, /item\.defense_s \?\? item\.s/);
+});
+
+test("troop read combos have one renderer and clipboard controls", () => {
+  const html = read("troop.html");
+  const js = read("js/troop.js");
+  const fields = read("js/troop-fields-v6.js");
+  const comboRules = read("js/troop-combo-rule-v2.js");
+  const copy = read("js/troop-combo-copy.js");
+  assert.match(html, /troop-combo-copy\.js\?v=2/);
+  assert.match(js, /function renderComboList/);
+  assert.match(js, /class="troop-view-combo"/);
+  assert.doesNotMatch(fields, /installViewEnhancer|renderStyleSkillView/);
+  assert.doesNotMatch(comboRules, /initializePublicComboView|renderPublicCombos/);
+  assert.match(copy, /#troop-combos-view article/);
+  assert.match(copy, /navigator\.clipboard\.writeText/);
+  assert.doesNotMatch(copy, /import\("\.\/troop-layout-refine/);
+});
+
+test("cast troop modal uses editor section colors and compact CS pairs", () => {
+  const cast = read("js/cast-troops-link.js");
+  const castHtml = read("cast.html");
+  const css = read("css-next/pages/cast-troop-modal.css");
+  assert.match(castHtml, /cast-troop-modal\.css\?v=3/);
+  assert.match(castHtml, /cast-troops-link\.js\?v=4/);
+  assert.match(castHtml, /troop-combo-copy\.js\?v=2/);
+  assert.match(cast, /cast-troop-block--abilities/);
+  assert.match(cast, /cast-troop-block--combos/);
+  assert.match(cast, /cast-troop-ability-pair--cs/);
+  assert.match(cast, /<i>／<\/i>/);
+  assert.match(css, /--troop-abilities:#d4a43d/);
+  assert.match(css, /--troop-general:#cf6874/);
+  assert.match(css, /--troop-style-skills:#49aaa3/);
+  assert.match(css, /--troop-combos:#cf873b/);
+  assert.match(css, /repeat\(4,minmax\(76px,1fr\)\) minmax\(48px,\.62fr\)/);
 });
 
 test("account and cast have responsive troop navigation adapters", () => {

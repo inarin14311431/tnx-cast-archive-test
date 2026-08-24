@@ -1,10 +1,8 @@
 import { supabase } from "./supabase-client.js";
 
-const STYLE_KIND_LABEL = { none:"なし", normal:"通常", secret:"秘技", ultimate:"奥義", direction:"演出" };
-const SUIT_LABELS = { reason:"♠", passion:"♣", life:"♥", mundane:"♦" };
-const ABILITIES = ["reason","passion","life","mundane"];
 const params = new URLSearchParams(location.search);
 const publicId = params.get("id")?.trim() || "";
+const editRequested = params.get("edit") === "1";
 const editor = document.querySelector("#troop-editor");
 const styleRoot = document.querySelector("#troop-style-skills-editor");
 let savedStyleSkills = new Map();
@@ -12,9 +10,9 @@ let savedStyleSkills = new Map();
 void initialize();
 
 async function initialize() {
+  if (!editRequested) return;
   if (publicId) await loadSavedStyleSkills();
   installEditorEnhancer();
-  installViewEnhancer();
 }
 
 async function loadSavedStyleSkills() {
@@ -73,39 +71,7 @@ function rewriteStyleFieldHeads() {
   heads.innerHTML = `<span>技能名 <small>SKILL</small></span><span>種別 <small>TYPE</small></span><span>LV</span><span>スート <small>SUIT</small></span><span>タイミング <small>TIMING</small></span><span>対決 <small>CONFRONTATION</small></span><span>解説 <small>DETAIL</small></span><span></span>`;
 }
 
-function installViewEnhancer() {
-  const view = document.querySelector("#troop-view");
-  const root = document.querySelector("#troop-style-skills-view");
-  if (!view || !root || !publicId) return;
-  const apply = () => {
-    if (view.hidden || !savedStyleSkills.size) return;
-    renderStyleSkillView(root, [...savedStyleSkills.values()]);
-  };
-  apply();
-  new MutationObserver(apply).observe(view, { attributes:true, attributeFilter:["hidden"] });
-}
-
-function renderStyleSkillView(root, items) {
-  if (!items.length) {
-    root.innerHTML = `<p class="empty-data">登録なし</p>`;
-    return;
-  }
-  root.innerHTML = items.map(item => {
-    const suits = ABILITIES.filter(key => item[key]).map(key => SUIT_LABELS[key]).join("") || "—";
-    const kind = item.kind || item.type || "normal";
-    const meta = [
-      STYLE_KIND_LABEL[kind] || kind,
-      `Lv.${Number(item.level || 0)}`,
-      suits,
-      item.timing ? `タイミング：${item.timing}` : "",
-      item.confrontation ? `対決：${item.confrontation}` : ""
-    ].filter(Boolean).join(" / ");
-    return `<article><strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(meta)}</span><p>${escapeHtml(item.notes || "")}</p></article>`;
-  }).join("");
-}
-
 function isStyleSkill(item) {
   return item?.category === "style" || ["normal","secret","ultimate","direction","none"].includes(item?.kind || item?.type);
 }
 function normalize(value) { return String(value || "").normalize("NFKC").replace(/\s+/g,"").trim().toLowerCase(); }
-function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }

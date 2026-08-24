@@ -70,18 +70,18 @@ function openTroopDetail(troop, troops) {
   body.innerHTML = `
     <div class="cast-troop-dialog__toolbar"><button type="button" data-troop-back>← 一覧</button><a href="./troop.html?id=${encodeURIComponent(troop.public_id)}">詳細ページ</a></div>
     <section class="cast-troop-summary">
-      <div><span>STYLE</span><strong>${escapeHtml(styleLabel(troop))}</strong></div>
-      <div><span>LEVEL</span><strong>${num(troop.level)}</strong></div>
-      <div><span>AR</span><strong>1</strong></div>
-      <div><span>MAX</span><strong>${Math.max(1, num(troop.member_max))}</strong></div>
-      <div><span>EXP</span><strong>${num(troop.experience_spent)}</strong></div>
+      <div class="cast-troop-summary__style"><span>STYLE</span><strong>${escapeHtml(styleLabel(troop))}</strong></div>
+      <div class="cast-troop-summary__basic"><span>LEVEL</span><strong>${num(troop.level)}</strong></div>
+      <div class="cast-troop-summary__ability"><span>AR</span><strong>1</strong></div>
+      <div class="cast-troop-summary__basic"><span>MAX</span><strong>${Math.max(1, num(troop.member_max))}</strong></div>
+      <div class="cast-troop-summary__management"><span>EXP</span><strong>${num(troop.experience_spent)}</strong></div>
     </section>
-    <section class="cast-troop-block"><h3>能力値／制御値</h3>${abilityTable(troop)}</section>
-    ${general ? `<section class="cast-troop-block"><h3>一般技能</h3>${general}</section>` : ""}
-    ${style ? `<section class="cast-troop-block"><h3>スタイル技能</h3>${style}</section>` : ""}
+    <section class="cast-troop-block cast-troop-block--abilities"><h3>能力値／制御値</h3>${abilityTable(troop)}</section>
+    ${general ? `<section class="cast-troop-block cast-troop-block--general"><h3>一般技能</h3>${general}</section>` : ""}
+    ${style ? `<section class="cast-troop-block cast-troop-block--style-skills"><h3>スタイル技能</h3>${style}</section>` : ""}
     ${comboList(troop.combos)}
     ${outfitList(troop.outfits)}
-    ${troop.notes ? `<section class="cast-troop-block"><h3>メモ</h3><p class="cast-troop-notes">${escapeHtml(troop.notes)}</p></section>` : ""}`;
+    ${troop.notes ? `<section class="cast-troop-block cast-troop-block--notes"><h3>メモ</h3><p class="cast-troop-notes">${escapeHtml(troop.notes)}</p></section>` : ""}`;
   body.querySelector("[data-troop-back]").addEventListener("click", () => openTroopIndex(troops));
 }
 
@@ -92,7 +92,8 @@ function abilityTable(troop) {
     ["♥ 生命", troop.life_value, troop.life_control],
     ["♦ 外界", troop.mundane_value, troop.mundane_control]
   ];
-  return `<div class="cast-troop-abilities">${rows.map(([label, value, control]) => `<div><span>${label}</span><strong>${num(value)}</strong><small>制御 ${num(control)}</small></div>`).join("")}</div>`;
+  const pairs = rows.map(([label, value, control]) => `<div class="cast-troop-ability-pair"><span>${label}</span><strong>${num(value)}<i>／</i>${num(control)}</strong></div>`).join("");
+  return `<div class="cast-troop-abilities">${pairs}<div class="cast-troop-ability-pair cast-troop-ability-pair--cs"><span>CS</span><strong>${num(troop.level)}</strong></div></div>`;
 }
 
 function skillList(skills, category) {
@@ -109,13 +110,13 @@ function isSkillCategory(skill, category) {
 function comboList(combos) {
   const list = Array.isArray(combos) ? combos : [];
   if (!list.length) return "";
-  return `<section class="cast-troop-block"><h3>コンボ</h3><div class="cast-troop-combos">${list.map(combo => `<article><strong>${escapeHtml(combo.name || "—")}</strong><p>${escapeHtml(combo.skills || "")}</p><small>${escapeHtml([combo.timing, combo.target, combo.range].filter(Boolean).join(" / "))}</small>${combo.description ? `<p>${escapeHtml(combo.description)}</p>` : ""}</article>`).join("")}</div></section>`;
+  return `<section class="cast-troop-block cast-troop-block--combos"><h3>コンボ</h3><div class="cast-troop-combos">${list.map(combo => `<article><strong>${escapeHtml(combo.name || "—")}</strong><p>${escapeHtml(combo.skills || "")}</p><small>${escapeHtml([combo.timing, combo.target, combo.range].filter(Boolean).join(" / "))}</small>${combo.description ? `<p>${escapeHtml(combo.description)}</p>` : ""}</article>`).join("")}</div></section>`;
 }
 
 function outfitList(outfits) {
   const list = Array.isArray(outfits) ? outfits : [];
   if (!list.length) return "";
-  return `<section class="cast-troop-block"><h3>アウトフィット</h3><div class="cast-troop-outfits">${list.map(item => `<div><strong>${escapeHtml(item.name || "—")}</strong><span>${escapeHtml(item.attack || "—")}</span><span>S ${escapeHtml(item.defense_s || "—")} / P ${escapeHtml(item.defense_p || "—")} / I ${escapeHtml(item.defense_i || "—")}</span></div>`).join("")}</div></section>`;
+  return `<section class="cast-troop-block cast-troop-block--outfits"><h3>アウトフィット</h3><div class="cast-troop-outfits">${list.map(item => `<div><strong>${escapeHtml(item.name || "—")}</strong><span>${escapeHtml(item.attack || "—")}</span><span>S ${escapeHtml(item.defense_s || "—")} / P ${escapeHtml(item.defense_p || "—")} / I ${escapeHtml(item.defense_i || "—")}</span></div>`).join("")}</div></section>`;
 }
 
 function styleLabel(troop) {

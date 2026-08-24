@@ -15,8 +15,8 @@ const GENERAL_DISPLAY_ORDER = [
 
 if (document.body.dataset.page === "troop.html") {
   installStylesheet();
-  installAbilityPairs("#troop-ability-preview");
-  installAbilityPairs("#troop-abilities-view");
+  installAbilityPairs("#troop-ability-preview", "#troop-level");
+  installAbilityPairs("#troop-abilities-view", "#troop-level-view");
   installEditorReadyWatcher();
 }
 
@@ -192,16 +192,15 @@ function compactCombos() {
   document.querySelector("#troop-combo-cards")?.classList.add("troop-combo-cards--compact");
 }
 
-function installAbilityPairs(rootSelector) {
+function installAbilityPairs(rootSelector, levelSelector) {
   const root = document.querySelector(rootSelector);
   if (!root || root.dataset.abilityWatcher === "1") return;
   root.dataset.abilityWatcher = "1";
   root.classList.remove("troop-ability-grid--with-cs");
-  root.classList.add("troop-ability-grid--compact-pairs");
+  root.classList.add("troop-ability-grid--compact-pairs", "troop-ability-grid--with-cs");
 
   const apply = () => {
-    root.querySelectorAll(":scope > .troop-cs-card").forEach(card => card.remove());
-    const abilityCards = [...root.querySelectorAll(":scope > article")].slice(0, 4);
+    const abilityCards = [...root.querySelectorAll(":scope > article:not(.troop-cs-card)")].slice(0, 4);
     abilityCards.forEach(card => {
       if (card.dataset.compactAbility === "1") return;
       const label = card.querySelector("span")?.textContent?.trim() || "";
@@ -212,11 +211,23 @@ function installAbilityPairs(rootSelector) {
       card.classList.add("troop-ability-pair");
       card.innerHTML = `<span class="troop-ability-pair__label">${escapeHtml(label)}</span><strong class="troop-ability-pair__value">${escapeHtml(value)}<i>／</i>${escapeHtml(control)}</strong>`;
     });
+
+    if (!abilityCards.length) return;
+    let cs = root.querySelector(":scope > .troop-cs-card");
+    if (!cs) {
+      cs = document.createElement("article");
+      cs.className = "troop-cs-card";
+      cs.innerHTML = `<span>CS</span><strong>0</strong>`;
+      root.append(cs);
+    }
+    const levelNode = document.querySelector(levelSelector);
+    cs.querySelector("strong").textContent = String(levelNode?.value ?? levelNode?.textContent ?? "0").trim() || "0";
   };
 
   apply();
   const observer = new MutationObserver(() => queueMicrotask(apply));
   observer.observe(root, { childList:true });
+  document.querySelector(levelSelector)?.addEventListener?.("input", apply);
 }
 
 function refreshExperience() {
