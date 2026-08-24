@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="./css-next/pages/troop-compact-density-v2.css?v=1">
   <link rel="stylesheet" href="./css-next/pages/troop-density-v3.css?v=2">
   <link rel="stylesheet" href="./css-next/pages/troop-visual-accent-v5.css?v=1">
-  <link rel="stylesheet" href="./css-next/pages/troop-layout-v6.css?v=1">
+  <link rel="stylesheet" href="./css-next/pages/troop-layout-v6.css?v=2">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -43,7 +43,7 @@
     <form id="troop-editor" class="troop-editor" hidden>
       <section class="troop-section troop-section--management"><header><h2>管理機能 <small>MANAGEMENT</small></h2></header><div class="troop-form-grid"><label>公開状況<select id="troop-visibility"><option value="private">非公開</option><option value="public">公開（RL確認用）</option></select></label><label>紐づけキャスト<select id="troop-character"><option value="">未設定</option></select></label><label>消費経験点<input id="troop-exp" type="number" value="0" readonly></label></div></section>
       <section class="troop-section"><header><h2>基本情報 <small>BASIC DATA</small></h2></header><div class="troop-form-grid"><label>名称<input id="troop-name" required maxlength="120"></label><label>トループレベル<input id="troop-level" type="number" min="0" value="0"></label><label>最大人数<input id="troop-member-max" type="number" min="1" value="1"></label></div><p class="troop-rule-note">CSはトループレベルと同値、ARは1。現在人数は管理しません。</p></section>
-      <section class="troop-section"><header><h2>スタイル <small>STYLE</small></h2></header><div class="troop-form-grid"><label>スタイル<select id="troop-style" required></select></label><label id="troop-utsuwa-wrap" hidden>ウツワ属性<select id="troop-utsuwa-attribute"></select></label></div><p class="troop-rule-note">スタイルは1つ。能力値と制御値はスタイルの値にトループレベルをそれぞれ加えて自動算出します。</p></section>
+      <section class="troop-section"><header><h2>スタイル <small>STYLE</small></h2></header><div class="troop-form-grid"><label>スタイル<select id="troop-style" required></select></label><label id="troop-utsuwa-wrap" hidden>ウツワ属性<select id="troop-utsuwa-attribute"></select></label></div></section>
       <section class="troop-section"><header><h2>能力値／制御値 <small>ABILITY / CONTROL</small></h2></header><div id="troop-ability-preview" class="troop-ability-grid"></div></section>
       <section class="troop-section"><header><h2>一般技能 <small>GENERAL SKILLS</small></h2><button id="troop-general-skill-add" type="button">+ 一般技能</button></header><p class="troop-rule-note">必要な技能だけ登録します。通常の一般技能から選択し、製作・芸術・操縦は個別名称を入力できます。</p><div id="troop-general-skills-editor" class="troop-editor-list"></div></section>
       <section class="troop-section"><header><h2>スタイル技能 <small>STYLE SKILLS</small></h2><button id="troop-style-skill-add" type="button">+ スタイル技能</button></header><p class="troop-rule-note">通常10点、秘技20点、奥義50点、演出2点／レベル。秘技は2つまで、奥義は1つまでです。</p><div id="troop-style-skills-editor" class="troop-editor-list"></div></section>
@@ -79,7 +79,7 @@
 
   <script type="module" src="./js/troop.js?v=3"></script>
   <script type="module" src="./js/troop-editor-ui.js?v=2"></script>
-  <script type="module" src="./js/troop-layout-refine.js?v=2"></script>
+  <script type="module" src="./js/troop-layout-refine.js?v=3"></script>
   <script type="module" src="./js/troop-fields-v6.js?v=1"></script>
   <script type="module" src="./js/troop-combo-rule-v2.js?v=2"></script>
   <script type="module" src="./js/troop-save-v2.js?v=2"></script>

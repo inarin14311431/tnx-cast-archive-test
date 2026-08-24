@@ -20,33 +20,65 @@ body[data-page="troop.html"] #troop-view .troop-section>header{
   border-left-color:var(--troop-section-accent,var(--color-accent))!important;
 }
 
-/* Ability/control: give value and control equal visual meaning without widening the block. */
+/* Style is already the major section, so the selector itself has no secondary label frame. */
+body[data-page="troop.html"] .troop-section--style-primary .troop-form-grid{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+body[data-page="troop.html"] .troop-section--style-primary .troop-primary-style-select{
+  width:100%!important;
+  min-height:34px!important;
+  margin:0!important;
+}
+body[data-page="troop.html"] .troop-section--style-primary .troop-important-badge{display:none!important}
+
+/* Ability/control is shown as one paired value, e.g. 理性 1／4. */
 body[data-page="troop.html"] .troop-ability-grid--with-cs{
   grid-template-columns:repeat(4,minmax(74px,1fr)) 58px!important;
   gap:7px!important;
 }
 body[data-page="troop.html"] .troop-ability-grid--with-cs article{
+  min-height:60px!important;
+  padding:7px 5px!important;
+  background:color-mix(in srgb,var(--color-surface) 96%,var(--troop-section-accent,#d4a43d))!important;
+}
+body[data-page="troop.html"] .troop-ability-grid--with-cs .troop-ability-pair{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+}
+body[data-page="troop.html"] .troop-ability-pair__label{
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  white-space:nowrap!important;
+}
+body[data-page="troop.html"] .troop-ability-pair__value{
+  display:inline-flex!important;
+  align-items:baseline!important;
+  gap:1px!important;
+  margin:0!important;
+  font-size:21px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+body[data-page="troop.html"] .troop-ability-pair__value i{
+  font-size:.72em!important;
+  font-style:normal!important;
+  font-weight:650!important;
+  opacity:.72!important;
+}
+body[data-page="troop.html"] .troop-ability-grid--with-cs .troop-cs-card{
   display:grid!important;
   grid-template-columns:1fr!important;
   grid-template-rows:auto auto auto!important;
   align-content:center!important;
   justify-items:center!important;
-  min-height:72px!important;
-  padding:7px 5px!important;
-  background:color-mix(in srgb,var(--color-surface) 96%,var(--troop-section-accent,#d4a43d))!important;
 }
-body[data-page="troop.html"] .troop-ability-grid--with-cs article span{font-size:12px!important;line-height:1.1!important}
-body[data-page="troop.html"] .troop-ability-grid--with-cs article strong{font-size:22px!important;line-height:1.05!important;margin:2px 0!important}
-body[data-page="troop.html"] .troop-ability-grid--with-cs article small{
-  display:block!important;
-  min-width:52px;
-  padding:2px 6px!important;
-  border:1px solid color-mix(in srgb,var(--color-border) 75%,transparent);
-  background:color-mix(in srgb,var(--color-background) 65%,transparent);
-  font-size:10px!important;
-  line-height:1.25!important;
-  text-align:center;
-}
+body[data-page="troop.html"] .troop-ability-grid--with-cs .troop-cs-card span{font-size:11px!important;line-height:1.1!important}
+body[data-page="troop.html"] .troop-ability-grid--with-cs .troop-cs-card strong{font-size:20px!important;line-height:1!important;margin:2px 0!important}
+body[data-page="troop.html"] .troop-ability-grid--with-cs .troop-cs-card small{font-size:8px!important;line-height:1!important}
 body[data-page="troop.html"] .troop-ability-grid--with-cs article:nth-child(1){border-top-color:#d66565!important}
 body[data-page="troop.html"] .troop-ability-grid--with-cs article:nth-child(2){border-top-color:#58a8d5!important}
 body[data-page="troop.html"] .troop-ability-grid--with-cs article:nth-child(3){border-top-color:#86b960!important}

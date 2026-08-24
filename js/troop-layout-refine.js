@@ -91,8 +91,15 @@ function refineStyleSection() {
   const section = style?.closest(".troop-section");
   if (!section) return;
   section.classList.add("troop-section--style-primary");
-  const heading = section.querySelector("h2");
-  if (heading && !heading.querySelector(".troop-important-badge")) heading.insertAdjacentHTML("beforeend", '<span class="troop-important-badge">PRIMARY STYLE</span>');
+
+  section.querySelector(".troop-important-badge")?.remove();
+  section.querySelector(".troop-rule-note")?.remove();
+
+  const styleLabel = style.closest("label");
+  if (styleLabel) {
+    style.classList.add("troop-primary-style-select");
+    styleLabel.replaceWith(style);
+  }
 }
 
 function rebuildGeneralSkills() {
@@ -190,7 +197,20 @@ function installAbilityCs(rootSelector, levelSelector) {
   if (!root || root.dataset.csWatcher === "1") return;
   root.dataset.csWatcher = "1";
   root.classList.add("troop-ability-grid--with-cs");
+
   const apply = () => {
+    const abilityCards = [...root.querySelectorAll(":scope > article:not(.troop-cs-card)")].slice(0, 4);
+    abilityCards.forEach(card => {
+      if (card.dataset.compactAbility === "1") return;
+      const label = card.querySelector("span")?.textContent?.trim() || "";
+      const value = card.querySelector("strong")?.textContent?.trim() || "0";
+      const controlText = card.querySelector("small")?.textContent || "";
+      const control = controlText.match(/-?\d+/)?.[0] || "0";
+      card.dataset.compactAbility = "1";
+      card.classList.add("troop-ability-pair");
+      card.innerHTML = `<span class="troop-ability-pair__label">${escapeHtml(label)}</span><strong class="troop-ability-pair__value">${escapeHtml(value)}<i>／</i>${escapeHtml(control)}</strong>`;
+    });
+
     if (!root.children.length || root.querySelector(".troop-cs-card")) return;
     const levelNode = document.querySelector(levelSelector);
     const level = levelNode?.value ?? levelNode?.textContent ?? "0";
@@ -199,6 +219,7 @@ function installAbilityCs(rootSelector, levelSelector) {
     card.innerHTML = `<span>CS</span><strong>${escapeHtml(String(level).trim() || "0")}</strong><small>＝ LEVEL</small>`;
     root.append(card);
   };
+
   apply();
   const observer = new MutationObserver(() => queueMicrotask(apply));
   observer.observe(root, { childList:true });
