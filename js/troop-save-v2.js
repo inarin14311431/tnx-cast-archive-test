@@ -119,6 +119,8 @@ function collectSkills(selector, category) {
       life: Boolean(row.querySelector('[data-suit="life"]')?.checked),
       mundane: Boolean(row.querySelector('[data-suit="mundane"]')?.checked),
       exp_cost: cost,
+      timing: category === "style" ? rowValue(row, "timing") : "",
+      confrontation: category === "style" ? rowValue(row, "confrontation") : "",
       notes: category === "general" ? "" : rowValue(row, "notes")
     };
   }).filter(item => item.name);

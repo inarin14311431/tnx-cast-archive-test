@@ -7,6 +7,7 @@ const accountTroopCss = await readFile(new URL("../css-next/pages/account-troop-
 const accountIcons = await readFile(new URL("../js/account-action-icons.js", import.meta.url), "utf8");
 const troopSave = await readFile(new URL("../js/troop-save-v2.js", import.meta.url), "utf8");
 const troopHtml = await readFile(new URL("../troop.html", import.meta.url), "utf8");
+const troopComboRules = await readFile(new URL("../js/troop-combo-rule-v2.js", import.meta.url), "utf8");
 
 test("account keeps acts visible and only adds troop shortcut for linked casts", () => {
   assert.match(accountLinks, /\.from\("troops"\).*\.not\("character_id", "is", null\)/s);
@@ -28,7 +29,7 @@ test("linked troop shortcut has its own icon and EXP is aggregated into cast bre
 });
 
 test("troop page uses guarded save controller", () => {
-  assert.match(troopHtml, /troop-save-v2\.js\?v=1/);
+  assert.match(troopHtml, /troop-save-v2\.js\?v=2/);
   assert.match(troopSave, /addEventListener\("submit", saveTroopV2, true\)/);
   assert.match(troopSave, /event\.stopImmediatePropagation\(\)/);
   assert.match(troopSave, /if \(saving\) return/);
@@ -44,4 +45,18 @@ test("troop save persists current editor collections and disables legacy use lim
   assert.match(troopSave, /outfits: collectRows\("#troop-outfits-editor"/);
   assert.match(troopSave, /act_use_limit: null/);
   assert.match(troopSave, /experience_spent:/);
+});
+
+test("troop style skill metadata persists timing and confrontation without an EXP editor field", () => {
+  assert.match(troopSave, /timing: category === "style" \? rowValue\(row, "timing"\) : ""/);
+  assert.match(troopSave, /confrontation: category === "style" \? rowValue\(row, "confrontation"\) : ""/);
+  assert.doesNotMatch(troopHtml, /スタイル技能[\s\S]*?EXP[^<]*<\/span>/);
+});
+
+test("troop combo uses expected value while keeping legacy target_value storage compatible", () => {
+  assert.match(troopHtml, /達成値目安/);
+  assert.match(troopHtml, /name="expected_value"/);
+  assert.match(troopComboRules, /expected_value/);
+  assert.match(troopComboRules, /numericText\(parsed\?\.difficulty\)/);
+  assert.doesNotMatch(troopComboRules, /fillBlank\("difficulty"/);
 });
