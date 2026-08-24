@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 const accountLinks = await readFile(new URL("../js/account-mobile-editor-links.js", import.meta.url), "utf8");
 const accountTroopCss = await readFile(new URL("../css-next/pages/account-troop-links-v2.css", import.meta.url), "utf8");
 const accountIcons = await readFile(new URL("../js/account-action-icons.js", import.meta.url), "utf8");
-const troopSave = await readFile(new URL("../js/troop-save-v2.js", import.meta.url), "utf8");
+const troopSave = await readFile(new URL("../js/troop-save.js", import.meta.url), "utf8");
 const troopHtml = await readFile(new URL("../troop.html", import.meta.url), "utf8");
 const troopComboRules = await readFile(new URL("../js/troop-combo-rule-v2.js", import.meta.url), "utf8");
 
@@ -28,10 +28,13 @@ test("linked troop shortcut has its own icon and EXP is aggregated into cast bre
   assert.match(accountLinks, /消費 \$\{castExp\}＋\$\{troopInfo\.experience\} EXP/);
 });
 
-test("troop page uses guarded save controller", () => {
-  assert.match(troopHtml, /troop-save-v2\.js\?v=3/);
-  assert.match(troopSave, /addEventListener\("submit", saveTroopV2, true\)/);
-  assert.match(troopSave, /event\.stopImmediatePropagation\(\)/);
+test("troop page uses one canonical guarded save controller", () => {
+  assert.match(troopHtml, /troop\.js\?v=5/);
+  assert.doesNotMatch(troopHtml, /troop-save-v2\.js/);
+  assert.match(troopSave, /export function registerTroopSave/);
+  assert.match(troopSave, /dataset\.troopSaveHandler === "canonical"/);
+  assert.match(troopSave, /addEventListener\("submit", saveTroop\)/);
+  assert.doesNotMatch(troopSave, /stopImmediatePropagation|addEventListener\("submit"[^\n]*true\)/);
   assert.match(troopSave, /if \(saving\) return/);
   assert.match(troopSave, /saveButton\.disabled = active/);
   assert.match(troopSave, /let publicId =/);
