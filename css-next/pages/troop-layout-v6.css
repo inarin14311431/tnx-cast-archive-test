@@ -95,7 +95,10 @@ body[data-page="troop.html"] .troop-cs-card strong{
 body[data-page="troop.html"] .troop-cs-card strong{min-width:2.2ch!important;color:var(--troop-section-accent,#d4a43d)!important}
 body[data-page="troop.html"] .troop-ability-pair__value i{font-size:.72em!important;font-style:normal!important;font-weight:650!important;opacity:.72!important}
 
-/* Public view and editor are mutually exclusive. Component display rules must not override the HTML hidden state. */\nbody[data-page="troop.html"] #troop-editor[hidden]{display:none!important}\n\n/* Read-only view mirrors the editor instead of using the legacy mobile sheet. */
+/* Public view and editor are mutually exclusive. Component display rules must not override the HTML hidden state. */
+body[data-page="troop.html"] #troop-editor[hidden]{display:none!important}
+
+/* Read-only view mirrors the editor instead of using the legacy mobile sheet. */
 body[data-page="troop.html"] #troop-view.troop-view-readonly[hidden]{display:none!important}
 body[data-page="troop.html"] #troop-view.troop-view-readonly:not([hidden]){
   position:relative;
