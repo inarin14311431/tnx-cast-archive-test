@@ -6,7 +6,7 @@ const editor = document.querySelector("#troop-editor");
 const status = document.querySelector("#troop-editor-status");
 const saveButton = editor?.querySelector('.troop-editor-actions button[type="submit"]');
 const params = new URLSearchParams(location.search);
-const publicId = params.get("id")?.trim() || "";
+let publicId = params.get("id")?.trim() || "";
 const ABILITIES = ["reason", "passion", "life", "mundane"];
 const STYLE_COST = { none:0, normal:10, secret:20, ultimate:50, direction:2 };
 const GENERAL_KIND_COST = { general:10, proper:5, social:5, connection:5 };
@@ -76,10 +76,16 @@ async function saveTroopV2(event) {
     if (result.error) throw result.error;
     if (!result.data?.public_id) throw new Error("保存後のトループIDを取得できませんでした。");
 
-    setStatus("保存しました。");
-    const target = new URL("./troop.html", location.href);
-    target.searchParams.set("id", result.data.public_id);
-    location.replace(target.href);
+    publicId = result.data.public_id;
+    const target = new URL(location.href);
+    target.searchParams.set("id", publicId);
+    target.searchParams.set("edit", "1");
+    history.replaceState(null, "", target.href);
+    const cancel = document.querySelector("#troop-cancel");
+    if (cancel) cancel.href = `./troop.html?id=${encodeURIComponent(publicId)}`;
+    saving = false;
+    setSavingState(false);
+    setStatus("保存しました。編集を続けられます。");
   } catch (error) {
     console.error("Troop save failed.", error);
     setStatus(`保存に失敗しました：${error instanceof Error ? error.message : String(error)}`, true);

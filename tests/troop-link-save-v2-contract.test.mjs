@@ -29,12 +29,16 @@ test("linked troop shortcut has its own icon and EXP is aggregated into cast bre
 });
 
 test("troop page uses guarded save controller", () => {
-  assert.match(troopHtml, /troop-save-v2\.js\?v=2/);
+  assert.match(troopHtml, /troop-save-v2\.js\?v=3/);
   assert.match(troopSave, /addEventListener\("submit", saveTroopV2, true\)/);
   assert.match(troopSave, /event\.stopImmediatePropagation\(\)/);
   assert.match(troopSave, /if \(saving\) return/);
   assert.match(troopSave, /saveButton\.disabled = active/);
-  assert.match(troopSave, /location\.replace\(target\.href\)/);
+  assert.match(troopSave, /let publicId =/);
+  assert.match(troopSave, /history\.replaceState\(null, "", target\.href\)/);
+  assert.match(troopSave, /target\.searchParams\.set\("edit", "1"\)/);
+  assert.match(troopSave, /setSavingState\(false\)/);
+  assert.doesNotMatch(troopSave, /location\.(?:replace|href\s*=)/);
   assert.match(troopSave, /\.update\(payload\)\.eq\("public_id", publicId\)\.eq\("owner_id", user\.id\)/);
   assert.match(troopSave, /\.insert\(payload\)/);
 });
