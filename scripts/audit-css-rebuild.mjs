@@ -31,7 +31,76 @@ const contrastRatio = (foreground, background) => {
 };
 const violations = [];
 const cssFiles = await filesUnder(path.join(root, "css-next"), ".css");
-const selectorOwners = new Map();
+
+function maskCssCommentsAndStrings(source) {
+  let result = "";
+  let state = "code";
+  let quote = "";
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (state === "comment") {
+      if (char === "*" && next === "/") {
+        result += "  ";
+        index += 1;
+        state = "code";
+      } else result += char === "\n" ? "\n" : " ";
+      continue;
+    }
+    if (state === "string") {
+      if (char === "\\") {
+        result += char + (next || "");
+        index += 1;
+      } else if (char === quote) {
+        result += char;
+        state = "code";
+      } else result += "{};".includes(char) ? " " : char;
+      continue;
+    }
+    if (char === "/" && next === "*") {
+      result += "  ";
+      index += 1;
+      state = "comment";
+    } else if (char === '"' || char === "'") {
+      result += char;
+      quote = char;
+      state = "string";
+    } else result += char;
+  }
+  return result;
+}
+
+function collectContextualSelectors(source) {
+  const clean = maskCssCommentsAndStrings(source);
+  const stack = [];
+  const selectors = [];
+  let segmentStart = 0;
+  const normalize = value => value.replace(/\s+/g, " ").trim();
+
+  for (let index = 0; index < clean.length; index += 1) {
+    const char = clean[index];
+    if (char === "{") {
+      const prelude = normalize(clean.slice(segmentStart, index));
+      if (prelude.startsWith("@")) {
+        stack.push({ type: "at-rule", label: prelude });
+      } else {
+        const context = stack
+          .filter(item => item.type === "at-rule")
+          .map(item => item.label)
+          .join(" > ");
+        if (prelude) selectors.push({ selector: prelude, context });
+        stack.push({ type: "rule", label: prelude });
+      }
+      segmentStart = index + 1;
+    } else if (char === ";") {
+      if (!stack.length || stack.at(-1)?.type === "rule") segmentStart = index + 1;
+    } else if (char === "}") {
+      stack.pop();
+      segmentStart = index + 1;
+    }
+  }
+  return selectors;
+}
 await import(pathToFileURL(path.join(root, "js", "theme-registry.js")));
 const themeRegistry = globalThis.TNX_THEME_REGISTRY;
 const expectedThemeOptions = themeRegistry.themes.map(theme => [theme.id, theme.label]);
@@ -49,13 +118,13 @@ const activeThemePages = [
 for (const file of cssFiles) {
   const source = await readFile(file, "utf8");
   if (/!important\b/i.test(source)) violations.push(`${relative(file)}: !important`);
-  const withoutComments = source.replace(/\/\*[\s\S]*?\*\//g, "");
-  for (const match of withoutComments.matchAll(/(?:^|})\s*([^@{}][^{}]*)\s*\{/g)) {
-    const selector = match[1].replace(/\s+/g, " ").trim();
-    if (!selector || selector.startsWith("@")) continue;
-    const owner = selectorOwners.get(selector);
-    if (owner) violations.push(`${relative(file)}: duplicate selector ${selector} (first: ${owner})`);
-    else selectorOwners.set(selector, relative(file));
+  const selectorOwners = new Map();
+  for (const { selector, context } of collectContextualSelectors(source)) {
+    const key = `${context}\u0000${selector}`;
+    if (selectorOwners.has(key)) {
+      const suffix = context ? ` in ${context}` : " at top level";
+      violations.push(`${relative(file)}: duplicate selector ${selector}${suffix}`);
+    } else selectorOwners.set(key, true);
   }
 }
 
@@ -163,6 +232,35 @@ const cssEntrySource = await readFile(path.join(root, "css-next", "index.css"), 
 if (cssEntrySource.includes("themes/spectrum-neon.css")) {
   violations.push("css-next/index.css: spectrum neon effects must not load before page-specific CSS");
 }
+if (/@import\s+url\(["']\.\/(?:editor|pages)\//.test(cssEntrySource)) {
+  violations.push("css-next/index.css: editor or page CSS must be owned by a page entry");
+}
+for (const featureStylesheet of [
+  "help.css", "save-diagnostics.css", "style-marks.css", "sheet-snapshots.css",
+  "sheet-url-import.css", "cast-troops.css", "armor-totals.css",
+  "sheet-import-help.css", "skill-display-enhancements.css"
+]) {
+  if (cssEntrySource.includes(featureStylesheet)) {
+    violations.push(`css-next/index.css: feature stylesheet ${featureStylesheet} belongs in a page entry`);
+  }
+}
+const entryScopeRequirements = new Map([
+  ["archive-entry.css", ["../components/style-marks.css", "./archive.css"]],
+  ["account-entry.css", ["../components/style-marks.css", "./account.css"]],
+  ["cast-entry.css", ["../components/cast-troops.css", "./cast.css", "../components/armor-totals.css"]],
+  ["sheet-entry.css", ["../components/help.css", "../editor/editor.css", "../components/sheet-import-help.css"]],
+  ["sheet-mobile-entry.css", ["./sheet-mobile.css", "./sheet-mobile-ux.css"]],
+  ["troop-entry.css", ["./troops.css", "./troop-screen.css"]],
+  ["troops-entry.css", ["./troops.css", "./troops-registry-polish.css"]]
+]);
+for (const [entryName, requiredImports] of entryScopeRequirements) {
+  const source = await readFile(path.join(root, "css-next", "pages", entryName), "utf8");
+  for (const requiredImport of requiredImports) {
+    if (!source.includes(requiredImport)) {
+      violations.push(`css-next/pages/${entryName}: required scoped import missing ${requiredImport}`);
+    }
+  }
+}
 for (const page of activeThemePages) {
   const source = await readFile(path.join(root, page), "utf8");
   const head = source.match(/<head>[\s\S]*?<\/head>/i)?.[0] || "";
@@ -172,6 +270,35 @@ for (const page of activeThemePages) {
   if (themeBundles.length !== 1 || stylesheets.at(-1) !== "./css-next/themes/index.css?v=1") {
     violations.push(`${page}: theme bundle must be the single final stylesheet`);
   }
+  if (stylesheets.length !== 2 || !stylesheets[0]?.startsWith("./css-next/")) {
+    violations.push(`${page}: use one application/page CSS entry before the final theme bundle`);
+  }
+}
+
+const cssSources = new Map(await Promise.all(cssFiles.map(async file => [file, await readFile(file, "utf8")])));
+const reachableCss = new Set();
+const cssQueue = [];
+for (const page of activeThemePages) {
+  const source = await readFile(path.join(root, page), "utf8");
+  for (const match of source.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)) {
+    const href = match[1].split("?")[0];
+    if (!href.startsWith("./css-next/")) continue;
+    cssQueue.push(path.resolve(root, href));
+  }
+}
+while (cssQueue.length) {
+  const file = cssQueue.pop();
+  if (reachableCss.has(file) || !cssSources.has(file)) continue;
+  reachableCss.add(file);
+  const source = cssSources.get(file);
+  for (const match of source.matchAll(/@import\s+url\(["']([^"']+)["']\)/g)) {
+    const href = match[1].split("?")[0];
+    if (/^(?:[a-z]+:|\/\/)/i.test(href)) continue;
+    cssQueue.push(path.resolve(path.dirname(file), href));
+  }
+}
+for (const file of cssFiles) {
+  if (!reachableCss.has(file)) violations.push(`${relative(file)}: orphan stylesheet is unreachable from active pages`);
 }
 
 const themeRegistrySource = await readFile(path.join(root, "js", "theme-registry.js"), "utf8");
@@ -416,15 +543,22 @@ if (!showcaseCssSource.includes("width: min(1440px, calc(100% - 32px))") ||
   violations.push("css-next/pages/showcase.css: restored showcase geometry/image crop contract missing");
 }
 
-const productionPages = [
-  "404.html", "account.html", "acts.html", "backup.html", "cast.html",
-  "combos.html", "index.html", "login.html", "register.html", "sheet.html",
-  "showcase-generator.html"
-];
-for (const page of productionPages) {
+for (const page of activeThemePages) {
   const file = path.join(root, page);
   const source = await readFile(file, "utf8");
-  if (!/css-next\/index\.css/.test(source)) violations.push(`${relative(file)}: production CSS entry missing`);
+  const cssSystemLink = [...source.matchAll(/<link\b[^>]*>/gi)]
+    .map(match => match[0])
+    .find(tag => /data-css-system=["']next["']/i.test(tag));
+  const cssSystemHref = cssSystemLink?.match(/\bhref=["']([^"']+)["']/i)?.[1] || "";
+  if (!/^\.\/css-next\/pages\/[a-z0-9-]+-entry\.css\?v=\d+$/.test(cssSystemHref)) {
+    violations.push(`${relative(file)}: production CSS entry missing`);
+  } else {
+    const entryPath = cssSystemHref.split("?")[0].replace(/^\.\//, "");
+    const entrySource = await readFile(path.join(root, entryPath), "utf8");
+    if (!/index\.css\?v=64/.test(entrySource)) {
+      violations.push(`${relative(file)}: page CSS entry does not import current css-next/index.css`);
+    }
+  }
   if (/js\/css-next-(?:routing|guard)\.js/.test(source)) violations.push(`${relative(file)}: preview-only helper remains`);
   if (/<base\b/i.test(source)) violations.push(`${relative(file)}: preview base element remains`);
   if (/data-css-preview-source=/i.test(source)) violations.push(`${relative(file)}: preview marker remains`);
@@ -438,6 +572,7 @@ for (const page of productionPages) {
   }
   if (/js\/theme\.js(?:\?|["'])/i.test(source)) violations.push(`${relative(file)}: legacy theme.js`);
   if (/\/next\//i.test(source)) violations.push(`${relative(file)}: /next/ production dependency remains`);
+  if (/<style\b/i.test(source)) violations.push(`${relative(file)}: inline style element remains`);
   if (/\sstyle=["']/i.test(source)) violations.push(`${relative(file)}: inline style remains`);
 }
 
@@ -446,7 +581,7 @@ if (!sheetPageSource.includes('id="add-style-skill"')) {
   violations.push("sheet.html: primary Style Skill add control missing");
 }
 for (const script of [
-  "handle-format.js", "outfit-ofc-fields.js", "outfit-ofc-tsv-category-fix.js", "outfit-display-rules-v5.js",
+  "handle-format.js", "outfit-ofc-fields.js", "outfit-display-rules-v5.js",
   "sheet-import-style-skill-compat.js", "sheet-import-outfit-compat.js", "sheet-master-autofill.js"
 ]) {
   if (!sheetPageSource.includes(`/js/${script}`)) violations.push(`sheet.html: explicit functional helper missing ${script}`);
@@ -468,8 +603,8 @@ if (!compactGeneralSource.includes("splitGeneralColumns(section)") || !compactGe
   violations.push("js/cast-compact-skills.js: public General-skill two-column split missing");
 }
 const castUiSource = await readFile(path.join(root, "js", "cast-ui.js"), "utf8");
-if (!castUiSource.includes("section.querySelectorAll('colgroup')") || !castUiSource.includes("group.children[6].remove()")) {
-  violations.push("js/cast-ui.js: hidden detail colgroup reservation can shift public skill columns");
+if (/querySelectorAll\(["']colgroup["']\)|group\.children\[6\]\.remove\(\)/.test(castUiSource)) {
+  violations.push("js/cast-ui.js: compact-skill colgroup ownership returned to shared UI");
 }
 const markCycleSource = await readFile(path.join(root, "js", "style-mark-cycle.js"), "utf8");
 if (!markCycleSource.includes("style-mark-symbol--persona") || !markCycleSource.includes("style-mark-symbol--key")) {
@@ -480,7 +615,9 @@ if (/addAction\(actions,"スタイル技能を追加"/.test(uiV25Source)) {
   violations.push("js/ui-v25.js: duplicate inline Style Skill add control returned");
 }
 const styleSeparatorSource = await readFile(path.join(root, "js", "style-skill-separators.js"), "utf8");
-if (!styleSeparatorSource.includes("const target=toolbar||headingActions") || styleSeparatorSource.includes("toolbar.style.gridTemplateColumns")) {
+if (!styleSeparatorSource.includes('document.querySelector("#add-style-skill")?.closest(".toolbar")') ||
+    !styleSeparatorSource.includes("toolbar.append(button)") ||
+    styleSeparatorSource.includes("toolbar.style.gridTemplateColumns")) {
   violations.push("js/style-skill-separators.js: Style Skill toolbar ownership/layout contract missing");
 }
 for (const page of ["account.html", "acts.html", "backup.html", "cast.html", "combos.html", "login.html", "sheet.html", "showcase-generator.html"]) {
@@ -542,9 +679,9 @@ if (!legacyImportSource.includes("querySelectorAll('#general-skills .skill-group
   violations.push("js/sheet-import.js: nested two-column General-skill import repair missing");
 }
 const legacyOutfitCompatSource = await readFile(path.join(root, "js", "sheet-import-outfit-compat.js"), "utf8");
-if (!legacyOutfitCompatSource.includes("const FINAL_START=52") ||
-    !legacyOutfitCompatSource.includes("const FINAL_END=98") ||
-    !legacyOutfitCompatSource.includes("close.disabled=locked") ||
+if (!legacyOutfitCompatSource.includes("progress(52+32*") ||
+    !legacyOutfitCompatSource.includes("progress(84+14*") ||
+    !legacyOutfitCompatSource.includes("close.disabled=on") ||
     !legacyOutfitCompatSource.includes('event.preventDefault()')) {
   violations.push("js/sheet-import-outfit-compat.js: weighted final progress or import-close lock missing");
 }
@@ -576,5 +713,5 @@ if (violations.length) {
   console.error(violations.join("\n"));
   process.exitCode = 1;
 } else {
-  console.log(`CSS rebuild audit passed: ${cssFiles.length} CSS files, ${productionPages.length} production pages, 0 runtime CSS generators.`);
+  console.log(`CSS rebuild audit passed: ${cssFiles.length} CSS files, ${activeThemePages.length} production pages, 0 runtime CSS generators.`);
 }

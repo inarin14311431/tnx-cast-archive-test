@@ -1,0 +1,5 @@
+/* Canonical stylesheet entry for transfer.html. */
+@layer app, transfer-page;
+
+@import url("../index.css?v=64") layer(app);
+@import url("./transfer.css?v=2") layer(transfer-page);
