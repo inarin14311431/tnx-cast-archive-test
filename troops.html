@@ -4,7 +4,7 @@
   <script src="./js/css-next-theme.js?v=3"></script>
   <link rel="stylesheet" href="./css-next/index.css?v=58" data-css-system="next">
   <link rel="stylesheet" href="./css-next/pages/troops.css?v=5">
-  <link rel="stylesheet" href="./css-next/pages/troops-registry-polish.css?v=1">
+  <link rel="stylesheet" href="./css-next/pages/troops-registry-polish.css?v=2">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -17,10 +17,10 @@
     <p>N◎VA MUNICIPAL DATABASE</p><h1>トループ管理 <small>TROOP CONTROL</small></h1>
   </header>
   <main class="troops-layout">
-    <section class="troops-hero"><div><p class="troops-kicker">OPERATOR OWNED UNIT REGISTRY</p><h2>配下トループ</h2><p>自分のトループを作成・管理し、所有キャストへ紐づけられます。公開したトループは共有URLからRLも閲覧できます。</p></div><a id="troop-new-link" class="troop-primary-action" href="./troop.html?edit=1"><span>新規トループ作成</span><small>CREATE TROOP</small></a></section>
+    <section class="troops-hero"><div><p class="troops-kicker">OPERATOR OWNED UNIT REGISTRY</p><h2>配下トループ</h2><p>自分のトループを作成・管理し、所有キャストへ紐づけられます。公開したトループは共有URLからRLも閲覧できます。</p></div><a id="troop-new-link" class="troop-primary-action" href="./troop.html?edit=1"><span class="troop-primary-action__icon" aria-hidden="true">＋</span><span class="troop-primary-action__label">新規トループ作成</span><small>CREATE TROOP</small></a></section>
     <section class="troops-filter" aria-label="トループ絞り込み"><label><span>紐づけキャスト</span><select id="troop-character-filter"><option value="">すべて</option><option value="unlinked">未設定</option></select></label><label><span>公開状態</span><select id="troop-visibility-filter"><option value="">すべて</option><option value="public">公開</option><option value="private">非公開</option></select></label><button id="troop-filter-reset" type="button">リセット <small>RESET</small></button></section>
     <p id="troop-list-status" class="troop-list-status">トループ情報を読み込み中…</p><section id="troop-list" class="troop-list"></section>
   </main>
-  <script type="module" src="./js/troops.js?v=2"></script>
+  <script type="module" src="./js/troops.js?v=3"></script>
 </body>
 </html>
