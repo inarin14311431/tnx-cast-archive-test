@@ -1,6 +1,6 @@
 import { supabase } from "./supabase-client.js";
+import { packTroopComboRule, unpackTroopComboRule } from "./troop-combo-codec.js";
 
-const PACK_PREFIX = "@@TNX_COMBO_CHECK_V2@@";
 const comboForm = document.querySelector("#troop-combo-form");
 const comboDialog = document.querySelector("#troop-combo-dialog");
 const comboStorage = document.querySelector("#troop-combos-editor");
@@ -8,15 +8,11 @@ const comboCards = document.querySelector("#troop-combo-cards");
 const comboSkillOptions = document.querySelector("#troop-combo-skill-options");
 const masterCache = new Map();
 let masterAccess = null;
-let renderQueued = false;
+let initialized = false;
 
-initialize();
-
-function initialize() {
-  if (comboForm) initializeEditorComboV2();
-}
-
-function initializeEditorComboV2() {
+export function initializeTroopComboRules() {
+  if (!comboForm || initialized) return;
+  initialized = true;
   ensureAllStorageRows();
   insertAutofillNote();
 
@@ -24,14 +20,9 @@ function initializeEditorComboV2() {
     packRuleFields();
     queueMicrotask(() => {
       ensureAllStorageRows();
-      renderComboCardsV2();
+      refreshTroopComboRules();
     });
   }, true);
-
-  document.addEventListener("click", event => {
-    if (!event.target.closest?.("#troop-combo-add,[data-troop-combo-index]")) return;
-    queueMicrotask(hydrateRuleFields);
-  });
 
   comboSkillOptions?.addEventListener("change", event => {
     const input = event.target.closest?.('input[name="skill_choice"]');
@@ -39,17 +30,12 @@ function initializeEditorComboV2() {
     autofillFromSkill(input.value);
   });
 
-  if (comboStorage) {
-    new MutationObserver(() => {
-      ensureAllStorageRows();
-      queueRenderCards();
-    }).observe(comboStorage, { childList:true, subtree:true });
-  }
+  refreshTroopComboRules();
+}
 
-  window.setTimeout(() => {
-    ensureAllStorageRows();
-    renderComboCardsV2();
-  }, 120);
+export function refreshTroopComboRules() {
+  ensureAllStorageRows();
+  renderComboCardsV2();
 }
 
 function insertAutofillNote() {
@@ -68,8 +54,8 @@ function ensureAllStorageRows() {
 function ensureStorageRow(row) {
   const legacy = row.querySelector('[data-field="target_value"]');
   if (legacy && !legacy.dataset.comboV2Packed) {
-    const parsed = unpackRuleFields(legacy.value);
-    legacy.value = packRuleData(parsed);
+    const parsed = unpackTroopComboRule(legacy.value);
+    legacy.value = packTroopComboRule(parsed);
     legacy.dataset.comboV2Packed = "1";
   }
   const oldLimit = row.querySelector('[data-field="act_use_limit"]');
@@ -79,40 +65,18 @@ function ensureStorageRow(row) {
 function packRuleFields() {
   const legacy = comboForm.elements.namedItem("target_value");
   if (!legacy) return;
-  legacy.value = packRuleData({
+  legacy.value = packTroopComboRule({
     expected_value: fieldValue("expected_value"),
     confrontation: fieldValue("confrontation")
   });
 }
 
-function hydrateRuleFields() {
+export function prepareTroopComboDialog() {
   if (!comboDialog?.open || !comboForm) return;
   const legacy = comboForm.elements.namedItem("target_value");
-  const parsed = unpackRuleFields(legacy?.value || "");
+  const parsed = unpackTroopComboRule(legacy?.value || "");
   setFormField("expected_value", parsed.expected_value);
   setFormField("confrontation", parsed.confrontation);
-}
-
-function packRuleData(data) {
-  const expectedValue = String(data?.expected_value || "").trim();
-  const confrontation = String(data?.confrontation || "").trim();
-  return `${PACK_PREFIX}${JSON.stringify({expected_value:expectedValue,confrontation})}`;
-}
-
-function unpackRuleFields(value) {
-  const text = String(value || "").trim();
-  if (!text) return { expected_value:"", confrontation:"" };
-  if (!text.startsWith(PACK_PREFIX)) return { expected_value:numericText(text), confrontation:"" };
-  try {
-    const parsed = JSON.parse(text.slice(PACK_PREFIX.length));
-    const legacyDifficulty = numericText(parsed?.difficulty);
-    return {
-      expected_value:String(parsed?.expected_value || legacyDifficulty || "").trim(),
-      confrontation:String(parsed?.confrontation || "").trim()
-    };
-  } catch {
-    return { expected_value:"", confrontation:"" };
-  }
 }
 
 async function autofillFromSkill(skillName) {
@@ -178,7 +142,7 @@ function renderComboCardsV2() {
     const name = rowValue(row,"name") || "名称未設定";
     const ability = abilityText(rowValue(row,"ability"));
     const skills = rowValue(row,"skills") || "組み合わせ技能なし";
-    const rule = unpackRuleFields(rowValue(row,"target_value"));
+    const rule = unpackTroopComboRule(rowValue(row,"target_value"));
     const detail = [
       rowValue(row,"timing") && `タイミング：${rowValue(row,"timing")}`,
       rowValue(row,"target") && `対象：${rowValue(row,"target")}`,
@@ -188,25 +152,12 @@ function renderComboCardsV2() {
   }).join("");
 }
 
-function queueRenderCards() {
-  if (renderQueued) return;
-  renderQueued = true;
-  requestAnimationFrame(() => {
-    renderQueued = false;
-    renderComboCardsV2();
-  });
-}
-
 function comboRows() {
   return comboStorage ? [...comboStorage.children].filter(row => row.matches(".troop-editor-row--combo")) : [];
 }
 function rowValue(row,field) { return String(row.querySelector(`[data-field="${field}"]`)?.value || "").trim(); }
 function fieldValue(name) { return String(comboForm?.elements.namedItem(name)?.value || "").trim(); }
 function setFormField(name,value) { const node=comboForm?.elements.namedItem(name); if(node) node.value=value || ""; }
-function numericText(value) {
-  const text = String(value || "").trim();
-  return /^[-+]?\d+$/.test(text) ? text : "";
-}
 function abilityText(value) {
   const labels={reason:"♠ 理性",passion:"♣ 感情",life:"♥ 生命",mundane:"♦ 外界"};
   const keys=String(value||"").split(",").map(v=>v.trim()).filter(Boolean);
