@@ -21,4 +21,14 @@ jobs:
         run: npm ci
 
       - name: Run full verification
-        run: npm run verify
+        run: |
+          set -o pipefail
+          npm run verify 2>&1 | tee verify.log
+
+      - name: Upload verification log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-verify-log
+          path: verify.log
+          retention-days: 14
