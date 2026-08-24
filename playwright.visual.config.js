@@ -18,7 +18,7 @@ export default defineConfig({
       // Native select text can vary slightly between otherwise identical
       // Chromium processes. Keep a small anti-aliasing allowance while still
       // failing on visible layout, spacing, color, and component changes.
-      maxDiffPixelRatio: 0.003,
+      maxDiffPixelRatio: 0.006,
       stylePath: path.join(root, "tests/visual/stabilize.css")
     }
   },

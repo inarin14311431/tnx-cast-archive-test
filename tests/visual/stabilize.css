@@ -21,6 +21,7 @@ body::-webkit-scrollbar,
 :root[data-theme="japanese-army"] body,
 :root[data-theme="japanese-army"] button,
 :root[data-theme="japanese-army"] input,
-:root[data-theme="japanese-army"] select {
-  font-family: "Courier New", "Noto Sans JP", monospace;
+:root[data-theme="japanese-army"] select,
+:root[data-theme="japanese-army"] * {
+  font-family: "Noto Sans JP", sans-serif !important;
 }

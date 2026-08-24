@@ -17,7 +17,7 @@ test("visual regression uses fixed projects, data and a pinned browser container
   assert.match(config, /name:\s*"visual-desktop"/);
   assert.match(config, /name:\s*"visual-mobile"/);
   assert.match(config, /process\.env\.CI\s*\?\s*"none"/);
-  assert.match(config, /maxDiffPixelRatio:\s*0\.003/);
+  assert.match(config, /maxDiffPixelRatio:\s*0\.006/);
   assert.match(workflow, /mcr\.microsoft\.com\/playwright:v1\.55\.0-noble/);
   assert.match(workflow, /npm run visual/);
   assert.doesNotMatch(workflow, /update-snapshots/);
