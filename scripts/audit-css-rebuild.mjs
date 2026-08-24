@@ -156,7 +156,7 @@ for (const marker of [
   }
 }
 const cssEntrySource = await readFile(path.join(root, "css-next", "index.css"), "utf8");
-if (!cssEntrySource.includes('tokens/spectrum-neon-theme.css?v=2')) {
+if (!cssEntrySource.includes('tokens/spectrum-neon-theme.css?v=3')) {
   violations.push("css-next/index.css: spectrum neon theme import missing");
 }
 
