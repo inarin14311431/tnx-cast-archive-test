@@ -1,5 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
+import { initialGeneralSkillSuit } from "./general-skill-catalog.js";
 
 const editor = document.querySelector("#troop-editor");
 const status = document.querySelector("#troop-editor-status");
@@ -103,10 +104,13 @@ function collectSkills(selector, category) {
   return [...root.querySelectorAll(":scope > .troop-skill-row")].map(row => {
     const level = rowInt(row, "level");
     const kind = rowValue(row, "kind") || (category === "style" ? "normal" : "general");
-    const cost = level * (category === "style" ? (STYLE_COST[kind] ?? 10) : (GENERAL_KIND_COST[kind] ?? 10));
+    const name = rowValue(row, "name");
+    const freeLevel = category === "general" && kind === "general" && initialGeneralSkillSuit(name) ? 1 : 0;
+    const costLevel = Math.max(0, level - freeLevel);
+    const cost = costLevel * (category === "style" ? (STYLE_COST[kind] ?? 10) : (GENERAL_KIND_COST[kind] ?? 10));
     return {
       category,
-      name: rowValue(row, "name"),
+      name,
       kind,
       type: kind,
       level,
@@ -115,7 +119,7 @@ function collectSkills(selector, category) {
       life: Boolean(row.querySelector('[data-suit="life"]')?.checked),
       mundane: Boolean(row.querySelector('[data-suit="mundane"]')?.checked),
       exp_cost: cost,
-      notes: rowValue(row, "notes")
+      notes: category === "general" ? "" : rowValue(row, "notes")
     };
   }).filter(item => item.name);
 }
