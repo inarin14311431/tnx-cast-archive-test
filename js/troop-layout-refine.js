@@ -15,8 +15,8 @@ const GENERAL_DISPLAY_ORDER = [
 
 if (document.body.dataset.page === "troop.html") {
   installStylesheet();
-  installAbilityCs("#troop-ability-preview", "#troop-level");
-  installAbilityCs("#troop-abilities-view", "#troop-level-view");
+  installAbilityPairs("#troop-ability-preview");
+  installAbilityPairs("#troop-abilities-view");
   installEditorReadyWatcher();
 }
 
@@ -192,14 +192,16 @@ function compactCombos() {
   document.querySelector("#troop-combo-cards")?.classList.add("troop-combo-cards--compact");
 }
 
-function installAbilityCs(rootSelector, levelSelector) {
+function installAbilityPairs(rootSelector) {
   const root = document.querySelector(rootSelector);
-  if (!root || root.dataset.csWatcher === "1") return;
-  root.dataset.csWatcher = "1";
-  root.classList.add("troop-ability-grid--with-cs");
+  if (!root || root.dataset.abilityWatcher === "1") return;
+  root.dataset.abilityWatcher = "1";
+  root.classList.remove("troop-ability-grid--with-cs");
+  root.classList.add("troop-ability-grid--compact-pairs");
 
   const apply = () => {
-    const abilityCards = [...root.querySelectorAll(":scope > article:not(.troop-cs-card)")].slice(0, 4);
+    root.querySelectorAll(":scope > .troop-cs-card").forEach(card => card.remove());
+    const abilityCards = [...root.querySelectorAll(":scope > article")].slice(0, 4);
     abilityCards.forEach(card => {
       if (card.dataset.compactAbility === "1") return;
       const label = card.querySelector("span")?.textContent?.trim() || "";
@@ -210,24 +212,11 @@ function installAbilityCs(rootSelector, levelSelector) {
       card.classList.add("troop-ability-pair");
       card.innerHTML = `<span class="troop-ability-pair__label">${escapeHtml(label)}</span><strong class="troop-ability-pair__value">${escapeHtml(value)}<i>／</i>${escapeHtml(control)}</strong>`;
     });
-
-    if (!root.children.length || root.querySelector(".troop-cs-card")) return;
-    const levelNode = document.querySelector(levelSelector);
-    const level = levelNode?.value ?? levelNode?.textContent ?? "0";
-    const card = document.createElement("article");
-    card.className = "troop-cs-card";
-    card.innerHTML = `<span>CS</span><strong>${escapeHtml(String(level).trim() || "0")}</strong><small>＝ LEVEL</small>`;
-    root.append(card);
   };
 
   apply();
   const observer = new MutationObserver(() => queueMicrotask(apply));
   observer.observe(root, { childList:true });
-  const level = document.querySelector(levelSelector);
-  level?.addEventListener?.("input", () => {
-    const strong = root.querySelector(".troop-cs-card strong");
-    if (strong) strong.textContent = level.value || "0";
-  });
 }
 
 function refreshExperience() {

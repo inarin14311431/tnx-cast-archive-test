@@ -32,6 +32,29 @@ test("troop rules use one style, derived stats, max members and EXP", () => {
   assert.match(js, /record\?\.\[key\]\?\.\[1\].*\+ level/);
 });
 
+test("troop abilities use four compact two-digit pairs without an extra CS card", () => {
+  const html = read("troop.html");
+  const layout = read("js/troop-layout-refine.js");
+  const css = read("css-next/pages/troop-layout-v6.css");
+  assert.match(html, /troop-layout-refine\.js\?v=4/);
+  assert.match(layout, /installAbilityPairs\("#troop-ability-preview"\)/);
+  assert.match(layout, /installAbilityPairs\("#troop-abilities-view"\)/);
+  assert.match(layout, /troop-ability-grid--compact-pairs/);
+  assert.match(layout, /<i>／<\/i>/);
+  assert.doesNotMatch(layout, /createElement\("article"\)[\s\S]*troop-cs-card/);
+  assert.match(css, /grid-template-columns:repeat\(4,minmax\(68px,1fr\)\)/);
+  assert.match(css, /min-width:5\.2ch/);
+  assert.match(css, /font-variant-numeric:tabular-nums/);
+});
+
+test("troop read view uses the compact mobile-width sheet", () => {
+  const html = read("troop.html");
+  const css = read("css-next/pages/troop-layout-v6.css");
+  assert.match(html, /id="troop-view" class="troop-sheet troop-sheet--compact"/);
+  assert.match(css, /#troop-view\.troop-sheet--compact\{[\s\S]*width:min\(720px,100%\)/);
+  assert.match(css, /troop-sheet--compact \.troop-vitals\{[\s\S]*repeat\(4,minmax\(0,1fr\)\)/);
+});
+
 test("troop editor separates management and basic data", () => {
   const html = read("troop.html");
   assert.match(html, /管理機能 <small>MANAGEMENT<\/small>/);
