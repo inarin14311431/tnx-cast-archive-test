@@ -51,7 +51,7 @@ function refineStyleSection() {
   if (!section) return;
   section.classList.add("troop-section--style-primary");
   const heading = section.querySelector("h2");
-  if (heading) heading.insertAdjacentHTML("beforeend", '<span class="troop-important-badge">PRIMARY</span>');
+  if (heading && !heading.querySelector(".troop-important-badge")) heading.insertAdjacentHTML("beforeend", '<span class="troop-important-badge">PRIMARY</span>');
 }
 
 function rebuildGeneralSkills() {
@@ -87,7 +87,7 @@ function createGeneralRow(baseName, baseSuit, kind, data = {}) {
   const level = Math.max(isProper ? 0 : 1, Number(data.level || 0));
   const actualName = String(data.name || "");
   const detailValue = isProper && actualName.startsWith(baseName) ? actualName.slice(baseName.length) : "";
-  const hiddenName = isProper ? (detailValue || level > 0 ? `${baseName}${detailValue}` : "") : baseName;
+  const hiddenName = isProper ? ((detailValue || level > 0) ? `${baseName}${detailValue}` : "") : baseName;
   row.innerHTML = `
     <div class="troop-general-name-cell">
       ${isProper ? `<span class="troop-general-prefix">${escapeHtml(baseName)}</span><input class="troop-general-detail" data-general-detail type="text" value="${escapeAttr(detailValue)}" placeholder="名称">` : `<strong>${escapeHtml(baseName)}</strong>`}
@@ -101,7 +101,7 @@ function createGeneralRow(baseName, baseSuit, kind, data = {}) {
   const syncName = () => {
     if (!isProper) return;
     const text = detail.value.trim();
-    row.querySelector('[data-field="name"]').value = text || Number(levelInput.value || 0) > 0 ? `${baseName}${text}` : "";
+    row.querySelector('[data-field="name"]').value = (text || Number(levelInput.value || 0) > 0) ? `${baseName}${text}` : "";
   };
   detail?.addEventListener("input", syncName);
   levelInput.addEventListener("input", syncName);
@@ -111,7 +111,11 @@ function createGeneralRow(baseName, baseSuit, kind, data = {}) {
 function suitMarkup(key, fixedSuit, checkedState) {
   const suit = SUITS[key];
   const fixed = key === fixedSuit;
-  return `<label class="troop-suit-toggle${fixed ? " troop-suit-toggle--fixed" : "}" title="${fixed ? `${suit.label}：自動取得スート` : suit.label}"><input type="checkbox" data-suit="${key}" ${checkedState ? "checked" : ""} ${fixed ? "disabled data-auto-suit=\"1\"" : ""} aria-label="${suit.label}スート"><span data-off="${suit.off}" data-on="${suit.on}"></span></label>`;
+  const fixedClass = fixed ? " troop-suit-toggle--fixed" : "";
+  const title = fixed ? `${suit.label}：自動取得スート` : suit.label;
+  const checkedAttr = checkedState ? "checked" : "";
+  const fixedAttr = fixed ? 'disabled data-auto-suit="1"' : "";
+  return `<label class="troop-suit-toggle${fixedClass}" title="${escapeAttr(title)}"><input type="checkbox" data-suit="${key}" ${checkedAttr} ${fixedAttr} aria-label="${suit.label}スート"><span data-off="${suit.off}" data-on="${suit.on}"></span></label>`;
 }
 
 function addSkillFieldLabels() {
