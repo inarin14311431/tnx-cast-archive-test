@@ -1,0 +1,112 @@
+/* Final troop layout/readability pass. Loaded after prior troop styles. */
+body[data-page="troop.html"] .troop-overview{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:10px!important;
+}
+
+/* Stable section accents by purpose rather than DOM position. */
+body[data-page="troop.html"] .troop-section--overview-basic{--troop-section-accent:#8c78c7}
+body[data-page="troop.html"] .troop-section--overview-management{--troop-section-accent:#4f9bc0}
+body[data-page="troop.html"] .troop-section--overview-style{--troop-section-accent:#78aa58}
+body[data-page="troop.html"] .troop-section--overview-abilities{--troop-section-accent:#d4a43d}
+body[data-page="troop.html"] .troop-section:has(#troop-general-skills-editor){--troop-section-accent:#cf6874}
+body[data-page="troop.html"] .troop-section:has(#troop-style-skills-editor){--troop-section-accent:#49aaa3}
+body[data-page="troop.html"] .troop-section:has(#troop-combo-cards){--troop-section-accent:#cf873b}
+body[data-page="troop.html"] .troop-section:has(#troop-outfits-editor){--troop-section-accent:#9375ba}
+body[data-page="troop.html"] .troop-section:has(#troop-notes){--troop-section-accent:#4d8eb5}
+body[data-page="troop.html"] .troop-editor .troop-section>header,
+body[data-page="troop.html"] #troop-view .troop-section>header{
+  background:linear-gradient(90deg,color-mix(in srgb,var(--troop-section-accent,var(--color-accent)) 14%,var(--color-surface)) 0%,color-mix(in srgb,var(--troop-section-accent,var(--color-accent)) 5%,var(--color-surface)) 62%,var(--color-surface) 100%)!important;
+  border-left-color:var(--troop-section-accent,var(--color-accent))!important;
+}
+
+/* Ability/control: give value and control equal visual meaning without widening the block. */
+body[data-page="troop.html"] .troop-ability-grid--with-cs{
+  grid-template-columns:repeat(4,minmax(74px,1fr)) 58px!important;
+  gap:7px!important;
+}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-rows:auto auto auto!important;
+  align-content:center!important;
+  justify-items:center!important;
+  min-height:72px!important;
+  padding:7px 5px!important;
+  background:color-mix(in srgb,var(--color-surface) 96%,var(--troop-section-accent,#d4a43d))!important;
+}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article span{font-size:12px!important;line-height:1.1!important}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article strong{font-size:22px!important;line-height:1.05!important;margin:2px 0!important}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article small{
+  display:block!important;
+  min-width:52px;
+  padding:2px 6px!important;
+  border:1px solid color-mix(in srgb,var(--color-border) 75%,transparent);
+  background:color-mix(in srgb,var(--color-background) 65%,transparent);
+  font-size:10px!important;
+  line-height:1.25!important;
+  text-align:center;
+}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article:nth-child(1){border-top-color:#d66565!important}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article:nth-child(2){border-top-color:#58a8d5!important}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article:nth-child(3){border-top-color:#86b960!important}
+body[data-page="troop.html"] .troop-ability-grid--with-cs article:nth-child(4){border-top-color:#d8a648!important}
+
+/* Style skill rows: EXP is replaced by timing/confrontation. LV matches general skill sizing. */
+body[data-page="troop.html"] .troop-style-field-heads{
+  grid-template-columns:minmax(145px,1.25fr) 82px 42px 128px 112px 112px minmax(120px,1.2fr) 36px!important;
+  gap:6px!important;
+}
+body[data-page="troop.html"] #troop-style-skills-editor .troop-style-row-v6{
+  display:grid!important;
+  grid-template-columns:minmax(145px,1.25fr) 82px 42px 128px 112px 112px minmax(120px,1.2fr) 36px!important;
+  gap:6px!important;
+  align-items:center!important;
+}
+body[data-page="troop.html"] #troop-style-skills-editor .troop-style-row-v6>[data-field="level"]{
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:29px!important;
+  padding:3px!important;
+  text-align:center!important;
+  font-size:13px!important;
+  font-weight:900!important;
+}
+body[data-page="troop.html"] #troop-style-skills-editor .troop-style-row-v6 .troop-style-meta-input{
+  min-width:0!important;
+  height:30px!important;
+  padding:4px 6px!important;
+  font-size:12px!important;
+}
+body[data-page="troop.html"] .troop-style-field-heads span{font-size:10px!important;font-weight:850!important}
+body[data-page="troop.html"] .troop-style-field-heads small{font-size:8px!important}
+
+/* Outfit labels use the same typography as style-skill field labels. */
+body[data-page="troop.html"] .troop-outfit-fields span{
+  font-size:10px!important;
+  line-height:1.15!important;
+  font-weight:850!important;
+  letter-spacing:.04em!important;
+  color:var(--color-text)!important;
+}
+body[data-page="troop.html"] .troop-outfit-fields small{
+  display:inline!important;
+  font-size:8px!important;
+  color:var(--color-muted)!important;
+}
+
+/* Combo expected value wording and numeric emphasis. */
+body[data-page="troop.html"] .combo-card dl dd{font-size:13px!important;font-weight:850!important}
+body[data-page="troop.html"] #troop-combos-view article span{font-size:12px!important}
+
+@media(max-width:1000px){
+  body[data-page="troop.html"] .troop-overview{grid-template-columns:1fr!important}
+  body[data-page="troop.html"] .troop-style-field-heads{display:none!important}
+  body[data-page="troop.html"] #troop-style-skills-editor .troop-style-row-v6{
+    grid-template-columns:minmax(130px,1fr) 78px 42px 124px!important;
+  }
+  body[data-page="troop.html"] #troop-style-skills-editor .troop-style-row-v6 .troop-style-meta-input,
+  body[data-page="troop.html"] #troop-style-skills-editor .troop-style-row-v6>[data-field="notes"],
+  body[data-page="troop.html"] #troop-style-skills-editor .troop-style-row-v6>[data-remove]{grid-column:auto}
+}
