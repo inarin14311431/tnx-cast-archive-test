@@ -1,7 +1,7 @@
-const ROOT_SELECTOR = ".cast-troop-combos, #troop-combos-view";
+const COMBO_SELECTOR = ".cast-troop-combos article, #troop-combos-view article";
 
 function decorate(root = document) {
-  root.querySelectorAll(`${ROOT_SELECTOR} article`).forEach(article => {
+  root.querySelectorAll(COMBO_SELECTOR).forEach(article => {
     if (article.querySelector("[data-troop-combo-copy]")) return;
     article.classList.add("troop-combo-copyable");
     const button = document.createElement("button");
