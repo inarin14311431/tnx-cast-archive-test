@@ -1,6 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
+import { registerTroopSave } from "./troop-save.js";
 
 const params = new URLSearchParams(location.search);
 const publicId = params.get("id")?.trim() || "";
@@ -81,7 +82,7 @@ function bindEditorEvents() {
   document.querySelector("#troop-outfit-add").addEventListener("click", () => addOutfitRow());
   editor.addEventListener("input", event => { if (event.target.closest(".troop-skill-row")) syncSkillRow(event.target); recalculateEditor(); });
   editor.addEventListener("change", event => { if (event.target.closest(".troop-skill-row")) syncSkillRow(event.target); recalculateEditor(); });
-  editor.addEventListener("submit", saveTroop);
+  registerTroopSave(editor);
 }
 
 function updateStyleUI() {
@@ -263,26 +264,9 @@ async function renderLinkedCharacter() {
   else node.textContent = "非公開キャスト";
 }
 
-async function saveTroop(event) {
-  event.preventDefault();
-  const styleName = value("#troop-style"); if (!styleName) return setStatus("スタイルを選択してください。", true);
-  if (styleName === "ウツワ" && !value("#troop-utsuwa-attribute")) return setStatus("ウツワの属性を選択してください。", true);
-  const general = collectSkills("#troop-general-skills-editor", "general"); const style = collectSkills("#troop-style-skills-editor", "style");
-  if (style.filter(i => i.kind === "secret").length > 2) return setStatus("秘技は2つまでです。", true);
-  if (style.filter(i => i.kind === "ultimate").length > 1) return setStatus("奥義は1つまでです。", true);
-  const level = intValue("#troop-level"); const abilities = calculateAbilities(styleName, value("#troop-utsuwa-attribute"), level); const exp = calculateExperience();
-  const payload = { owner_id:user.id, character_id:value("#troop-character")||null, name:value("#troop-name"), visibility:value("#troop-visibility"), level, member_max:Math.max(1,intValue("#troop-member-max")), member_current:Math.max(1,intValue("#troop-member-max")), style_1:styleName, style_2:"", style_3:"", utsuwa_attribute:value("#troop-utsuwa-attribute"), reason_value:abilities.reason.value, reason_control:abilities.reason.control, passion_value:abilities.passion.value, passion_control:abilities.passion.control, life_value:abilities.life.value, life_control:abilities.life.control, mundane_value:abilities.mundane.value, mundane_control:abilities.mundane.control, skills:[...general,...style], combos:collectRows("#troop-combos-editor",["name","skills","ability","modifier","target_value","timing","target","range","act_use_limit","description"]).filter(i=>i.name), outfits:collectRows("#troop-outfits-editor",["name","attack","defense_s","defense_p","defense_i","notes"]).filter(i=>i.name), experience_spent:exp, notes:value("#troop-notes") };
-  setStatus("保存中…");
-  const result = troop ? await supabase.from("troops").update(payload).eq("id",troop.id).eq("owner_id",user.id).select("public_id").single() : await supabase.from("troops").insert(payload).select("public_id").single();
-  if (result.error) return setStatus(result.error.message,true); location.href=`./troop.html?id=${encodeURIComponent(result.data.public_id)}`;
-}
 
-function collectSkills(selector, category) {
-  return [...document.querySelector(selector).children].map(row => { const level=rowInt(row,"level"); const kind=rowValue(row,"kind")||(category==="style"?"normal":"general"); const cost=level*(category==="style"?(STYLE_COST[kind]??10):(GENERAL_KIND_COST[kind]??10)); return { category, name:rowValue(row,"name"), kind, type:kind, level, reason:row.querySelector('[data-suit="reason"]')?.checked||false, passion:row.querySelector('[data-suit="passion"]')?.checked||false, life:row.querySelector('[data-suit="life"]')?.checked||false, mundane:row.querySelector('[data-suit="mundane"]')?.checked||false, exp_cost:cost, notes:rowValue(row,"notes") }; }).filter(i=>i.name);
-}
 async function deleteTroop(){if(!troop||!confirm(`「${troop.name}」を削除します。`))return;const result=await supabase.from("troops").delete().eq("id",troop.id).eq("owner_id",user.id);if(result.error)return setStatus(result.error.message,true);location.href="./troops.html";}
 async function shareTroop(){if(troop.visibility!=="public")return alert("共有URLでRLに確認してもらうには、公開状態を「公開」にしてください。");const url=new URL("./troop.html",location.href);url.searchParams.set("id",troop.public_id);try{await navigator.clipboard.writeText(url.href);alert("共有URLをコピーしました。");}catch{prompt("共有URL",url.href);}}
-function collectRows(selector,fields){return [...document.querySelector(selector).children].map(row=>Object.fromEntries(fields.map(f=>[f,f==="act_use_limit"?(Number.parseInt(row.querySelector(`[data-field="${f}"]`)?.value||"0",10)||null):String(row.querySelector(`[data-field="${f}"]`)?.value||"").trim()])));}
 function rowValue(row,f){return String(row.querySelector(`[data-field="${f}"]`)?.value||"").trim();} function rowInt(row,f){return Math.max(0,Number.parseInt(rowValue(row,f)||"0",10)||0);} function value(selector){return String(document.querySelector(selector)?.value??"").trim();} function intValue(selector){return Math.max(0,Number.parseInt(value(selector)||"0",10)||0);} function setValue(selector,v){const n=document.querySelector(selector);if(n)n.value=v??"";}
 function setStatus(message,error=false){status.textContent=message;status.dataset.state=error?"error":"working";} function showError(message){errorBox.hidden=false;errorBox.textContent=message;view.hidden=true;editor.hidden=true;}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));} function escapeAttr(v){return escapeHtml(v);}

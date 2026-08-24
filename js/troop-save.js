@@ -12,11 +12,14 @@ const STYLE_COST = { none:0, normal:10, secret:20, ultimate:50, direction:2 };
 const GENERAL_KIND_COST = { general:10, proper:5, social:5, connection:5 };
 let saving = false;
 
-if (editor) editor.addEventListener("submit", saveTroopV2, true);
+export function registerTroopSave(editorNode = editor) {
+  if (!editorNode || editorNode.dataset.troopSaveHandler === "canonical") return;
+  editorNode.dataset.troopSaveHandler = "canonical";
+  editorNode.addEventListener("submit", saveTroop);
+}
 
-async function saveTroopV2(event) {
+async function saveTroop(event) {
   event.preventDefault();
-  event.stopImmediatePropagation();
   if (saving) return;
   if (!editor.reportValidity()) return;
 
