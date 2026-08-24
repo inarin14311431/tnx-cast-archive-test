@@ -27,6 +27,7 @@ jobs:
           npx playwright test
           tests/e2e/smoke.spec.js
           tests/e2e/cast-view.spec.js
+          tests/e2e/troop-view.spec.js
           tests/e2e/editor-help.spec.js
           tests/e2e/direct-transfer.spec.js
           --project=chromium
@@ -59,6 +60,7 @@ jobs:
         run: >-
           npx playwright test
           tests/e2e/authenticated.spec.js
+          tests/e2e/troop-view.spec.js
           tests/e2e/legacy-import-profile.spec.js
           tests/e2e/outfit-import-transfer.spec.js
           tests/e2e/sheet-row-lifecycle.spec.js
@@ -99,6 +101,7 @@ jobs:
         run: >-
           npx playwright test
           tests/e2e/account-mobile.spec.js
+          tests/e2e/troop-view.spec.js
           tests/e2e/mobile-combo-counter.spec.js
           tests/e2e/mobile-experience.spec.js
           --project=mobile
