@@ -27,6 +27,12 @@ test("seven-color gaming theme renders and persists across desktop and mobile sc
   await page.locator("#theme-select").selectOption("spectrum-neon");
 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "spectrum-neon");
+  const registryState = await page.evaluate(() => ({
+    registered: globalThis.TNX_THEME_REGISTRY.themes.map(theme => theme.id),
+    options: [...document.querySelector("#theme-select").options].map(option => option.value)
+  }));
+  expect(registryState.registered).toHaveLength(18);
+  expect(registryState.options).toEqual(registryState.registered);
   const themeState = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
     const title = getComputedStyle(document.querySelector(".site-title__archive"));
@@ -117,6 +123,44 @@ test("Neon Sign covers page-specific and dynamically inserted link-style buttons
   expect(style.outline).toBe("solid");
   expect(style.layers).toBeGreaterThanOrEqual(2);
   expect(style.glow).not.toBe("none");
+});
+
+test("semantic theme scopes follow dynamic insertion and class changes", async ({ page }) => {
+  await page.goto("/index.html");
+  await page.locator("#theme-select").selectOption("spectrum-neon");
+  await page.evaluate(() => {
+    const panel = document.createElement("section");
+    panel.id = "dynamic-theme-panel";
+    panel.className = "panel";
+    document.body.append(panel);
+
+    const card = document.createElement("article");
+    card.id = "dynamic-theme-card";
+    card.className = "combo-card";
+    document.body.append(card);
+
+    const badge = document.createElement("span");
+    badge.id = "dynamic-theme-badge";
+    badge.className = "badge";
+    document.body.append(badge);
+  });
+
+  await expect(page.locator("#dynamic-theme-panel")).toHaveAttribute("data-theme-surface", "panel");
+  await expect(page.locator("#dynamic-theme-card")).toHaveAttribute("data-theme-surface", "card");
+  await expect(page.locator("#dynamic-theme-badge")).toHaveAttribute("data-theme-badge", "1");
+
+  await page.locator("#dynamic-theme-panel").evaluate(element => {
+    element.className = "badge";
+  });
+  await expect(page.locator("#dynamic-theme-panel")).not.toHaveAttribute("data-theme-surface", "panel");
+  await expect(page.locator("#dynamic-theme-panel")).toHaveAttribute("data-theme-badge", "1");
+});
+
+test("an obsolete stored theme falls back to the registered default", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("tnx-cast-site-theme", "removed-theme"));
+  await page.goto("/index.html");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "nova");
+  await expect(page.locator("#theme-select")).toHaveValue("nova");
 });
 
 test("Neon Sign remains final after authenticated mobile editor styles initialize", async ({ page }) => {

@@ -24,23 +24,26 @@ const contrastRatio = (foreground, background) => {
   return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
 };
 
-test("gaming theme is selectable, persistent and loaded as the final theme layer", async () => {
-  const [controller, indexHtml, indexCss] = await Promise.all([
+test("gaming theme is registry-driven, persistent and loaded through the final theme bundle", async () => {
+  const [registry, controller, indexHtml, themeManifest] = await Promise.all([
+    read("js/theme-registry.js"),
     read("js/css-next-theme.js"),
     read("index.html"),
-    read("css-next/index.css")
+    read("css-next/themes/index.css")
   ]);
 
-  assert.match(controller, /"spectrum-neon"/);
-  assert.match(controller, /\["spectrum-neon","ネオンサイン"\]/);
-  assert.match(controller, /localStorage\.setItem\(STORAGE_KEY,next\)/);
-  assert.match(indexHtml, /<option value="spectrum-neon">ネオンサイン<\/option>/);
-  assert.doesNotMatch(indexCss, /tokens\/spectrum-neon-theme\.css/);
-  assert.match(indexHtml, /css-next\/tokens\/spectrum-neon-theme\.css\?v=4/);
+  assert.match(registry, /id:\s*"spectrum-neon",\s*label:\s*"ネオンサイン"/);
+  assert.match(controller, /TNX_THEME_REGISTRY/);
+  assert.match(controller, /registry\.themes\.forEach/);
+  assert.match(controller, /localStorage\.setItem\(STORAGE_KEY, theme\.id\)/);
+  assert.match(indexHtml, /<select id="theme-select" data-theme-select aria-label="表示テーマ"><\/select>/);
+  assert.doesNotMatch(indexHtml, /<option value="spectrum-neon"/);
+  assert.match(themeManifest, /\.\/spectrum-neon\.css\?v=1/);
+  assert.match(indexHtml, /css-next\/themes\/index\.css\?v=1/);
 });
 
 test("gaming theme owns seven readable neon colors and a layered spectrum background", async () => {
-  const source = await read("css-next/tokens/spectrum-neon-theme.css");
+  const source = await read("css-next/themes/spectrum-neon.css");
   const block = source.match(/:root\[data-theme="spectrum-neon"\]\s*\{([\s\S]*?)\n\}/)?.[1] || "";
   const surface = block.match(/--color-surface:\s*(#[0-9a-f]{6})/i)?.[1];
   const tokens = ["red", "orange", "yellow", "green", "cyan", "blue", "violet"];
@@ -56,16 +59,17 @@ test("gaming theme owns seven readable neon colors and a layered spectrum backgr
   assert.equal((block.match(/radial-gradient\(/g) || []).length, 7);
 });
 
-test("gaming neon effects cover chrome, panels, cards, controls, desktop and mobile navigation", async () => {
-  const source = await read("css-next/tokens/spectrum-neon-theme.css");
+test("gaming neon effects cover semantic surfaces, controls and navigation", async () => {
+  const source = await read("css-next/themes/spectrum-neon.css");
 
   assert.match(source, /body::before/);
   assert.match(source, /body::after/);
   assert.match(source, /\.site-header, \.auth-header, \.sheet-header, \.showcase-header/);
-  assert.match(source, /\.archive-controls, \.account-panel, \.sheet-section, \.data-panel/);
+  assert.match(source, /\[data-theme-surface="panel"\]/);
+  assert.match(source, /\[data-theme-surface="card"\]/);
+  assert.match(source, /\[data-theme-badge="1"\]/);
   assert.match(source, /\.cast-grid, \.owned-cast-list, \.troop-list/);
   assert.match(source, /nth-child\(7n \+ 7\)/);
-  assert.match(source, /\.cast-card, \.owned-cast, \.troop-card/);
   assert.match(source, /\.sheet-section-nav a, \.mobile-sheet-nav a/);
   assert.match(source, /\.troop-primary-action, \.cocofolia-copy-button/);
   assert.match(source, /input:not\(\[type="checkbox"\]\)/);
@@ -75,7 +79,6 @@ test("gaming neon effects cover chrome, panels, cards, controls, desktop and mob
   assert.match(source, /\[data-theme-control="1"\]/);
   assert.match(source, /#neon-sign-control-layer/);
   assert.match(source, /nth-of-type\(7n \+ 7\)/);
-  assert.match(source, /\.basic-profile-panel, \.personal-data-panel, \.life-path-panel/);
   assert.match(source, /table tbody tr/);
   assert.match(source, /table :is\(th, td\)/);
   assert.match(source, /::-webkit-scrollbar-thumb/);
@@ -84,44 +87,48 @@ test("gaming neon effects cover chrome, panels, cards, controls, desktop and mob
   assert.match(source, /prefers-reduced-motion:\s*reduce/);
 });
 
-test("native, link-style and dynamically inserted controls share one theme contract", async () => {
-  const controller = await read("js/css-next-theme.js");
+test("native, link-style and dynamically inserted UI share one semantic scope contract", async () => {
+  const scope = await read("js/theme-scope.js");
 
-  assert.match(controller, /THEME_CONTROL_SELECTOR/);
-  assert.match(controller, /function normalizeThemeControls\(root=document\)/);
-  assert.match(controller, /node\.dataset\.themeControl="1"/);
-  assert.match(controller, /function normalizeDynamicUi\(root=document\)/);
-  assert.match(controller, /normalizeThemeControls\(root\)/);
-  assert.match(controller, /normalizeDynamicUi\(document\)/);
-  assert.match(controller, /normalizeDynamicUi\(node\)/);
   for (const marker of [
-    'input[type="submit"]', ".section-toggle", "a.app-back-link",
+    'attribute: "themeSurface"', 'value: "panel"', 'value: "card"',
+    'attribute: "themeBadge"', 'attribute: "themeControl"',
+    "button", "input[type='submit']", ".section-toggle", "a.app-back-link",
     ".owned-cast__management a", ".troop-sheet__actions a",
     ".cast-troop-dialog__toolbar a", ".sheet-section-nav a",
     ".mobile-cast-topbar a", ".mobile-sheet-actions a",
-    ".mobile-transfer-actions a", ".error-terminal a"
+    ".mobile-transfer-actions a", ".error-terminal a", "MutationObserver", "attributeFilter"
   ]) {
-    assert.ok(controller.includes(marker), `theme-control coverage is missing ${marker}`);
+    assert.ok(scope.includes(marker), `theme scope coverage is missing ${marker}`);
   }
+  assert.match(scope, /node\.dataset\[rule\.attribute\]\s*=\s*rule\.value/);
+  assert.match(scope, /normalize\(node\)/);
 });
 
-test("all active CSS-next screens receive refreshed theme assets while fixed and standalone screens stay explicit", async () => {
+test("all active CSS-next screens load the registry and one final theme bundle", async () => {
   for (const page of activeThemePages) {
     const html = await read(page);
-    assert.match(html, /css-next-theme\.js\?v=7/, `${page} needs the current theme controller`);
-    assert.match(html, /css-next\/index\.css\?v=62/, `${page} needs the current theme stylesheet`);
+    assert.match(html, /theme-registry\.js\?v=1/, `${page} needs the canonical theme registry`);
+    assert.match(html, /css-next-theme\.js\?v=8/, `${page} needs the current theme controller`);
+    assert.match(html, /theme-scope\.js\?v=1/, `${page} needs semantic theme scopes`);
+    assert.match(html, /css-next\/index\.css\?v=63/, `${page} needs the current base stylesheet`);
     const head = html.match(/<head>[\s\S]*?<\/head>/i)?.[0] || "";
     const stylesheets = [...head.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/gi)]
       .map(match => match[1]);
     assert.equal(
       stylesheets.at(-1),
-      "./css-next/tokens/spectrum-neon-theme.css?v=4",
-      `${page} must load Neon Sign after every page stylesheet`
+      "./css-next/themes/index.css?v=1",
+      `${page} must load the theme bundle after every page stylesheet`
     );
     assert.equal(
-      stylesheets.filter(href => href.includes("spectrum-neon-theme.css")).length,
+      stylesheets.filter(href => href === "./css-next/themes/index.css?v=1").length,
       1,
-      `${page} must load exactly one Neon Sign stylesheet`
+      `${page} must load exactly one theme bundle`
+    );
+    assert.equal(
+      stylesheets.some(href => href.includes("spectrum-neon.css")),
+      false,
+      `${page} must not link an individual theme`
     );
   }
 

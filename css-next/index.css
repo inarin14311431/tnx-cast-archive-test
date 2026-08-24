@@ -1,12 +1,9 @@
 /*
  * CSS rebuild entry point.
- * Keep imports in architecture order: tokens -> foundation -> layout -> components -> editor -> pages -> responsive.
- * Page-specific direct styles (mobile/cyber) are loaded by their page HTML rather than globally.
+ * Keep imports in architecture order: core tokens -> foundation -> layout -> components -> editor -> pages -> responsive.
+ * Theme definitions and effects live in themes/index.css, loaded by each page after its page-specific styles.
  */
 @import url("./tokens/core.css?v=2");
-@import url("./tokens/themes.css?v=3");
-@import url("./tokens/statistics-bureau-theme.css?v=1");
-@import url("./tokens/theme-ui-overrides.css?v=2");
 @import url("./foundation/reset.css");
 @import url("./foundation/base.css?v=2");
 @import url("./foundation/typography.css");
@@ -21,6 +18,7 @@
 @import url("./components/status.css");
 @import url("./components/help.css?v=1");
 @import url("./components/global-theme-picker.css?v=1");
+@import url("./components/style-marks.css?v=1");
 @import url("./components/sheet-snapshots.css?v=1");
 @import url("./components/sheet-import-help.css?v=1");
 @import url("./components/sheet-url-import.css?v=1");
@@ -50,9 +48,6 @@
 @import url("./pages/acts.css?v=2");
 @import url("./pages/showcase.css?v=2");
 @import url("./components/armor-totals.css?v=2");
-
-/* Cross-theme readability rules intentionally come after page styles. */
-@import url("./components/theme-contrast.css?v=1");
 
 /* Responsive overrides are intentionally last. */
 @import url("./responsive.css?v=8");

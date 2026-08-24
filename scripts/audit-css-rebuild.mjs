@@ -1,6 +1,6 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 async function filesUnder(directory, extension) {
@@ -32,18 +32,12 @@ const contrastRatio = (foreground, background) => {
 const violations = [];
 const cssFiles = await filesUnder(path.join(root, "css-next"), ".css");
 const selectorOwners = new Map();
-const expectedThemes = [
-  "nova", "moon", "star", "eden", "vlad", "lutetia", "buena", "canberra",
-  "hongkong", "fesler", "intron", "axleraters", "inagaki", "astral", "orbital", "japanese-army"
-];
-const expectedThemeOptions = [
-  ["nova", "トーキョーＮ◎ＶＡ"], ["moon", "オーサカM○●N"], ["star", "カムイST☆R"],
-  ["eden", "ミトラスGARDEN"], ["vlad", "ヴラド・コロニー"], ["lutetia", "ヴィル・ヌーヴ・ルテチア"],
-  ["buena", "ブエナIЯA"], ["canberra", "キャンベラAXYZ"], ["hongkong", "ホンコンHEAVEN"],
-  ["fesler", "フェスラー公国"], ["intron", "イントロン"], ["axleraters", "ニューロ！"],
-  ["inagaki", "稲垣 光平"], ["astral", "アストラル"], ["orbital", "軌道"],
-  ["spectrum-neon", "ネオンサイン"], ["japanese-army", "日本"]
-];
+await import(pathToFileURL(path.join(root, "js", "theme-registry.js")));
+const themeRegistry = globalThis.TNX_THEME_REGISTRY;
+const expectedThemeOptions = themeRegistry.themes.map(theme => [theme.id, theme.label]);
+const expectedThemes = themeRegistry.themes
+  .map(theme => theme.id)
+  .filter(theme => !new Set(["spectrum-neon", "statistics-bureau"]).has(theme));
 const activeThemePages = [
   "404.html", "account.html", "acts.html", "backup.html", "cast.html", "combos.html",
   "index.html", "login.html", "manual-data-import.html", "mobile-transfer.html",
@@ -65,10 +59,10 @@ for (const file of cssFiles) {
   }
 }
 
-const themeTokenSource = await readFile(path.join(root, "css-next", "tokens", "themes.css"), "utf8");
+const themeTokenSource = await readFile(path.join(root, "css-next", "themes", "presets.css"), "utf8");
 for (const theme of expectedThemes) {
   if (!themeTokenSource.includes(`:root[data-theme="${theme}"]`)) {
-    violations.push(`css-next/tokens/themes.css: missing ${theme} token set`);
+    violations.push(`css-next/themes/presets.css: missing ${theme} token set`);
   }
 }
 for (const token of [
@@ -77,7 +71,7 @@ for (const token of [
 ]) {
   const count = [...themeTokenSource.matchAll(new RegExp(`--${token}\\s*:`, "g"))].length;
   if (count !== expectedThemes.length) {
-    violations.push(`css-next/tokens/themes.css: --${token} count ${count}, expected ${expectedThemes.length}`);
+    violations.push(`css-next/themes/presets.css: --${token} count ${count}, expected ${expectedThemes.length}`);
   }
 }
 const invalidThemeSelectorLine = themeTokenSource
@@ -87,7 +81,7 @@ const invalidThemeSelectorLine = themeTokenSource
   .filter(line => line.includes("{") && !line.startsWith("--"))
   .find(line => !/^:root(?:\[data-theme="[a-z-]+"\])?(?:\s*,)?\s*\{$/.test(line));
 if (invalidThemeSelectorLine) {
-  violations.push(`css-next/tokens/themes.css: component selector found: ${invalidThemeSelectorLine}`);
+  violations.push(`css-next/themes/presets.css: component selector found: ${invalidThemeSelectorLine}`);
 }
 
 const lightThemeTextChecks = [
@@ -113,58 +107,60 @@ const lightThemeAccentTokens = [
 for (const theme of ["intron", "orbital"]) {
   const block = themeBlock(themeTokenSource, theme);
   if (!/color-scheme:\s*light\s*;/.test(block)) {
-    violations.push(`css-next/tokens/themes.css: ${theme} is missing color-scheme: light`);
+    violations.push(`css-next/themes/presets.css: ${theme} is missing color-scheme: light`);
   }
   for (const [foregroundToken, backgroundToken, minimum] of lightThemeTextChecks) {
     const foreground = themeHexToken(block, foregroundToken);
     const background = themeHexToken(block, backgroundToken);
     if (!foreground || !background) {
-      violations.push(`css-next/tokens/themes.css: ${theme} light-theme contrast token missing ${foregroundToken}/${backgroundToken}`);
+      violations.push(`css-next/themes/presets.css: ${theme} light-theme contrast token missing ${foregroundToken}/${backgroundToken}`);
       continue;
     }
     const ratio = contrastRatio(foreground, background);
     if (ratio < minimum) {
-      violations.push(`css-next/tokens/themes.css: ${theme} ${foregroundToken}/${backgroundToken} contrast ${ratio.toFixed(2)} < ${minimum}`);
+      violations.push(`css-next/themes/presets.css: ${theme} ${foregroundToken}/${backgroundToken} contrast ${ratio.toFixed(2)} < ${minimum}`);
     }
   }
   const surface = themeHexToken(block, "color-surface");
   for (const token of lightThemeSectionTokens) {
     const color = themeHexToken(block, token);
     if (!color || contrastRatio(color, surface) < 4.5) {
-      violations.push(`css-next/tokens/themes.css: ${theme} section token ${token} is below 4.5:1 on surface`);
+      violations.push(`css-next/themes/presets.css: ${theme} section token ${token} is below 4.5:1 on surface`);
     }
   }
   for (const token of lightThemeAccentTokens) {
     const color = themeHexToken(block, token);
     if (!color || contrastRatio(color, surface) < 3) {
-      violations.push(`css-next/tokens/themes.css: ${theme} accent token ${token} is below 3:1 on surface`);
+      violations.push(`css-next/themes/presets.css: ${theme} accent token ${token} is below 3:1 on surface`);
     }
   }
 }
 
-const spectrumThemeSource = await readFile(path.join(root, "css-next", "tokens", "spectrum-neon-theme.css"), "utf8");
+const spectrumThemeSource = await readFile(path.join(root, "css-next", "themes", "spectrum-neon.css"), "utf8");
 const spectrumThemeBlock = themeBlock(spectrumThemeSource, "spectrum-neon");
 const spectrumSurface = themeHexToken(spectrumThemeBlock, "color-surface");
 for (const token of ["neon-red", "neon-orange", "neon-yellow", "neon-green", "neon-cyan", "neon-blue", "neon-violet"]) {
   const color = themeHexToken(spectrumThemeBlock, token);
   if (!color || !spectrumSurface || contrastRatio(color, spectrumSurface) < 4.5) {
-    violations.push(`css-next/tokens/spectrum-neon-theme.css: ${token} is below 4.5:1 on the gaming surface`);
+    violations.push(`css-next/themes/spectrum-neon.css: ${token} is below 4.5:1 on the gaming surface`);
   }
 }
 for (const marker of [
   "--neon-spectrum:",
   "--theme-body-bg:",
-  ".cast-grid, .owned-cast-list, .troop-list",
+  '[data-theme-surface="panel"]',
+  '[data-theme-surface="card"]',
+  '[data-theme-badge="1"]',
   ".sheet-section-nav a, .mobile-sheet-nav a",
   "#neon-sign-control-layer",
   "prefers-reduced-motion: reduce"
 ]) {
   if (!spectrumThemeSource.includes(marker)) {
-    violations.push(`css-next/tokens/spectrum-neon-theme.css: missing coverage marker ${marker}`);
+    violations.push(`css-next/themes/spectrum-neon.css: missing coverage marker ${marker}`);
   }
 }
 const cssEntrySource = await readFile(path.join(root, "css-next", "index.css"), "utf8");
-if (cssEntrySource.includes("tokens/spectrum-neon-theme.css")) {
+if (cssEntrySource.includes("themes/spectrum-neon.css")) {
   violations.push("css-next/index.css: spectrum neon effects must not load before page-specific CSS");
 }
 for (const page of activeThemePages) {
@@ -172,26 +168,26 @@ for (const page of activeThemePages) {
   const head = source.match(/<head>[\s\S]*?<\/head>/i)?.[0] || "";
   const stylesheets = [...head.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
     .map(match => match[1]);
-  const neonStyles = stylesheets.filter(href => href.includes("spectrum-neon-theme.css"));
-  if (neonStyles.length !== 1 || stylesheets.at(-1) !== "./css-next/tokens/spectrum-neon-theme.css?v=4") {
-    violations.push(`${page}: Neon Sign must be the single final stylesheet`);
+  const themeBundles = stylesheets.filter(href => href.includes("css-next/themes/index.css"));
+  if (themeBundles.length !== 1 || stylesheets.at(-1) !== "./css-next/themes/index.css?v=1") {
+    violations.push(`${page}: theme bundle must be the single final stylesheet`);
   }
 }
 
+const themeRegistrySource = await readFile(path.join(root, "js", "theme-registry.js"), "utf8");
 const nextThemeControllerSource = await readFile(path.join(root, "js", "css-next-theme.js"), "utf8");
 for (const [theme, label] of expectedThemeOptions) {
-  const compactOption = `["${theme}","${label}"]`;
-  const spacedOption = `["${theme}", "${label}"]`;
-  if (!nextThemeControllerSource.includes(compactOption) && !nextThemeControllerSource.includes(spacedOption)) {
-    violations.push(`js/css-next-theme.js: missing original theme option ${theme} / ${label}`);
+  if (!themeRegistrySource.includes(`id: "${theme}"`) || !themeRegistrySource.includes(`label: "${label}"`)) {
+    violations.push(`js/theme-registry.js: missing theme option ${theme} / ${label}`);
   }
 }
-if (!/ensureThemeOptions\(select\)/.test(nextThemeControllerSource)) {
-  violations.push("js/css-next-theme.js: missing theme-option completion");
+if (!/populateThemeOptions\(select\)/.test(nextThemeControllerSource)) {
+  violations.push("js/css-next-theme.js: missing registry option population");
 }
-for (const marker of ["THEME_CONTROL_SELECTOR", "normalizeThemeControls(root)", "normalizeDynamicUi(document)", "normalizeDynamicUi(node)", 'dataset.themeControl="1"']) {
-  if (!nextThemeControllerSource.includes(marker)) {
-    violations.push(`js/css-next-theme.js: semantic theme-control normalization missing ${marker}`);
+const themeScopeSource = await readFile(path.join(root, "js", "theme-scope.js"), "utf8");
+for (const marker of ["themeControl", "themeSurface", "themeBadge", "normalize(document)", "normalize(node)"]) {
+  if (!themeScopeSource.includes(marker)) {
+    violations.push(`js/theme-scope.js: semantic theme scope missing ${marker}`);
   }
 }
 for (const marker of [
@@ -205,9 +201,9 @@ for (const marker of [
     violations.push(`js/css-next-theme.js: Japanese warning overlay missing ${marker}`);
   }
 }
-const statusSource = await readFile(path.join(root, "css-next", "components", "status.css"), "utf8");
+const statusSource = await readFile(path.join(root, "css-next", "themes", "japanese-army.css"), "utf8");
 if (!/data-theme=["']japanese-army["'][\s\S]*?\.japanese-army-overlay/.test(statusSource)) {
-  violations.push("css-next/components/status.css: Japanese warning overlay styles missing");
+  violations.push("css-next/themes/japanese-army.css: Japanese warning overlay styles missing");
 }
 
 const baseSource = await readFile(path.join(root, "css-next", "foundation", "base.css"), "utf8");
