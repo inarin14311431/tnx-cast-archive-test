@@ -244,6 +244,23 @@ for (const featureStylesheet of [
     violations.push(`css-next/index.css: feature stylesheet ${featureStylesheet} belongs in a page entry`);
   }
 }
+const entryScopeRequirements = new Map([
+  ["archive-entry.css", ["../components/style-marks.css", "./archive.css"]],
+  ["account-entry.css", ["../components/style-marks.css", "./account.css"]],
+  ["cast-entry.css", ["../components/cast-troops.css", "./cast.css", "../components/armor-totals.css"]],
+  ["sheet-entry.css", ["../components/help.css", "../editor/editor.css", "../components/sheet-import-help.css"]],
+  ["sheet-mobile-entry.css", ["./sheet-mobile.css", "./sheet-mobile-ux.css"]],
+  ["troop-entry.css", ["./troops.css", "./troop-screen.css"]],
+  ["troops-entry.css", ["./troops.css", "./troops-registry-polish.css"]]
+]);
+for (const [entryName, requiredImports] of entryScopeRequirements) {
+  const source = await readFile(path.join(root, "css-next", "pages", entryName), "utf8");
+  for (const requiredImport of requiredImports) {
+    if (!source.includes(requiredImport)) {
+      violations.push(`css-next/pages/${entryName}: required scoped import missing ${requiredImport}`);
+    }
+  }
+}
 for (const page of activeThemePages) {
   const source = await readFile(path.join(root, page), "utf8");
   const head = source.match(/<head>[\s\S]*?<\/head>/i)?.[0] || "";
