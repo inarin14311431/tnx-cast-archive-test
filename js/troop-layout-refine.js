@@ -1,4 +1,4 @@
-import { GENERAL_MASTER_ROWS, initialGeneralSkillSuit } from "./general-skill-catalog.js";
+import { GENERAL_MASTER_ROWS, initialGeneralSkillSuit, STARRED_GENERAL_NAMES } from "./general-skill-catalog.js";
 
 const ABILITIES = ["reason", "passion", "life", "mundane"];
 const SUITS = {
@@ -8,9 +8,15 @@ const SUITS = {
   mundane:{ off:"♢", on:"♦", label:"外界" }
 };
 const STYLE_COST = { none:0, normal:10, secret:20, ultimate:50, direction:2 };
+const GENERAL_DISPLAY_ORDER = [
+  "医療", "射撃", "知覚", "電脳", "製作：", "心理", "自我", "交渉",
+  "芸術：", "運動", "回避", "操縦：", "白兵", "圧力", "信用", "隠密"
+];
 
 if (document.body.dataset.page === "troop.html") {
   installStylesheet();
+  installAbilityCs("#troop-ability-preview", "#troop-level");
+  installAbilityCs("#troop-abilities-view", "#troop-level-view");
   installEditorReadyWatcher();
 }
 
@@ -18,7 +24,7 @@ function installStylesheet() {
   if (document.querySelector('link[href*="troop-density-v3.css"]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "./css-next/pages/troop-density-v3.css?v=2";
+  link.href = "./css-next/pages/troop-density-v3.css?v=3";
   document.head.append(link);
 }
 
@@ -41,6 +47,7 @@ function installEditorReadyWatcher() {
 
 function refineTroopEditor(editor) {
   editor.dataset.layoutRefined = "1";
+  regroupOverview();
   refineBasicFields();
   refineStyleSection();
   rebuildGeneralSkills();
@@ -49,6 +56,24 @@ function refineTroopEditor(editor) {
   refreshExperience();
   editor.addEventListener("input", () => queueMicrotask(refreshExperience));
   editor.addEventListener("change", () => queueMicrotask(refreshExperience));
+}
+
+function regroupOverview() {
+  const management = document.querySelector("#troop-visibility")?.closest(".troop-section");
+  const basic = document.querySelector("#troop-name")?.closest(".troop-section");
+  const style = document.querySelector("#troop-style")?.closest(".troop-section");
+  const abilities = document.querySelector("#troop-ability-preview")?.closest(".troop-section");
+  if (!management || !basic || !style || !abilities || management.closest(".troop-overview")) return;
+
+  management.classList.add("troop-section--overview-management");
+  basic.classList.add("troop-section--overview-basic");
+  style.classList.add("troop-section--overview-style");
+  abilities.classList.add("troop-section--overview-abilities");
+
+  const overview = document.createElement("div");
+  overview.className = "troop-overview";
+  basic.before(overview);
+  overview.append(basic, management, style, abilities);
 }
 
 function refineBasicFields() {
@@ -67,7 +92,7 @@ function refineStyleSection() {
   if (!section) return;
   section.classList.add("troop-section--style-primary");
   const heading = section.querySelector("h2");
-  if (heading && !heading.querySelector(".troop-important-badge")) heading.insertAdjacentHTML("beforeend", '<span class="troop-important-badge">PRIMARY</span>');
+  if (heading && !heading.querySelector(".troop-important-badge")) heading.insertAdjacentHTML("beforeend", '<span class="troop-important-badge">PRIMARY STYLE</span>');
 }
 
 function rebuildGeneralSkills() {
@@ -87,10 +112,20 @@ function rebuildGeneralSkills() {
   });
   root.innerHTML = "";
   root.dataset.fixedGrid = "1";
-  GENERAL_MASTER_ROWS.forEach(([baseName, baseSuit, kind]) => root.append(createGeneralRow(baseName, baseSuit, kind, saved.get(baseName))));
+
+  GENERAL_DISPLAY_ORDER.forEach((baseName, index) => {
+    const master = GENERAL_MASTER_ROWS.find(([name]) => name === baseName);
+    if (!master) return;
+    const [, baseSuit, kind] = master;
+    const row = createGeneralRow(baseName, baseSuit, kind, saved.get(baseName));
+    row.style.gridColumn = index < 8 ? "1" : "2";
+    row.style.gridRow = String((index % 8) + 1);
+    root.append(row);
+  });
+
   document.querySelector("#troop-general-skill-add")?.remove();
   const note = root.closest(".troop-section")?.querySelector(".troop-rule-note");
-  if (note) note.textContent = "一般技能は常時表示。自動取得スートは固定され、追加取得したスートだけ切り替えます。製作・芸術・操縦は必要な場合のみ名称を入力します。";
+  if (note) note.textContent = "自動取得スートは固定。追加取得するスートだけ切り替えます。製作・芸術・操縦は必要な場合のみ名称を入力します。";
 }
 
 function createGeneralRow(baseName, baseSuit, kind, data = {}) {
@@ -104,9 +139,10 @@ function createGeneralRow(baseName, baseSuit, kind, data = {}) {
   const actualName = String(data.name || "");
   const detailValue = isProper && actualName.startsWith(baseName) ? actualName.slice(baseName.length) : "";
   const hiddenName = isProper ? ((detailValue || level > 0) ? `${baseName}${detailValue}` : "") : baseName;
+  const displayName = `${STARRED_GENERAL_NAMES.has(baseName) ? "★" : ""}${baseName}`;
   row.innerHTML = `
     <div class="troop-general-name-cell">
-      ${isProper ? `<span class="troop-general-prefix">${escapeHtml(baseName)}</span><input class="troop-general-detail" data-general-detail type="text" value="${escapeAttr(detailValue)}" placeholder="名称">` : `<strong>${escapeHtml(baseName)}</strong>`}
+      ${isProper ? `<span class="troop-general-prefix">${escapeHtml(displayName)}</span><input class="troop-general-detail" data-general-detail type="text" value="${escapeAttr(detailValue)}" placeholder="名称">` : `<strong>${escapeHtml(displayName)}</strong>`}
       <input data-field="name" type="hidden" value="${escapeAttr(hiddenName)}">
       <select data-field="kind" hidden><option value="${kind}" selected>${kind}</option></select>
     </div>
@@ -137,7 +173,7 @@ function suitMarkup(key, fixedSuit, checkedState) {
 function addSkillFieldLabels() {
   const general = document.querySelector("#troop-general-skills-editor");
   if (general && !general.previousElementSibling?.classList.contains("troop-general-field-heads")) {
-    general.insertAdjacentHTML("beforebegin", `<div class="troop-general-field-heads" aria-hidden="true"><div><span>技能 <small>SKILL</small></span><span>LV</span><span>スート <small>SUIT</small></span></div><div><span>技能 <small>SKILL</small></span><span>LV</span><span>スート <small>SUIT</small></span></div></div>`);
+    general.insertAdjacentHTML("beforebegin", `<div class="troop-general-field-heads" aria-hidden="true"><div><span>技能名 <small>SKILL</small></span><span>LV</span><span>スート <small>SUIT</small></span></div><div><span>技能名 <small>SKILL</small></span><span>LV</span><span>スート <small>SUIT</small></span></div></div>`);
   }
   const style = document.querySelector("#troop-style-skills-editor");
   if (style && !style.previousElementSibling?.classList.contains("troop-style-field-heads")) {
@@ -147,6 +183,30 @@ function addSkillFieldLabels() {
 
 function compactCombos() {
   document.querySelector("#troop-combo-cards")?.classList.add("troop-combo-cards--compact");
+}
+
+function installAbilityCs(rootSelector, levelSelector) {
+  const root = document.querySelector(rootSelector);
+  if (!root || root.dataset.csWatcher === "1") return;
+  root.dataset.csWatcher = "1";
+  root.classList.add("troop-ability-grid--with-cs");
+  const apply = () => {
+    if (!root.children.length || root.querySelector(".troop-cs-card")) return;
+    const levelNode = document.querySelector(levelSelector);
+    const level = levelNode?.value ?? levelNode?.textContent ?? "0";
+    const card = document.createElement("article");
+    card.className = "troop-cs-card";
+    card.innerHTML = `<span>CS</span><strong>${escapeHtml(String(level).trim() || "0")}</strong><small>＝ LEVEL</small>`;
+    root.append(card);
+  };
+  apply();
+  const observer = new MutationObserver(() => queueMicrotask(apply));
+  observer.observe(root, { childList:true });
+  const level = document.querySelector(levelSelector);
+  level?.addEventListener?.("input", () => {
+    const strong = root.querySelector(".troop-cs-card strong");
+    if (strong) strong.textContent = level.value || "0";
+  });
 }
 
 function refreshExperience() {
