@@ -36,12 +36,14 @@ test("troop rules use one style, derived stats, max members and EXP", () => {
 
 test("troop abilities use four compact two-digit pairs followed by CS", () => {
   const html = read("troop.html");
+  const js = read("js/troop.js");
   const layout = read("js/troop-layout-refine.js");
   const css = read("css-next/pages/troop-screen.css");
-  assert.match(html, /troop-layout-refine\.js\?v=6/);
+  assert.match(html, /troop\.js\?v=6/);
+  assert.match(js, /refreshTroopAbilityPairs\("#troop-ability-preview", "#troop-level"\)/);
+  assert.match(js, /refreshTroopAbilityPairs\("#troop-abilities-view", "#troop-level-view"\)/);
   assert.doesNotMatch(layout, /installStylesheet|troop-density-v3\.css/);
-  assert.match(layout, /installAbilityPairs\("#troop-ability-preview", "#troop-level"\)/);
-  assert.match(layout, /installAbilityPairs\("#troop-abilities-view", "#troop-level-view"\)/);
+  assert.match(layout, /export function refreshTroopAbilityPairs/);
   assert.match(layout, /troop-ability-grid--compact-pairs/);
   assert.match(layout, /<i>／<\/i>/);
   assert.match(layout, /createElement\("article"\)[\s\S]*troop-cs-card/);
@@ -94,7 +96,8 @@ test("troop general skills omit social connection and per-row EXP", () => {
   assert.match(ui, /OPEN_PREFIXES = \["製作：", "芸術：", "操縦："\]/);
   assert.doesNotMatch(ui, /OPEN_PREFIXES = \[[^\]]*社会：/);
   assert.doesNotMatch(ui, /OPEN_PREFIXES = \[[^\]]*コネ：/);
-  assert.match(js, /const expField = category === "style"/);
+  assert.doesNotMatch(js, /data-field="exp"/);
+  assert.match(js, /data-field="timing"[\s\S]*data-field="confrontation"/);
   assert.match(js, /troop-view-general-row/);
   assert.doesNotMatch(html, /troop-view-general-field-heads[^\n]*EXP/);
 });
@@ -156,17 +159,30 @@ test("troop outfits expose attack and SPI values", () => {
 test("troop read combos have one renderer and clipboard controls", () => {
   const html = read("troop.html");
   const js = read("js/troop.js");
-  const fields = read("js/troop-fields-v6.js");
   const comboRules = read("js/troop-combo-rule-v2.js");
   const copy = read("js/troop-combo-copy.js");
   assert.match(html, /troop-combo-copy\.js\?v=2/);
   assert.match(js, /function renderComboList/);
   assert.match(js, /class="troop-view-combo"/);
-  assert.doesNotMatch(fields, /installViewEnhancer|renderStyleSkillView/);
   assert.doesNotMatch(comboRules, /initializePublicComboView|renderPublicCombos/);
   assert.match(copy, /#troop-combos-view article/);
   assert.match(copy, /navigator\.clipboard\.writeText/);
   assert.doesNotMatch(copy, /import\("\.\/troop-layout-refine/);
+});
+
+test("troop editor runtime uses explicit initializers without DOM recovery observers", () => {
+  const html = read("troop.html");
+  const js = read("js/troop.js");
+  const ui = read("js/troop-editor-ui.js");
+  const layout = read("js/troop-layout-refine.js");
+  const comboRules = read("js/troop-combo-rule-v2.js");
+  assert.match(js, /initializeTroopLayout\(editor\)/);
+  assert.match(js, /initializeTroopEditorUi\(\)/);
+  assert.match(ui, /export function initializeTroopEditorUi/);
+  assert.match(layout, /export function initializeTroopLayout/);
+  assert.match(comboRules, /export function initializeTroopComboRules/);
+  assert.doesNotMatch(`${ui}\n${layout}\n${comboRules}`, /MutationObserver|stopImmediatePropagation/);
+  assert.doesNotMatch(html, /troop-(?:editor-ui|layout-refine|fields-v6|combo-rule-v2)\.js/);
 });
 
 test("cast troop modal uses editor section colors and compact CS pairs", () => {
