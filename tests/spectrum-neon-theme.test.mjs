@@ -32,10 +32,10 @@ test("gaming theme is selectable, persistent and loaded through the canonical th
   ]);
 
   assert.match(controller, /"spectrum-neon"/);
-  assert.match(controller, /\["spectrum-neon","ゲーミングカラー（仮称）"\]/);
+  assert.match(controller, /\["spectrum-neon","ネオンサイン"\]/);
   assert.match(controller, /localStorage\.setItem\(STORAGE_KEY,next\)/);
-  assert.match(indexHtml, /<option value="spectrum-neon">ゲーミングカラー（仮称）<\/option>/);
-  assert.match(indexCss, /tokens\/spectrum-neon-theme\.css\?v=1/);
+  assert.match(indexHtml, /<option value="spectrum-neon">ネオンサイン<\/option>/);
+  assert.match(indexCss, /tokens\/spectrum-neon-theme\.css\?v=2/);
 });
 
 test("gaming theme owns seven readable neon colors and a layered spectrum background", async () => {
@@ -58,6 +58,8 @@ test("gaming theme owns seven readable neon colors and a layered spectrum backgr
 test("gaming neon effects cover chrome, panels, cards, controls, desktop and mobile navigation", async () => {
   const source = await read("css-next/tokens/spectrum-neon-theme.css");
 
+  assert.match(source, /body::before/);
+  assert.match(source, /body::after/);
   assert.match(source, /\.site-header, \.auth-header, \.sheet-header, \.showcase-header/);
   assert.match(source, /\.archive-controls, \.account-panel, \.sheet-section, \.data-panel/);
   assert.match(source, /\.cast-grid, \.owned-cast-list, \.troop-list/);
@@ -65,14 +67,19 @@ test("gaming neon effects cover chrome, panels, cards, controls, desktop and mob
   assert.match(source, /\.cast-card, \.owned-cast, \.troop-card/);
   assert.match(source, /\.sheet-section-nav a, \.mobile-sheet-nav a/);
   assert.match(source, /\.troop-primary-action, \.cocofolia-copy-button/);
+  assert.match(source, /input:not\(\[type="checkbox"\]\)/);
+  assert.match(source, /table tbody tr/);
+  assert.match(source, /::-webkit-scrollbar-thumb/);
+  assert.match(source, /spectrum-neon-ambient/);
+  assert.match(source, /spectrum-neon-rail/);
   assert.match(source, /prefers-reduced-motion:\s*reduce/);
 });
 
 test("all active CSS-next screens receive refreshed theme assets while fixed and standalone screens stay explicit", async () => {
   for (const page of activeThemePages) {
     const html = await read(page);
-    assert.match(html, /css-next-theme\.js\?v=5/, `${page} needs the current theme controller`);
-    assert.match(html, /css-next\/index\.css\?v=59/, `${page} needs the current theme stylesheet`);
+    assert.match(html, /css-next-theme\.js\?v=6/, `${page} needs the current theme controller`);
+    assert.match(html, /css-next\/index\.css\?v=60/, `${page} needs the current theme stylesheet`);
   }
 
   const [statistics, showcase, redirect] = await Promise.all([
