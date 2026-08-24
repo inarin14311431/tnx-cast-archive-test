@@ -28,6 +28,7 @@ jobs:
           tests/e2e/smoke.spec.js
           tests/e2e/cast-view.spec.js
           tests/e2e/troop-view.spec.js
+          tests/e2e/spectrum-neon-theme.spec.js
           tests/e2e/editor-help.spec.js
           tests/e2e/direct-transfer.spec.js
           --project=chromium
@@ -103,6 +104,7 @@ jobs:
           npx playwright test
           tests/e2e/account-mobile.spec.js
           tests/e2e/troop-view.spec.js
+          tests/e2e/spectrum-neon-theme.spec.js
           tests/e2e/mobile-combo-counter.spec.js
           tests/e2e/mobile-experience.spec.js
           --project=mobile
