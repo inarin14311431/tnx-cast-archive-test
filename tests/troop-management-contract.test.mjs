@@ -24,6 +24,8 @@ test("troop rules use one style, derived stats, max members and EXP", () => {
   const js = read("js/troop.js");
   assert.match(html, /CSはトループレベルと同値/);
   assert.match(html, /ARは1/);
+  assert.match(html, /troop-screen\.css\?v=1/);
+  assert.doesNotMatch(html, /troop-(?:compact-density-v2|density-v3|visual-accent-v5|layout-v6)\.css/);
   assert.match(html, /id="troop-style"/);
   assert.doesNotMatch(html, /id="troop-style-2"/);
   assert.doesNotMatch(html, /troop-member-current/);
@@ -35,7 +37,7 @@ test("troop rules use one style, derived stats, max members and EXP", () => {
 test("troop abilities use four compact two-digit pairs followed by CS", () => {
   const html = read("troop.html");
   const layout = read("js/troop-layout-refine.js");
-  const css = read("css-next/pages/troop-layout-v6.css");
+  const css = read("css-next/pages/troop-screen.css");
   assert.match(html, /troop-layout-refine\.js\?v=5/);
   assert.match(layout, /installAbilityPairs\("#troop-ability-preview", "#troop-level"\)/);
   assert.match(layout, /installAbilityPairs\("#troop-abilities-view", "#troop-level-view"\)/);
@@ -50,7 +52,7 @@ test("troop abilities use four compact two-digit pairs followed by CS", () => {
 
 test("troop read view mirrors the full editor structure", () => {
   const html = read("troop.html");
-  const css = read("css-next/pages/troop-layout-v6.css");
+  const css = read("css-next/pages/troop-screen.css");
   assert.match(html, /id="troop-view" class="troop-view-readonly"/);
   assert.match(html, /troop-view-form-grid--basic/);
   assert.match(html, /troop-view-form-grid--management/);
@@ -116,11 +118,12 @@ test("utsuwa attribute is strictly hidden except for utsuwa", () => {
 
 test("troop general and style skills keep normal EXP rules", () => {
   const js = read("js/troop.js");
+  const save = read("js/troop-save.js");
   assert.match(js, /GENERAL_KIND_COST = \{ general:10, proper:5, social:5, connection:5 \}/);
   assert.match(js, /STYLE_COST = \{ none:0, normal:10, secret:20, ultimate:50, direction:2 \}/);
   assert.match(js, /if \(level >= 4\) boxes\.forEach\(box => box\.checked = true\)/);
-  assert.match(js, /length > 2/);
-  assert.match(js, /length > 1/);
+  assert.match(save, /length > 2/);
+  assert.match(save, /length > 1/);
 });
 
 test("troop combos reuse the combo card dialog and select owned skills", () => {
@@ -139,11 +142,12 @@ test("troop combos reuse the combo card dialog and select owned skills", () => {
 
 test("troop outfits expose attack and SPI values", () => {
   const js = read("js/troop.js");
+  const save = read("js/troop-save.js");
   assert.match(js, /data-field="attack"/);
   assert.match(js, /data-field="defense_s"/);
   assert.match(js, /data-field="defense_p"/);
   assert.match(js, /data-field="defense_i"/);
-  assert.match(js, /\["name","attack","defense_s","defense_p","defense_i","notes"\]/);
+  assert.match(save, /\["name","attack","defense_s","defense_p","defense_i","notes"\]/);
   assert.match(js, /troop-view-outfit-row/);
   assert.match(js, /item\.defense_s \?\? item\.s/);
 });
