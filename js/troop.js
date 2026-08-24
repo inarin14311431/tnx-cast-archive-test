@@ -160,48 +160,107 @@ function addOutfitRow(data={}) {
 async function renderView() {
   view.hidden = false; editor.hidden = true;
   document.querySelector("#troop-public-id").textContent = `${troop.public_id} / ${troop.visibility === "public" ? "PUBLIC" : "PRIVATE"}`;
-  document.querySelector("#troop-name-view").textContent = troop.name || "名称未設定"; document.querySelector("#troop-level-view").textContent = troop.level;
-  document.querySelector("#troop-member-max-view").textContent = troop.member_max; document.querySelector("#troop-exp-view").textContent = troop.experience_spent ?? calculateStoredExperience(troop.skills);
+  const name = troop.name || "名称未設定";
+  document.querySelector("#troop-name-view").textContent = name;
+  document.querySelector("#troop-name-field-view").textContent = name;
+  document.querySelector("#troop-visibility-view").textContent = troop.visibility === "public" ? "公開" : "非公開";
+  document.querySelector("#troop-level-view").textContent = Number(troop.level || 0);
+  document.querySelector("#troop-member-max-view").textContent = Math.max(1, Number(troop.member_max || 1));
+  document.querySelector("#troop-exp-view").textContent = troop.experience_spent ?? calculateStoredExperience(troop.skills);
   const styleText = troop.style_1 === "ウツワ" && troop.utsuwa_attribute ? `ウツワ（${troop.utsuwa_attribute}）` : (troop.style_1 || "未設定");
-  document.querySelector("#troop-style-view").innerHTML = `<span>${escapeHtml(styleText)}</span>`;
-  const abilities = calculateAbilities(troop.style_1, troop.utsuwa_attribute, Number(troop.level || 0));
+  document.querySelector("#troop-style-view").textContent = styleText;
+  const calculatedAbilities = calculateAbilities(troop.style_1, troop.utsuwa_attribute, Number(troop.level || 0));
+  const abilities = Object.fromEntries(ABILITIES.map(key => [key, {
+    value: storedNumber(`${key}_value`, calculatedAbilities[key].value),
+    control: storedNumber(`${key}_control`, calculatedAbilities[key].control)
+  }]));
   document.querySelector("#troop-abilities-view").innerHTML = abilityMarkup(abilities);
   const skills = Array.isArray(troop.skills) ? troop.skills : [];
-  renderSkillList("#troop-general-skills-view", skills.filter(s => (s.category === "general" || ["general","proper"].includes(s.kind)) && !String(s.name || "").startsWith("社会：") && !String(s.name || "").startsWith("コネ：")));
-  renderSkillList("#troop-style-skills-view", skills.filter(s => s.category === "style" || (!s.category && ["normal","secret","ultimate","direction","none"].includes(s.type))));
-  renderDataList("#troop-combos-view", troop.combos, comboMarkup);
-  renderDataList("#troop-outfits-view", troop.outfits, outfitMarkup);
+  renderSkillList("#troop-general-skills-view", skills.filter(s => (s.category === "general" || ["general","proper"].includes(s.kind)) && !String(s.name || "").startsWith("社会：") && !String(s.name || "").startsWith("コネ：")), "general");
+  renderSkillList("#troop-style-skills-view", skills.filter(s => s.category === "style" || (!s.category && ["normal","secret","ultimate","direction","none"].includes(s.type))), "style");
+  renderComboList(Array.isArray(troop.combos) ? troop.combos : []);
+  renderOutfitList(Array.isArray(troop.outfits) ? troop.outfits : []);
   document.querySelector("#troop-notes-view").textContent = troop.notes || "—";
   const owner = user && troop.owner_id === user.id; const editLink = document.querySelector("#troop-edit-link"); editLink.hidden = !owner;
   if (owner) editLink.href = `./troop.html?id=${encodeURIComponent(troop.public_id)}&edit=1`;
-  document.querySelector("#troop-share-button").addEventListener("click", shareTroop); if (troop.character_id) await renderLinkedCharacter();
+  document.querySelector("#troop-share-button").addEventListener("click", shareTroop);
+  await renderLinkedCharacter();
 }
 
 function abilityMarkup(abilities) { return ABILITIES.map(key => `<article><span>${ABILITY_LABELS[key]}</span><strong>${abilities[key].value}</strong><small>制御 ${abilities[key].control}</small></article>`).join(""); }
-function renderSkillList(selector, items) {
-  renderDataList(selector, items, item => {
+function renderSkillList(selector, items, category) {
+  const root = document.querySelector(selector);
+  if (!items.length) {
+    root.innerHTML = `<p class="empty-data">登録なし</p>`;
+    return;
+  }
+  root.innerHTML = items.map(item => {
     const suits = ABILITIES.filter(k => item[k]).map(k => SUIT_LABELS[k]).join("") || "—";
-    const category = item.category === "style" || ["normal","secret","ultimate","direction","none"].includes(item.kind || item.type) ? "style" : "general";
-    const kind = item.kind || item.type || (category === "style" ? "normal" : "general");
-    const detail = category === "style" ? `${STYLE_KIND_LABEL[kind]||kind} / Lv.${Number(item.level||0)} / ${suits} / EXP ${Number(item.exp_cost ?? Number(item.level||0)*(STYLE_COST[kind]??10))}` : `Lv.${Number(item.level||0)} / ${suits}`;
-    return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(detail)}</span><p>${escapeHtml(item.notes || "")}</p>`;
-  });
+    if (category === "general") {
+      return `<article class="troop-view-general-row"><strong>${escapeHtml(item.name || "名称未設定")}</strong><span>Lv.${Number(item.level || 0)}</span><span class="troop-view-suits">${escapeHtml(suits)}</span></article>`;
+    }
+    const kind = item.kind || item.type || "normal";
+    return `<article class="troop-view-style-skill-row"><strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(STYLE_KIND_LABEL[kind] || kind)}</span><span>Lv.${Number(item.level || 0)}</span><span class="troop-view-suits">${escapeHtml(suits)}</span><span>${escapeHtml(item.timing || "—")}</span><span>${escapeHtml(item.confrontation || "—")}</span><p>${escapeHtml(item.notes || "—")}</p></article>`;
+  }).join("");
 }
+
+function renderComboList(items) {
+  const root = document.querySelector("#troop-combos-view");
+  if (!items.length) {
+    root.innerHTML = `<p class="empty-data">登録なし</p>`;
+    return;
+  }
+  root.innerHTML = items.map(comboMarkup).join("");
+}
+
 function comboMarkup(item) {
   const raw = Array.isArray(item.abilities) ? item.abilities : String(item.ability || "").split(",").filter(Boolean);
   const ability = raw.length ? raw.map(key => `${SUIT_LABELS[key]||""} ${ABILITY_LABELS[key]||key}`).join(" / ") : "能力未指定";
   const detail = [item.timing&&`タイミング：${item.timing}`,item.target&&`対象：${item.target}`,item.range&&`射程：${item.range}`,item.act_use_limit&&`1アクト：${item.act_use_limit}回`].filter(Boolean).join(" / ");
-  return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(ability)} / 修正 ${escapeHtml(item.modifier || "—")} / 達成値 ${escapeHtml(item.target_value || "—")}</span><p>${escapeHtml(item.skills || "")}${detail ? `<br>${escapeHtml(detail)}` : ""}${item.description ? `<br>${escapeHtml(item.description)}` : ""}</p>`;
+  const rule = unpackComboRule(item.target_value);
+  return `<article class="troop-view-combo"><div class="troop-view-combo__identity"><strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(ability)} / ${escapeHtml(item.skills || "技能未設定")}</span></div><dl><div><dt>判定修正</dt><dd>${escapeHtml(item.modifier || "—")}</dd></div><div><dt>達成値目安</dt><dd>${escapeHtml(rule.expected_value || "—")}</dd></div><div><dt>対決</dt><dd>${escapeHtml(rule.confrontation || "—")}</dd></div></dl><p class="troop-view-combo__detail">${escapeHtml(detail || "詳細未登録")}</p><p class="troop-view-combo__description">${escapeHtml(item.description || "—")}</p></article>`;
 }
-function outfitMarkup(item) {
-  const stats = [item.attack && `攻撃 ${item.attack}`, (item.defense_s!==undefined||item.defense_p!==undefined||item.defense_i!==undefined) && `S ${item.defense_s || 0} / P ${item.defense_p || 0} / I ${item.defense_i || 0}`].filter(Boolean).join(" / ");
-  return `<strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(stats || "—")}</span><p>${escapeHtml(item.notes || "")}</p>`;
+
+function renderOutfitList(items) {
+  const root = document.querySelector("#troop-outfits-view");
+  if (!items.length) {
+    root.innerHTML = `<p class="empty-data">登録なし</p>`;
+    return;
+  }
+  root.innerHTML = items.map(item => `<article class="troop-view-outfit-row"><strong>${escapeHtml(item.name || "名称未設定")}</strong><span>${escapeHtml(item.attack || "—")}</span><span>${escapeHtml(item.defense_s ?? item.s ?? "—")}</span><span>${escapeHtml(item.defense_p ?? item.p ?? "—")}</span><span>${escapeHtml(item.defense_i ?? item.i ?? "—")}</span><p>${escapeHtml(item.notes || "—")}</p></article>`).join("");
 }
 function calculateStoredExperience(skills=[]) { return (skills||[]).reduce((sum,item)=>sum+Number(item.exp_cost||0),0); }
 
+function storedNumber(field, fallback) {
+  const parsed = Number(troop?.[field]);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function unpackComboRule(value) {
+  const prefix = "@@TNX_COMBO_CHECK_V2@@";
+  const text = String(value || "").trim();
+  if (!text) return { expected_value:"", confrontation:"" };
+  if (!text.startsWith(prefix)) return { expected_value:/^[-+]?\d+$/.test(text) ? text : "", confrontation:"" };
+  try {
+    const parsed = JSON.parse(text.slice(prefix.length));
+    return {
+      expected_value:String(parsed?.expected_value || parsed?.difficulty || "").trim(),
+      confrontation:String(parsed?.confrontation || "").trim()
+    };
+  } catch {
+    return { expected_value:"", confrontation:"" };
+  }
+}
+
 async function renderLinkedCharacter() {
-  const result = await supabase.from("characters").select("public_id, character_name").eq("id", troop.character_id).maybeSingle(); const node = document.querySelector("#troop-linked-character-view");
-  if (result.data) node.innerHTML = `所属キャスト：<a href="./cast.html?id=${encodeURIComponent(result.data.public_id)}">${escapeHtml(result.data.character_name)}</a>`; else node.textContent = "所属キャスト：非公開キャスト";
+  const node = document.querySelector("#troop-linked-character-view");
+  if (!troop.character_id) {
+    node.textContent = "未設定";
+    return;
+  }
+  const result = await supabase.from("characters").select("public_id, character_name").eq("id", troop.character_id).maybeSingle();
+  if (result.data) node.innerHTML = `<a href="./cast.html?id=${encodeURIComponent(result.data.public_id)}">${escapeHtml(result.data.character_name)}</a>`;
+  else node.textContent = "非公開キャスト";
 }
 
 async function saveTroop(event) {
@@ -224,7 +283,6 @@ function collectSkills(selector, category) {
 async function deleteTroop(){if(!troop||!confirm(`「${troop.name}」を削除します。`))return;const result=await supabase.from("troops").delete().eq("id",troop.id).eq("owner_id",user.id);if(result.error)return setStatus(result.error.message,true);location.href="./troops.html";}
 async function shareTroop(){if(troop.visibility!=="public")return alert("共有URLでRLに確認してもらうには、公開状態を「公開」にしてください。");const url=new URL("./troop.html",location.href);url.searchParams.set("id",troop.public_id);try{await navigator.clipboard.writeText(url.href);alert("共有URLをコピーしました。");}catch{prompt("共有URL",url.href);}}
 function collectRows(selector,fields){return [...document.querySelector(selector).children].map(row=>Object.fromEntries(fields.map(f=>[f,f==="act_use_limit"?(Number.parseInt(row.querySelector(`[data-field="${f}"]`)?.value||"0",10)||null):String(row.querySelector(`[data-field="${f}"]`)?.value||"").trim()])));}
-function renderDataList(selector,items,renderer){const root=document.querySelector(selector);root.innerHTML=(items??[]).length?(items??[]).map(i=>`<article>${renderer(i)}</article>`).join(""):`<p class="empty-data">登録なし</p>`;}
 function rowValue(row,f){return String(row.querySelector(`[data-field="${f}"]`)?.value||"").trim();} function rowInt(row,f){return Math.max(0,Number.parseInt(rowValue(row,f)||"0",10)||0);} function value(selector){return String(document.querySelector(selector)?.value??"").trim();} function intValue(selector){return Math.max(0,Number.parseInt(value(selector)||"0",10)||0);} function setValue(selector,v){const n=document.querySelector(selector);if(n)n.value=v??"";}
 function setStatus(message,error=false){status.textContent=message;status.dataset.state=error?"error":"working";} function showError(message){errorBox.hidden=false;errorBox.textContent=message;view.hidden=true;editor.hidden=true;}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));} function escapeAttr(v){return escapeHtml(v);}

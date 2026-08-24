@@ -46,7 +46,3 @@ decorate();
 new MutationObserver(records => {
   if (records.some(record => record.addedNodes.length)) decorate();
 }).observe(document.body, { childList: true, subtree: true });
-
-if (document.body.dataset.page === "troop.html") {
-  import("./troop-layout-refine.js?v=1");
-}

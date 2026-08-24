@@ -6,7 +6,6 @@ const comboDialog = document.querySelector("#troop-combo-dialog");
 const comboStorage = document.querySelector("#troop-combos-editor");
 const comboCards = document.querySelector("#troop-combo-cards");
 const comboSkillOptions = document.querySelector("#troop-combo-skill-options");
-const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
 const masterCache = new Map();
 let masterAccess = null;
 let renderQueued = false;
@@ -15,7 +14,6 @@ initialize();
 
 function initialize() {
   if (comboForm) initializeEditorComboV2();
-  initializePublicComboView();
 }
 
 function initializeEditorComboV2() {
@@ -197,36 +195,6 @@ function queueRenderCards() {
     renderQueued = false;
     renderComboCardsV2();
   });
-}
-
-async function initializePublicComboView() {
-  const root = document.querySelector("#troop-combos-view");
-  if (!root || !publicId) return;
-  const view = document.querySelector("#troop-view");
-  const renderWhenVisible = async () => {
-    if (view?.hidden) return;
-    const { data, error } = await supabase.from("troops").select("combos").eq("public_id", publicId).maybeSingle();
-    if (error || !data) return;
-    renderPublicCombos(root, Array.isArray(data.combos) ? data.combos : []);
-  };
-  if (view) new MutationObserver(renderWhenVisible).observe(view, { attributes:true, attributeFilter:["hidden"] });
-  window.setTimeout(renderWhenVisible, 180);
-}
-
-function renderPublicCombos(root, combos) {
-  if (!combos.length) {
-    root.innerHTML = `<p class="empty-data">登録なし</p>`;
-    return;
-  }
-  root.innerHTML = combos.map(item => {
-    const rule = unpackRuleFields(item.target_value);
-    const detail = [
-      item.timing && `タイミング：${item.timing}`,
-      item.target && `対象：${item.target}`,
-      item.range && `射程：${item.range}`
-    ].filter(Boolean).join(" / ");
-    return `<article><div><strong>${escapeHtml(item.name || "名称未設定")}</strong><small>${escapeHtml(abilityText(item.ability))} / ${escapeHtml(item.skills || "技能未設定")}</small></div><div><span>修正 ${escapeHtml(item.modifier || "—")}</span><span>達成値目安 ${escapeHtml(rule.expected_value || "—")}</span><span>対決 ${escapeHtml(rule.confrontation || "—")}</span><span>${escapeHtml(detail || "詳細未登録")}</span></div><p>${escapeHtml(item.description || "")}</p></article>`;
-  }).join("");
 }
 
 function comboRows() {

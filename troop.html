@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="./css-next/pages/troop-compact-density-v2.css?v=1">
   <link rel="stylesheet" href="./css-next/pages/troop-density-v3.css?v=2">
   <link rel="stylesheet" href="./css-next/pages/troop-visual-accent-v5.css?v=1">
-  <link rel="stylesheet" href="./css-next/pages/troop-layout-v6.css?v=3">
+  <link rel="stylesheet" href="./css-next/pages/troop-layout-v6.css?v=4">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -23,21 +23,19 @@
     <p>N◎VA MUNICIPAL DATABASE</p><h1>トループデータ <small>TROOP RECORD</small></h1>
   </header>
   <main class="troop-layout">
-    <section id="troop-view" class="troop-sheet troop-sheet--compact" hidden>
-      <header class="troop-sheet__header"><div><p id="troop-public-id" class="troops-kicker"></p><h2 id="troop-name-view">—</h2><p id="troop-linked-character-view" class="troop-linked-character"></p></div><div class="troop-sheet__actions"><button id="troop-share-button" type="button">共有URLをコピー <small>SHARE</small></button><a id="troop-edit-link" href="#" hidden>編集 <small>EDIT</small></a></div></header>
-      <section class="troop-vitals">
-        <article><span>LEVEL / CS</span><strong id="troop-level-view">0</strong><small>CS = TROOP LEVEL</small></article>
-        <article><span>AR</span><strong>1</strong><small>FIXED</small></article>
-        <article><span>最大人数</span><strong id="troop-member-max-view">1</strong><small>MAX MEMBERS</small></article>
-        <article class="troop-exp"><span>消費経験点</span><strong id="troop-exp-view">0</strong><small>SPENT EXP</small></article>
-      </section>
-      <section class="troop-section"><header><h3>スタイル <small>STYLE</small></h3></header><div id="troop-style-view" class="troop-style-grid"></div></section>
-      <section class="troop-section"><header><h3>能力値／制御値 <small>ABILITY / CONTROL</small></h3></header><div id="troop-abilities-view" class="troop-ability-grid"></div></section>
-      <section class="troop-section"><header><h3>一般技能 <small>GENERAL SKILLS</small></h3></header><div id="troop-general-skills-view" class="troop-data-list"></div></section>
-      <section class="troop-section"><header><h3>スタイル技能 <small>STYLE SKILLS</small></h3></header><div id="troop-style-skills-view" class="troop-data-list"></div></section>
-      <section class="troop-section"><header><h3>コンボ <small>COMBOS</small></h3></header><div id="troop-combos-view" class="troop-data-list troop-combo-view-list"></div></section>
-      <section class="troop-section"><header><h3>アウトフィット <small>OUTFITS</small></h3></header><div id="troop-outfits-view" class="troop-data-list"></div></section>
-      <section class="troop-section"><header><h3>メモ <small>NOTES</small></h3></header><div id="troop-notes-view" class="troop-notes"></div></section>
+    <section id="troop-view" class="troop-view-readonly" hidden>
+      <header class="troop-view-readonly__header"><div><p id="troop-public-id" class="troops-kicker"></p><h2 id="troop-name-view">—</h2></div><div class="troop-sheet__actions"><button id="troop-share-button" type="button">共有URLをコピー <small>SHARE</small></button><a id="troop-edit-link" href="#" hidden>編集 <small>EDIT</small></a></div></header>
+      <div class="troop-overview troop-view-overview">
+        <section class="troop-section troop-section--overview-basic"><header><h2>基本情報 <small>BASIC DATA</small></h2></header><dl class="troop-view-form-grid troop-view-form-grid--basic"><div><dt>名称</dt><dd id="troop-name-field-view">—</dd></div><div><dt>トループレベル</dt><dd id="troop-level-view">0</dd></div><div><dt>最大人数</dt><dd id="troop-member-max-view">1</dd></div></dl></section>
+        <section class="troop-section troop-section--overview-management"><header><h2>管理機能 <small>MANAGEMENT</small></h2></header><dl class="troop-view-form-grid troop-view-form-grid--management"><div><dt>公開状況</dt><dd id="troop-visibility-view">非公開</dd></div><div><dt>紐づけキャスト</dt><dd id="troop-linked-character-view">未設定</dd></div><div><dt>消費経験点</dt><dd id="troop-exp-view">0</dd></div></dl></section>
+        <section class="troop-section troop-section--overview-style troop-section--style-primary"><header><h2>スタイル <small>STYLE</small></h2></header><div id="troop-style-view" class="troop-view-style-value">未設定</div></section>
+        <section class="troop-section troop-section--overview-abilities"><header><h2>能力値／制御値 <small>ABILITY / CONTROL</small></h2></header><div id="troop-abilities-view" class="troop-ability-grid"></div></section>
+      </div>
+      <section class="troop-section troop-view-section troop-view-section--general"><header><h2>一般技能 <small>GENERAL SKILLS</small></h2></header><div class="troop-view-general-field-heads" aria-hidden="true"><div><span>技能名 <small>SKILL</small></span><span>LV</span><span>スート <small>SUIT</small></span></div><div><span>技能名 <small>SKILL</small></span><span>LV</span><span>スート <small>SUIT</small></span></div></div><div id="troop-general-skills-view" class="troop-view-general-list"></div></section>
+      <section class="troop-section troop-view-section troop-view-section--style-skills"><header><h2>スタイル技能 <small>STYLE SKILLS</small></h2></header><div class="troop-view-style-field-heads" aria-hidden="true"><span>技能名 <small>SKILL</small></span><span>種別 <small>TYPE</small></span><span>LV</span><span>スート <small>SUIT</small></span><span>タイミング <small>TIMING</small></span><span>対決 <small>CONFRONTATION</small></span><span>解説 <small>DETAIL</small></span></div><div id="troop-style-skills-view" class="troop-view-style-skill-list"></div></section>
+      <section class="troop-section troop-view-section troop-view-section--combos"><header><h2>コンボ <small>COMBOS</small></h2></header><div id="troop-combos-view" class="troop-view-combo-list"></div></section>
+      <section class="troop-section troop-view-section troop-view-section--outfits"><header><h2>アウトフィット <small>OUTFITS</small></h2></header><div class="troop-view-outfit-fields" aria-hidden="true"><span>名称 <small>NAME</small></span><span>攻撃 <small>ATK</small></span><span>S</span><span>P</span><span>I</span><span>性能／メモ <small>DETAIL</small></span></div><div id="troop-outfits-view" class="troop-view-outfit-list"></div></section>
+      <section class="troop-section troop-view-section troop-view-section--notes"><header><h2>メモ <small>NOTES</small></h2></header><div id="troop-notes-view" class="troop-view-notes"></div></section>
     </section>
 
     <form id="troop-editor" class="troop-editor" hidden>
@@ -77,12 +75,12 @@
     </form>
   </dialog>
 
-  <script type="module" src="./js/troop.js?v=3"></script>
+  <script type="module" src="./js/troop.js?v=4"></script>
   <script type="module" src="./js/troop-editor-ui.js?v=2"></script>
-  <script type="module" src="./js/troop-layout-refine.js?v=4"></script>
-  <script type="module" src="./js/troop-fields-v6.js?v=1"></script>
-  <script type="module" src="./js/troop-combo-rule-v2.js?v=2"></script>
+  <script type="module" src="./js/troop-layout-refine.js?v=5"></script>
+  <script type="module" src="./js/troop-fields-v6.js?v=2"></script>
+  <script type="module" src="./js/troop-combo-rule-v2.js?v=3"></script>
   <script type="module" src="./js/troop-save-v2.js?v=3"></script>
-  <script src="./js/troop-combo-copy.js?v=1"></script>
+  <script src="./js/troop-combo-copy.js?v=2"></script>
 </body>
 </html>

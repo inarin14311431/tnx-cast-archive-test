@@ -23,6 +23,7 @@ test("release candidate keeps critical PC/public E2E paths", () => {
   for (const spec of [
     "tests/e2e/smoke.spec.js",
     "tests/e2e/cast-view.spec.js",
+    "tests/e2e/troop-view.spec.js",
     "tests/e2e/authenticated.spec.js",
     "tests/e2e/legacy-import-profile.spec.js",
     "tests/e2e/outfit-import-transfer.spec.js",
@@ -39,6 +40,7 @@ test("release candidate keeps critical PC/public E2E paths", () => {
 test("release candidate keeps critical mobile E2E paths", () => {
   for (const spec of [
     "tests/e2e/account-mobile.spec.js",
+    "tests/e2e/troop-view.spec.js",
     "tests/e2e/mobile-combo-counter.spec.js",
     "tests/e2e/mobile-experience.spec.js"
   ]) {
