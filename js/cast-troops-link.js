@@ -1,40 +1,123 @@
 import { supabase } from "./supabase-client.js";
 
 const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
+const desktopMedia = window.matchMedia("(min-width: 761px)");
 if (publicId) void initialize();
 
 async function initialize() {
   const characterResult = await supabase.from("characters").select("id, experience_points").eq("public_id", publicId).maybeSingle();
   if (characterResult.error || !characterResult.data) return;
-  const troopResult = await supabase.from("troops").select("public_id, name, visibility, level, member_max, style_1, experience_spent").eq("character_id", characterResult.data.id).order("name");
+  const troopResult = await supabase.from("troops")
+    .select("public_id, name, visibility, level, member_max, style_1, utsuwa_attribute, experience_spent, reason_value, reason_control, passion_value, passion_control, life_value, life_control, mundane_value, mundane_control, skills, combos, outfits, notes")
+    .eq("character_id", characterResult.data.id)
+    .order("name");
   if (troopResult.error || !troopResult.data?.length) return;
+
   const troops = troopResult.data;
   const troopExperience = troops.reduce((sum, troop) => sum + Math.max(0, Number(troop.experience_spent) || 0), 0);
   const castExperience = Number(characterResult.data.experience_points) || 0;
   const expText = `${castExperience}＋${troopExperience}`;
   decorateExperience(expText);
+  ensureTroopDialog();
 
   const primary = document.querySelector(".cast-header__primary-actions");
   if (primary && !primary.querySelector("[data-cast-troops-jump]")) {
-    const link = document.createElement("a");
-    link.href = "#cast-troops-panel";
-    link.className = "cast-edit-link cast-troops-jump";
-    link.dataset.castTroopsJump = "1";
-    link.innerHTML = `<span>トループ ${troops.length}</span><small>TROOPS</small>`;
-    primary.append(link);
-  }
-
-  if (!document.querySelector("#cast-troops-panel")) {
-    const panel = document.createElement("section");
-    panel.id = "cast-troops-panel";
-    panel.className = "cast-troops-panel";
-    panel.innerHTML = `<header><h2>配下トループ <small>ASSIGNED TROOPS</small></h2><p>公開トループ、または自分が所有するトループを表示しています。</p></header><div>${troops.map(t => `<a href="./troop.html?id=${encodeURIComponent(t.public_id)}"><span>${escapeHtml(t.name || "名称未設定")}</span><small>${escapeHtml(t.style_1 || "STYLE未設定")} / Lv.${t.level} / 最大${t.member_max}人 / EXP ${t.experience_spent ?? 0} / ${t.visibility === "public" ? "PUBLIC" : "PRIVATE"}</small></a>`).join("")}</div>`;
-    const mobile = document.querySelector("#mobile-cast-view");
-    (mobile || document.querySelector("#cast-content"))?.before(panel);
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "cast-edit-link cast-troops-jump";
+    trigger.dataset.castTroopsJump = "1";
+    trigger.innerHTML = `<span>トループ ${troops.length}</span><small>TROOPS</small>`;
+    trigger.addEventListener("click", () => {
+      if (desktopMedia.matches) openTroopIndex(troops);
+      else location.href = `./troops.html?character=${encodeURIComponent(publicId)}`;
+    });
+    primary.append(trigger);
   }
 
   watchUntilExperienceRendered(document.querySelector("#mobile-cast-view"), expText, ".mobile-cast-meta");
   watchUntilExperienceRendered(document.querySelector("#quick-sheet-pages"), expText, ".quick-sheet__identity-meta");
+}
+
+function ensureTroopDialog() {
+  if (document.querySelector("#cast-troop-dialog")) return;
+  const dialog = document.createElement("dialog");
+  dialog.id = "cast-troop-dialog";
+  dialog.className = "cast-troop-dialog";
+  dialog.innerHTML = `<div class="cast-troop-dialog__shell"><header class="cast-troop-dialog__header"><div><p>TROOP DATA</p><h2 id="cast-troop-dialog-title">トループ</h2></div><button type="button" data-troop-dialog-close aria-label="閉じる">×</button></header><div id="cast-troop-dialog-body" class="cast-troop-dialog__body"></div></div>`;
+  dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+  dialog.querySelector("[data-troop-dialog-close]").addEventListener("click", () => dialog.close());
+  document.body.append(dialog);
+}
+
+function openTroopIndex(troops) {
+  const dialog = document.querySelector("#cast-troop-dialog");
+  const title = dialog.querySelector("#cast-troop-dialog-title");
+  const body = dialog.querySelector("#cast-troop-dialog-body");
+  title.textContent = `配下トループ ${troops.length}`;
+  body.innerHTML = `<div class="cast-troop-picker">${troops.map((troop, index) => `<button type="button" data-troop-index="${index}"><strong>${escapeHtml(troop.name || "名称未設定")}</strong><span>${escapeHtml(styleLabel(troop))} / Lv.${num(troop.level)} / 最大${Math.max(1, num(troop.member_max))}人 / EXP ${num(troop.experience_spent)}</span></button>`).join("")}</div>`;
+  body.querySelectorAll("[data-troop-index]").forEach(button => button.addEventListener("click", () => openTroopDetail(troops[Number(button.dataset.troopIndex)], troops)));
+  if (!dialog.open) dialog.showModal();
+}
+
+function openTroopDetail(troop, troops) {
+  const dialog = document.querySelector("#cast-troop-dialog");
+  const title = dialog.querySelector("#cast-troop-dialog-title");
+  const body = dialog.querySelector("#cast-troop-dialog-body");
+  title.textContent = troop.name || "名称未設定";
+  const general = skillList(troop.skills, "general");
+  const style = skillList(troop.skills, "style");
+  body.innerHTML = `
+    <div class="cast-troop-dialog__toolbar"><button type="button" data-troop-back>← 一覧</button><a href="./troop.html?id=${encodeURIComponent(troop.public_id)}">詳細ページ</a></div>
+    <section class="cast-troop-summary">
+      <div><span>STYLE</span><strong>${escapeHtml(styleLabel(troop))}</strong></div>
+      <div><span>LEVEL / CS</span><strong>${num(troop.level)}</strong></div>
+      <div><span>AR</span><strong>1</strong></div>
+      <div><span>MAX</span><strong>${Math.max(1, num(troop.member_max))}</strong></div>
+      <div><span>EXP</span><strong>${num(troop.experience_spent)}</strong></div>
+    </section>
+    <section class="cast-troop-block"><h3>能力値／制御値</h3>${abilityTable(troop)}</section>
+    ${general ? `<section class="cast-troop-block"><h3>一般技能</h3>${general}</section>` : ""}
+    ${style ? `<section class="cast-troop-block"><h3>スタイル技能</h3>${style}</section>` : ""}
+    ${comboList(troop.combos)}
+    ${outfitList(troop.outfits)}
+    ${troop.notes ? `<section class="cast-troop-block"><h3>メモ</h3><p class="cast-troop-notes">${escapeHtml(troop.notes)}</p></section>` : ""}`;
+  body.querySelector("[data-troop-back]").addEventListener("click", () => openTroopIndex(troops));
+}
+
+function abilityTable(troop) {
+  const rows = [
+    ["♠ 理性", troop.reason_value, troop.reason_control],
+    ["♣ 感情", troop.passion_value, troop.passion_control],
+    ["♥ 生命", troop.life_value, troop.life_control],
+    ["♦ 外界", troop.mundane_value, troop.mundane_control]
+  ];
+  return `<div class="cast-troop-abilities">${rows.map(([label, value, control]) => `<div><span>${label}</span><strong>${num(value)}</strong><small>制御 ${num(control)}</small></div>`).join("")}</div>`;
+}
+
+function skillList(skills, category) {
+  const list = (Array.isArray(skills) ? skills : []).filter(skill => category === "style" ? skill.category === "style" : skill.category === "general");
+  if (!list.length) return "";
+  return `<div class="cast-troop-skills">${list.map(skill => `<div><strong>${escapeHtml(skill.name || "—")}</strong><span>Lv.${num(skill.level)} ${suits(skill)}</span>${skill.notes ? `<small>${escapeHtml(skill.notes)}</small>` : ""}</div>`).join("")}</div>`;
+}
+
+function comboList(combos) {
+  const list = Array.isArray(combos) ? combos : [];
+  if (!list.length) return "";
+  return `<section class="cast-troop-block"><h3>コンボ</h3><div class="cast-troop-combos">${list.map(combo => `<article><strong>${escapeHtml(combo.name || "—")}</strong><p>${escapeHtml(combo.skills || "")}</p><small>${escapeHtml([combo.timing, combo.target, combo.range].filter(Boolean).join(" / "))}</small>${combo.description ? `<p>${escapeHtml(combo.description)}</p>` : ""}</article>`).join("")}</div></section>`;
+}
+
+function outfitList(outfits) {
+  const list = Array.isArray(outfits) ? outfits : [];
+  if (!list.length) return "";
+  return `<section class="cast-troop-block"><h3>アウトフィット</h3><div class="cast-troop-outfits">${list.map(item => `<div><strong>${escapeHtml(item.name || "—")}</strong><span>${escapeHtml(item.attack || "—")}</span><span>S ${escapeHtml(item.defense_s || "—")} / P ${escapeHtml(item.defense_p || "—")} / I ${escapeHtml(item.defense_i || "—")}</span></div>`).join("")}</div></section>`;
+}
+
+function styleLabel(troop) {
+  return troop.style_1 === "ウツワ" && troop.utsuwa_attribute ? `ウツワ（${troop.utsuwa_attribute}）` : (troop.style_1 || "STYLE未設定");
+}
+
+function suits(skill) {
+  return [["reason","♠"],["passion","♣"],["life","♥"],["mundane","♦"]].filter(([key]) => skill?.[key]).map(([, suit]) => suit).join("");
 }
 
 function watchUntilExperienceRendered(root, expText, targetSelector) {
@@ -55,33 +138,23 @@ function setTextIfChanged(node, value) {
 function decorateExperience(expText, scope = "") {
   let found = false;
   const desktop = document.querySelector("#cast-exp");
-  if (desktop) {
-    found = true;
-    setTextIfChanged(desktop, `${expText} EXP`);
-  }
-
+  if (desktop) { found = true; setTextIfChanged(desktop, `${expText} EXP`); }
   if (!scope || scope === ".mobile-cast-meta") {
     document.querySelectorAll(".mobile-cast-meta div").forEach(item => {
       if (item.querySelector("dt")?.textContent?.trim() !== "EXP") return;
-      const dd = item.querySelector("dd");
-      if (!dd) return;
-      found = true;
-      setTextIfChanged(dd, expText);
+      const dd = item.querySelector("dd"); if (!dd) return;
+      found = true; setTextIfChanged(dd, expText);
     });
   }
-
   if (!scope || scope === ".quick-sheet__identity-meta") {
     document.querySelectorAll("#quick-sheet-pages .quick-sheet__identity-meta div").forEach(item => {
       if (item.querySelector("dt")?.textContent?.trim() !== "EXP") return;
-      const dd = item.querySelector("dd");
-      if (!dd) return;
-      found = true;
-      setTextIfChanged(dd, expText);
+      const dd = item.querySelector("dd"); if (!dd) return;
+      found = true; setTextIfChanged(dd, expText);
     });
   }
   return found;
 }
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
+function num(value) { return Math.max(0, Number(value) || 0); }
+function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
