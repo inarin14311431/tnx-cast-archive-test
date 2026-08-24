@@ -32,6 +32,9 @@ jobs:
       - name: Audit public cast runtime
         run: npm run audit:cast
 
+      - name: Audit troop runtime
+        run: npm run audit:troop
+
       - name: Audit mobile editor runtime
         run: npm run audit:mobile
 
