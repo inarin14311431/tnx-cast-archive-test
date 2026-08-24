@@ -17,7 +17,7 @@ async function initialize() {
   const troopExperience = troops.reduce((sum, troop) => sum + Math.max(0, Number(troop.experience_spent) || 0), 0);
   const castExperience = Number(characterResult.data.experience_points) || 0;
   const expText = `${castExperience}＋${troopExperience}`;
-  decorateExperience(expText);
+  watchDesktopExperience(expText);
   ensureTroopDialog();
 
   const primary = document.querySelector(".cast-header__primary-actions");
@@ -125,6 +125,23 @@ function styleLabel(troop) {
 
 function suits(skill) {
   return [["reason","♠"],["passion","♣"],["life","♥"],["mundane","♦"]].filter(([key]) => skill?.[key]).map(([, suit]) => suit).join("");
+}
+
+function watchDesktopExperience(expText) {
+  const exp = document.querySelector("#cast-exp");
+  const castStatus = document.querySelector("#cast-status");
+  if (!exp) return;
+  const apply = () => setTextIfChanged(exp, `${expText} EXP`);
+  if (!castStatus || castStatus.textContent?.trim() === "ACCESS GRANTED") {
+    apply();
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    if (castStatus.textContent?.trim() !== "ACCESS GRANTED") return;
+    apply();
+    observer.disconnect();
+  });
+  observer.observe(castStatus, { childList: true, characterData: true, subtree: true });
 }
 
 function watchUntilExperienceRendered(root, expText, targetSelector) {
