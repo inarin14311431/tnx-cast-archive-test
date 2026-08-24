@@ -29,6 +29,7 @@ async function initialize() {
     trigger.innerHTML = `<span>トループ ${troops.length}</span><small>TROOPS</small>`;
     trigger.addEventListener("click", () => {
       if (desktopMedia.matches) openTroopIndex(troops);
+      else if (troops.length === 1) location.href = `./troop.html?id=${encodeURIComponent(troops[0].public_id)}`;
       else location.href = `./troops.html?character=${encodeURIComponent(publicId)}`;
     });
     primary.append(trigger);
@@ -70,7 +71,7 @@ function openTroopDetail(troop, troops) {
     <div class="cast-troop-dialog__toolbar"><button type="button" data-troop-back>← 一覧</button><a href="./troop.html?id=${encodeURIComponent(troop.public_id)}">詳細ページ</a></div>
     <section class="cast-troop-summary">
       <div><span>STYLE</span><strong>${escapeHtml(styleLabel(troop))}</strong></div>
-      <div><span>LEVEL / CS</span><strong>${num(troop.level)}</strong></div>
+      <div><span>LEVEL</span><strong>${num(troop.level)}</strong></div>
       <div><span>AR</span><strong>1</strong></div>
       <div><span>MAX</span><strong>${Math.max(1, num(troop.member_max))}</strong></div>
       <div><span>EXP</span><strong>${num(troop.experience_spent)}</strong></div>
@@ -95,9 +96,14 @@ function abilityTable(troop) {
 }
 
 function skillList(skills, category) {
-  const list = (Array.isArray(skills) ? skills : []).filter(skill => category === "style" ? skill.category === "style" : skill.category === "general");
+  const list = (Array.isArray(skills) ? skills : []).filter(skill => isSkillCategory(skill, category));
   if (!list.length) return "";
   return `<div class="cast-troop-skills">${list.map(skill => `<div><strong>${escapeHtml(skill.name || "—")}</strong><span>Lv.${num(skill.level)} ${suits(skill)}</span>${skill.notes ? `<small>${escapeHtml(skill.notes)}</small>` : ""}</div>`).join("")}</div>`;
+}
+
+function isSkillCategory(skill, category) {
+  if (category === "style") return skill?.category === "style" || (!skill?.category && ["normal","secret","ultimate","direction","none"].includes(skill?.type));
+  return skill?.category === "general" || (!skill?.category && ["general","proper"].includes(skill?.kind));
 }
 
 function comboList(combos) {
