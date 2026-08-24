@@ -59,7 +59,7 @@ function insertAutofillNote() {
   if (!skills || comboDialog.querySelector(".combo-autofill-note")) return;
   const note = document.createElement("p");
   note.className = "combo-autofill-note";
-  note.textContent = "スタイル技能に登録済みの判定条件は、技能選択時に空欄へ自動補完します。補完後も編集できます。";
+  note.textContent = "登録済みの技能情報からタイミング・対象・射程・対決を空欄へ自動補完します。達成値目安はアクト運用用の任意入力です。";
   skills.after(note);
 }
 
@@ -82,7 +82,7 @@ function packRuleFields() {
   const legacy = comboForm.elements.namedItem("target_value");
   if (!legacy) return;
   legacy.value = packRuleData({
-    difficulty: fieldValue("difficulty"),
+    expected_value: fieldValue("expected_value"),
     confrontation: fieldValue("confrontation")
   });
 }
@@ -91,29 +91,29 @@ function hydrateRuleFields() {
   if (!comboDialog?.open || !comboForm) return;
   const legacy = comboForm.elements.namedItem("target_value");
   const parsed = unpackRuleFields(legacy?.value || "");
-  setFormField("difficulty", parsed.difficulty);
+  setFormField("expected_value", parsed.expected_value);
   setFormField("confrontation", parsed.confrontation);
 }
 
 function packRuleData(data) {
-  const difficulty = String(data?.difficulty || "").trim();
+  const expectedValue = String(data?.expected_value || "").trim();
   const confrontation = String(data?.confrontation || "").trim();
-  if (!confrontation && difficulty && !difficulty.startsWith(PACK_PREFIX)) return `${PACK_PREFIX}${JSON.stringify({difficulty,confrontation:""})}`;
-  return `${PACK_PREFIX}${JSON.stringify({difficulty,confrontation})}`;
+  return `${PACK_PREFIX}${JSON.stringify({expected_value:expectedValue,confrontation})}`;
 }
 
 function unpackRuleFields(value) {
   const text = String(value || "").trim();
-  if (!text) return { difficulty:"", confrontation:"" };
-  if (!text.startsWith(PACK_PREFIX)) return { difficulty:text, confrontation:"" };
+  if (!text) return { expected_value:"", confrontation:"" };
+  if (!text.startsWith(PACK_PREFIX)) return { expected_value:numericText(text), confrontation:"" };
   try {
     const parsed = JSON.parse(text.slice(PACK_PREFIX.length));
+    const legacyDifficulty = numericText(parsed?.difficulty);
     return {
-      difficulty:String(parsed?.difficulty || "").trim(),
+      expected_value:String(parsed?.expected_value || legacyDifficulty || "").trim(),
       confrontation:String(parsed?.confrontation || "").trim()
     };
   } catch {
-    return { difficulty:"", confrontation:"" };
+    return { expected_value:"", confrontation:"" };
   }
 }
 
@@ -123,7 +123,6 @@ async function autofillFromSkill(skillName) {
   fillBlank("timing", source.timing);
   fillBlank("target", source.target);
   fillBlank("range", source.range_text);
-  fillBlank("difficulty", source.difficulty);
   fillBlank("confrontation", source.confrontation);
 }
 
@@ -138,7 +137,7 @@ async function findMasterSkill(skillName) {
   const candidates = [...new Set([raw, stripped].filter(Boolean))];
   const { data, error } = await supabase
     .from("skd_master")
-    .select("name,timing,target,range_text,difficulty,confrontation")
+    .select("name,timing,target,range_text,confrontation")
     .in("name", candidates)
     .limit(20);
   if (error) {
@@ -187,7 +186,7 @@ function renderComboCardsV2() {
       rowValue(row,"target") && `対象：${rowValue(row,"target")}`,
       rowValue(row,"range") && `射程：${rowValue(row,"range")}`
     ].filter(Boolean).join(" / ");
-    return `<button class="combo-card" type="button" data-troop-combo-index="${index}"><div class="combo-card__head"><strong>${escapeHtml(name)}</strong><span class="combo-card__ability">${escapeHtml(ability)}</span></div><p class="combo-card__skills">${escapeHtml(skills)}</p><dl><div><dt>判定修正 <small>MODIFIER</small></dt><dd>${escapeHtml(rowValue(row,"modifier") || "—")}</dd></div><div><dt>目標値 <small>DIFFICULTY</small></dt><dd>${escapeHtml(rule.difficulty || "—")}</dd></div><div><dt>対決 <small>CONFRONTATION</small></dt><dd>${escapeHtml(rule.confrontation || "—")}</dd></div></dl><p class="combo-card__detail">${escapeHtml(detail || "詳細未登録")}</p><p class="combo-card__description">${escapeHtml(rowValue(row,"description"))}</p></button>`;
+    return `<button class="combo-card" type="button" data-troop-combo-index="${index}"><div class="combo-card__head"><strong>${escapeHtml(name)}</strong><span class="combo-card__ability">${escapeHtml(ability)}</span></div><p class="combo-card__skills">${escapeHtml(skills)}</p><dl><div><dt>判定修正 <small>MODIFIER</small></dt><dd>${escapeHtml(rowValue(row,"modifier") || "—")}</dd></div><div><dt>達成値目安 <small>EXPECTED VALUE</small></dt><dd>${escapeHtml(rule.expected_value || "—")}</dd></div><div><dt>対決 <small>CONFRONTATION</small></dt><dd>${escapeHtml(rule.confrontation || "—")}</dd></div></dl><p class="combo-card__detail">${escapeHtml(detail || "詳細未登録")}</p><p class="combo-card__description">${escapeHtml(rowValue(row,"description"))}</p></button>`;
   }).join("");
 }
 
@@ -226,7 +225,7 @@ function renderPublicCombos(root, combos) {
       item.target && `対象：${item.target}`,
       item.range && `射程：${item.range}`
     ].filter(Boolean).join(" / ");
-    return `<article><div><strong>${escapeHtml(item.name || "名称未設定")}</strong><small>${escapeHtml(abilityText(item.ability))} / ${escapeHtml(item.skills || "技能未設定")}</small></div><div><span>修正 ${escapeHtml(item.modifier || "—")}</span><span>目標値 ${escapeHtml(rule.difficulty || "—")}</span><span>対決 ${escapeHtml(rule.confrontation || "—")}</span><span>${escapeHtml(detail || "詳細未登録")}</span></div><p>${escapeHtml(item.description || "")}</p></article>`;
+    return `<article><div><strong>${escapeHtml(item.name || "名称未設定")}</strong><small>${escapeHtml(abilityText(item.ability))} / ${escapeHtml(item.skills || "技能未設定")}</small></div><div><span>修正 ${escapeHtml(item.modifier || "—")}</span><span>達成値目安 ${escapeHtml(rule.expected_value || "—")}</span><span>対決 ${escapeHtml(rule.confrontation || "—")}</span><span>${escapeHtml(detail || "詳細未登録")}</span></div><p>${escapeHtml(item.description || "")}</p></article>`;
   }).join("");
 }
 
@@ -236,6 +235,10 @@ function comboRows() {
 function rowValue(row,field) { return String(row.querySelector(`[data-field="${field}"]`)?.value || "").trim(); }
 function fieldValue(name) { return String(comboForm?.elements.namedItem(name)?.value || "").trim(); }
 function setFormField(name,value) { const node=comboForm?.elements.namedItem(name); if(node) node.value=value || ""; }
+function numericText(value) {
+  const text = String(value || "").trim();
+  return /^[-+]?\d+$/.test(text) ? text : "";
+}
 function abilityText(value) {
   const labels={reason:"♠ 理性",passion:"♣ 感情",life:"♥ 生命",mundane:"♦ 外界"};
   const keys=String(value||"").split(",").map(v=>v.trim()).filter(Boolean);
