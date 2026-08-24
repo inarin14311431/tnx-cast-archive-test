@@ -53,10 +53,9 @@ for (const file of htmlFiles) {
   }
 }
 
-// These two pre-existing generators are intentionally deferred to the larger view/theme refactor.
-// Any newly introduced runtime <style> generator fails the audit immediately.
+// The remaining pre-existing generator is deferred to the larger view refactor.
+// Theme presentation is now static CSS; any new runtime <style> generator fails immediately.
 const runtimeStyleAllowlist = new Set([
-  "js/css-next-theme.js",
   "js/skill-display-enhancements.js"
 ]);
 const jsFiles = await filesUnder(path.join(root, "js"), ".js");

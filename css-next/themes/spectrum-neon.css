@@ -1,4 +1,4 @@
-/* Seven-color gaming theme: Neon Sign. */
+/* Theme definition and presentation: seven-color gaming theme "Neon Sign". */
 :root[data-theme="spectrum-neon"] {
   color-scheme: dark;
   --neon-red: #ff4775;
@@ -146,7 +146,7 @@
   box-shadow: inset 0 0 16px rgb(85 246 255 / 14%), 0 0 9px var(--neon-cyan), 0 0 24px rgb(220 116 255 / 52%);
 }
 
-:root[data-theme="spectrum-neon"] :is(.archive-controls, .account-panel, .sheet-section, .data-panel, .troops-hero, .troops-filter, .troop-section, .troop-view-readonly, .troop-editor, .combo-dialog, .auth-panel, .backup-panel, .transfer-panel, .panel, .basic-profile-panel, .personal-data-panel, .life-path-panel, .sheet-image-editor, .image-preview-panel, .image-control-panel, .sheet-combo-list-panel, .sheet-combo-editor, [class$="-panel"], [class*="-panel "], fieldset, dialog) {
+:root[data-theme="spectrum-neon"] [data-theme-surface="panel"] {
   border: 2px solid transparent;
   outline: 1px solid rgb(85 246 255 / 26%);
   outline-offset: 3px;
@@ -169,7 +169,7 @@
 :root[data-theme="spectrum-neon"] :is(.cast-grid, .owned-cast-list, .troop-list, .combo-list, .mobile-style-list, .mobile-outfit-list) > :nth-child(7n + 6) { --neon-local: var(--neon-blue); }
 :root[data-theme="spectrum-neon"] :is(.cast-grid, .owned-cast-list, .troop-list, .combo-list, .mobile-style-list, .mobile-outfit-list) > :nth-child(7n + 7) { --neon-local: var(--neon-violet); }
 
-:root[data-theme="spectrum-neon"] :is(.cast-card, .owned-cast, .troop-card, .combo-card, .mobile-style-row, .mobile-outfit-card, [class$="-card"], [class*="-card "]) {
+:root[data-theme="spectrum-neon"] [data-theme-surface="card"] {
   border: 2px solid var(--neon-local, var(--neon-cyan));
   outline: 1px solid color-mix(in srgb, var(--neon-local, var(--neon-cyan)) 52%, transparent);
   outline-offset: 2px;
@@ -177,7 +177,7 @@
   box-shadow: inset 7px 0 0 var(--neon-local, var(--neon-cyan)), inset -3px 0 0 var(--neon-violet), inset 0 0 24px color-mix(in srgb, var(--neon-local, var(--neon-cyan)) 13%, transparent), 0 0 8px var(--neon-local, var(--neon-cyan)), 0 0 22px color-mix(in srgb, var(--neon-local, var(--neon-cyan)) 42%, transparent);
 }
 
-:root[data-theme="spectrum-neon"] :is(.cast-card, .owned-cast, .troop-card, .combo-card, [class$="-card"], [class*="-card "]):is(:hover, :focus-within) {
+:root[data-theme="spectrum-neon"] [data-theme-surface="card"]:is(:hover, :focus-within) {
   border-color: var(--neon-local, var(--neon-cyan));
   filter: brightness(1.12) saturate(1.28);
   box-shadow: inset 7px 0 0 var(--neon-local, var(--neon-cyan)), inset -3px 0 0 var(--neon-violet), 0 0 10px var(--neon-local, var(--neon-cyan)), 0 0 28px color-mix(in srgb, var(--neon-local, var(--neon-cyan)) 68%, transparent), 0 0 42px rgb(220 116 255 / 28%), inset 0 0 26px color-mix(in srgb, var(--neon-local, var(--neon-cyan)) 18%, transparent);
@@ -211,7 +211,7 @@
   filter: drop-shadow(0 0 4px var(--neon-cyan)) drop-shadow(0 0 8px rgb(220 116 255 / 66%));
 }
 
-/* The inert ID branch gives the final theme layer enough specificity to beat page-local ID states without !important. */
+/* The inert ID branch gives the final theme layer enough specificity to beat page-local ID states. */
 :root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):is(:hover, :focus-visible) {
   border-color: transparent;
   transform: translateY(-1px);
@@ -303,7 +303,7 @@
   box-shadow: inset 3px 0 0 var(--neon-cyan), inset -3px 0 0 var(--neon-violet);
 }
 
-:root[data-theme="spectrum-neon"] :is(.status-chip, .cast-card__style-chip, .owned-cast__style, .troop-card__visibility, .badge) {
+:root[data-theme="spectrum-neon"] [data-theme-badge="1"] {
   border: 2px solid var(--neon-local, var(--neon-green));
   outline: 1px solid color-mix(in srgb, var(--neon-local, var(--neon-green)) 45%, transparent);
   outline-offset: 1px;
