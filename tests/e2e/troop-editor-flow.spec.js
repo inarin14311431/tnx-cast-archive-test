@@ -90,7 +90,10 @@ test("トループを作成・再読込・更新・閲覧・削除できる", as
 
     await page.locator('.troop-editor-actions button[type="submit"]').click();
     await expect(page.locator("#troop-editor-status")).toContainText("保存しました");
-    await expect(page).toHaveURL(/troop\.html\?id=TRP-[A-Z0-9]+&edit=1/);
+    await expect.poll(() => {
+      const current = new URL(page.url());
+      return `${current.pathname}|${current.searchParams.get("id")}|${current.searchParams.get("edit")}`;
+    }).toMatch(/\/troop\.html\|TRP-[A-Z0-9]+\|1/);
     editUrl = page.url();
 
     await page.reload();
