@@ -169,11 +169,13 @@ test("cast troop modal uses editor section colors and compact CS pairs", () => {
   const castHtml = read("cast.html");
   const css = read("css-next/pages/cast-troop-modal.css");
   assert.match(castHtml, /cast-troop-modal\.css\?v=3/);
-  assert.match(castHtml, /cast-troops-link\.js\?v=4/);
+  assert.match(castHtml, /cast-troops-link\.js\?v=5/);
   assert.match(castHtml, /troop-combo-copy\.js\?v=2/);
   assert.match(cast, /cast-troop-block--abilities/);
   assert.match(cast, /cast-troop-block--combos/);
   assert.match(cast, /cast-troop-ability-pair--cs/);
+  assert.match(cast, /<span>トループ<\/span><small>TROOP<\/small>/);
+  assert.doesNotMatch(cast, /<span>トループ \$\{troops\.length\}<\/span>/);
   assert.match(cast, /<i>／<\/i>/);
   assert.match(css, /--troop-abilities:#d4a43d/);
   assert.match(css, /--troop-general:#cf6874/);
