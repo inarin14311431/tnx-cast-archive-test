@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./css-next/pages/troop-compact-density-v2.css?v=1">
   <link rel="stylesheet" href="./css-next/pages/troop-density-v3.css?v=2">
   <link rel="stylesheet" href="./css-next/pages/troop-visual-accent-v5.css?v=1">
+  <link rel="stylesheet" href="./css-next/pages/troop-layout-v6.css?v=1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -65,7 +66,7 @@
         <fieldset class="troop-combo-abilities"><legend>使用能力 <small>ABILITIES</small></legend><label><input type="checkbox" name="ability_choice" value="reason">♠ 理性</label><label><input type="checkbox" name="ability_choice" value="passion">♣ 感情</label><label><input type="checkbox" name="ability_choice" value="life">♥ 生命</label><label><input type="checkbox" name="ability_choice" value="mundane">♦ 外界</label></fieldset>
         <fieldset class="combo-form-grid__wide troop-combo-skills"><legend>組み合わせ技能 <small>SKILL COMBINATION</small></legend><div id="troop-combo-skill-options" class="troop-combo-skill-options"></div></fieldset>
         <label class="combo-field combo-field--rule"><span>判定修正 <small>MODIFIER</small></span><input name="modifier" type="number" step="1" inputmode="numeric"></label>
-        <label class="combo-field combo-field--rule"><span>目標値 <small>DIFFICULTY</small></span><input name="difficulty" type="text" maxlength="60" placeholder="制御値 / 10 / なし"></label>
+        <label class="combo-field combo-field--rule"><span>達成値目安 <small>EXPECTED VALUE</small></span><input name="expected_value" type="number" step="1" inputmode="numeric"></label>
         <label class="combo-field combo-field--rule"><span>対決 <small>CONFRONTATION</small></span><input name="confrontation" type="text" maxlength="80" placeholder="〈回避〉 / なし"></label>
         <label class="combo-field combo-field--rule"><span>タイミング <small>TIMING</small></span><input name="timing" type="text" maxlength="100"></label>
         <label class="combo-field combo-field--rule"><span>対象 <small>TARGET</small></span><input name="target" type="text" maxlength="100"></label>
@@ -79,8 +80,9 @@
   <script type="module" src="./js/troop.js?v=3"></script>
   <script type="module" src="./js/troop-editor-ui.js?v=2"></script>
   <script type="module" src="./js/troop-layout-refine.js?v=2"></script>
-  <script type="module" src="./js/troop-combo-rule-v2.js?v=1"></script>
-  <script type="module" src="./js/troop-save-v2.js?v=1"></script>
+  <script type="module" src="./js/troop-fields-v6.js?v=1"></script>
+  <script type="module" src="./js/troop-combo-rule-v2.js?v=2"></script>
+  <script type="module" src="./js/troop-save-v2.js?v=2"></script>
   <script src="./js/troop-combo-copy.js?v=1"></script>
 </body>
 </html>
