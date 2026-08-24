@@ -211,7 +211,8 @@
   filter: drop-shadow(0 0 4px var(--neon-cyan)) drop-shadow(0 0 8px rgb(220 116 255 / 66%));
 }
 
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):is(:hover, :focus-visible) {
+/* The inert ID branch gives the final theme layer enough specificity to beat page-local ID states without !important. */
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):is(:hover, :focus-visible) {
   border-color: transparent;
   transform: translateY(-1px);
   filter: brightness(1.22) saturate(1.45);
@@ -219,7 +220,7 @@
   text-shadow: 0 0 5px var(--color-text), 0 0 12px var(--neon-button, var(--neon-cyan));
 }
 
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a) {
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]) {
   --neon-button: var(--neon-cyan);
   --neon-button-next: var(--neon-violet);
   border: 2px solid transparent;
@@ -227,59 +228,61 @@
   outline-offset: 2px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--neon-button) 35%, var(--color-surface)), color-mix(in srgb, var(--neon-button-next) 30%, var(--color-surface))) padding-box, var(--neon-spectrum) border-box;
   color: var(--color-text);
+  cursor: pointer;
   letter-spacing: .07em;
+  text-decoration: none;
   box-shadow: inset 0 0 14px color-mix(in srgb, var(--neon-button) 18%, transparent), inset 0 -7px 16px color-mix(in srgb, var(--neon-button-next) 15%, transparent), 0 0 7px var(--neon-button), 0 0 17px color-mix(in srgb, var(--neon-button-next) 58%, transparent);
   text-shadow: 0 0 8px color-mix(in srgb, var(--neon-button) 72%, transparent);
 }
 
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):nth-of-type(7n + 1) { --neon-button: var(--neon-red); --neon-button-next: var(--neon-orange); }
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):nth-of-type(7n + 2) { --neon-button: var(--neon-orange); --neon-button-next: var(--neon-yellow); }
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):nth-of-type(7n + 3) { --neon-button: var(--neon-yellow); --neon-button-next: var(--neon-green); }
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):nth-of-type(7n + 4) { --neon-button: var(--neon-green); --neon-button-next: var(--neon-cyan); }
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):nth-of-type(7n + 5) { --neon-button: var(--neon-cyan); --neon-button-next: var(--neon-blue); }
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):nth-of-type(7n + 6) { --neon-button: var(--neon-blue); --neon-button-next: var(--neon-violet); }
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):nth-of-type(7n + 7) { --neon-button: var(--neon-violet); --neon-button-next: var(--neon-red); }
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):nth-of-type(7n + 1) { --neon-button: var(--neon-red); --neon-button-next: var(--neon-orange); }
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):nth-of-type(7n + 2) { --neon-button: var(--neon-orange); --neon-button-next: var(--neon-yellow); }
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):nth-of-type(7n + 3) { --neon-button: var(--neon-yellow); --neon-button-next: var(--neon-green); }
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):nth-of-type(7n + 4) { --neon-button: var(--neon-green); --neon-button-next: var(--neon-cyan); }
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):nth-of-type(7n + 5) { --neon-button: var(--neon-cyan); --neon-button-next: var(--neon-blue); }
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):nth-of-type(7n + 6) { --neon-button: var(--neon-blue); --neon-button-next: var(--neon-violet); }
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):nth-of-type(7n + 7) { --neon-button: var(--neon-violet); --neon-button-next: var(--neon-red); }
 
-:root[data-theme="spectrum-neon"] :is(button, .button, .account-actions a, .owned-cast__links a, .troop-primary-action, .troop-card__actions a):active {
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button, input[type="button"], input[type="submit"], input[type="reset"], [data-theme-control="1"]):active {
   transform: translateY(1px) scale(.99);
   box-shadow: inset 0 0 22px color-mix(in srgb, var(--neon-button) 35%, transparent), 0 0 6px var(--neon-button);
 }
 
-:root[data-theme="spectrum-neon"] :is(button:disabled, .button[aria-disabled="true"], a[aria-disabled="true"]) {
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button:disabled, input:is([type="button"], [type="submit"], [type="reset"]):disabled, [data-theme-control="1"][aria-disabled="true"]) {
   outline-color: rgb(181 194 220 / 22%);
   filter: grayscale(.72) brightness(.62);
   box-shadow: inset 0 0 10px rgb(181 194 220 / 8%), 0 0 5px rgb(181 194 220 / 18%);
   text-shadow: none;
 }
 
-:root[data-theme="spectrum-neon"] :is(button[type="submit"], .troop-primary-action, .cocofolia-copy-button, .udonarium-export-button, .transfer-tsv-copy-button, .transfer-bookmarklet-copy-button) {
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, button[type="submit"], input[type="submit"], .troop-primary-action, .cocofolia-copy-button, .udonarium-export-button, .transfer-tsv-copy-button, .transfer-bookmarklet-copy-button) {
   background: linear-gradient(105deg, rgb(115 14 47 / 96%), rgb(116 55 15 / 96%), rgb(84 73 8 / 96%), rgb(8 83 46 / 96%), rgb(4 77 101 / 96%), rgb(31 49 116 / 96%), rgb(83 27 111 / 96%)) padding-box, var(--neon-spectrum) border-box;
   box-shadow: inset 0 0 18px rgb(255 255 255 / 16%), 0 0 9px var(--neon-yellow), 0 0 20px var(--neon-cyan), 0 0 34px rgb(220 116 255 / 48%);
   text-shadow: 0 0 5px #fff, 0 0 13px var(--neon-cyan);
 }
 
-:root[data-theme="spectrum-neon"] :is(.danger, .mobile-danger-action, #troop-delete, #sheet-combo-delete) {
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, .danger, .mobile-danger-action, #troop-delete, #sheet-combo-delete) {
   border-color: transparent;
   background: linear-gradient(135deg, rgb(138 14 48 / 96%), rgb(90 7 89 / 96%)) padding-box, linear-gradient(90deg, var(--neon-red), var(--neon-orange), var(--neon-violet)) border-box;
   box-shadow: inset 0 0 16px rgb(255 71 117 / 28%), 0 0 9px var(--neon-red), 0 0 24px rgb(220 116 255 / 42%);
 }
 
-:root[data-theme="spectrum-neon"] :is(.sheet-section-nav a, .mobile-sheet-nav a) {
-  border-width: 2px;
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, .sheet-section-nav a, .mobile-sheet-nav a) {
+  border: 2px solid transparent;
   outline: 1px solid color-mix(in srgb, var(--section-nav-color, var(--mobile-nav-accent, var(--color-accent))) 38%, transparent);
   outline-offset: 2px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--section-nav-color, var(--mobile-nav-accent, var(--color-accent))) 27%, var(--color-surface)), rgb(220 116 255 / 14%));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--section-nav-color, var(--mobile-nav-accent, var(--color-accent))) 27%, var(--color-surface)), rgb(220 116 255 / 14%)) padding-box, var(--neon-spectrum) border-box;
   box-shadow: inset 0 0 15px color-mix(in srgb, var(--section-nav-color, var(--mobile-nav-accent, var(--color-accent))) 16%, transparent), 0 0 7px color-mix(in srgb, var(--section-nav-color, var(--mobile-nav-accent, var(--color-accent))) 48%, transparent), 0 0 16px rgb(220 116 255 / 18%);
 }
 
-:root[data-theme="spectrum-neon"] :is(.sheet-section-nav a, .mobile-sheet-nav a):is(:hover, :focus-visible, .is-active) {
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, .sheet-section-nav a, .mobile-sheet-nav a):is(:hover, :focus-visible, .is-active) {
   text-shadow: 0 0 8px currentColor;
   box-shadow: 0 0 8px color-mix(in srgb, currentColor 48%, transparent), 0 0 18px color-mix(in srgb, currentColor 22%, transparent);
 }
 
-:root[data-theme="spectrum-neon"] :is(.sheet-section-nav a, .mobile-sheet-nav a).is-active {
-  border-color: currentColor;
-  background: color-mix(in srgb, currentColor 17%, var(--color-surface));
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, .sheet-section-nav a, .mobile-sheet-nav a).is-active {
+  border-color: transparent;
+  background: linear-gradient(color-mix(in srgb, currentColor 22%, var(--color-surface)), color-mix(in srgb, currentColor 12%, var(--color-surface))) padding-box, var(--neon-spectrum) border-box;
   filter: saturate(1.35) brightness(1.12);
 }
 
@@ -329,7 +332,7 @@
   box-shadow: 0 0 8px var(--neon-violet);
 }
 
-:root[data-theme="spectrum-neon"] :is(.troop-primary-action, .cocofolia-copy-button, .udonarium-export-button, .transfer-tsv-copy-button, .transfer-bookmarklet-copy-button) {
+:root[data-theme="spectrum-neon"][data-css-system="next"] body :is(#neon-sign-control-layer, .troop-primary-action, .cocofolia-copy-button, .udonarium-export-button, .transfer-tsv-copy-button, .transfer-bookmarklet-copy-button) {
   border-width: 2px;
   border-color: transparent;
 }
