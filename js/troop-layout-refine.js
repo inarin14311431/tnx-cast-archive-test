@@ -14,18 +14,9 @@ const GENERAL_DISPLAY_ORDER = [
 ];
 
 if (document.body.dataset.page === "troop.html") {
-  installStylesheet();
   installAbilityPairs("#troop-ability-preview", "#troop-level");
   installAbilityPairs("#troop-abilities-view", "#troop-level-view");
   installEditorReadyWatcher();
-}
-
-function installStylesheet() {
-  if (document.querySelector('link[href*="troop-density-v3.css"]')) return;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "./css-next/pages/troop-density-v3.css?v=3";
-  document.head.append(link);
 }
 
 function installEditorReadyWatcher() {
