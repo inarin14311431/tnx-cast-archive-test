@@ -26,7 +26,7 @@ async function initialize() {
     trigger.type = "button";
     trigger.className = "cast-edit-link cast-troops-jump";
     trigger.dataset.castTroopsJump = "1";
-    trigger.innerHTML = `<span>トループ ${troops.length}</span><small>TROOPS</small>`;
+    trigger.innerHTML = `<span>トループ</span><small>TROOP</small>`;
     trigger.addEventListener("click", () => {
       if (desktopMedia.matches) openTroopIndex(troops);
       else if (troops.length === 1) location.href = `./troop.html?id=${encodeURIComponent(troops[0].public_id)}`;
