@@ -1,4 +1,5 @@
 import { GENERAL_MASTER_ROWS, initialGeneralSkillSuit } from "./general-skill-catalog.js";
+import { initializeTroopComboRules, prepareTroopComboDialog, refreshTroopComboRules } from "./troop-combo-rule-v2.js";
 
 const ABILITIES = ["reason", "passion", "life", "mundane"];
 const SUITS = {
@@ -13,22 +14,31 @@ const COMBO_FIELDS = ["name","skills","ability","modifier","target_value","timin
 
 const editor = document.querySelector("#troop-editor");
 const comboStorage = document.querySelector("#troop-combos-editor");
-const comboCards = document.querySelector("#troop-combo-cards");
 const comboDialog = document.querySelector("#troop-combo-dialog");
 const comboForm = document.querySelector("#troop-combo-form");
 const comboSkillOptions = document.querySelector("#troop-combo-skill-options");
 
-installCaptureHandlers();
-observeEditorRows();
-initializeExistingRows();
-initializeComboDialog();
+let initialized = false;
 
-function installCaptureHandlers() {
+export function initializeTroopEditorUi() {
+  if (initialized) return;
+  initialized = true;
+  installHandlers();
+  initializeComboDialog();
+  initializeTroopComboRules();
+  refreshTroopEditorUi();
+}
+
+export function refreshTroopEditorUi() {
+  document.querySelectorAll(".troop-skill-row").forEach(enhanceSkillRow);
+  refreshTroopComboRules();
+}
+
+function installHandlers() {
   document.addEventListener("click", event => {
     const add = event.target.closest?.("#troop-combo-add");
     if (add) {
       event.preventDefault();
-      event.stopImmediatePropagation();
       openComboDialog();
       return;
     }
@@ -37,29 +47,7 @@ function installCaptureHandlers() {
       event.preventDefault();
       openComboDialog(Number(card.dataset.troopComboIndex));
     }
-  }, true);
-}
-
-function observeEditorRows() {
-  const observer = new MutationObserver(mutations => {
-    let comboChanged = false;
-    for (const mutation of mutations) {
-      mutation.addedNodes.forEach(node => {
-        if (!(node instanceof HTMLElement)) return;
-        if (node.matches?.(".troop-skill-row")) enhanceSkillRow(node);
-        node.querySelectorAll?.(".troop-skill-row").forEach(enhanceSkillRow);
-        if (node.matches?.(".troop-editor-row--combo") || node.querySelector?.(".troop-editor-row--combo")) comboChanged = true;
-      });
-      if (mutation.target === comboStorage || mutation.target.closest?.("#troop-combos-editor")) comboChanged = true;
-    }
-    if (comboChanged) renderComboCards();
   });
-  if (editor) observer.observe(editor, { childList:true, subtree:true });
-}
-
-function initializeExistingRows() {
-  document.querySelectorAll(".troop-skill-row").forEach(enhanceSkillRow);
-  renderComboCards();
 }
 
 function enhanceSkillRow(row) {
@@ -214,6 +202,7 @@ function openComboDialog(index = null) {
   document.querySelector("#troop-combo-dialog-title").innerHTML = editing ? "コンボを編集 <small>EDIT COMBO</small>" : "コンボを追加 <small>ADD COMBO</small>";
   document.querySelector("#troop-combo-delete").hidden = !editing;
   comboDialog.showModal();
+  prepareTroopComboDialog();
 }
 
 function saveComboFromDialog(event) {
@@ -235,7 +224,7 @@ function saveComboFromDialog(event) {
   row.querySelector('[data-field="ability"]').value = [...comboForm.querySelectorAll('input[name="ability_choice"]:checked')].map(input => input.value).join(",");
   row.querySelector('[data-field="skills"]').value = [...comboForm.querySelectorAll('input[name="skill_choice"]:checked')].map(input => input.value).join("＋");
   comboDialog.close();
-  renderComboCards();
+  refreshTroopComboRules();
   editor?.dispatchEvent(new Event("input", { bubbles:true }));
 }
 
@@ -244,7 +233,7 @@ function deleteComboFromDialog() {
   if (raw === "") return;
   comboRows()[Number(raw)]?.remove();
   comboDialog.close();
-  renderComboCards();
+  refreshTroopComboRules();
 }
 
 function createComboStorageRow() {
@@ -257,28 +246,6 @@ function createComboStorageRow() {
     row.append(input);
   });
   return row;
-}
-
-function renderComboCards() {
-  if (!comboCards || !comboStorage) return;
-  const rows = comboRows();
-  if (!rows.length) {
-    comboCards.innerHTML = `<p class="empty-data">コンボは登録されていません。<small>NO COMBO DATA</small></p>`;
-    return;
-  }
-  comboCards.innerHTML = rows.map((row, index) => {
-    const name = rowValue(row, "name") || "名称未設定";
-    const abilities = rowValue(row, "ability").split(",").filter(Boolean);
-    const abilityLabel = abilities.length ? abilities.map(key => `${SUITS[key]?.on || ""} ${SUITS[key]?.label || key}`).join(" / ") : "能力未指定";
-    const skills = rowValue(row, "skills") || "組み合わせ技能なし";
-    const detail = [
-      rowValue(row,"timing") && `タイミング：${rowValue(row,"timing")}`,
-      rowValue(row,"target") && `対象：${rowValue(row,"target")}`,
-      rowValue(row,"range") && `射程：${rowValue(row,"range")}`,
-      rowValue(row,"act_use_limit") && `1アクト：${rowValue(row,"act_use_limit")}回`
-    ].filter(Boolean).join(" / ");
-    return `<button class="combo-card" type="button" data-troop-combo-index="${index}"><div class="combo-card__head"><strong>${escapeHtml(name)}</strong><span class="combo-card__ability">${escapeHtml(abilityLabel)}</span></div><p class="combo-card__skills">${escapeHtml(skills)}</p><dl><div><dt>判定修正 <small>MODIFIER</small></dt><dd>${escapeHtml(rowValue(row,"modifier") || "—")}</dd></div><div><dt>達成値目安 <small>EXPECTED VALUE</small></dt><dd>${escapeHtml(rowValue(row,"target_value") || "—")}</dd></div></dl><p class="combo-card__detail">${escapeHtml(detail || "詳細未登録")}</p><p class="combo-card__description">${escapeHtml(rowValue(row,"description"))}</p></button>`;
-  }).join("");
 }
 
 function comboRows() {

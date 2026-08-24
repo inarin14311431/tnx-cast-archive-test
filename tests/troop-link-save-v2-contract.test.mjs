@@ -8,6 +8,7 @@ const accountIcons = await readFile(new URL("../js/account-action-icons.js", imp
 const troopSave = await readFile(new URL("../js/troop-save.js", import.meta.url), "utf8");
 const troopHtml = await readFile(new URL("../troop.html", import.meta.url), "utf8");
 const troopComboRules = await readFile(new URL("../js/troop-combo-rule-v2.js", import.meta.url), "utf8");
+const troopComboCodec = await readFile(new URL("../js/troop-combo-codec.js", import.meta.url), "utf8");
 
 test("account keeps acts visible and only adds troop shortcut for linked casts", () => {
   assert.match(accountLinks, /\.from\("troops"\).*\.not\("character_id", "is", null\)/s);
@@ -29,7 +30,7 @@ test("linked troop shortcut has its own icon and EXP is aggregated into cast bre
 });
 
 test("troop page uses one canonical guarded save controller", () => {
-  assert.match(troopHtml, /troop\.js\?v=5/);
+  assert.match(troopHtml, /troop\.js\?v=6/);
   assert.doesNotMatch(troopHtml, /troop-save-v2\.js/);
   assert.match(troopSave, /export function registerTroopSave/);
   assert.match(troopSave, /dataset\.troopSaveHandler === "canonical"/);
@@ -64,6 +65,7 @@ test("troop combo uses expected value while keeping legacy target_value storage 
   assert.match(troopHtml, /達成値目安/);
   assert.match(troopHtml, /name="expected_value"/);
   assert.match(troopComboRules, /expected_value/);
-  assert.match(troopComboRules, /numericText\(parsed\?\.difficulty\)/);
+  assert.match(troopComboRules, /unpackTroopComboRule/);
+  assert.match(troopComboCodec, /numericText\(parsed\?\.difficulty\)/);
   assert.doesNotMatch(troopComboRules, /fillBlank\("difficulty"/);
 });
