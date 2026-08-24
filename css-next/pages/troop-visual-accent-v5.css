@@ -1,0 +1,73 @@
+/* Troop editor/view visual hierarchy. Loaded last so it intentionally wins over legacy troop styles. */
+body[data-page="troop.html"] .troop-editor .troop-section > header,
+body[data-page="troop.html"] #troop-view .troop-section > header{
+  justify-content:flex-start;
+  text-align:left;
+  padding:8px 11px;
+  border-left:4px solid var(--troop-section-accent,var(--color-accent));
+  border-bottom-color:color-mix(in srgb,var(--troop-section-accent,var(--color-accent)) 52%,var(--color-border));
+  background:linear-gradient(90deg,color-mix(in srgb,var(--troop-section-accent,var(--color-accent)) 17%,var(--color-surface)) 0%,color-mix(in srgb,var(--troop-section-accent,var(--color-accent)) 6%,var(--color-surface)) 55%,var(--color-surface) 100%);
+}
+body[data-page="troop.html"] .troop-editor .troop-section > header h2,
+body[data-page="troop.html"] #troop-view .troop-section > header h3{
+  margin:0;
+  color:color-mix(in srgb,var(--troop-section-accent,var(--color-accent)) 74%,var(--color-text));
+  font-size:15px!important;
+  font-weight:900;
+  letter-spacing:.025em;
+  text-align:left;
+}
+body[data-page="troop.html"] .troop-editor .troop-section > header small,
+body[data-page="troop.html"] #troop-view .troop-section > header small{color:var(--color-muted)!important}
+body[data-page="troop.html"] .troop-editor .troop-section > header button{margin-left:auto}
+
+/* Section identity: deliberately different accents, while still theme-aware. */
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(1){--troop-section-accent:#b983ff}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(2){--troop-section-accent:#54c7ff}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(3){--troop-section-accent:#9bd85b}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(4){--troop-section-accent:#f2bd45}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(5){--troop-section-accent:#ef6f9a}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(6){--troop-section-accent:#55d8ce}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(7){--troop-section-accent:#ee9b42}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(8){--troop-section-accent:#b98aff}
+body[data-page="troop.html"] .troop-editor .troop-section:nth-of-type(9){--troop-section-accent:#5ab6df}
+body[data-page="troop.html"] #troop-view .troop-section:nth-of-type(2){--troop-section-accent:#9bd85b}
+body[data-page="troop.html"] #troop-view .troop-section:nth-of-type(3){--troop-section-accent:#f2bd45}
+body[data-page="troop.html"] #troop-view .troop-section:nth-of-type(4){--troop-section-accent:#ef6f9a}
+body[data-page="troop.html"] #troop-view .troop-section:nth-of-type(5){--troop-section-accent:#55d8ce}
+body[data-page="troop.html"] #troop-view .troop-section:nth-of-type(6){--troop-section-accent:#ee9b42}
+body[data-page="troop.html"] #troop-view .troop-section:nth-of-type(7){--troop-section-accent:#b98aff}
+body[data-page="troop.html"] #troop-view .troop-section:nth-of-type(8){--troop-section-accent:#5ab6df}
+
+/* Combo cards need to be readable at a glance, not micro typography. */
+body[data-page="troop.html"] .troop-combo-cards--compact .combo-card{
+  padding:8px 10px!important;
+  border-left:4px solid #ee9b42!important;
+  background:color-mix(in srgb,#ee9b42 5%,var(--color-surface))!important;
+}
+body[data-page="troop.html"] .troop-combo-cards--compact .combo-card__head strong{font-size:15px!important;line-height:1.25!important}
+body[data-page="troop.html"] .troop-combo-cards--compact .combo-card__ability{font-size:12px!important;line-height:1.3!important;font-weight:750;color:color-mix(in srgb,#54c7ff 76%,var(--color-text))!important}
+body[data-page="troop.html"] .troop-combo-cards--compact .combo-card__skills{font-size:13px!important;line-height:1.35!important;font-weight:750}
+body[data-page="troop.html"] .troop-combo-cards--compact .combo-card__detail{font-size:11px!important;line-height:1.35!important;color:var(--color-muted)}
+
+body[data-page="troop.html"] #troop-combos-view article{
+  padding:8px 10px!important;
+  border-left:4px solid #ee9b42!important;
+  background:color-mix(in srgb,#ee9b42 5%,var(--color-surface));
+}
+body[data-page="troop.html"] #troop-combos-view article > strong{font-size:15px!important;line-height:1.3!important;font-weight:900}
+body[data-page="troop.html"] #troop-combos-view article > span{font-size:12px!important;line-height:1.35!important}
+body[data-page="troop.html"] #troop-combos-view article > p{font-size:11px!important;line-height:1.35!important}
+
+/* PC cast-view troop modal uses the same larger combo hierarchy. */
+.troop-modal .troop-modal__combo strong,
+.troop-modal .combo-card strong{font-size:15px!important;line-height:1.3!important}
+.troop-modal .troop-modal__combo span,
+.troop-modal .combo-card span{font-size:12px!important;line-height:1.35!important}
+
+@media(max-width:620px){
+  body[data-page="troop.html"] .troop-editor .troop-section > header h2,
+  body[data-page="troop.html"] #troop-view .troop-section > header h3{font-size:14px!important}
+  body[data-page="troop.html"] .troop-combo-cards--compact .combo-card__head strong,
+  body[data-page="troop.html"] #troop-combos-view article > strong{font-size:14px!important}
+}
