@@ -1,0 +1,75 @@
+/* Compact troop view/editor density pass */
+body[data-page="troop.html"]{font-size:13px}
+body[data-page="troop.html"] .troop-layout{width:min(1040px,calc(100% - 24px));gap:10px;margin:12px auto 32px}
+body[data-page="troop.html"] .app-header{padding-top:10px;padding-bottom:10px}
+body[data-page="troop.html"] .app-header>p{margin:0 0 2px;font-size:9px;letter-spacing:.16em;color:var(--color-muted)}
+body[data-page="troop.html"] .app-header h1{margin:0;font-size:20px;line-height:1.15}
+body[data-page="troop.html"] .app-header h1 small{font-size:8px;color:var(--color-muted)}
+body[data-page="troop.html"] .troop-sheet,body[data-page="troop.html"] .troop-editor{border-color:color-mix(in srgb,var(--color-accent) 28%,var(--color-border));background:color-mix(in srgb,var(--color-surface) 96%,var(--color-accent) 4%);box-shadow:0 6px 18px rgb(0 0 0/9%)}
+body[data-page="troop.html"] .troop-sheet__header{padding:11px 13px;border-bottom-color:color-mix(in srgb,var(--color-accent) 26%,var(--color-border-muted));background:linear-gradient(90deg,color-mix(in srgb,var(--color-accent) 9%,transparent),transparent 58%)}
+body[data-page="troop.html"] .troop-sheet__header h2{font-size:24px;line-height:1.1}
+body[data-page="troop.html"] .troop-linked-character{margin-top:3px;font-size:11px}
+body[data-page="troop.html"] .troop-sheet__actions{gap:6px}
+body[data-page="troop.html"] .troop-sheet__actions a,body[data-page="troop.html"] .troop-sheet__actions button{min-height:34px;padding:5px 9px;font-size:11px}
+body[data-page="troop.html"] .troop-vitals{gap:6px;padding:9px 10px}
+body[data-page="troop.html"] .troop-vitals article{min-height:62px;padding:7px 9px;border-color:color-mix(in srgb,var(--color-accent) 18%,var(--color-border-muted));background:color-mix(in srgb,var(--color-accent) 4%,var(--color-surface))}
+body[data-page="troop.html"] .troop-vitals span{font-size:8px}
+body[data-page="troop.html"] .troop-vitals strong{margin:2px 0;font-size:23px}
+body[data-page="troop.html"] .troop-vitals small{font-size:7px}
+body[data-page="troop.html"] .troop-sheet>.troop-section{margin:0 10px 8px}
+body[data-page="troop.html"] .troop-section{box-shadow:none;border-color:color-mix(in srgb,var(--color-accent) 18%,var(--color-border-muted))}
+body[data-page="troop.html"] .troop-section>header{padding:7px 9px;background:color-mix(in srgb,var(--color-accent) 5%,var(--color-surface));border-bottom-color:color-mix(in srgb,var(--color-accent) 20%,var(--color-border-muted))}
+body[data-page="troop.html"] .troop-section h2,body[data-page="troop.html"] .troop-section h3{font-size:13px;line-height:1.15}
+body[data-page="troop.html"] .troop-section small{font-size:7px;letter-spacing:.06em}
+body[data-page="troop.html"] .troop-style-grid{padding:8px 10px}
+body[data-page="troop.html"] .troop-style-grid span{padding:5px 9px;font-size:12px;border-bottom-width:2px}
+body[data-page="troop.html"] .troop-ability-grid{gap:5px;padding:8px 10px}
+body[data-page="troop.html"] .troop-ability-grid article{padding:7px 6px;background:color-mix(in srgb,var(--color-accent) 3%,transparent)}
+body[data-page="troop.html"] .troop-ability-grid article span{font-size:10px}
+body[data-page="troop.html"] .troop-ability-grid strong{font-size:21px}
+body[data-page="troop.html"] .troop-ability-grid small{font-size:8px}
+body[data-page="troop.html"] .troop-data-list{gap:4px;padding:7px 8px}
+body[data-page="troop.html"] .troop-data-list article{gap:2px 8px;padding:6px 8px;border-left-width:2px;font-size:11px;background:color-mix(in srgb,var(--color-accent) 2.5%,transparent)}
+body[data-page="troop.html"] .troop-data-list article strong{font-size:11.5px}
+body[data-page="troop.html"] .troop-data-list article span,body[data-page="troop.html"] .troop-data-list article p{font-size:10px;line-height:1.35}
+body[data-page="troop.html"] .troop-notes{padding:8px 10px;font-size:11px;line-height:1.5}
+
+body[data-page="troop.html"] .troop-editor{gap:8px;padding:10px}
+body[data-page="troop.html"] .troop-editor>.troop-section{margin:0}
+body[data-page="troop.html"] .troop-form-grid{gap:7px;padding:8px 10px}
+body[data-page="troop.html"] .troop-form-grid label{gap:3px;font-size:11px}
+body[data-page="troop.html"] input,body[data-page="troop.html"] select,body[data-page="troop.html"] textarea{font-size:12px}
+body[data-page="troop.html"] .troop-editor input,body[data-page="troop.html"] .troop-editor select{min-height:32px;padding:5px 7px}
+body[data-page="troop.html"] .troop-rule-note{padding:0 10px 8px;font-size:10px;line-height:1.45}
+body[data-page="troop.html"] .troop-editor-list{gap:5px;padding:7px 8px}
+body[data-page="troop.html"] .troop-editor-row{gap:5px;padding:5px 6px;background:color-mix(in srgb,var(--color-accent) 2%,transparent)}
+body[data-page="troop.html"] .troop-suits label{min-height:30px}
+body[data-page="troop.html"] .troop-suits span{font-size:17px}
+body[data-page="troop.html"] .troop-combo-cards{gap:5px;padding:7px 8px}
+body[data-page="troop.html"] .troop-combo-cards .combo-card{padding:7px 9px}
+body[data-page="troop.html"] .troop-combo-cards .combo-card__skills,body[data-page="troop.html"] .troop-combo-cards .combo-card__detail,body[data-page="troop.html"] .troop-combo-cards .combo-card__description{margin:3px 0;font-size:10px}
+body[data-page="troop.html"] .troop-outfit-fields{font-size:8px;letter-spacing:.04em}
+body[data-page="troop.html"] .troop-editor-actions{gap:6px;padding-top:2px}
+body[data-page="troop.html"] .troop-editor-actions button,body[data-page="troop.html"] .troop-editor-actions a{min-height:34px;padding:5px 11px;font-size:11px}
+body[data-page="troop.html"] #troop-notes{min-height:76px;max-height:120px}
+
+body[data-page="troop.html"] .troop-section--management{border-top:3px solid var(--color-accent)}
+body[data-page="troop.html"] .troop-section--management>header,body[data-page="troop.html"] .troop-editor>.troop-section:nth-of-type(2)>header{background:linear-gradient(90deg,color-mix(in srgb,var(--color-accent) 10%,var(--color-surface)),var(--color-surface) 72%)}
+body[data-page="troop.html"] .troop-section>header button{min-height:30px;padding:4px 8px;font-size:10px}
+
+@media(max-width:760px){
+  body[data-page="troop.html"]{font-size:12px}
+  body[data-page="troop.html"] .troop-layout{width:100%;padding:6px 7px 18px;margin:0}
+  body[data-page="troop.html"] .app-header{padding:7px 9px}
+  body[data-page="troop.html"] .app-header h1{font-size:15px}
+  body[data-page="troop.html"] .troop-sheet__header{padding:8px 9px}
+  body[data-page="troop.html"] .troop-sheet__header h2{font-size:18px}
+  body[data-page="troop.html"] .troop-vitals{padding:6px;gap:4px}
+  body[data-page="troop.html"] .troop-vitals article{min-height:48px;padding:5px 4px}
+  body[data-page="troop.html"] .troop-vitals strong{font-size:17px}
+  body[data-page="troop.html"] .troop-sheet>.troop-section{margin:0 6px 5px}
+  body[data-page="troop.html"] .troop-section>header{padding:6px 7px}
+  body[data-page="troop.html"] .troop-form-grid,body[data-page="troop.html"] .troop-editor-list,body[data-page="troop.html"] .troop-combo-cards{padding:6px}
+  body[data-page="troop.html"] .troop-editor{padding:6px;gap:6px}
+  body[data-page="troop.html"] .troop-rule-note{padding:0 7px 6px;font-size:9px}
+}
