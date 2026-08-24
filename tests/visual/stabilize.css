@@ -1,0 +1,26 @@
+html {
+  scroll-behavior: auto;
+  scrollbar-width: none;
+  --font-sans: "Yu Gothic UI", "Yu Gothic", Meiryo, "Noto Sans JP", sans-serif;
+  --font-data: Consolas, "Roboto Mono", "Noto Sans Mono", "Noto Sans JP", monospace;
+}
+
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+}
+
+*,
+*::before,
+*::after {
+  animation: none;
+  caret-color: transparent;
+  transition: none;
+}
+
+:root[data-theme="japanese-army"] body,
+:root[data-theme="japanese-army"] button,
+:root[data-theme="japanese-army"] input,
+:root[data-theme="japanese-army"] select {
+  font-family: "Courier New", "Noto Sans JP", monospace;
+}

@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Install Chromium
         run: npx playwright install chromium
       - name: Run public and smoke tests
@@ -54,7 +54,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Install Chromium
         run: npx playwright install chromium
       - name: Run authenticated editor tests
@@ -98,7 +98,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run mobile tests
         run: >-
           npx playwright test
