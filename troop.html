@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./css-next/pages/troops-v4.css?v=2">
   <link rel="stylesheet" href="./css-next/pages/troop-combo-dialog.css?v=3">
   <link rel="stylesheet" href="./css-next/pages/troop-combo-rule-v2.css?v=1">
+  <link rel="stylesheet" href="./css-next/pages/troop-compact-density-v2.css?v=1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
@@ -45,7 +46,7 @@
       <section class="troop-section"><header><h2>スタイル技能 <small>STYLE SKILLS</small></h2><button id="troop-style-skill-add" type="button">+ スタイル技能</button></header><p class="troop-rule-note">通常10点、秘技20点、奥義50点、演出2点／レベル。秘技は2つまで、奥義は1つまでです。</p><div id="troop-style-skills-editor" class="troop-editor-list"></div></section>
       <section class="troop-section"><header><h2>コンボ <small>COMBOS</small></h2><button id="troop-combo-add" type="button">+ コンボ</button></header><p class="troop-rule-note">所持技能を組み合わせ、アクト中に使う判定条件を登録します。使用能力は複数選択できます。</p><div id="troop-combo-cards" class="combo-list troop-combo-cards"></div><div id="troop-combos-editor" class="troop-combo-storage" hidden></div></section>
       <section class="troop-section troop-section--outfits"><header><h2>アウトフィット <small>OUTFITS</small></h2><button id="troop-outfit-add" type="button">+ アウトフィット</button></header><p class="troop-rule-note">アクト中に参照する性能を簡潔に登録します。攻撃力と防御値は閲覧画面でも優先表示されます。</p><div class="troop-outfit-fields" aria-hidden="true"><span>名称 <small>NAME</small></span><span>攻撃 <small>ATK</small></span><span>S</span><span>P</span><span>I</span><span>性能／メモ <small>DETAIL</small></span><span></span></div><div id="troop-outfits-editor" class="troop-editor-list"></div></section>
-      <section class="troop-section"><header><h2>メモ <small>NOTES</small></h2></header><textarea id="troop-notes" rows="7"></textarea></section>
+      <section class="troop-section"><header><h2>メモ <small>NOTES</small></h2></header><textarea id="troop-notes" rows="5"></textarea></section>
       <p id="troop-editor-status" class="troop-editor-status" aria-live="polite"></p>
       <div class="troop-editor-actions"><button type="submit">保存 <small>SAVE</small></button><button id="troop-delete" type="button" hidden>削除 <small>DELETE</small></button><a id="troop-cancel" href="./troops.html">キャンセル</a></div>
     </form>
