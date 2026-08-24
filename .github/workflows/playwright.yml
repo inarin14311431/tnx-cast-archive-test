@@ -61,6 +61,7 @@ jobs:
           npx playwright test
           tests/e2e/authenticated.spec.js
           tests/e2e/troop-view.spec.js
+          tests/e2e/troop-editor-flow.spec.js
           tests/e2e/legacy-import-profile.spec.js
           tests/e2e/outfit-import-transfer.spec.js
           tests/e2e/sheet-row-lifecycle.spec.js
