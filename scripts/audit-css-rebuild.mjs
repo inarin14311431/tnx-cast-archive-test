@@ -42,7 +42,7 @@ const expectedThemeOptions = [
   ["buena", "ブエナIЯA"], ["canberra", "キャンベラAXYZ"], ["hongkong", "ホンコンHEAVEN"],
   ["fesler", "フェスラー公国"], ["intron", "イントロン"], ["axleraters", "ニューロ！"],
   ["inagaki", "稲垣 光平"], ["astral", "アストラル"], ["orbital", "軌道"],
-  ["spectrum-neon", "ゲーミングカラー（仮称）"], ["japanese-army", "日本"]
+  ["spectrum-neon", "ネオンサイン"], ["japanese-army", "日本"]
 ];
 
 for (const file of cssFiles) {
@@ -156,7 +156,7 @@ for (const marker of [
   }
 }
 const cssEntrySource = await readFile(path.join(root, "css-next", "index.css"), "utf8");
-if (!cssEntrySource.includes('tokens/spectrum-neon-theme.css?v=1')) {
+if (!cssEntrySource.includes('tokens/spectrum-neon-theme.css?v=2')) {
   violations.push("css-next/index.css: spectrum neon theme import missing");
 }
 
