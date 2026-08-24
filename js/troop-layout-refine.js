@@ -7,33 +7,14 @@ const SUITS = {
   life:   { off:"♡", on:"♥", label:"生命" },
   mundane:{ off:"♢", on:"♦", label:"外界" }
 };
-const STYLE_COST = { none:0, normal:10, secret:20, ultimate:50, direction:2 };
 const GENERAL_DISPLAY_ORDER = [
   "医療", "射撃", "知覚", "電脳", "製作：", "心理", "自我", "交渉",
   "芸術：", "運動", "回避", "操縦：", "白兵", "圧力", "信用", "隠密"
 ];
 
-if (document.body.dataset.page === "troop.html") {
-  installAbilityPairs("#troop-ability-preview", "#troop-level");
-  installAbilityPairs("#troop-abilities-view", "#troop-level-view");
-  installEditorReadyWatcher();
-}
-
-function installEditorReadyWatcher() {
-  const editor = document.querySelector("#troop-editor");
-  if (!editor) return;
-  const run = () => {
-    if (editor.hidden || editor.dataset.layoutRefined === "1") return;
-    refineTroopEditor(editor);
-  };
-  run();
-  if (editor.dataset.layoutWatcher === "1") return;
-  editor.dataset.layoutWatcher = "1";
-  const observer = new MutationObserver(() => {
-    run();
-    if (editor.dataset.layoutRefined === "1") observer.disconnect();
-  });
-  observer.observe(editor, { attributes:true, attributeFilter:["hidden"], childList:true, subtree:true });
+export function initializeTroopLayout(editor = document.querySelector("#troop-editor")) {
+  if (!editor || editor.hidden || editor.dataset.layoutRefined === "1") return;
+  refineTroopEditor(editor);
 }
 
 function refineTroopEditor(editor) {
@@ -44,9 +25,6 @@ function refineTroopEditor(editor) {
   rebuildGeneralSkills();
   addSkillFieldLabels();
   compactCombos();
-  refreshExperience();
-  editor.addEventListener("input", () => queueMicrotask(refreshExperience));
-  editor.addEventListener("change", () => queueMicrotask(refreshExperience));
 }
 
 function regroupOverview() {
@@ -175,7 +153,7 @@ function addSkillFieldLabels() {
   }
   const style = document.querySelector("#troop-style-skills-editor");
   if (style && !style.previousElementSibling?.classList.contains("troop-style-field-heads")) {
-    style.insertAdjacentHTML("beforebegin", `<div class="troop-style-field-heads" aria-hidden="true"><span>技能名 <small>SKILL</small></span><span>種別 <small>TYPE</small></span><span>LV</span><span>スート <small>SUIT</small></span><span>EXP</span><span>解説 <small>DETAIL</small></span><span></span></div>`);
+    style.insertAdjacentHTML("beforebegin", `<div class="troop-style-field-heads" aria-hidden="true"><span>技能名 <small>SKILL</small></span><span>種別 <small>TYPE</small></span><span>LV</span><span>スート <small>SUIT</small></span><span>タイミング <small>TIMING</small></span><span>対決 <small>CONFRONTATION</small></span><span>解説 <small>DETAIL</small></span><span></span></div>`);
   }
 }
 
@@ -183,62 +161,34 @@ function compactCombos() {
   document.querySelector("#troop-combo-cards")?.classList.add("troop-combo-cards--compact");
 }
 
-function installAbilityPairs(rootSelector, levelSelector) {
+export function refreshTroopAbilityPairs(rootSelector, levelSelector) {
   const root = document.querySelector(rootSelector);
-  if (!root || root.dataset.abilityWatcher === "1") return;
-  root.dataset.abilityWatcher = "1";
+  if (!root) return;
   root.classList.remove("troop-ability-grid--with-cs");
   root.classList.add("troop-ability-grid--compact-pairs", "troop-ability-grid--with-cs");
 
-  const apply = () => {
-    const abilityCards = [...root.querySelectorAll(":scope > article:not(.troop-cs-card)")].slice(0, 4);
-    abilityCards.forEach(card => {
-      if (card.dataset.compactAbility === "1") return;
-      const label = card.querySelector("span")?.textContent?.trim() || "";
-      const value = card.querySelector("strong")?.textContent?.trim() || "0";
-      const controlText = card.querySelector("small")?.textContent || "";
-      const control = controlText.match(/-?\d+/)?.[0] || "0";
-      card.dataset.compactAbility = "1";
-      card.classList.add("troop-ability-pair");
-      card.innerHTML = `<span class="troop-ability-pair__label">${escapeHtml(label)}</span><strong class="troop-ability-pair__value">${escapeHtml(value)}<i>／</i>${escapeHtml(control)}</strong>`;
-    });
-
-    if (!abilityCards.length) return;
-    let cs = root.querySelector(":scope > .troop-cs-card");
-    if (!cs) {
-      cs = document.createElement("article");
-      cs.className = "troop-cs-card";
-      cs.innerHTML = `<span>CS</span><strong>0</strong>`;
-      root.append(cs);
-    }
-    const levelNode = document.querySelector(levelSelector);
-    cs.querySelector("strong").textContent = String(levelNode?.value ?? levelNode?.textContent ?? "0").trim() || "0";
-  };
-
-  apply();
-  const observer = new MutationObserver(() => queueMicrotask(apply));
-  observer.observe(root, { childList:true });
-  document.querySelector(levelSelector)?.addEventListener?.("input", apply);
-}
-
-function refreshExperience() {
-  const exp = document.querySelector("#troop-exp");
-  if (!exp) return;
-  let total = 0;
-  document.querySelectorAll("#troop-general-skills-editor .troop-skill-row").forEach(row => {
-    const name = rowValue(row, "name");
-    if (!name) return;
-    const level = rowInt(row, "level");
-    const kind = rowValue(row, "kind") || "general";
-    const freeLevel = kind === "general" && initialGeneralSkillSuit(name) ? 1 : 0;
-    total += Math.max(0, level - freeLevel) * (kind === "proper" ? 5 : 10);
+  const abilityCards = [...root.querySelectorAll(":scope > article:not(.troop-cs-card)")].slice(0, 4);
+  abilityCards.forEach(card => {
+    if (card.dataset.compactAbility === "1") return;
+    const label = card.querySelector("span")?.textContent?.trim() || "";
+    const value = card.querySelector("strong")?.textContent?.trim() || "0";
+    const controlText = card.querySelector("small")?.textContent || "";
+    const control = controlText.match(/-?\d+/)?.[0] || "0";
+    card.dataset.compactAbility = "1";
+    card.classList.add("troop-ability-pair");
+    card.innerHTML = `<span class="troop-ability-pair__label">${escapeHtml(label)}</span><strong class="troop-ability-pair__value">${escapeHtml(value)}<i>／</i>${escapeHtml(control)}</strong>`;
   });
-  document.querySelectorAll("#troop-style-skills-editor .troop-skill-row").forEach(row => {
-    const level = rowInt(row, "level");
-    const kind = rowValue(row, "kind") || "normal";
-    total += level * (STYLE_COST[kind] ?? 10);
-  });
-  exp.value = String(total);
+
+  if (!abilityCards.length) return;
+  let cs = root.querySelector(":scope > .troop-cs-card");
+  if (!cs) {
+    cs = document.createElement("article");
+    cs.className = "troop-cs-card";
+    cs.innerHTML = `<span>CS</span><strong>0</strong>`;
+    root.append(cs);
+  }
+  const levelNode = document.querySelector(levelSelector);
+  cs.querySelector("strong").textContent = String(levelNode?.value ?? levelNode?.textContent ?? "0").trim() || "0";
 }
 
 function canonicalGeneralName(name) {
