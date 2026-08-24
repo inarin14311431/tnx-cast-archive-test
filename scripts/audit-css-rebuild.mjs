@@ -41,7 +41,8 @@ const expectedThemeOptions = [
   ["eden", "ミトラスGARDEN"], ["vlad", "ヴラド・コロニー"], ["lutetia", "ヴィル・ヌーヴ・ルテチア"],
   ["buena", "ブエナIЯA"], ["canberra", "キャンベラAXYZ"], ["hongkong", "ホンコンHEAVEN"],
   ["fesler", "フェスラー公国"], ["intron", "イントロン"], ["axleraters", "ニューロ！"],
-  ["inagaki", "稲垣 光平"], ["astral", "アストラル"], ["orbital", "軌道"], ["japanese-army", "日本"]
+  ["inagaki", "稲垣 光平"], ["astral", "アストラル"], ["orbital", "軌道"],
+  ["spectrum-neon", "ゲーミングカラー（仮称）"], ["japanese-army", "日本"]
 ];
 
 for (const file of cssFiles) {
@@ -134,9 +135,36 @@ for (const theme of ["intron", "orbital"]) {
   }
 }
 
+const spectrumThemeSource = await readFile(path.join(root, "css-next", "tokens", "spectrum-neon-theme.css"), "utf8");
+const spectrumThemeBlock = themeBlock(spectrumThemeSource, "spectrum-neon");
+const spectrumSurface = themeHexToken(spectrumThemeBlock, "color-surface");
+for (const token of ["neon-red", "neon-orange", "neon-yellow", "neon-green", "neon-cyan", "neon-blue", "neon-violet"]) {
+  const color = themeHexToken(spectrumThemeBlock, token);
+  if (!color || !spectrumSurface || contrastRatio(color, spectrumSurface) < 4.5) {
+    violations.push(`css-next/tokens/spectrum-neon-theme.css: ${token} is below 4.5:1 on the gaming surface`);
+  }
+}
+for (const marker of [
+  "--neon-spectrum:",
+  "--theme-body-bg:",
+  ".cast-grid, .owned-cast-list, .troop-list",
+  ".sheet-section-nav a, .mobile-sheet-nav a",
+  "prefers-reduced-motion: reduce"
+]) {
+  if (!spectrumThemeSource.includes(marker)) {
+    violations.push(`css-next/tokens/spectrum-neon-theme.css: missing coverage marker ${marker}`);
+  }
+}
+const cssEntrySource = await readFile(path.join(root, "css-next", "index.css"), "utf8");
+if (!cssEntrySource.includes('tokens/spectrum-neon-theme.css?v=1')) {
+  violations.push("css-next/index.css: spectrum neon theme import missing");
+}
+
 const nextThemeControllerSource = await readFile(path.join(root, "js", "css-next-theme.js"), "utf8");
 for (const [theme, label] of expectedThemeOptions) {
-  if (!nextThemeControllerSource.includes(`["${theme}", "${label}"]`)) {
+  const compactOption = `["${theme}","${label}"]`;
+  const spacedOption = `["${theme}", "${label}"]`;
+  if (!nextThemeControllerSource.includes(compactOption) && !nextThemeControllerSource.includes(spacedOption)) {
     violations.push(`js/css-next-theme.js: missing original theme option ${theme} / ${label}`);
   }
 }
@@ -416,9 +444,9 @@ if (/N◎VA MUNICIPAL DATABASE/.test(castPageHtmlSource)) {
 if (!/<a\b[^>]*class=["'][^"']*cast-header__back[^"']*app-back-link[^"']*["'][^>]*href=["']\.\/index\.html["'][^>]*>[\s\S]*?RETURN TO ARCHIVE/i.test(castPageHtmlSource)) {
   violations.push("cast.html: public RETURN TO ARCHIVE back-link contract missing");
 }
-const fixedGeneralSource = await readFile(path.join(root, "js", "cast-fixed-general-skills.js"), "utf8");
-if (!fixedGeneralSource.includes("splitGeneralColumns(section)") || !fixedGeneralSource.includes("cast-general-column--left")) {
-  violations.push("js/cast-fixed-general-skills.js: public General-skill two-column split missing");
+const compactGeneralSource = await readFile(path.join(root, "js", "cast-compact-skills.js"), "utf8");
+if (!compactGeneralSource.includes("splitGeneralColumns(section)") || !compactGeneralSource.includes("cast-general-column--left")) {
+  violations.push("js/cast-compact-skills.js: public General-skill two-column split missing");
 }
 const castUiSource = await readFile(path.join(root, "js", "cast-ui.js"), "utf8");
 if (!castUiSource.includes("section.querySelectorAll('colgroup')") || !castUiSource.includes("group.children[6].remove()")) {
