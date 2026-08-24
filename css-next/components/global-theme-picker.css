@@ -89,3 +89,8 @@ body[data-page="sheet.html"] .global-theme-picker select {
     max-width: 118px;
   }
 }
+
+@media (pointer: coarse) and (min-width: 768px) and (max-width: 1100px) {
+  .global-theme-picker { max-width: min(300px, calc(100vw - 90px)); }
+  .global-theme-picker select { min-height: 36px; }
+}

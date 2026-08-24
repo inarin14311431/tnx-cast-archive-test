@@ -111,10 +111,13 @@ test("all active CSS-next screens load the registry and one final theme bundle",
     assert.match(html, /theme-registry\.js\?v=1/, `${page} needs the canonical theme registry`);
     assert.match(html, /css-next-theme\.js\?v=8/, `${page} needs the current theme controller`);
     assert.match(html, /theme-scope\.js\?v=1/, `${page} needs semantic theme scopes`);
-    assert.match(html, /css-next\/index\.css\?v=63/, `${page} needs the current base stylesheet`);
     const head = html.match(/<head>[\s\S]*?<\/head>/i)?.[0] || "";
     const stylesheets = [...head.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/gi)]
       .map(match => match[1]);
+    assert.equal(stylesheets.length, 2, `${page} must load one application entry and one theme bundle`);
+    assert.match(stylesheets[0], /^\.\/css-next\/pages\/[a-z0-9-]+-entry\.css\?v=\d+$/, `${page} needs a page CSS entry`);
+    const entry = await read(stylesheets[0].replace(/^\.\//, "").split("?")[0]);
+    assert.match(entry, /index\.css\?v=64/, `${page} page entry must include the current base stylesheet`);
     assert.equal(
       stylesheets.at(-1),
       "./css-next/themes/index.css?v=1",

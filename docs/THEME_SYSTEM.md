@@ -8,7 +8,7 @@
 - `js/theme-scope.js` maps existing and dynamically inserted UI to semantic theme scopes.
 - `js/css-next-theme.js` only selects, persists, and applies a registered theme.
 
-Every active CSS-next page loads the registry, controller, and scope scripts in that order. It then loads `css-next/themes/index.css` after the common and page-specific styles. Individual theme stylesheets must not be linked from HTML.
+Every active CSS-next page loads the registry, controller, and scope scripts in that order. It then loads one application/page CSS entry and `css-next/themes/index.css` as the final stylesheet. Individual theme stylesheets must not be linked from HTML. The page-entry and cascade-layer contract is documented in `docs/CSS_ARCHITECTURE.md`.
 
 ## Application scopes
 

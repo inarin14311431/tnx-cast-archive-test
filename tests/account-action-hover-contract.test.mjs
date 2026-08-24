@@ -4,6 +4,7 @@ import fs from 'node:fs';
 
 const css = fs.readFileSync(new URL('../css-next/pages/account-action-hierarchy.css', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../account.html', import.meta.url), 'utf8');
+const entry = fs.readFileSync(new URL('../css-next/pages/account-entry.css', import.meta.url), 'utf8');
 
 test('owned cast action stylesheet exposes explicit hover and focus-visible feedback', () => {
   assert.match(css, /:is\(:hover, :focus-visible\)/);
@@ -22,5 +23,6 @@ test('hover text uses the theme text token instead of accent-derived foregrounds
 });
 
 test('account page busts cached card interaction CSS', () => {
-  assert.match(html, /account-action-hierarchy\.css\?v=6/);
+  assert.match(html, /account-entry\.css\?v=1/);
+  assert.match(entry, /account-action-hierarchy\.css\?v=7/);
 });

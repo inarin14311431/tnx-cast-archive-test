@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const indexCss = await readFile(new URL("../css-next/index.css", import.meta.url), "utf8");
+const castEntry = await readFile(new URL("../css-next/pages/cast-entry.css", import.meta.url), "utf8");
 const themeManifest = await readFile(new URL("../css-next/themes/index.css", import.meta.url), "utf8");
 const uiTheme = await readFile(new URL("../css-next/themes/base-ui.css", import.meta.url), "utf8");
 const themeContrast = await readFile(new URL("../css-next/themes/accessibility.css", import.meta.url), "utf8");
@@ -32,7 +33,8 @@ test("theme compatibility and contrast layers are owned by the final theme manif
   assert.match(themeManifest, /\.\/base-ui\.css\?v=1/);
   assert.match(themeManifest, /\.\/accessibility\.css\?v=1/);
   assert.match(themeManifest, /\.\/spectrum-neon\.css\?v=1/);
-  assert.match(indexCss, /pages\/cast-mobile-theme\.css\?v=1/);
+  assert.match(castEntry, /cast-mobile-theme\.css\?v=1/);
+  assert.doesNotMatch(indexCss, /pages\/cast-mobile-theme\.css/);
   assert.doesNotMatch(indexCss, /@import[^;]+themes\//);
   assert.ok(themeManifest.indexOf("accessibility.css") > themeManifest.indexOf("base-ui.css"));
   assert.ok(themeManifest.indexOf("spectrum-neon.css") > themeManifest.indexOf("accessibility.css"));

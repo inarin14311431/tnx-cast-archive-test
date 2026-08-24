@@ -4,12 +4,14 @@ import { readFile } from "node:fs/promises";
 
 const castHtml = await readFile(new URL("../cast.html", import.meta.url), "utf8");
 const accountHtml = await readFile(new URL("../account.html", import.meta.url), "utf8");
+const castEntry = await readFile(new URL("../css-next/pages/cast-entry.css", import.meta.url), "utf8");
+const accountEntry = await readFile(new URL("../css-next/pages/account-entry.css", import.meta.url), "utf8");
 const mobileReadability = await readFile(new URL("../css-next/pages/cast-mobile-readability.css", import.meta.url), "utf8");
 const accountHierarchy = await readFile(new URL("../css-next/pages/account-action-hierarchy.css", import.meta.url), "utf8");
 
 test("mobile cast readability layer is loaded after the base mobile stylesheet", () => {
-  const base = castHtml.indexOf("cast-mobile.css?v=3");
-  const readability = castHtml.indexOf("cast-mobile-readability.css?v=1");
+  const base = castEntry.indexOf("cast-mobile.css?v=4");
+  const readability = castEntry.indexOf("cast-mobile-readability.css?v=1");
   assert.ok(base >= 0);
   assert.ok(readability > base);
 });
@@ -23,7 +25,8 @@ test("mobile cast gameplay text is promoted above legacy micro-text sizes", () =
 });
 
 test("account cast cards use one consolidated responsive stylesheet", () => {
-  assert.match(accountHtml, /account-action-hierarchy\.css\?v=6/);
+  assert.match(accountHtml, /account-entry\.css\?v=1/);
+  assert.match(accountEntry, /account-action-hierarchy\.css\?v=7[^\n]*layer\(account-actions\)/);
   assert.doesNotMatch(accountHtml, /account-mobile-compact\.css/);
   assert.doesNotMatch(accountHtml, /account-action-icons\.css/);
   assert.match(accountHierarchy, /\.owned-cast \{[\s\S]*display: grid;/);
