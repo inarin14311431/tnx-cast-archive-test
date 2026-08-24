@@ -10,4 +10,33 @@
 .troop-editor-row--outfit [data-field="attack"]{font-weight:900}
 .troop-editor-row--outfit [data-field^="defense_"]{text-align:center;font-weight:900}
 @media(max-width:900px){.troop-combo-abilities{grid-template-columns:repeat(2,minmax(0,1fr))}.troop-combo-skill-options{grid-template-columns:1fr}.troop-editor-row--outfit{grid-template-columns:repeat(2,minmax(0,1fr))}.troop-editor-row--outfit [data-remove]{grid-column:2;justify-self:end}}
-@media(max-width:760px){.troop-combo-abilities,.troop-editor-row--outfit{grid-template-columns:1fr}.troop-editor-row--outfit [data-remove]{grid-column:auto}}
+@media(max-width:760px){
+  .troop-combo-abilities,.troop-editor-row--outfit{grid-template-columns:1fr}.troop-editor-row--outfit [data-remove]{grid-column:auto}
+  body[data-page="troop.html"] .background-grid,body[data-page="troop.html"] .scanlines{display:none}
+  body[data-page="troop.html"] .auth-header{padding:10px 12px}
+  body[data-page="troop.html"] .auth-header p{display:none}
+  body[data-page="troop.html"] .auth-header h1{font-size:16px;margin:4px 0 0}
+  body[data-page="troop.html"] .troop-layout{width:100%;padding:10px 10px 24px}
+  body[data-page="troop.html"] .troop-sheet{display:grid;gap:8px}
+  body[data-page="troop.html"] .troop-sheet__header{padding:12px;gap:8px}
+  body[data-page="troop.html"] .troop-sheet__header h2{font-size:20px}
+  body[data-page="troop.html"] .troop-sheet__actions{gap:6px}
+  body[data-page="troop.html"] .troop-sheet__actions button,body[data-page="troop.html"] .troop-sheet__actions a{padding:7px 9px;font-size:11px}
+  body[data-page="troop.html"] .troop-vitals{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  body[data-page="troop.html"] .troop-vitals article{min-width:0;padding:8px 5px;text-align:center}
+  body[data-page="troop.html"] .troop-vitals span{font-size:9px}
+  body[data-page="troop.html"] .troop-vitals strong{font-size:18px}
+  body[data-page="troop.html"] .troop-vitals small{display:none}
+  body[data-page="troop.html"] .troop-section{margin:0;padding:10px}
+  body[data-page="troop.html"] .troop-section>header{margin-bottom:6px}
+  body[data-page="troop.html"] .troop-section h3{font-size:13px}
+  body[data-page="troop.html"] .troop-section h3 small{font-size:9px}
+  body[data-page="troop.html"] .troop-style-grid{font-size:13px}
+  body[data-page="troop.html"] .troop-ability-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+  body[data-page="troop.html"] .troop-ability-grid>*{min-width:0;padding:7px 4px}
+  body[data-page="troop.html"] .troop-data-list{display:grid;gap:4px}
+  body[data-page="troop.html"] .troop-data-list>*{padding:7px 8px;font-size:11px}
+  body[data-page="troop.html"] .troop-notes{font-size:11px;line-height:1.5;max-height:7.5em;overflow:auto}
+  body[data-page="troop.html"] #troop-public-id{font-size:9px}
+  body[data-page="troop.html"] #troop-linked-character-view{font-size:11px}
+}
