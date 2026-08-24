@@ -82,7 +82,7 @@ npx.cmd playwright show-report
 - index/accountの◎・●は10px固定のCSS図形であることを検査する。
 - iPhone幅のaccountカードはdesktop用flex-basisが残っていないことを検査する。
 - 編集画面は右上HELPボタンとダイアログの表示を検査する。
-- トループ編集はテスト専用データを作成し、再読込・更新・閲覧後に削除するCRUDフローを検査する。
+- トループ編集はテスト内のSupabase応答へ隔離したデータを作成し、認証Secretsの有無にかかわらず再読込・更新・閲覧・削除のCRUDフローを毎回検査する。
 
 ## GitHub Actions
 
