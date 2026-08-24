@@ -44,6 +44,13 @@ const expectedThemeOptions = [
   ["inagaki", "稲垣 光平"], ["astral", "アストラル"], ["orbital", "軌道"],
   ["spectrum-neon", "ネオンサイン"], ["japanese-army", "日本"]
 ];
+const activeThemePages = [
+  "404.html", "account.html", "acts.html", "backup.html", "cast.html", "combos.html",
+  "index.html", "login.html", "manual-data-import.html", "mobile-transfer.html",
+  "password-reset.html", "register.html", "sheet-mobile-new.html", "sheet-mobile.html",
+  "sheet.html", "showcase-generator.html", "statistics.html", "transfer.html",
+  "troop.html", "troops.html"
+];
 
 for (const file of cssFiles) {
   const source = await readFile(file, "utf8");
@@ -149,6 +156,7 @@ for (const marker of [
   "--theme-body-bg:",
   ".cast-grid, .owned-cast-list, .troop-list",
   ".sheet-section-nav a, .mobile-sheet-nav a",
+  "#neon-sign-control-layer",
   "prefers-reduced-motion: reduce"
 ]) {
   if (!spectrumThemeSource.includes(marker)) {
@@ -156,8 +164,18 @@ for (const marker of [
   }
 }
 const cssEntrySource = await readFile(path.join(root, "css-next", "index.css"), "utf8");
-if (!cssEntrySource.includes('tokens/spectrum-neon-theme.css?v=3')) {
-  violations.push("css-next/index.css: spectrum neon theme import missing");
+if (cssEntrySource.includes("tokens/spectrum-neon-theme.css")) {
+  violations.push("css-next/index.css: spectrum neon effects must not load before page-specific CSS");
+}
+for (const page of activeThemePages) {
+  const source = await readFile(path.join(root, page), "utf8");
+  const head = source.match(/<head>[\s\S]*?<\/head>/i)?.[0] || "";
+  const stylesheets = [...head.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
+    .map(match => match[1]);
+  const neonStyles = stylesheets.filter(href => href.includes("spectrum-neon-theme.css"));
+  if (neonStyles.length !== 1 || stylesheets.at(-1) !== "./css-next/tokens/spectrum-neon-theme.css?v=4") {
+    violations.push(`${page}: Neon Sign must be the single final stylesheet`);
+  }
 }
 
 const nextThemeControllerSource = await readFile(path.join(root, "js", "css-next-theme.js"), "utf8");
@@ -170,6 +188,11 @@ for (const [theme, label] of expectedThemeOptions) {
 }
 if (!/ensureThemeOptions\(select\)/.test(nextThemeControllerSource)) {
   violations.push("js/css-next-theme.js: missing theme-option completion");
+}
+for (const marker of ["THEME_CONTROL_SELECTOR", "normalizeThemeControls(root)", "normalizeDynamicUi(document)", "normalizeDynamicUi(node)", 'dataset.themeControl="1"']) {
+  if (!nextThemeControllerSource.includes(marker)) {
+    violations.push(`js/css-next-theme.js: semantic theme-control normalization missing ${marker}`);
+  }
 }
 for (const marker of [
   "ensureJapaneseArmyOverlay()",
