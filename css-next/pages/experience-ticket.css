@@ -128,11 +128,11 @@
 }
 
 @media print {
-  body.has-experience-ticket > *:not(.experience-ticket-overlay) { display: none !important; }
-  body.has-experience-ticket { background: #fff !important; }
+  body.has-experience-ticket > *:not(.experience-ticket-overlay) { display: none; }
+  body.has-experience-ticket { background: #fff; }
   .experience-ticket-overlay { position: static; display: block; padding: 0; background: #fff; backdrop-filter: none; }
   .experience-ticket-dialog { width: 100%; padding: 0; border: 0; background: #fff; box-shadow: none; }
   .experience-ticket-toolbar,
-  .experience-ticket-note { display: none !important; }
+  .experience-ticket-note { display: none; }
   .experience-ticket { box-shadow: inset 0 0 0 1px #35271f, inset 0 0 0 5px #fff, inset 0 0 0 6px #35271f; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
