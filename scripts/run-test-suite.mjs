@@ -9,20 +9,15 @@ const testsDir = path.join(root, "tests");
 // Presentation contracts assert CSS/layout/readability details. They are useful
 // guardrails, but are intentionally separated from the core functional loop
 // because Playwright Visual Regression owns the final rendered appearance.
+// Behavioral helpers stay in core even when they affect the rendered result.
 const presentationTests = new Set([
   "account-actions-presentation.test.mjs",
   "combo-section-hover-contract.test.mjs",
   "mobile-touch-targets.test.mjs",
   "post-transfer-dialog-size-contract.test.mjs",
-  "quick-sheet-compact.test.mjs",
   "quick-sheet-layout-boundary.test.mjs",
-  "sheet-baseline-adjustment.test.mjs",
-  "sheet-general-column.test.mjs",
-  "sheet-mobile-general-display.test.mjs",
   "sheet-mobile-nav-layout.test.mjs",
   "sheet-mobile-ux-pass.test.mjs",
-  "sheet-style-baseline.test.mjs",
-  "sheet-style-presentation.test.mjs",
   "style-skill-view-multiline.test.mjs",
   "ui-readability-contract.test.mjs"
 ]);
