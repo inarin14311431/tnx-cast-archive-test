@@ -34,9 +34,9 @@ test("save coordinator owns dirty, saving and queued-save mechanics", () => {
   assert.match(coordinatorSource, /queueMicrotask\(\(\) => save\(false\)\)/);
 });
 
-test("temporary legacy handling stays outside the generic save coordinator", () => {
-  assert.match(coordinatorSource, /sheet-legacy-outfit-compat\.js\?v=1/);
-  assert.match(coordinatorSource, /installLegacyOutfitCompatibility\(\{ markSaved \}\)/);
+test("retired legacy load bridge is absent from the generic save coordinator", () => {
+  assert.doesNotMatch(coordinatorSource, /sheet-legacy-outfit-compat/);
+  assert.doesNotMatch(coordinatorSource, /installLegacyOutfitCompatibility/);
   assert.doesNotMatch(coordinatorSource, /HYDRATION_/);
   assert.doesNotMatch(coordinatorSource, /MutationObserver/);
   assert.doesNotMatch(coordinatorSource, /isTrusted/);
