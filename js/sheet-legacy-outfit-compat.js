@@ -58,13 +58,12 @@ export function installLegacyOutfitCompatibility({
     };
 
     const handleEdit = inputEvent => {
-      if (!inputEvent?.target?.closest?.(OUTFIT_ROOT_SELECTOR)) return;
-      if (inputEvent.isTrusted) {
+      if (inputEvent?.isTrusted) {
         userEdited = true;
         cleanup();
         return;
       }
-      scheduleFinish();
+      if (inputEvent?.target?.closest?.(OUTFIT_ROOT_SELECTOR)) scheduleFinish();
     };
 
     root.addEventListener("input", handleEdit, true);
