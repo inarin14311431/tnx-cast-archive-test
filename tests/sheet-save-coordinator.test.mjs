@@ -34,6 +34,15 @@ test("save coordinator owns dirty, saving and queued-save mechanics", () => {
   assert.match(coordinatorSource, /queueMicrotask\(\(\) => save\(false\)\)/);
 });
 
+test("legacy hydration waits for a quiet window and ignores synthetic dirty signals", () => {
+  assert.match(coordinatorSource, /const HYDRATION_QUIET_MS = 300/);
+  assert.match(coordinatorSource, /let hydrationLastActivity = 0/);
+  assert.match(coordinatorSource, /new Observer\(noteHydrationActivity\)/);
+  assert.match(coordinatorSource, /quietFor < HYDRATION_QUIET_MS/);
+  assert.match(coordinatorSource, /if \(hydrationPending && !trustedEditDuringHydration\) return/);
+  assert.match(coordinatorSource, /if \(event\?\.isTrusted\) trustedEditDuringHydration = true/);
+});
+
 test("edits made during an in-flight save stay dirty and queue a follow-up save", () => {
   assert.match(coordinatorSource, /let changeRevision = 0/);
   assert.match(coordinatorSource, /changeRevision \+= 1/);
