@@ -34,7 +34,8 @@ function handleTicketClick(event) {
 function readTicketData(record) {
   const title = clean(record.querySelector(".act-record__title")?.textContent) || "名称未登録アクト";
   const meta = clean(record.querySelector(".act-record__meta")?.textContent);
-  const [rawDate = "—", slot = ""] = meta.split("/").map(clean);
+  const rawDate = meta.match(/\d{4}[\/.\-]\d{1,2}[\/.\-]\d{1,2}/)?.[0] || "—";
+  const slot = meta.match(/\bCAST\s+\d+\b/i)?.[0] || "";
   const rulerText = clean(record.querySelector(".act-record__ruler")?.textContent);
   const ruler = rulerText.replace(/^RULER[：:]\s*/i, "") || "—";
   const experience = String(Math.max(0, Number(record.querySelector("[data-experience-input]")?.value || 0)));
