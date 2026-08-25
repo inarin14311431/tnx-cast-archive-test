@@ -42,17 +42,19 @@
   background: color-mix(in srgb, currentColor 5%, transparent);
 }
 
+.auth-form label.legal-consent,
 .legal-consent {
-  display: flex !important;
+  display: flex;
   align-items: flex-start;
   gap: 8px;
   font-size: 12px;
   line-height: 1.6;
 }
 
+.auth-form label.legal-consent > input,
 .legal-consent input {
   flex: 0 0 auto;
-  width: auto !important;
+  width: auto;
   margin-top: .25em;
 }
 
@@ -60,16 +62,18 @@
   display: inline;
 }
 
-.legal-consent__links button {
-  display: inline !important;
-  width: auto !important;
-  min-height: auto !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: none !important;
-  color: inherit !important;
-  font: inherit !important;
-  text-decoration: underline !important;
+.auth-form .legal-consent__links > button,
+.legal-consent__links > button {
+  display: inline;
+  width: auto;
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
 }
 
 #site-legal-dialog {
