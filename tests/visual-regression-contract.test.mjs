@@ -6,19 +6,27 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = relative => readFile(path.join(root, relative), "utf8");
+const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 test("visual regression uses fixed projects, data and a pinned browser container", async () => {
-  const [config, workflow, fixtures] = await Promise.all([
+  const [config, workflow, fixtures, packageText] = await Promise.all([
     read("playwright.visual.config.js"),
     read(".github/workflows/visual-regression.yml"),
-    read("tests/visual/visual-fixtures.js")
+    read("tests/visual/visual-fixtures.js"),
+    read("package.json")
   ]);
+  const packageJson = JSON.parse(packageText);
+  const playwrightVersion = packageJson.devDependencies?.["@playwright/test"];
+  assert.ok(playwrightVersion, "@playwright/test must be pinned in package.json");
 
   assert.match(config, /name:\s*"visual-desktop"/);
   assert.match(config, /name:\s*"visual-mobile"/);
   assert.match(config, /process\.env\.CI\s*\?\s*"none"/);
   assert.match(config, /maxDiffPixelRatio:\s*0\.006/);
-  assert.match(workflow, /mcr\.microsoft\.com\/playwright:v1\.55\.0-noble/);
+  assert.match(
+    workflow,
+    new RegExp(`mcr\\.microsoft\\.com/playwright:v${escapeRegExp(playwrightVersion)}-noble`)
+  );
   assert.match(workflow, /npm run visual/);
   assert.doesNotMatch(workflow, /update-snapshots/);
   assert.match(fixtures, /VISUAL_CAST_ID/);

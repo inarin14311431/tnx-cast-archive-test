@@ -10,6 +10,10 @@ const THEMES = ["nova", "spectrum-neon"];
 
 async function capture(page, name) {
   await settleVisualPage(page);
+  const legalFooter = page.locator("[data-legal-footer]");
+  await expect(legalFooter).toHaveCount(1);
+  await expect(legalFooter).toBeVisible();
+  await legalFooter.evaluate(element => { element.style.visibility = "hidden"; });
   await expect(page).toHaveScreenshot(`${name}.png`, { fullPage:false });
 }
 

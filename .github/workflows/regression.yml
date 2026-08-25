@@ -17,35 +17,18 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Check JavaScript syntax
-        run: npm run check:js
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Audit module dependency graph
-        run: npm run audit:modules
+      - name: Run full verification
+        run: |
+          set -o pipefail
+          npm run verify 2>&1 | tee verify.log
 
-      - name: Audit runtime integrity
-        run: npm run audit:integrity
-
-      - name: Audit PC editor runtime
-        run: npm run audit:sheet
-
-      - name: Audit public cast runtime
-        run: npm run audit:cast
-
-      - name: Audit troop runtime
-        run: npm run audit:troop
-
-      - name: Audit mobile editor runtime
-        run: npm run audit:mobile
-
-      - name: Audit security invariants
-        run: npm run audit:security
-
-      - name: Report sheet DOM ownership
-        run: npm run report:sheet-ownership
-
-      - name: Report cast DOM ownership
-        run: npm run report:cast-ownership
-
-      - name: Run Node regression tests
-        run: npm test
+      - name: Upload verification log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-verify-log
+          path: verify.log
+          retention-days: 14

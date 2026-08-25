@@ -87,3 +87,5 @@
   globalThis.TNX_THEME_SCOPE = Object.freeze({ rules: scopeRules, normalize });
   bind();
 })();
+
+import("./legal-notices.js?v=1").catch(error => console.error("Failed to load legal notices", error));
