@@ -24,7 +24,7 @@ test("legacy behavior is detachable from normal save mechanics", () => {
   assert.match(coordinatorSource, /installLegacyOutfitCompatibility/);
   assert.doesNotMatch(coordinatorSource, /LEGACY_OUTFIT_CUTOFF/);
   assert.doesNotMatch(coordinatorSource, /QUIET_MS/);
-  assert.match(legacySource, /inputEvent\.isTrusted/);
+  assert.match(legacySource, /inputEvent\?\.isTrusted/);
   assert.match(legacySource, /MutationObserver/);
   assert.match(legacySource, /if \(!isLegacyOutfitCharacter\(character\)\) return/);
 });
