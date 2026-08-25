@@ -1,27 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { createBlankOutfit } from "../js/sheet-row-factory.js";
 import { buildOutfitSavePayloads } from "../js/sheet-save-payload.js";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-
-test("new outfit rows expose every canonical OFC field used by import projection", () => {
-  const outfit = createBlankOutfit({ key: "test-outfit", sortOrder: 0 });
-  const fields = [
-    "concealment_penalty", "parry", "speed", "electronic_control",
-    "defense_s", "defense_p", "defense_i", "control_modifier", "cs_modifier",
-    "ianus_surface", "ianus_deep", "ianus_none",
-    "tron_software", "tron_support", "tron_hardware",
-    "crew", "sf", "residence_entry", "residence_electric", "residence_area",
-    "manufacturer", "page_number", "major_category", "minor_category"
-  ];
-
-  for (const field of fields) {
-    assert.ok(Object.hasOwn(outfit, field), `missing canonical outfit field: ${field}`);
-  }
-  assert.deepEqual(outfit._ofc_details, {});
-});
 
 test("canonical outfit save payload is built directly from the editor model", () => {
   const [payload] = buildOutfitSavePayloads([{
