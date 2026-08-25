@@ -1,14 +1,6 @@
-import {
-  getOutfitRows,
-  rowSignature,
-  valueOf
-} from "./outfit-ofc-utils.js";
+import { valueOf } from "./outfit-ofc-utils.js";
 
 const ROOT_SELECTOR = "#outfit-list";
-const stateByKey = new Map();
-let restoreQueues = null;
-let enhanceQueued = false;
-let suppressDirty = false;
 
 function parseEmbeddedDetails(row) {
   try {
@@ -19,110 +11,29 @@ function parseEmbeddedDetails(row) {
   }
 }
 
-globalThis.TNXOutfitOFCState = {
-  getDetails(row) {
-    const key = row?.dataset?.outfitKey || "";
-    const details = key ? stateByKey.get(key) : null;
-    return details ? { ...details } : {};
-  },
-  setDetails(rowOrKey, details = {}) {
-    const key = typeof rowOrKey === "string" ? rowOrKey : rowOrKey?.dataset?.outfitKey || "";
-    if (!key) return false;
-    stateByKey.set(key, normalizeDetails(details));
-    queueEnhance();
-    return true;
-  }
-};
+function normalizeDetails(value) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return Object.fromEntries(Object.entries(source).map(([key, item]) => [key, String(item ?? "")]));
+}
 
-globalThis.TNXOutfitOfcFields = {
-  queueEnhance
-};
+function compactDetails(value) {
+  const normalized = normalizeDetails(value);
+  return Object.fromEntries(Object.entries(normalized).filter(([, item]) => item !== ""));
+}
 
-initialize();
-
-function initialize() {
+function resolveRow(rowOrKey) {
+  if (typeof rowOrKey !== "string") return rowOrKey || null;
   const root = document.querySelector(ROOT_SELECTOR);
-  if (!root) return;
-
-  new MutationObserver(queueEnhance).observe(root, { childList: true, subtree: true });
-  document.addEventListener("input", handleDetailInput, true);
-  document.addEventListener("change", handleDetailInput, true);
-  document.addEventListener("click", handleOutfitMove, true);
-  queueEnhance();
-}
-
-function queueEnhance() {
-  if (enhanceQueued) return;
-  enhanceQueued = true;
-  requestAnimationFrame(() => {
-    enhanceQueued = false;
-    enhanceTables();
-  });
-}
-
-function enhanceTables() {
-  const root = document.querySelector(ROOT_SELECTOR);
-  if (!root) return;
-  suppressDirty = true;
-  try {
-    root.querySelectorAll("tbody .outfit-table-row[data-outfit-key]").forEach(row => {
-      const details = ensureRowState(row, row.dataset.outfitKey || "");
-      row.querySelectorAll("[data-ofc]").forEach(input => {
-        const next = String(details[input.dataset.ofc] ?? input.value ?? "");
-        if (input.value !== next) input.value = next;
-      });
-    });
-  } finally {
-    suppressDirty = false;
-  }
-}
-
-function ensureRowState(row, key) {
-  if (key && stateByKey.has(key)) return stateByKey.get(key);
-  const signature = rowSignature(row);
-  let details = shiftQueue(restoreQueues, signature) || parseEmbeddedDetails(row);
-  details = normalizeDetails(details);
-  row.querySelectorAll("[data-ofc]").forEach(input => {
-    const value = String(input.value ?? "");
-    if (value !== "" || !(input.dataset.ofc in details)) details[input.dataset.ofc] = value;
-  });
-  if (key) stateByKey.set(key, details);
-  return details;
-}
-
-function shiftQueue(queues, signature) {
-  if (!queues) return null;
-  const queue = queues.get(signature);
-  if (!queue?.length) return null;
-  const value = queue.shift();
-  if (!queue.length) queues.delete(signature);
-  if (queues === restoreQueues && queues.size === 0) restoreQueues = null;
-  return value;
-}
-
-function handleDetailInput(event) {
-  const input = event.target.closest?.("[data-ofc]");
-  if (!input) return;
-  const row = input.closest("[data-outfit-key]");
-  if (!row) return;
-  const key = row.dataset.outfitKey || "";
-  const details = ensureRowState(row, key);
-  details[input.dataset.ofc] = input.value;
-  if (key) stateByKey.set(key, details);
-  if (!suppressDirty && event.type === "change") queueEnhance();
-}
-
-function handleOutfitMove(event) {
-  if (!event.target.closest?.("[data-outfit-move]")) return;
-  restoreQueues = snapshotDetailQueues();
-  window.setTimeout(queueEnhance, 0);
-  window.setTimeout(queueEnhance, 80);
+  if (!root) return null;
+  return [...root.querySelectorAll("[data-outfit-key]")]
+    .find(row => row.dataset.outfitKey === rowOrKey) || null;
 }
 
 function collectDetails(row) {
-  const details = normalizeDetails(stateByKey.get(row.dataset.outfitKey) || parseEmbeddedDetails(row));
+  if (!row) return {};
+  const details = normalizeDetails(parseEmbeddedDetails(row));
   row.querySelectorAll("[data-ofc]").forEach(input => {
-    details[input.dataset.ofc] = input.value;
+    details[input.dataset.ofc] = String(input.value ?? "");
   });
 
   const category = valueOf(row, "category") || "other";
@@ -144,22 +55,31 @@ function collectDetails(row) {
   });
 }
 
-function snapshotDetailQueues() {
-  const queues = new Map();
-  for (const row of getOutfitRows()) {
-    const signature = rowSignature(row);
-    if (!queues.has(signature)) queues.set(signature, []);
-    queues.get(signature).push(collectDetails(row));
+function setDetails(rowOrKey, details = {}) {
+  const row = resolveRow(rowOrKey);
+  if (!row) return false;
+
+  const merged = { ...parseEmbeddedDetails(row), ...normalizeDetails(details) };
+  row.dataset.outfitOfcDetails = JSON.stringify(compactDetails(merged));
+
+  for (const [key, value] of Object.entries(details || {})) {
+    const input = row.querySelector(`[data-ofc="${CSS.escape(key)}"]`)
+      || row.querySelector(`[data-o="${CSS.escape(key)}"]`);
+    if (!input) continue;
+    const next = String(value ?? "");
+    if (String(input.value ?? "") === next) continue;
+    input.value = next;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
   }
-  return queues;
+  return true;
 }
 
-function normalizeDetails(value) {
-  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  return Object.fromEntries(Object.entries(source).map(([key, item]) => [key, String(item ?? "")]));
-}
+// Compatibility facade only. Runtime outfit state is owned by sheet.js `outfits`.
+globalThis.TNXOutfitOFCState = {
+  getDetails: collectDetails,
+  setDetails
+};
 
-function compactDetails(value) {
-  const normalized = normalizeDetails(value);
-  return Object.fromEntries(Object.entries(normalized).filter(([, item]) => item !== ""));
-}
+globalThis.TNXOutfitOfcFields = {
+  queueEnhance() { return true; }
+};
