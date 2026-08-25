@@ -49,26 +49,6 @@ function whenReady(callback) {
   else callback();
 }
 
-function installStyles() {
-  if (document.querySelector("#legal-notices-style")) return;
-  const style = document.createElement("style");
-  style.id = "legal-notices-style";
-  style.textContent = `
-    .site-legal-footer{margin:32px auto 16px;max-width:1180px;padding:16px 20px;border-top:1px solid color-mix(in srgb,currentColor 28%,transparent);font-size:12px;line-height:1.7;opacity:.82;text-align:center;position:relative;z-index:5}
-    .site-legal-footer p{margin:2px 0}.site-legal-footer__links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
-    .site-legal-footer button{font:inherit;padding:3px 8px;min-height:auto}.legal-inline-notice{font-size:12px;line-height:1.65;opacity:.86;margin:8px 0}
-    .legal-inline-notice--important{padding:10px 12px;border-left:3px solid currentColor;background:color-mix(in srgb,currentColor 5%,transparent)}
-    .legal-consent{display:flex!important;align-items:flex-start;gap:8px;font-size:12px;line-height:1.6}.legal-consent input{width:auto!important;flex:0 0 auto;margin-top:.25em}
-    .legal-consent__links{display:inline}.legal-consent__links button{display:inline!important;width:auto!important;min-height:auto!important;padding:0!important;border:0!important;background:none!important;text-decoration:underline!important;font:inherit!important;color:inherit!important}
-    #site-legal-dialog{width:min(880px,calc(100vw - 32px));max-height:86vh;padding:0;border:1px solid currentColor;background:var(--surface,#10151a);color:inherit}
-    #site-legal-dialog::backdrop{background:rgba(0,0,0,.68)}.legal-dialog__header{display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;padding:14px 18px;border-bottom:1px solid color-mix(in srgb,currentColor 30%,transparent);background:inherit;z-index:2}
-    .legal-dialog__header strong{font-size:16px}.legal-dialog__header button{min-width:auto}.legal-dialog__body{padding:18px 22px 28px;overflow:auto}.legal-dialog__tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.legal-dialog__tabs button{min-width:auto}
-    .legal-policy-section{scroll-margin-top:80px}.legal-policy-section h2{margin:20px 0 12px}.legal-policy-section h3{margin:18px 0 6px;font-size:1em}.legal-policy-section p,.legal-policy-section li{line-height:1.8}.legal-policy-section small{display:block;opacity:.65;font-size:.68em}
-    @media(max-width:700px){.site-legal-footer{margin-bottom:72px;padding-inline:14px}#site-legal-dialog{width:calc(100vw - 18px)}.legal-dialog__body{padding:14px}}
-  `;
-  document.head.append(style);
-}
-
 function installDialog() {
   let dialog = document.querySelector("#site-legal-dialog");
   if (dialog) return dialog;
@@ -99,7 +79,10 @@ function bindPolicyButtons(root = document) {
   root.querySelectorAll("[data-open-legal]").forEach(button => {
     if (button.dataset.legalBound === "1") return;
     button.dataset.legalBound = "1";
-    button.addEventListener("click", event => { event.preventDefault(); openPolicy(button.dataset.openLegal || "terms"); });
+    button.addEventListener("click", event => {
+      event.preventDefault();
+      openPolicy(button.dataset.openLegal || "terms");
+    });
   });
 }
 
@@ -133,7 +116,8 @@ function installImageNotice() {
     note.className = "legal-inline-notice legal-inline-notice--important legal-image-rights-notice";
     note.textContent = "自身が使用・公開する権利を有する画像のみ登録してください。公式画像や第三者の著作物など、無断使用となる画像の登録はお控えください。";
     const guidance = form.querySelector(".image-guidance");
-    if (guidance) guidance.append(note); else form.querySelector("input[type='file']")?.closest("label")?.after(note);
+    if (guidance) guidance.append(note);
+    else form.querySelector("input[type='file']")?.closest("label")?.after(note);
   });
 }
 
@@ -176,7 +160,6 @@ function removeMasterTsvImportUi() {
 }
 
 function init() {
-  installStyles();
   installDialog();
   installFooter();
   installSignupConsent();
