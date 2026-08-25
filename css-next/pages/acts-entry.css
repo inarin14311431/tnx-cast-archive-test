@@ -5,3 +5,4 @@
 @import url("./auth.css?v=2") layer(auth-page);
 @import url("./acts.css?v=2") layer(acts-page);
 @import url("./experience-ticket.css?v=2") layer(experience-ticket);
+@import url("./experience-ticket-layout.css?v=1") layer(experience-ticket);
