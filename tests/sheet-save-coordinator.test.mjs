@@ -34,13 +34,12 @@ test("save coordinator owns dirty, saving and queued-save mechanics", () => {
   assert.match(coordinatorSource, /queueMicrotask\(\(\) => save\(false\)\)/);
 });
 
-test("legacy hydration waits for a quiet window and ignores synthetic dirty signals", () => {
-  assert.match(coordinatorSource, /const HYDRATION_QUIET_MS = 300/);
-  assert.match(coordinatorSource, /let hydrationLastActivity = 0/);
-  assert.match(coordinatorSource, /new Observer\(noteHydrationActivity\)/);
-  assert.match(coordinatorSource, /quietFor < HYDRATION_QUIET_MS/);
-  assert.match(coordinatorSource, /if \(hydrationPending && !trustedEditDuringHydration\) return/);
-  assert.match(coordinatorSource, /if \(event\?\.isTrusted\) trustedEditDuringHydration = true/);
+test("temporary legacy handling stays outside the generic save coordinator", () => {
+  assert.match(coordinatorSource, /sheet-legacy-outfit-compat\.js\?v=1/);
+  assert.match(coordinatorSource, /installLegacyOutfitCompatibility\(\{ markSaved \}\)/);
+  assert.doesNotMatch(coordinatorSource, /HYDRATION_/);
+  assert.doesNotMatch(coordinatorSource, /MutationObserver/);
+  assert.doesNotMatch(coordinatorSource, /isTrusted/);
 });
 
 test("edits made during an in-flight save stay dirty and queue a follow-up save", () => {
@@ -94,7 +93,7 @@ test("transactional persistence is isolated behind the classic sheet persistence
   assert.match(sheetSource, /sheet-save-persistence\.js\?v=1/);
   assert.match(sheetSource, /persistSheetBundle\(\{/);
   assert.match(sheetSource, /character: collectCharacter\(\)/);
-  assert.match(sheetSource, /skills: collectSkills\(\)/);
+  assert.match(sheetSource, /skills: collectSkills\(skills/);
   assert.match(sheetSource, /outfits: collectOutfits\(\)/);
   assert.doesNotMatch(sheetSource, /supabase\.rpc\("save_character_bundle/);
   assert.match(persistenceSource, /const SAVE_RPC = "save_character_bundle_with_ofc"/);
