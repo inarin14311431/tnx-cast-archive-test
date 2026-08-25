@@ -20,11 +20,13 @@ function trailingFunctionBlock(source, name) {
   return match[0];
 }
 
-test("new outfit state no longer seeds retired compatibility fields", () => {
+test("new outfit state keeps canonical modifiers but does not seed retired compatibility fields", () => {
   const outfit = createBlankOutfit({ key: "policy-test", sortOrder: 0 });
+  assert.equal("control_modifier" in outfit, true);
+  assert.equal("cs_modifier" in outfit, true);
   assert.equal("defense" in outfit, false);
-  assert.equal("control_modifier" in outfit, false);
-  assert.equal("cs_modifier" in outfit, false);
+  assert.equal("control_value" in outfit, false);
+  assert.equal("cs_value" in outfit, false);
   assert.equal("mundane_modifier" in outfit, false);
 });
 
