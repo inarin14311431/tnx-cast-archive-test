@@ -1,4 +1,5 @@
 import { initialGeneralSkillSuit } from "./general-skill-catalog.js?v=2";
+import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
 
 const ABILITY_KEYS = ["reason", "passion", "life", "mundane"];
 
@@ -102,6 +103,47 @@ export function buildSkillSavePayloads(skills = [], {
     }));
 }
 
+function buildOutfitDetails(item, category) {
+  const source = item?._ofc_details && typeof item._ofc_details === "object" && !Array.isArray(item._ofc_details)
+    ? item._ofc_details
+    : {};
+  return normalizeImportedOutfitDetails(category, {
+    ...source,
+    site_category: category,
+    purchase_target: item.purchase_value,
+    permanent_cost: item.experience_cost,
+    concealment: item.concealment,
+    concealment_penalty: item.concealment_penalty,
+    attack: item.attack,
+    parry: item.parry,
+    range_text: item.range,
+    speed: item.speed,
+    control_modifier: item.control_modifier,
+    electronic_control: item.electronic_control,
+    defense_s: item.defense_s,
+    defense_p: item.defense_p,
+    defense_i: item.defense_i,
+    ianus_surface: item.ianus_surface,
+    ianus_deep: item.ianus_deep,
+    ianus_none: item.ianus_none,
+    tron_software: item.tron_software,
+    tron_support: item.tron_support,
+    tron_hardware: item.tron_hardware,
+    cs_modifier: item.cs_modifier,
+    crew: item.crew,
+    sf: item.sf,
+    residence_entry: item.residence_entry,
+    residence_electric: item.residence_electric,
+    residence_area: item.residence_area,
+    slot: item.slot,
+    manufacturer: item.manufacturer,
+    page_number: item.page_number,
+    major_category: item.major_category,
+    minor_category: item.minor_category,
+    description: item.description
+  });
+}
+
 export function buildOutfitSavePayloads(outfits = []) {
   return outfits
     .filter(item => String(item?.name || "").trim())
@@ -114,8 +156,13 @@ export function buildOutfitSavePayloads(outfits = []) {
         experience_cost: Number(item.experience_cost || 0),
         concealment: item.concealment || "",
         slot: item.slot || "",
+        electronic_control: String(item.electronic_control || ""),
+        defense: "",
+        control_modifier: 0,
+        cs_modifier: 0,
         description: item.description || "",
-        sort_order: index
+        sort_order: index,
+        ofc_details: buildOutfitDetails(item, category)
       };
 
       if (category === "weapon") {
