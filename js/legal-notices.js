@@ -1,5 +1,7 @@
 const SOURCE_SITE_URL = "https://character-sheets.appspot.com/tnx/";
 const RIGHTS_TEXT = "(C)FarEast Amusement Research Co.,Ltd.／(C)GameField Co.,Ltd.";
+const CONTACT_EMAIL = "inarin1431@gmail.com";
+const CONTACT_X_URL = "https://x.com/inari_aki";
 
 const TERMS_HTML = `
   <section id="legal-terms" class="legal-policy-section" data-legal-section="terms">
@@ -44,6 +46,17 @@ const PRIVACY_HTML = `
     <p>利用者は、本サイトが提供する削除機能の範囲でキャストデータやアカウントを削除できます。法令上またはセキュリティ上保存が必要な情報がある場合を除き、削除処理に従って取り扱います。</p>
   </section>`;
 
+const CONTACT_HTML = `
+  <section id="legal-contact" class="legal-policy-section" data-legal-section="contact">
+    <h2>お問い合わせ <small>CONTACT</small></h2>
+    <p>本サイトに関するお問い合わせ、不具合のご連絡、権利侵害に関する申告、登録データの削除等に関するご連絡は、以下の窓口までお願いします。</p>
+    <ul>
+      <li>メール：<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></li>
+      <li>X：<a href="${CONTACT_X_URL}" target="_blank" rel="noopener noreferrer">@inari_aki</a></li>
+    </ul>
+    <p>権利侵害に関するご連絡では、対象となるページやデータ、権利関係を確認できる情報を可能な範囲でお知らせください。</p>
+  </section>`;
+
 function whenReady(callback) {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", callback, { once: true });
   else callback();
@@ -58,9 +71,10 @@ function installDialog() {
   dialog.innerHTML = `
     <header class="legal-dialog__header"><strong id="site-legal-dialog-title">サイトポリシー</strong><button type="button" data-legal-close>閉じる</button></header>
     <div class="legal-dialog__body">
-      <nav class="legal-dialog__tabs" aria-label="サイトポリシー"><button type="button" data-open-legal="terms">利用規約</button><button type="button" data-open-legal="privacy">プライバシーポリシー</button></nav>
+      <nav class="legal-dialog__tabs" aria-label="サイトポリシー"><button type="button" data-open-legal="terms">利用規約</button><button type="button" data-open-legal="privacy">プライバシーポリシー</button><button type="button" data-open-legal="contact">お問い合わせ</button></nav>
       ${TERMS_HTML}
       ${PRIVACY_HTML}
+      ${CONTACT_HTML}
       <section class="legal-policy-section"><h2>権利表示 <small>RIGHTS NOTICE</small></h2><p>本サイトは『トーキョーN◎VA THE AXLERATION』の非公式ファンツールです。各権利者による公式サービスではありません。</p><p>${RIGHTS_TEXT}</p></section>
     </div>`;
   document.body.append(dialog);
@@ -94,7 +108,7 @@ function installFooter() {
   }
   footer.className = "site-legal-footer";
   footer.dataset.legalFooter = "1";
-  footer.innerHTML = `<p>本サイトは『トーキョーN◎VA THE AXLERATION』の非公式ファンツールです。各権利者による公式サービスではありません。</p><p>${RIGHTS_TEXT}</p><div class="site-legal-footer__links"><button type="button" data-open-legal="terms">利用規約</button><button type="button" data-open-legal="privacy">プライバシーポリシー</button></div>`;
+  footer.innerHTML = `<p>本サイトは『トーキョーN◎VA THE AXLERATION』の非公式ファンツールです。各権利者による公式サービスではありません。</p><p>${RIGHTS_TEXT}</p><div class="site-legal-footer__links"><button type="button" data-open-legal="terms">利用規約</button><button type="button" data-open-legal="privacy">プライバシーポリシー</button><button type="button" data-open-legal="contact">お問い合わせ</button></div>`;
   bindPolicyButtons(footer);
 }
 
