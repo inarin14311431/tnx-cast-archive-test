@@ -10,10 +10,7 @@ const testsDir = path.join(root, "tests");
 // guardrails, but are intentionally separated from the core functional loop
 // because Playwright Visual Regression owns the final rendered appearance.
 const presentationTests = new Set([
-  "account-action-hover-contract.test.mjs",
-  "account-action-icons-contract.test.mjs",
-  "account-two-row-actions-contract.test.mjs",
-  "account-two-row-compact-contract.test.mjs",
+  "account-actions-presentation.test.mjs",
   "combo-section-hover-contract.test.mjs",
   "mobile-touch-targets.test.mjs",
   "post-transfer-dialog-size-contract.test.mjs",
