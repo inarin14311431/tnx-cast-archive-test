@@ -56,7 +56,7 @@ function installDialog() {
   dialog.id = "site-legal-dialog";
   dialog.setAttribute("aria-labelledby", "site-legal-dialog-title");
   dialog.innerHTML = `
-    <header class="legal-dialog__header"><strong id="site-legal-dialog-title">ヘルプ / サイトポリシー</strong><button type="button" data-legal-close>閉じる</button></header>
+    <header class="legal-dialog__header"><strong id="site-legal-dialog-title">サイトポリシー</strong><button type="button" data-legal-close>閉じる</button></header>
     <div class="legal-dialog__body">
       <nav class="legal-dialog__tabs" aria-label="サイトポリシー"><button type="button" data-open-legal="terms">利用規約</button><button type="button" data-open-legal="privacy">プライバシーポリシー</button></nav>
       ${TERMS_HTML}
@@ -94,7 +94,7 @@ function installFooter() {
   }
   footer.className = "site-legal-footer";
   footer.dataset.legalFooter = "1";
-  footer.innerHTML = `<p>本サイトは『トーキョーN◎VA THE AXLERATION』の非公式ファンツールです。各権利者による公式サービスではありません。</p><p>${RIGHTS_TEXT}</p><div class="site-legal-footer__links"><button type="button" data-open-legal="terms">利用規約</button><button type="button" data-open-legal="privacy">ヘルプ・プライバシーポリシー</button></div>`;
+  footer.innerHTML = `<p>本サイトは『トーキョーN◎VA THE AXLERATION』の非公式ファンツールです。各権利者による公式サービスではありません。</p><p>${RIGHTS_TEXT}</p><div class="site-legal-footer__links"><button type="button" data-open-legal="terms">利用規約</button><button type="button" data-open-legal="privacy">プライバシーポリシー</button></div>`;
   bindPolicyButtons(footer);
 }
 
