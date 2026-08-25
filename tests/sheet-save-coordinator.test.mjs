@@ -93,7 +93,7 @@ test("transactional persistence is isolated behind the classic sheet persistence
   assert.match(sheetSource, /sheet-save-persistence\.js\?v=1/);
   assert.match(sheetSource, /persistSheetBundle\(\{/);
   assert.match(sheetSource, /character: collectCharacter\(\)/);
-  assert.match(sheetSource, /skills: collectSkills\(skills/);
+  assert.match(sheetSource, /skills: collectSkills\(\)/);
   assert.match(sheetSource, /outfits: collectOutfits\(\)/);
   assert.doesNotMatch(sheetSource, /supabase\.rpc\("save_character_bundle/);
   assert.match(persistenceSource, /const SAVE_RPC = "save_character_bundle_with_ofc"/);
