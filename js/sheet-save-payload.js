@@ -103,45 +103,49 @@ export function buildSkillSavePayloads(skills = [], {
     }));
 }
 
+const OUTFIT_DETAIL_MODEL_FIELDS = Object.freeze({
+  purchase_target: "purchase_value",
+  permanent_cost: "experience_cost",
+  concealment: "concealment",
+  concealment_penalty: "concealment_penalty",
+  attack: "attack",
+  parry: "parry",
+  range_text: "range",
+  speed: "speed",
+  control_modifier: "control_modifier",
+  electronic_control: "electronic_control",
+  defense_s: "defense_s",
+  defense_p: "defense_p",
+  defense_i: "defense_i",
+  ianus_surface: "ianus_surface",
+  ianus_deep: "ianus_deep",
+  ianus_none: "ianus_none",
+  tron_software: "tron_software",
+  tron_support: "tron_support",
+  tron_hardware: "tron_hardware",
+  cs_modifier: "cs_modifier",
+  crew: "crew",
+  sf: "sf",
+  residence_entry: "residence_entry",
+  residence_electric: "residence_electric",
+  residence_area: "residence_area",
+  slot: "slot",
+  manufacturer: "manufacturer",
+  page_number: "page_number",
+  major_category: "major_category",
+  minor_category: "minor_category",
+  description: "description"
+});
+
 function buildOutfitDetails(item, category) {
   const source = item?._ofc_details && typeof item._ofc_details === "object" && !Array.isArray(item._ofc_details)
     ? item._ofc_details
     : {};
-  return normalizeImportedOutfitDetails(category, {
-    ...source,
-    site_category: category,
-    purchase_target: item.purchase_value,
-    permanent_cost: item.experience_cost,
-    concealment: item.concealment,
-    concealment_penalty: item.concealment_penalty,
-    attack: item.attack,
-    parry: item.parry,
-    range_text: item.range,
-    speed: item.speed,
-    control_modifier: item.control_modifier,
-    electronic_control: item.electronic_control,
-    defense_s: item.defense_s,
-    defense_p: item.defense_p,
-    defense_i: item.defense_i,
-    ianus_surface: item.ianus_surface,
-    ianus_deep: item.ianus_deep,
-    ianus_none: item.ianus_none,
-    tron_software: item.tron_software,
-    tron_support: item.tron_support,
-    tron_hardware: item.tron_hardware,
-    cs_modifier: item.cs_modifier,
-    crew: item.crew,
-    sf: item.sf,
-    residence_entry: item.residence_entry,
-    residence_electric: item.residence_electric,
-    residence_area: item.residence_area,
-    slot: item.slot,
-    manufacturer: item.manufacturer,
-    page_number: item.page_number,
-    major_category: item.major_category,
-    minor_category: item.minor_category,
-    description: item.description
-  });
+  const details = { ...source, site_category: category };
+  for (const [detailKey, modelKey] of Object.entries(OUTFIT_DETAIL_MODEL_FIELDS)) {
+    if (Object.hasOwn(item, modelKey)) details[detailKey] = item[modelKey];
+  }
+  return normalizeImportedOutfitDetails(category, details);
 }
 
 export function buildOutfitSavePayloads(outfits = []) {
@@ -158,8 +162,6 @@ export function buildOutfitSavePayloads(outfits = []) {
         slot: item.slot || "",
         electronic_control: String(item.electronic_control || ""),
         defense: "",
-        control_modifier: 0,
-        cs_modifier: 0,
         description: item.description || "",
         sort_order: index,
         ofc_details: buildOutfitDetails(item, category)
