@@ -34,7 +34,7 @@ function handleTicketClick(event) {
 function readTicketData(record) {
   const title = clean(record.querySelector(".act-record__title")?.textContent) || "名称未登録アクト";
   const meta = clean(record.querySelector(".act-record__meta")?.textContent);
-  const [date = "—", slot = ""] = meta.split("/").map(clean);
+  const [rawDate = "—", slot = ""] = meta.split("/").map(clean);
   const rulerText = clean(record.querySelector(".act-record__ruler")?.textContent);
   const ruler = rulerText.replace(/^RULER[：:]\s*/i, "") || "—";
   const experience = String(Math.max(0, Number(record.querySelector("[data-experience-input]")?.value || 0)));
@@ -42,13 +42,21 @@ function readTicketData(record) {
   const id = String(record.dataset.participationId || "0").replace(/[^0-9A-Za-z_-]/g, "");
   return {
     title,
-    date,
+    date: formatTicketDate(rawDate),
     slot,
     ruler,
     experience,
     character,
     serial: `EXP-${id.padStart(6, "0")}`
   };
+}
+
+function formatTicketDate(value) {
+  const text = clean(value);
+  if (!text || text === "—") return "—";
+  const match = text.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/);
+  if (!match) return text;
+  return `${match[1]}/${match[2].padStart(2, "0")}/${match[3].padStart(2, "0")}`;
 }
 
 function openTicket(data) {
@@ -84,11 +92,11 @@ function openTicket(data) {
             <span>アクトタイトル <small>ACT TITLE</small></span>
             <strong id="experience-ticket-title">${escapeHtml(data.title)}</strong>
           </div>
-          <div class="experience-ticket__field">
+          <div class="experience-ticket__field experience-ticket__field--date">
             <span>日付 <small>DATE</small></span>
             <strong>${escapeHtml(data.date)}</strong>
           </div>
-          <div class="experience-ticket__field">
+          <div class="experience-ticket__field experience-ticket__field--cast">
             <span>参加キャスト <small>CAST</small></span>
             <strong>${escapeHtml(data.character)}</strong>
           </div>
@@ -124,11 +132,11 @@ function clean(value) {
 }
 
 function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>'"]/g, char => ({
+  return String(value ?? "").replace(/[&<>'\"]/g, char => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     "'": "&#39;",
-    '"': "&quot;"
+    '\"': "&quot;"
   })[char]);
 }
