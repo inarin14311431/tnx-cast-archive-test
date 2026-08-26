@@ -69,8 +69,17 @@ function flattenHistory() {
   flat.className = "act-records act-records--flat";
   nestedRecords.forEach(record => {
     const characterGroup = record.closest(".act-character-group");
-    record.dataset.historyCast = clean(characterGroup?.querySelector(".act-character-toggle__name")?.textContent) || "—";
-    flat.append(record);
+    const cast = clean(characterGroup?.querySelector(".act-character-toggle__name")?.textContent) || "—";
+    record.dataset.historyCast = cast;
+
+    const wrapper = document.createElement("section");
+    wrapper.className = "act-character-group act-character-group--flat";
+    const source = document.createElement("span");
+    source.className = "act-character-toggle__name act-character-toggle__name--source";
+    source.hidden = true;
+    source.textContent = cast;
+    wrapper.append(source, record);
+    flat.append(wrapper);
   });
   list.replaceChildren(flat);
 }
@@ -96,7 +105,7 @@ function ensureCompactSummary(record) {
   const meta = clean(record.querySelector(".act-record__meta")?.textContent);
   const title = clean(record.querySelector(".act-record__title")?.textContent) || "名称未登録アクト";
   const role = clean(record.querySelector("[data-participation-role] strong")?.textContent) || "—";
-  const cast = record.dataset.historyCast || "—";
+  const cast = record.dataset.historyCast || clean(record.closest(".act-character-group")?.querySelector(".act-character-toggle__name")?.textContent) || "—";
   const exp = Number(record.querySelector("[data-experience-input]")?.value || 0);
   const date = extractDate(meta);
 
@@ -146,7 +155,7 @@ function rebuildYearGroups(force = true) {
         </button>
         <div class="act-year-records"${isExpanded ? "" : " hidden"}></div>`;
       const container = section.querySelector(".act-year-records");
-      rows.forEach(row => container.append(row));
+      rows.forEach(row => container.append(row.closest(".act-character-group--flat") || row));
       records.append(section);
     });
     records.dataset.yearGrouped = "true";
@@ -189,6 +198,8 @@ function applyEnhancedFilters() {
       && (!query || record.dataset.historyTitle.includes(query))
       && (!role || record.dataset.historyRole === role);
     record.hidden = !matches;
+    const wrapper = record.closest(".act-character-group--flat");
+    if (wrapper) wrapper.hidden = !matches;
   });
 
   list.querySelectorAll(".act-year-group").forEach(group => {
