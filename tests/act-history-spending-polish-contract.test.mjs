@@ -48,11 +48,13 @@ test("spending cast select omits player name and normalizes handle quotes", () =
   assert.match(spending, /TNXHandleFormat\?\.formatIdentity/);
 });
 
-test("spending deletion uses one canonical handler with confirmation", () => {
-  assert.match(html, /acts-spending\.js\?v=7/);
+test("spending deletion uses one canonical handler with in-page confirmation", () => {
+  assert.match(html, /acts-spending\.js\?v=8/);
   assert.doesNotMatch(html, /acts-spending-delete-fix/);
-  assert.match(spending, /window\.confirm/);
+  assert.match(spending, /await confirmSpendingDeletion\(row, ownedCharacter\)/);
+  assert.match(spending, /experience-spending-confirm__panel/);
   assert.match(spending, /この操作は元に戻せません/);
+  assert.doesNotMatch(spending, /window\.confirm/);
   assert.match(spending, /\.from\("character_experience_spending"\)[\s\S]*\.delete\(\)[\s\S]*\.eq\("id", row\.id\)[\s\S]*\.eq\("character_id", ownedCharacter\.id\)/s);
   assert.doesNotMatch(spending, /delete_owned_experience_spending/);
 });
