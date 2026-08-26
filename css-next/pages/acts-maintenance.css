@@ -1,0 +1,39 @@
+/* Consolidated low-level act-history adjustments.
+   Keep small cross-cutting fixes here instead of one-off patch files. */
+
+/* Expanded record ruler label/content. */
+.act-record.is-detail-open > .act-record__ruler {
+  color: var(--color-text);
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.act-record.is-detail-open > .act-record__ruler::before {
+  content: "RULER / SIGNATURE";
+}
+
+.act-record.is-detail-open > .act-record__ruler::after {
+  content: none;
+}
+
+/* Spending form containment, including narrow mobile date inputs. */
+.experience-spending-form,
+.experience-spending-form > label {
+  min-width: 0;
+}
+
+.experience-spending-form input[type="date"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 560px) {
+  .experience-spending-form input[type="date"] {
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+}
