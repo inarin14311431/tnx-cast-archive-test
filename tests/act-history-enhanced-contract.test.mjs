@@ -24,7 +24,7 @@ test("act history groups records by year and keeps latest year open", () => {
 
 test("act records use compact one-line summary with expandable details", () => {
   assert.match(js, /act-record-summary/);
-  assert.match(js, /data\.toggleActDetail/);
+  assert.match(js, /dataset\.toggleActDetail/);
   assert.match(js, /is-detail-open/);
   assert.match(css, /grid-template-columns:\s*108px minmax\(220px, 1fr\)/);
   assert.match(css, /text-overflow:\s*ellipsis/);
