@@ -21,8 +21,6 @@ async function handleDelete(event) {
     return;
   }
 
-  if (!window.confirm("この経験点消費履歴を削除します。")) return;
-
   button.disabled = true;
   button.textContent = "削除中";
   setStatus("経験点消費履歴を削除中…");
@@ -39,7 +37,7 @@ async function handleDelete(event) {
     setStatus(
       missingRpc
         ? "経験点消費履歴の削除機能が未設定です。"
-        : "経験点消費履歴を削除できませんでした。キャスト所有者だけが削除できます。",
+        : "経験点消費履歴を削除できませんでした。",
       "error"
     );
     return;
