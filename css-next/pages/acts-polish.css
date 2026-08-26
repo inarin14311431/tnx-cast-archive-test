@@ -17,7 +17,7 @@ body[data-page="acts.html"] .act-year-group.is-expanded > .act-year-records {
 body[data-page="acts.html"] .act-record.is-detail-open {
   position: relative;
   margin: 10px 0 12px;
-  padding: 0 14px 14px;
+  padding: 14px;
   border: 3px solid color-mix(in srgb, var(--color-accent-strong) 82%, white 5%);
   background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
   box-shadow:
@@ -26,27 +26,22 @@ body[data-page="acts.html"] .act-record.is-detail-open {
     inset 0 0 30px color-mix(in srgb, var(--color-accent) 7%, transparent);
 }
 
+/* The collapsed summary is also the expanded record header. Keep it as a
+   normal grid row; negative margins made it overlap/crop the detail content. */
 body[data-page="acts.html"] .act-record.is-detail-open::before {
-  content: "ACTIVE RECORD";
-  position: absolute;
-  top: 7px;
-  left: 16px;
-  z-index: 2;
-  padding: 2px 8px;
-  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 70%, var(--color-border));
-  color: var(--color-accent-strong);
-  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
-  font: 700 .55rem/1.5 var(--font-data);
-  letter-spacing: .14em;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 22%, transparent);
+  content: none;
 }
 
 body[data-page="acts.html"] .act-record.is-detail-open > .act-record-summary {
-  margin-inline: -14px;
-  width: calc(100% + 28px);
-  padding-top: 30px;
+  grid-column: 1 / -1;
+  margin: 0;
+  width: 100%;
+  min-height: 52px;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 34%, var(--color-border));
+  border-radius: 10px;
   background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-alt));
-  box-shadow: inset 5px 0 var(--color-accent-strong);
+  box-shadow: inset 4px 0 var(--color-accent-strong);
 }
 
 body[data-page="acts.html"] .act-record-summary__title {
@@ -185,12 +180,14 @@ body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focu
 
   body[data-page="acts.html"] .act-record.is-detail-open {
     margin: 8px 0 10px;
-    padding-inline: 10px;
+    padding: 10px;
   }
 
   body[data-page="acts.html"] .act-record.is-detail-open > .act-record-summary {
-    margin-inline: -10px;
-    width: calc(100% + 20px);
+    margin: 0;
+    width: 100%;
+    min-height: 58px;
+    padding: 9px 10px;
   }
 
   body[data-page="acts.html"] .act-record.is-detail-open .act-record__title {
@@ -217,12 +214,6 @@ body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focu
 }
 
 @media (max-width: 560px) {
-  body[data-page="acts.html"] .act-record.is-detail-open::before {
-    top: 6px;
-    left: 10px;
-    font-size: .48rem;
-  }
-
   body[data-page="acts.html"] .experience-spending-record {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
