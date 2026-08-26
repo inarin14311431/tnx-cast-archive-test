@@ -37,8 +37,8 @@
 
   function normalizeIdentityDisplay(value){
     const raw=String(value??"").trim();
-    if(!raw)return "";
-    const match=raw.match(/^[\s　]*[“”"「『]+(.+)[“”"」』]+[\s　]+(.+)$/s);
+    if(!raw||!/^[“”"「『]/.test(raw))return raw;
+    const match=raw.match(/^(.+?[“”"」』])[\s　]+(.+)$/s);
     if(!match)return raw;
     return formatIdentity(stripOuterQuotes(match[1]),match[2]);
   }
