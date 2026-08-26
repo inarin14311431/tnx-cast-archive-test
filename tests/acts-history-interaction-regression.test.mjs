@@ -17,9 +17,10 @@ test("act history loads a capture-phase detail toggle safeguard", () => {
 test("experience spending deletion has one confirmed canonical handler", () => {
   assert.doesNotMatch(html, /acts-spending-delete-fix\.js/);
   assert.match(html, /acts-spending\.js\?v=7/);
-  assert.match(spending, /elements\.list\?\.addEventListener\("click", deleteSpendingRecord\)/);
+  assert.match(spending, /elements\.list\.addEventListener\("click", handleSpendingListClick\)/);
+  assert.match(spending, /function handleSpendingListClick\(event\)[\s\S]*data-delete-spending[\s\S]*deleteSpendingRecord\(button\)/);
   assert.match(spending, /window\.confirm\(/);
-  assert.match(spending, /\.from\("character_experience_spending"\)[\s\S]*\.delete\(\)[\s\S]*\.eq\("id", numericId\)/);
+  assert.match(spending, /\.from\("character_experience_spending"\)[\s\S]*\.delete\(\)[\s\S]*\.eq\("id", row\.id\)[\s\S]*\.eq\("character_id", ownedCharacter\.id\)/);
   assert.doesNotMatch(spending, /rpc\("delete_owned_experience_spending"/);
 });
 
