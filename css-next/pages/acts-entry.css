@@ -4,14 +4,11 @@
 @import url("../index.css?v=64") layer(app);
 @import url("./auth.css?v=2") layer(auth-page);
 
-/* Act-history page stack: structural rules first, visual refinement after. */
+/* Act-history page stack: base/history first, one canonical expanded-record stylesheet after. */
 @import url("./acts.css?v=4") layer(acts-page);
 @import url("./acts-history-enhanced.css?v=1") layer(acts-page);
 @import url("./acts-clarity.css?v=1") layer(acts-page);
-@import url("./act-record-console.css?v=1") layer(acts-page);
-@import url("./acts-polish.css?v=3") layer(acts-page);
-@import url("./acts-detail-grid.css?v=1") layer(acts-page);
-@import url("./acts-rounded-polish.css?v=1") layer(acts-page);
+@import url("./acts-record.css?v=1") layer(acts-page);
 @import url("./acts-maintenance.css?v=3") layer(acts-page);
 
 /* Experience ticket is isolated from the act-history cascade. */
