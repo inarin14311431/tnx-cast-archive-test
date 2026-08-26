@@ -30,10 +30,24 @@
   box-sizing: border-box;
 }
 
+/* iOS Safari can place the browser chrome over the visual viewport edge.
+   Keep the ACT header inside the safe/visible area without affecting desktop. */
+@media (max-width: 700px) {
+  body[data-page="acts.html"] .act-history-header {
+    box-sizing: border-box;
+    padding-top: max(14px, env(safe-area-inset-top));
+    scroll-margin-top: max(14px, env(safe-area-inset-top));
+  }
+}
+
 @media (max-width: 560px) {
   .experience-spending-form input[type="date"] {
     inline-size: 100%;
     min-inline-size: 0;
     max-inline-size: 100%;
+  }
+
+  body[data-page="acts.html"] .act-history-header {
+    padding-top: max(20px, env(safe-area-inset-top));
   }
 }
