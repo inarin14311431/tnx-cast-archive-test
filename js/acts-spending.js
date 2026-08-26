@@ -31,7 +31,7 @@ async function initialize() {
 
   elements.date.value = formatLocalDate(new Date());
   elements.form.addEventListener("submit", addSpendingRecord);
-  elements.list.addEventListener("click", deleteSpendingRecord);
+  elements.list?.addEventListener("click", deleteSpendingRecord);
   elements.playerFilter?.addEventListener("change", scheduleRender);
   elements.castFilter?.addEventListener("change", scheduleRender);
   elements.reset?.addEventListener("click", scheduleRender);
@@ -124,21 +124,23 @@ function getFilteredSpendingRows() {
 }
 
 function populateCharacterOptions() {
+  if (!elements.character) return;
   const previous = elements.character.value;
   const filtered = getFilteredCharacters();
   const candidates = filtered.length ? filtered : ownedCharacters;
 
   elements.character.innerHTML = candidates.length
-    ? candidates.map(character => `<option value="${escapeAttribute(character.id)}">${escapeHtml(`${formatFullName(character)} / ${displayPlayer(character)}`)}</option>`).join("")
+    ? candidates.map(character => `<option value="${escapeAttribute(character.id)}">${escapeHtml(formatFullName(character))}</option>`).join("")
     : `<option value="">登録キャストなし</option>`;
 
   const selectedCast = elements.castFilter?.value ?? "";
   const selectedCharacter = candidates.find(character => character.public_id === selectedCast)
-    ?? candidates.find(character => character.id === previous)
+    ?? candidates.find(character => String(character.id) === String(previous))
     ?? candidates[0];
 
   if (selectedCharacter) elements.character.value = selectedCharacter.id;
-  elements.form.querySelector("button[type='submit']").disabled = !candidates.length;
+  const submit = elements.form?.querySelector("button[type='submit']");
+  if (submit) submit.disabled = !candidates.length;
 }
 
 function renderSpendingHistory() {
@@ -155,11 +157,11 @@ function renderSpendingHistory() {
     const character = charactersById.get(row.character_id);
     return `
       <article class="experience-spending-record" data-spending-id="${escapeAttribute(row.id)}">
-        <p class="experience-spending-record__date">${escapeHtml(formatDate(row.spent_on))}</p>
-        <p class="experience-spending-record__cast"><strong>${escapeHtml(character ? formatFullName(character) : "削除済みキャスト")}</strong><small>${escapeHtml(character ? displayPlayer(character) : "PLAYER UNKNOWN")}</small></p>
-        <p class="experience-spending-record__description">${escapeHtml(row.description || "用途未記入")}</p>
-        <p class="experience-spending-record__amount">－${escapeHtml(row.amount)} EXP</p>
-        <button type="button" data-delete-spending>削除</button>
+        <p class="experience-spending-record__date"><small>DATE</small><strong>${escapeHtml(formatDate(row.spent_on))}</strong></p>
+        <p class="experience-spending-record__cast"><small>CAST</small><strong>${escapeHtml(character ? formatFullName(character) : "削除済みキャスト")}</strong></p>
+        <p class="experience-spending-record__amount"><small>SPENT EXP</small><strong>－${escapeHtml(row.amount)} EXP</strong></p>
+        <p class="experience-spending-record__description"><small>DESCRIPTION</small><strong>${escapeHtml(row.description || "用途未記入")}</strong></p>
+        <button type="button" class="experience-spending-record__delete" data-delete-spending>削除</button>
       </article>`;
   }).join("");
 
@@ -180,7 +182,7 @@ async function addSpendingRecord(event) {
   const spentOn = elements.date.value;
   const description = elements.description.value.trim();
 
-  if (!ownedCharacters.some(character => character.id === characterId)) {
+  if (!ownedCharacters.some(character => String(character.id) === String(characterId))) {
     setStatus("消費経験点を登録するキャストを選択してください。", "error");
     return;
   }
@@ -227,24 +229,44 @@ async function addSpendingRecord(event) {
 
 async function deleteSpendingRecord(event) {
   const button = event.target.closest("[data-delete-spending]");
-  const record = event.target.closest("[data-spending-id]");
-  if (!button || !record) return;
+  if (!button) return;
+  const record = button.closest("[data-spending-id]");
+  if (!record) return;
+
+  const spendingId = String(record.dataset.spendingId || "");
+  if (!spendingId) {
+    setStatus("削除対象の経験点消費履歴を確認できませんでした。", "error");
+    return;
+  }
   if (!window.confirm("この経験点消費履歴を削除します。")) return;
 
   button.disabled = true;
-  const { error } = await supabase
+  button.textContent = "削除中";
+  setStatus("経験点消費履歴を削除中…");
+
+  const { data, error } = await supabase
     .from("character_experience_spending")
     .delete()
-    .eq("id", record.dataset.spendingId);
+    .eq("id", spendingId)
+    .select("id");
 
   if (error) {
     console.error(error);
     button.disabled = false;
+    button.textContent = "削除";
     setStatus("経験点消費履歴を削除できませんでした。", "error");
     return;
   }
 
-  spendingRows = spendingRows.filter(row => String(row.id) !== record.dataset.spendingId);
+  const deleted = Array.isArray(data) && data.some(row => String(row.id) === spendingId);
+  if (!deleted) {
+    button.disabled = false;
+    button.textContent = "削除";
+    setStatus("削除対象を確認できませんでした。画面を再読み込みして再度お試しください。", "error");
+    return;
+  }
+
+  spendingRows = spendingRows.filter(row => String(row.id) !== spendingId);
   renderSpendingHistory();
   setStatus("経験点消費履歴を削除しました。", "success");
 }
@@ -254,8 +276,12 @@ function displayPlayer(character) {
 }
 
 function formatFullName(character) {
-  const handle = String(character.handle ?? "").trim();
-  return [handle ? `“${handle}”` : "", character.character_name].filter(Boolean).join(" ");
+  const handle = String(character?.handle ?? "").trim();
+  const name = String(character?.character_name ?? "").trim();
+  const formatter = window.TNXHandleFormat?.formatIdentity;
+  if (typeof formatter === "function") return formatter(handle, name);
+  const stripped = handle.replace(/^[\s　“”"「『]+|[\s　“”"」』]+$/g, "").trim();
+  return [stripped ? `“${stripped}”` : "", name].filter(Boolean).join(" ");
 }
 
 function formatLocalDate(date) {
@@ -267,10 +293,13 @@ function formatLocalDate(date) {
 
 function formatDate(value) {
   if (!value) return "—";
-  return new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium" }).format(new Date(`${value}T00:00:00`));
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[1]}/${match[2]}/${match[3]}`;
+  return new Intl.DateTimeFormat("ja-JP").format(new Date(value));
 }
 
 function setStatus(message, state = "") {
+  if (!elements.status) return;
   elements.status.textContent = message;
   elements.status.className = `experience-spending-status${state ? ` is-${state}` : ""}`;
 }
