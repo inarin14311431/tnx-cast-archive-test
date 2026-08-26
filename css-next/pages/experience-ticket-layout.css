@@ -13,11 +13,22 @@
 
 .experience-ticket__field--date,
 .experience-ticket__field--cast { min-width: 0; }
+.experience-ticket__field--date > strong {
+  overflow: visible;
+  text-overflow: clip;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.025em;
+}
 .experience-ticket__field--cast > strong { font-size: clamp(1.05rem, 2.5vw, 1.75rem); }
+.experience-ticket__field--signature > strong {
+  box-sizing: border-box;
+  width: 100%;
+  padding-right: 12%;
+}
 
 @media (max-width: 640px) {
   .experience-ticket-dialog { width: min(100%, 620px); }
-  .experience-ticket__fields { grid-template-columns: minmax(136px, .52fr) minmax(0, 1.48fr); }
+  .experience-ticket__fields { grid-template-columns: minmax(148px, .56fr) minmax(0, 1.44fr); }
   .experience-ticket__field,
   .experience-ticket__field:nth-child(even) { grid-column: auto; }
   .experience-ticket__field--wide,
@@ -27,11 +38,15 @@
   .experience-ticket__field > span small { margin-left: 4px; font-size: clamp(.42rem, 1.8vw, .52rem); }
   .experience-ticket__field > strong { font-size: clamp(.9rem, 4vw, 1.3rem); }
   .experience-ticket__field--date > strong {
-    font-size: clamp(.78rem, 3.35vw, 1.02rem);
+    overflow: visible;
+    font-size: clamp(.72rem, 3vw, .94rem);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -.025em;
+    letter-spacing: -.04em;
     text-overflow: clip;
   }
   .experience-ticket__field--cast > strong { font-size: clamp(.82rem, 3.5vw, 1.15rem); }
-  .experience-ticket__field--signature > strong { font-size: clamp(1.2rem, 5.2vw, 1.8rem); }
+  .experience-ticket__field--signature > strong {
+    padding-right: 10%;
+    font-size: clamp(1.2rem, 5.2vw, 1.8rem);
+  }
 }

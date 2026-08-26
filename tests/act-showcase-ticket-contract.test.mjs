@@ -28,9 +28,11 @@ test("experience ticket keeps full date and single-line mobile values", () => {
   assert.match(ticketJs, /fitTicketValues/);
   assert.match(ticketLayoutCss, /grid-template-columns:\s*minmax\(180px, \.42fr\) minmax\(0, 1\.58fr\)/);
   assert.match(ticketLayoutCss, /\.experience-ticket__field > strong\s*\{\s*white-space:\s*nowrap/);
-  assert.match(ticketLayoutCss, /@media \(max-width: 640px\)[\s\S]*grid-template-columns:\s*minmax\(136px, \.52fr\) minmax\(0, 1\.48fr\)/);
+  assert.match(ticketLayoutCss, /@media \(max-width: 640px\)[\s\S]*grid-template-columns:\s*minmax\(148px, \.56fr\) minmax\(0, 1\.44fr\)/);
+  assert.match(ticketLayoutCss, /\.experience-ticket__field--date > strong[\s\S]*overflow:\s*visible/);
   assert.match(ticketLayoutCss, /\.experience-ticket__field--date > strong[\s\S]*font-variant-numeric:\s*tabular-nums/);
   assert.match(ticketLayoutCss, /\.experience-ticket__field--date > strong[\s\S]*text-overflow:\s*clip/);
+  assert.match(ticketLayoutCss, /@media \(max-width: 640px\)[\s\S]*\.experience-ticket__field--signature > strong\s*\{[\s\S]*padding-right:\s*10%/);
   assert.match(ticketLayoutCss, /\.experience-ticket__field--wide,[\s\S]*\.experience-ticket__field--signature\s*\{\s*grid-column:\s*1 \/ -1/);
 });
 
