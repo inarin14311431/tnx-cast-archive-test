@@ -1,0 +1,264 @@
+/* Expanded act-history record: reward console treatment. */
+.act-record.is-detail-open {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(290px, .78fr);
+  gap: 14px 18px;
+  padding: 14px;
+  overflow: hidden;
+  border-top: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 5%, transparent), transparent 42%),
+    color-mix(in srgb, var(--color-surface) 92%, transparent);
+}
+
+.act-record.is-detail-open::before {
+  content: "ACT REWARD RECORD";
+  position: absolute;
+  top: 62px;
+  right: 16px;
+  color: color-mix(in srgb, var(--color-accent) 42%, transparent);
+  font: 700 .52rem/1 var(--font-data);
+  letter-spacing: .16em;
+  pointer-events: none;
+}
+
+.act-record.is-detail-open > .act-record-summary {
+  grid-column: 1 / -1;
+  margin: -14px -14px 0;
+  width: calc(100% + 28px);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+}
+
+.act-record.is-detail-open > .act-record__main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  align-content: start;
+  min-width: 0;
+  padding: 2px 0 0;
+}
+
+.act-record.is-detail-open .act-record__title {
+  grid-column: 1 / -1;
+  margin: 0 0 3px;
+  padding: 0 145px 11px 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 62%, transparent);
+  font-size: clamp(1rem, 1.8vw, 1.28rem);
+  font-weight: 850;
+  letter-spacing: .015em;
+}
+
+.act-record.is-detail-open .act-record__title a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.act-record.is-detail-open .act-record__title a:is(:hover, :focus-visible) {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.act-record.is-detail-open .act-record__meta,
+.act-record.is-detail-open .act-record__role,
+.act-record.is-detail-open > .act-record__ruler {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: 25px 10px 8px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 68%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 34%, transparent);
+}
+
+.act-record.is-detail-open .act-record__meta::before,
+.act-record.is-detail-open > .act-record__ruler::before {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  color: var(--color-muted);
+  font: 700 .51rem/1 var(--font-data);
+  letter-spacing: .12em;
+}
+
+.act-record.is-detail-open .act-record__meta::before { content: "DATE / CAST"; }
+.act-record.is-detail-open > .act-record__ruler::before { content: "RULER"; }
+
+.act-record.is-detail-open .act-record__meta {
+  color: var(--color-text);
+  font: 750 .78rem/1.25 var(--font-data);
+}
+
+.act-record.is-detail-open .act-record__role {
+  display: block;
+}
+
+.act-record.is-detail-open .act-record__role small {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  color: var(--color-muted);
+  font: 700 .51rem/1 var(--font-data);
+  letter-spacing: .1em;
+}
+
+.act-record.is-detail-open .act-record__role strong {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 3px 9px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
+  border-radius: 999px;
+  color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+  font: 800 .7rem/1 var(--font-data);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.act-record.is-detail-open > .act-record__ruler {
+  grid-column: 1;
+  color: transparent;
+}
+
+.act-record.is-detail-open > .act-record__ruler::after {
+  content: attr(data-ruler-display);
+  color: var(--color-text);
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.act-record.is-detail-open > .act-record__exp {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 9px;
+  min-width: 0;
+}
+
+.act-record.is-detail-open .act-record__exp label {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr;
+  align-items: end;
+  min-height: 126px;
+  padding: 13px 14px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--color-accent) 11%, transparent), transparent 56%),
+    color-mix(in srgb, var(--color-bg) 82%, black);
+  box-shadow: inset 0 0 28px color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+.act-record.is-detail-open .act-record__exp label::after {
+  content: "EXP";
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  padding-bottom: 9px;
+  color: var(--color-accent-strong);
+  font: 800 .72rem/1 var(--font-data);
+  letter-spacing: .1em;
+}
+
+.act-record.is-detail-open .act-record__exp label > small {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  color: var(--color-muted);
+  font: 700 .54rem/1 var(--font-data);
+  letter-spacing: .14em;
+}
+
+.act-record.is-detail-open .act-record__exp label > input {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  margin: 4px 0 0;
+  padding: 0 48px 0 0;
+  border: 0;
+  outline: 0;
+  color: var(--color-accent-strong);
+  background: transparent;
+  box-shadow: none;
+  font: 850 clamp(2.25rem, 5vw, 3.7rem)/1 var(--font-data);
+  text-align: right;
+}
+
+.act-record.is-detail-open .act-record__exp label > input:focus-visible {
+  text-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+.act-record.is-detail-open .act-record__exp-actions {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.35fr) minmax(90px, .72fr) minmax(100px, .78fr);
+  gap: 8px;
+}
+
+.act-record.is-detail-open .act-record__exp-actions > button {
+  min-height: 54px;
+  padding: 8px 11px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-alt) 90%, transparent);
+}
+
+.act-record.is-detail-open .act-record__ticket {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--color-accent) 72%, var(--color-border));
+  color: var(--color-accent-strong);
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--color-accent) 15%, transparent), transparent 58%),
+    color-mix(in srgb, var(--color-surface-alt) 92%, transparent);
+  box-shadow: inset 3px 0 color-mix(in srgb, var(--color-accent) 72%, transparent);
+}
+
+.act-record.is-detail-open .act-record__ticket::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--color-accent) 15%, transparent) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform .32s ease;
+  pointer-events: none;
+}
+
+.act-record.is-detail-open .act-record__ticket:is(:hover, :focus-visible) {
+  border-color: var(--color-accent-strong);
+  box-shadow: inset 3px 0 var(--color-accent), 0 0 16px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.act-record.is-detail-open .act-record__ticket:is(:hover, :focus-visible)::after { transform: translateX(120%); }
+.act-record.is-detail-open .act-record__ticket span { display: block; font-weight: 850; }
+.act-record.is-detail-open .act-record__ticket small { display: block; margin-top: 4px; font: 700 .52rem/1 var(--font-data); letter-spacing: .13em; }
+
+.act-record.is-detail-open .act-record__delete {
+  border-color: color-mix(in srgb, var(--color-danger) 58%, var(--color-border));
+  color: color-mix(in srgb, var(--color-danger) 88%, var(--color-text));
+}
+
+.act-record.is-detail-open .act-record__delete:is(:hover, :focus-visible) {
+  border-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface-alt));
+}
+
+@media (max-width: 900px) {
+  .act-record.is-detail-open { grid-template-columns: 1fr; }
+  .act-record.is-detail-open > .act-record__exp { grid-column: 1; grid-row: auto; }
+  .act-record.is-detail-open > .act-record__ruler { grid-column: 1; }
+}
+
+@media (max-width: 600px) {
+  .act-record.is-detail-open::before { display: none; }
+  .act-record.is-detail-open .act-record__title { padding-right: 0; }
+  .act-record.is-detail-open > .act-record__main { grid-template-columns: 1fr; }
+  .act-record.is-detail-open .act-record__exp-actions { grid-template-columns: 1fr 1fr; }
+  .act-record.is-detail-open .act-record__ticket { grid-column: 1 / -1; }
+  .act-record.is-detail-open .act-record__exp label { min-height: 104px; }
+}
