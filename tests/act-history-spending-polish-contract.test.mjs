@@ -7,8 +7,7 @@ const entry = fs.readFileSync("css-next/pages/acts-entry.css", "utf8");
 const css = fs.readFileSync("css-next/pages/acts-polish.css", "utf8");
 const detailCss = fs.readFileSync("css-next/pages/acts-detail-grid.css", "utf8");
 const roundedCss = fs.readFileSync("css-next/pages/acts-rounded-polish.css", "utf8");
-const spending = fs.readFileSync("js/acts-spending.js", "utf8");
-const uiFixes = fs.readFileSync("js/acts-ui-fixes.js", "utf8");
+const app = fs.readFileSync("js/acts-app.js", "utf8");
 const migration = fs.readFileSync("supabase/09_experience_spending.sql", "utf8");
 
 test("open act record keeps neon focus without an ACTIVE RECORD badge", () => {
@@ -22,19 +21,14 @@ test("open act record keeps neon focus without an ACTIVE RECORD badge", () => {
   assert.match(roundedCss, /border-radius:\s*999px/);
 });
 
-test("open record exposes showcase affordance and normalizes ruler label", () => {
-  assert.match(html, /acts-ui-fixes\.js\?v=2/);
-  assert.match(uiFixes, /replace\(\/\^\\s\*RULER/);
-  assert.match(uiFixes, /has-showcase-link/);
-  assert.match(uiFixes, /act-record__showcase-link/);
-  assert.match(css, /OPEN ACT FILE/);
-});
-
-test("expanded act detail uses four facts in a two-column two-row grid", () => {
-  assert.match(uiFixes, /参加日時 DATE/);
-  assert.match(uiFixes, /ハンドアウト CAST No\./);
-  assert.match(uiFixes, /スタイル ASSIGN STYLE/);
-  assert.match(uiFixes, /ルーラー RULER/);
+test("unified controller renders showcase affordance and four detail facts directly", () => {
+  assert.match(html, /acts-app\.js\?v=1/);
+  assert.match(app, /act-record__showcase-link/);
+  assert.match(app, /has-showcase-link/);
+  assert.match(app, /参加日時 DATE/);
+  assert.match(app, /ハンドアウト CAST No\./);
+  assert.match(app, /スタイル ASSIGN STYLE/);
+  assert.match(app, /ルーラー RULER/);
   assert.match(detailCss, /\.act-record__facts[\s\S]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
 });
 
@@ -44,19 +38,17 @@ test("experience reward panel is shortened for the two-row fact layout", () => {
 });
 
 test("spending cast select omits player name and normalizes handle quotes", () => {
-  assert.doesNotMatch(spending, /formatFullName\(character\)\} \/ \$\{displayPlayer/);
-  assert.match(spending, /TNXHandleFormat\?\.formatIdentity/);
+  assert.match(app, /TNXHandleFormat\?\.formatIdentity/);
+  assert.doesNotMatch(app, /fullName\(c\).*displayPlayer/s);
 });
 
-test("spending deletion uses one canonical handler with in-page confirmation", () => {
-  assert.match(html, /acts-spending\.js\?v=8/);
-  assert.doesNotMatch(html, /acts-spending-delete-fix/);
-  assert.match(spending, /await confirmSpendingDeletion\(row, ownedCharacter\)/);
-  assert.match(spending, /experience-spending-confirm__panel/);
-  assert.match(spending, /この操作は元に戻せません/);
-  assert.doesNotMatch(spending, /window\.confirm/);
-  assert.match(spending, /\.from\("character_experience_spending"\)[\s\S]*\.delete\(\)[\s\S]*\.eq\("id", row\.id\)[\s\S]*\.eq\("character_id", ownedCharacter\.id\)/s);
-  assert.doesNotMatch(spending, /delete_owned_experience_spending/);
+test("spending deletion uses canonical in-page confirmation and RLS scoped delete", () => {
+  assert.match(app, /function confirmAction\(/);
+  assert.match(app, /experience-spending-confirm__panel/);
+  assert.match(app, /この操作は元に戻せません/);
+  assert.doesNotMatch(app, /window\.confirm/);
+  assert.match(app, /\.from\("character_experience_spending"\)\.delete\(\)[\s\S]*\.eq\("id", row\.id\)\.eq\("character_id", character\.id\)/s);
+  assert.doesNotMatch(app, /delete_owned_experience_spending/);
 });
 
 test("spending deletion is owner-scoped by RLS", () => {
@@ -67,11 +59,11 @@ test("spending deletion is owner-scoped by RLS", () => {
 });
 
 test("spending records keep rounded delete treatment", () => {
-  const date = spending.indexOf('experience-spending-record__date');
-  const cast = spending.indexOf('experience-spending-record__cast');
-  const amount = spending.indexOf('experience-spending-record__amount');
-  const description = spending.indexOf('experience-spending-record__description');
-  const remove = spending.indexOf('experience-spending-record__delete');
+  const date = app.indexOf('experience-spending-record__date');
+  const cast = app.indexOf('experience-spending-record__cast');
+  const amount = app.indexOf('experience-spending-record__amount');
+  const description = app.indexOf('experience-spending-record__description');
+  const remove = app.indexOf('experience-spending-record__delete');
   assert.ok(date >= 0 && date < cast && cast < amount && amount < description && description < remove);
   assert.match(roundedCss, /\.experience-spending-record\s*\{[\s\S]*border-radius:\s*13px/s);
   assert.match(roundedCss, /\.experience-spending-record__delete\s*\{[\s\S]*border-radius:\s*999px/s);
