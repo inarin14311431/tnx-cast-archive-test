@@ -223,8 +223,10 @@ async function addSpendingRecord(event) {
 }
 
 function handleSpendingListClick(event) {
-  const button = event.target.closest("[data-delete-spending]");
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const button = target?.closest?.("[data-delete-spending]");
   if (!button || !elements.list.contains(button)) return;
+  event.preventDefault();
   deleteSpendingRecord(button);
 }
 
@@ -244,14 +246,7 @@ async function deleteSpendingRecord(button) {
     return;
   }
 
-  const confirmed = window.confirm(
-    `経験点消費履歴を削除します。\n\n` +
-    `キャスト：${formatFullName(ownedCharacter)}\n` +
-    `消費日：${formatDate(row.spent_on)}\n` +
-    `消費経験点：${Number(row.amount || 0)} EXP\n` +
-    `用途：${row.description || "用途未記入"}\n\n` +
-    `この操作は元に戻せません。`
-  );
+  const confirmed = await confirmSpendingDeletion(row, ownedCharacter);
   if (!confirmed) return;
 
   button.disabled = true;
@@ -277,6 +272,50 @@ async function deleteSpendingRecord(button) {
   spendingRows = spendingRows.filter(item => String(item.id) !== spendingId);
   renderSpendingHistory();
   setStatus("経験点消費履歴を削除しました。", "success");
+}
+
+function confirmSpendingDeletion(row, character) {
+  return new Promise(resolve => {
+    document.querySelector(".experience-spending-confirm")?.remove();
+
+    const overlay = document.createElement("div");
+    overlay.className = "experience-spending-confirm";
+    overlay.setAttribute("role", "presentation");
+    overlay.innerHTML = `
+      <section class="experience-spending-confirm__panel" role="dialog" aria-modal="true" aria-labelledby="experience-spending-confirm-title">
+        <p class="experience-spending-confirm__eyebrow">DELETE EXPERIENCE RECORD</p>
+        <h2 id="experience-spending-confirm-title">経験点消費履歴を削除</h2>
+        <dl class="experience-spending-confirm__details">
+          <div><dt>キャスト</dt><dd>${escapeHtml(formatFullName(character))}</dd></div>
+          <div><dt>消費日</dt><dd>${escapeHtml(formatDate(row.spent_on))}</dd></div>
+          <div><dt>消費経験点</dt><dd>${escapeHtml(Number(row.amount || 0))} EXP</dd></div>
+          <div><dt>用途</dt><dd>${escapeHtml(row.description || "用途未記入")}</dd></div>
+        </dl>
+        <p class="experience-spending-confirm__warning">この操作は元に戻せません。</p>
+        <div class="experience-spending-confirm__actions">
+          <button type="button" data-spending-confirm-cancel>キャンセル</button>
+          <button type="button" class="danger" data-spending-confirm-delete>削除する</button>
+        </div>
+      </section>`;
+
+    const finish = result => {
+      document.removeEventListener("keydown", onKeyDown);
+      overlay.remove();
+      resolve(result);
+    };
+    const onKeyDown = event => {
+      if (event.key === "Escape") finish(false);
+    };
+
+    overlay.addEventListener("click", event => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (target === overlay || target?.closest?.("[data-spending-confirm-cancel]")) finish(false);
+      if (target?.closest?.("[data-spending-confirm-delete]")) finish(true);
+    });
+    document.addEventListener("keydown", onKeyDown);
+    document.body.appendChild(overlay);
+    window.requestAnimationFrame(() => overlay.querySelector("[data-spending-confirm-delete]")?.focus());
+  });
 }
 
 function displayPlayer(character) {
