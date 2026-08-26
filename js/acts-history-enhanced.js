@@ -3,6 +3,7 @@ const yearFilter = document.querySelector("#history-year-filter");
 const queryFilter = document.querySelector("#history-query-filter");
 const roleFilter = document.querySelector("#history-role-filter");
 const sortFilter = document.querySelector("#history-sort-filter");
+const filterStatus = document.querySelector("#history-filter-status");
 
 const expandedYears = new Set();
 let enhancing = false;
@@ -50,6 +51,7 @@ function enhanceHistory() {
   if (enhancing) return;
   enhancing = true;
   try {
+    flattenHistory();
     list.querySelectorAll(".act-record").forEach(ensureCompactSummary);
     rebuildYearGroups(false);
     syncFilterOptions();
@@ -57,6 +59,20 @@ function enhanceHistory() {
   } finally {
     enhancing = false;
   }
+}
+
+function flattenHistory() {
+  const nestedRecords = [...list.querySelectorAll(".act-player-group .act-record")];
+  if (!nestedRecords.length) return;
+
+  const flat = document.createElement("div");
+  flat.className = "act-records act-records--flat";
+  nestedRecords.forEach(record => {
+    const characterGroup = record.closest(".act-character-group");
+    record.dataset.historyCast = clean(characterGroup?.querySelector(".act-character-toggle__name")?.textContent) || "—";
+    flat.append(record);
+  });
+  list.replaceChildren(flat);
 }
 
 function ensureCompactSummary(record) {
@@ -70,6 +86,7 @@ function ensureCompactSummary(record) {
     summary.innerHTML = `
       <span class="act-record-summary__date"></span>
       <span class="act-record-summary__title"></span>
+      <span class="act-record-summary__cast"></span>
       <span class="act-record-summary__role"></span>
       <span class="act-record-summary__exp"></span>
       <span class="act-record-summary__icon" aria-hidden="true">＋</span>`;
@@ -79,11 +96,13 @@ function ensureCompactSummary(record) {
   const meta = clean(record.querySelector(".act-record__meta")?.textContent);
   const title = clean(record.querySelector(".act-record__title")?.textContent) || "名称未登録アクト";
   const role = clean(record.querySelector("[data-participation-role] strong")?.textContent) || "—";
+  const cast = record.dataset.historyCast || "—";
   const exp = Number(record.querySelector("[data-experience-input]")?.value || 0);
   const date = extractDate(meta);
 
   setText(summary.querySelector(".act-record-summary__date"), date);
   setText(summary.querySelector(".act-record-summary__title"), title);
+  setText(summary.querySelector(".act-record-summary__cast"), cast);
   setText(summary.querySelector(".act-record-summary__role"), role);
   setText(summary.querySelector(".act-record-summary__exp"), `+${exp} EXP`);
   record.dataset.historyYear = extractYear(date);
@@ -98,7 +117,6 @@ function rebuildYearGroups(force = true) {
     if (!allRecords.length) return;
     if (!force && records.dataset.yearGrouped === "true") return;
 
-    const characterId = records.closest(".act-character-group")?.querySelector("[data-character-id]")?.dataset.characterId || "cast";
     const years = new Map();
     allRecords.forEach(record => {
       ensureCompactSummary(record);
@@ -113,7 +131,7 @@ function rebuildYearGroups(force = true) {
 
     yearKeys.forEach(year => {
       const rows = years.get(year).sort(compareRecords);
-      const key = `${characterId}:${year}`;
+      const key = `all:${year}`;
       const defaultExpanded = year === latestYear;
       const isExpanded = expandedYears.has(key) || (!expandedYears.has(`!${key}`) && defaultExpanded);
       const section = document.createElement("section");
@@ -123,7 +141,7 @@ function rebuildYearGroups(force = true) {
       section.innerHTML = `
         <button type="button" class="act-year-toggle" data-toggle-year aria-expanded="${isExpanded}">
           <span><strong>${escapeHtml(year)}</strong><small>YEAR ARCHIVE</small></span>
-          <span>${rows.length} ACTS</span>
+          <span>${rows.length} RECORDS</span>
           <span aria-hidden="true">${isExpanded ? "−" : "＋"}</span>
         </button>
         <div class="act-year-records"${isExpanded ? "" : " hidden"}></div>`;
@@ -176,18 +194,13 @@ function applyEnhancedFilters() {
   list.querySelectorAll(".act-year-group").forEach(group => {
     const visible = [...group.querySelectorAll(".act-record")].filter(record => !record.hidden);
     group.hidden = visible.length === 0;
-    setText(group.querySelector(".act-year-toggle > span:nth-child(2)"), `${visible.length} ACTS`);
+    setText(group.querySelector(".act-year-toggle > span:nth-child(2)"), `${visible.length} RECORDS`);
   });
 
-  list.querySelectorAll(".act-character-group").forEach(group => {
-    const visibleCount = [...group.querySelectorAll(".act-record")].filter(record => !record.hidden).length;
-    group.hidden = visibleCount === 0;
-  });
-
-  list.querySelectorAll(".act-player-group").forEach(group => {
-    const visibleCount = [...group.querySelectorAll(".act-record")].filter(record => !record.hidden).length;
-    group.hidden = visibleCount === 0;
-  });
+  const visibleRecords = [...list.querySelectorAll(".act-record")].filter(record => !record.hidden);
+  const exp = visibleRecords.reduce((sum, record) => sum + Number(record.querySelector("[data-experience-input]")?.value || 0), 0);
+  const casts = new Set(visibleRecords.map(record => record.dataset.historyCast).filter(value => value && value !== "—"));
+  setText(filterStatus, `${visibleRecords.length} RECORDS / ${exp} EXP / ${casts.size} CASTS`);
 }
 
 function handleListClick(event) {
