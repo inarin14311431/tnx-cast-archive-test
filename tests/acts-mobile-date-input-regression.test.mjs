@@ -6,7 +6,7 @@ const entry = fs.readFileSync("css-next/pages/acts-entry.css", "utf8");
 const maintenance = fs.readFileSync("css-next/pages/acts-maintenance.css", "utf8");
 
 test("acts entry loads consolidated maintenance adjustments", () => {
-  assert.match(entry, /acts-maintenance\.css\?v=1/);
+  assert.match(entry, /acts-maintenance\.css\?v=4/);
 });
 
 test("iOS date input stays inside the spending form column", () => {
