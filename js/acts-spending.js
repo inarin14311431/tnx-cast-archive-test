@@ -27,11 +27,11 @@ initialize();
 
 async function initialize() {
   currentUser = await requireAuth();
-  if (!currentUser || !elements.form) return;
+  if (!currentUser || !elements.form || !elements.list) return;
 
   elements.date.value = formatLocalDate(new Date());
   elements.form.addEventListener("submit", addSpendingRecord);
-  elements.list?.addEventListener("click", deleteSpendingRecord);
+  elements.list.addEventListener("click", handleSpendingListClick);
   elements.playerFilter?.addEventListener("change", scheduleRender);
   elements.castFilter?.addEventListener("change", scheduleRender);
   elements.reset?.addEventListener("click", scheduleRender);
@@ -65,10 +65,10 @@ async function loadData() {
   }
 
   ownedCharacters = characters ?? [];
+  populateCharacterOptions();
 
   if (!ownedCharacters.length) {
     spendingRows = [];
-    populateCharacterOptions();
     renderSpendingHistory();
     setStatus("登録キャストがありません。");
     return;
@@ -83,18 +83,13 @@ async function loadData() {
 
   if (error) {
     console.error(error);
-    const hint = /character_experience_spending/i.test(String(error.message ?? ""))
-      ? " Supabaseでsupabase/09_experience_spending.sqlを実行してください。"
-      : "";
-    setStatus(`経験点消費履歴を取得できませんでした。${hint}`, "error");
+    setStatus("経験点消費履歴を取得できませんでした。", "error");
     elements.list.innerHTML = `<p class="experience-spending-empty">経験点消費履歴を取得できませんでした。</p>`;
-    populateCharacterOptions();
     updateExperienceSummary();
     return;
   }
 
   spendingRows = data ?? [];
-  populateCharacterOptions();
   renderSpendingHistory();
   setStatus(`${spendingRows.length}件の経験点消費記録を読み込みました。`, "success");
 }
@@ -119,13 +114,13 @@ function getFilteredCharacters() {
 }
 
 function getFilteredSpendingRows() {
-  const allowedIds = new Set(getFilteredCharacters().map(character => character.id));
-  return spendingRows.filter(row => allowedIds.has(row.character_id));
+  const allowedIds = new Set(getFilteredCharacters().map(character => String(character.id)));
+  return spendingRows.filter(row => allowedIds.has(String(row.character_id)));
 }
 
 function populateCharacterOptions() {
   if (!elements.character) return;
-  const previous = elements.character.value;
+  const previous = String(elements.character.value || "");
   const filtered = getFilteredCharacters();
   const candidates = filtered.length ? filtered : ownedCharacters;
 
@@ -135,7 +130,7 @@ function populateCharacterOptions() {
 
   const selectedCast = elements.castFilter?.value ?? "";
   const selectedCharacter = candidates.find(character => character.public_id === selectedCast)
-    ?? candidates.find(character => String(character.id) === String(previous))
+    ?? candidates.find(character => String(character.id) === previous)
     ?? candidates[0];
 
   if (selectedCharacter) elements.character.value = selectedCharacter.id;
@@ -145,7 +140,7 @@ function populateCharacterOptions() {
 
 function renderSpendingHistory() {
   const rows = getFilteredSpendingRows();
-  const charactersById = new Map(ownedCharacters.map(character => [character.id, character]));
+  const charactersById = new Map(ownedCharacters.map(character => [String(character.id), character]));
 
   if (!rows.length) {
     elements.list.innerHTML = `<p class="experience-spending-empty">条件に一致する経験点消費履歴はありません。</p>`;
@@ -154,7 +149,7 @@ function renderSpendingHistory() {
   }
 
   elements.list.innerHTML = rows.map(row => {
-    const character = charactersById.get(row.character_id);
+    const character = charactersById.get(String(row.character_id));
     return `
       <article class="experience-spending-record" data-spending-id="${escapeAttribute(row.id)}">
         <p class="experience-spending-record__date"><small>DATE</small><strong>${escapeHtml(formatDate(row.spent_on))}</strong></p>
@@ -177,13 +172,13 @@ function updateExperienceSummary() {
 
 async function addSpendingRecord(event) {
   event.preventDefault();
-  const characterId = elements.character.value;
+  const characterId = String(elements.character.value || "");
   const amount = Number(elements.amount.value);
   const spentOn = elements.date.value;
   const description = elements.description.value.trim();
 
-  if (!ownedCharacters.some(character => String(character.id) === String(characterId))) {
-    setStatus("消費経験点を登録するキャストを選択してください。", "error");
+  if (!ownedCharacters.some(character => String(character.id) === characterId)) {
+    setStatus("自分が所有するキャストを選択してください。", "error");
     return;
   }
   if (!Number.isInteger(amount) || amount < 1 || amount > 9999) {
@@ -227,19 +222,37 @@ async function addSpendingRecord(event) {
   setStatus("経験点消費履歴を追加しました。", "success");
 }
 
-async function deleteSpendingRecord(event) {
+function handleSpendingListClick(event) {
   const button = event.target.closest("[data-delete-spending]");
-  if (!button) return;
-  const record = button.closest("[data-spending-id]");
-  if (!record) return;
+  if (!button || !elements.list.contains(button)) return;
+  deleteSpendingRecord(button);
+}
 
-  const spendingId = String(record.dataset.spendingId || "");
-  const numericId = Number(spendingId);
-  if (!spendingId || !Number.isSafeInteger(numericId) || numericId < 1) {
+async function deleteSpendingRecord(button) {
+  const record = button.closest("[data-spending-id]");
+  const spendingId = String(record?.dataset.spendingId || "");
+  const row = spendingRows.find(item => String(item.id) === spendingId);
+
+  if (!record || !row) {
     setStatus("削除対象の経験点消費履歴を確認できませんでした。", "error");
     return;
   }
-  if (!window.confirm("この経験点消費履歴を削除します。")) return;
+
+  const ownedCharacter = ownedCharacters.find(character => String(character.id) === String(row.character_id));
+  if (!ownedCharacter) {
+    setStatus("自分が所有するキャストの経験点履歴だけ削除できます。", "error");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `経験点消費履歴を削除します。\n\n` +
+    `キャスト：${formatFullName(ownedCharacter)}\n` +
+    `消費日：${formatDate(row.spent_on)}\n` +
+    `消費経験点：${Number(row.amount || 0)} EXP\n` +
+    `用途：${row.description || "用途未記入"}\n\n` +
+    `この操作は元に戻せません。`
+  );
+  if (!confirmed) return;
 
   button.disabled = true;
   button.textContent = "削除中";
@@ -248,43 +261,20 @@ async function deleteSpendingRecord(event) {
   const { data, error } = await supabase
     .from("character_experience_spending")
     .delete()
-    .eq("id", numericId)
-    .select("id");
+    .eq("id", row.id)
+    .eq("character_id", ownedCharacter.id)
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || String(data?.id ?? "") !== spendingId) {
     console.error(error);
     button.disabled = false;
     button.textContent = "削除";
-    setStatus("経験点消費履歴を削除できませんでした。", "error");
+    setStatus("経験点消費履歴を削除できませんでした。ログイン状態と所有権を確認してください。", "error");
     return;
   }
 
-  let deleted = Array.isArray(data) && data.some(row => String(row.id) === spendingId);
-  if (!deleted) {
-    const { data: remaining, error: verifyError } = await supabase
-      .from("character_experience_spending")
-      .select("id")
-      .eq("id", numericId)
-      .maybeSingle();
-
-    if (verifyError) {
-      console.error(verifyError);
-      button.disabled = false;
-      button.textContent = "削除";
-      setStatus("削除結果を確認できませんでした。画面を再読み込みして確認してください。", "error");
-      return;
-    }
-    deleted = !remaining;
-  }
-
-  if (!deleted) {
-    button.disabled = false;
-    button.textContent = "削除";
-    setStatus("経験点消費履歴を削除できませんでした。所有権またはRLS設定を確認してください。", "error");
-    return;
-  }
-
-  spendingRows = spendingRows.filter(row => String(row.id) !== spendingId);
+  spendingRows = spendingRows.filter(item => String(item.id) !== spendingId);
   renderSpendingHistory();
   setStatus("経験点消費履歴を削除しました。", "success");
 }
