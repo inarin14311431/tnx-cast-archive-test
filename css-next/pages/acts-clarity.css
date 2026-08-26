@@ -33,17 +33,19 @@ body[data-page="acts.html"] .act-history-filters {
 .act-history-resultbar strong { color: var(--section-tone); font-family: var(--font-data); }
 .act-history-resultbar small { font: 600 .62rem/1 var(--font-data); letter-spacing: .12em; }
 
-body[data-page="acts.html"] .act-history-summary {
-  margin: 0 0 18px;
-}
+body[data-page="acts.html"] .act-history-summary { margin: 0 0 18px; }
 body[data-page="acts.html"] .act-history-panel--experience .act-history-summary article {
   border-color: color-mix(in srgb, var(--section-tone) 28%, var(--color-border));
 }
-body[data-page="acts.html"] .act-history-panel--experience .act-history-summary strong {
-  color: var(--section-tone);
-}
+body[data-page="acts.html"] .act-history-panel--experience .act-history-summary strong { color: var(--section-tone); }
 
 .act-records--flat { display: grid; gap: 0; }
+.act-character-group--flat {
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+.act-character-group--flat > .act-record { margin: 0; }
 .act-record-summary {
   grid-template-columns: 104px minmax(220px, 1fr) minmax(150px, .72fr) minmax(88px, .46fr) 88px 22px;
 }
