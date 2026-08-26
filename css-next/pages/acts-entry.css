@@ -12,7 +12,7 @@
 @import url("./acts-polish.css?v=2") layer(acts-page);
 @import url("./acts-detail-grid.css?v=1") layer(acts-page);
 @import url("./acts-rounded-polish.css?v=1") layer(acts-page);
-@import url("./acts-maintenance.css?v=2") layer(acts-page);
+@import url("./acts-maintenance.css?v=3") layer(acts-page);
 
 /* Experience ticket is isolated from the act-history cascade. */
 @import url("./experience-ticket.css?v=3") layer(experience-ticket);
