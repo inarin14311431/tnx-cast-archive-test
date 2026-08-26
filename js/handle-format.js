@@ -3,6 +3,7 @@
   const OPEN="“";
   const CLOSE="”";
   const DISPLAY_SELECTORS="#cast-handle,#cast-handle-kana,.owned-cast__handle,.cast-card__handle";
+  const IDENTITY_SELECTORS=".act-character-toggle__name,#history-cast-filter option,.cast-card__name,.cast-card__reading";
   const PLACEHOLDERS=new Set(["","—","-","NO HANDLE","ハンドル未登録"]);
   let pendingImportPlan=null;
 
@@ -26,6 +27,20 @@
   function quoteHandle(value){
     const text=stripOuterQuotes(value);
     return text?`${OPEN}${text}${CLOSE}`:"";
+  }
+
+  function formatIdentity(handle,name){
+    const quotedHandle=quoteHandle(handle);
+    const characterName=String(name??"").trim();
+    return [quotedHandle,characterName].filter(Boolean).join(" ");
+  }
+
+  function normalizeIdentityDisplay(value){
+    const raw=String(value??"").trim();
+    if(!raw)return "";
+    const match=raw.match(/^[\s　]*[“”"「『]+(.+)[“”"」』]+[\s　]+(.+)$/s);
+    if(!match)return raw;
+    return formatIdentity(stripOuterQuotes(match[1]),match[2]);
   }
 
   function splitQuotedIdentity(value){
@@ -145,26 +160,42 @@
     if(normalized&&normalized!==current)element.textContent=normalized;
   }
 
+  function normalizeIdentityElement(element){
+    if(!element)return;
+    const current=String(element.textContent??"").trim();
+    if(!current)return;
+    const normalized=normalizeIdentityDisplay(current);
+    if(normalized&&normalized!==current)element.textContent=normalized;
+  }
+
   function normalizeDisplays(root=document){
     if(root instanceof Element&&root.matches(DISPLAY_SELECTORS))normalizeDisplayElement(root);
+    if(root instanceof Element&&root.matches(IDENTITY_SELECTORS))normalizeIdentityElement(root);
     root.querySelectorAll?.(DISPLAY_SELECTORS).forEach(normalizeDisplayElement);
+    root.querySelectorAll?.(IDENTITY_SELECTORS).forEach(normalizeIdentityElement);
   }
 
   function initializeDisplayNormalization(){
     normalizeDisplays(document);
     const observer=new MutationObserver(mutations=>{
       for(const mutation of mutations){
-        if(mutation.type==="characterData")normalizeDisplayElement(mutation.target.parentElement?.closest?.(DISPLAY_SELECTORS));
+        if(mutation.type==="characterData"){
+          normalizeDisplayElement(mutation.target.parentElement?.closest?.(DISPLAY_SELECTORS));
+          normalizeIdentityElement(mutation.target.parentElement?.closest?.(IDENTITY_SELECTORS));
+        }
         mutation.addedNodes.forEach(node=>{
           if(node.nodeType===Node.ELEMENT_NODE)normalizeDisplays(node);
-          else if(node.parentElement)normalizeDisplayElement(node.parentElement.closest?.(DISPLAY_SELECTORS));
+          else if(node.parentElement){
+            normalizeDisplayElement(node.parentElement.closest?.(DISPLAY_SELECTORS));
+            normalizeIdentityElement(node.parentElement.closest?.(IDENTITY_SELECTORS));
+          }
         });
       }
     });
     observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
   }
 
-  window.TNXHandleFormat={quoteHandle,splitQuotedIdentity};
+  window.TNXHandleFormat={stripOuterQuotes,quoteHandle,formatIdentity,normalizeIdentityDisplay,splitQuotedIdentity};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initializeDisplayNormalization,{once:true});
   else initializeDisplayNormalization();
 })();
