@@ -234,7 +234,8 @@ async function deleteSpendingRecord(event) {
   if (!record) return;
 
   const spendingId = String(record.dataset.spendingId || "");
-  if (!spendingId) {
+  const numericId = Number(spendingId);
+  if (!spendingId || !Number.isSafeInteger(numericId) || numericId < 1) {
     setStatus("削除対象の経験点消費履歴を確認できませんでした。", "error");
     return;
   }
@@ -247,7 +248,7 @@ async function deleteSpendingRecord(event) {
   const { data, error } = await supabase
     .from("character_experience_spending")
     .delete()
-    .eq("id", spendingId)
+    .eq("id", numericId)
     .select("id");
 
   if (error) {
@@ -258,11 +259,28 @@ async function deleteSpendingRecord(event) {
     return;
   }
 
-  const deleted = Array.isArray(data) && data.some(row => String(row.id) === spendingId);
+  let deleted = Array.isArray(data) && data.some(row => String(row.id) === spendingId);
+  if (!deleted) {
+    const { data: remaining, error: verifyError } = await supabase
+      .from("character_experience_spending")
+      .select("id")
+      .eq("id", numericId)
+      .maybeSingle();
+
+    if (verifyError) {
+      console.error(verifyError);
+      button.disabled = false;
+      button.textContent = "削除";
+      setStatus("削除結果を確認できませんでした。画面を再読み込みして確認してください。", "error");
+      return;
+    }
+    deleted = !remaining;
+  }
+
   if (!deleted) {
     button.disabled = false;
     button.textContent = "削除";
-    setStatus("削除対象を確認できませんでした。画面を再読み込みして再度お試しください。", "error");
+    setStatus("経験点消費履歴を削除できませんでした。所有権またはRLS設定を確認してください。", "error");
     return;
   }
 
