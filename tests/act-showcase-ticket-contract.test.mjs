@@ -11,7 +11,7 @@ const showcaseCss = fs.readFileSync("assets/styles/act-showcase-refine.css", "ut
 
 test("act history loads the PNG-capable experience ticket module and styles", () => {
   assert.match(actsHtml, /experience-ticket\.js\?v=3/);
-  assert.match(actsEntry, /experience-ticket\.css\?v=2/);
+  assert.match(actsEntry, /experience-ticket\.css\?v=3/);
   assert.match(actsEntry, /experience-ticket-layout\.css\?v=2/);
   assert.match(ticketJs, /dataIssueTicket|dataset\.issueTicket/);
   assert.match(ticketJs, /data-save-ticket-png/);
