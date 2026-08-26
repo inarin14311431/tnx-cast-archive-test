@@ -15,9 +15,9 @@ test("ACT and spending deletion use the in-page confirmation flow", () => {
 
 test("ACT and spending mutations are owner-scoped direct operations", () => {
   assert.doesNotMatch(app, /rpc\("delete_owned_act_participation"|rpc\("delete_owned_experience_spending"/);
-  assert.match(app, /\.from\("act_participants"\)\.update\([\s\S]*?\.eq\("id", row\.id\)\.eq\("character_id", character\.id\)/s);
-  assert.match(app, /\.from\("act_participants"\)\.delete\(\)[\s\S]*?\.eq\("id", row\.id\)\.eq\("character_id", character\.id\)/s);
-  assert.match(app, /\.from\("character_experience_spending"\)\.delete\(\)[\s\S]*?\.eq\("id", row\.id\)\.eq\("character_id", character\.id\)/s);
+  assert.match(app, /\.from\("act_participants"\)\s*\.update\([\s\S]*?\.eq\("id", row\.id\)\.eq\("character_id", character\.id\)/s);
+  assert.match(app, /\.from\("act_participants"\)\s*\.delete\(\)[\s\S]*?\.eq\("id", row\.id\)\.eq\("character_id", character\.id\)/s);
+  assert.match(app, /\.from\("character_experience_spending"\)\s*\.delete\(\)[\s\S]*?\.eq\("id", row\.id\)\.eq\("character_id", character\.id\)/s);
 });
 
 test("database grants and RLS cover owner mutations", () => {
