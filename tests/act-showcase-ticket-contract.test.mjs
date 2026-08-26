@@ -10,7 +10,7 @@ const showcaseHtml = fs.readFileSync("act-showcase.html", "utf8");
 const showcaseCss = fs.readFileSync("assets/styles/act-showcase-refine.css", "utf8");
 
 test("act history loads the PNG-capable experience ticket module and styles", () => {
-  assert.match(actsHtml, /experience-ticket\.js\?v=4/);
+  assert.match(actsHtml, /experience-ticket\.js\?v=5/);
   assert.match(actsHtml, /handle-format\.js\?v=3/);
   assert.match(actsEntry, /experience-ticket\.css\?v=3/);
   assert.match(actsEntry, /experience-ticket-layout\.css\?v=3/);

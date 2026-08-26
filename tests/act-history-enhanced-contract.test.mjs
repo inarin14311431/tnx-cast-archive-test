@@ -4,7 +4,7 @@ import fs from "node:fs";
 
 const html = fs.readFileSync("acts.html", "utf8");
 const entry = fs.readFileSync("css-next/pages/acts-entry.css", "utf8");
-const js = fs.readFileSync("js/acts-history-enhanced.js", "utf8");
+const app = fs.readFileSync("js/acts-app.js", "utf8");
 const css = fs.readFileSync("css-next/pages/acts-history-enhanced.css", "utf8");
 const clarityCss = fs.readFileSync("css-next/pages/acts-clarity.css", "utf8");
 
@@ -18,7 +18,10 @@ test("act history integrates browse filters into the primary section", () => {
   assert.match(html, /id="history-role-filter"/);
   assert.match(html, /id="history-sort-filter"/);
   assert.match(html, /id="history-filter-status"/);
-  assert.match(html, /acts-history-enhanced\.js\?v=2/);
+  assert.match(html, /acts-app\.js\?v=1/);
+  assert.doesNotMatch(html, /acts-history-enhanced\.js/);
+  assert.doesNotMatch(html, /acts-detail-toggle-fix\.js/);
+  assert.doesNotMatch(html, /acts-ui-fixes\.js/);
 });
 
 test("experience summary and spending history share the secondary section", () => {
@@ -32,20 +35,21 @@ test("experience summary and spending history share the secondary section", () =
   assert.doesNotMatch(html, /<span>03<\/span>/);
 });
 
-test("act history groups the flat archive by year and keeps latest year open", () => {
-  assert.match(js, /flattenHistory/);
-  assert.match(js, /act-character-group--flat/);
-  assert.match(js, /act-year-group/);
-  assert.match(js, /YEAR ARCHIVE/);
-  assert.match(js, /defaultExpanded = year === latestYear/);
-  assert.match(js, /expandedYears/);
+test("unified controller groups the flat archive by year and keeps latest year open", () => {
+  assert.match(app, /const groups = new Map\(\)/);
+  assert.match(app, /act-records act-records--flat/);
+  assert.match(app, /act-year-group/);
+  assert.match(app, /YEAR ARCHIVE/);
+  assert.match(app, /const latest = years\[0\]/);
+  assert.match(app, /state\.openYears/);
+  assert.match(app, /renderYearGroup\(year, groups\.get\(year\), year === latest\)/);
 });
 
 test("act records expose cast context and expandable compact details", () => {
-  assert.match(js, /act-record-summary__cast/);
-  assert.match(js, /dataset\.historyCast/);
-  assert.match(js, /dataset\.toggleActDetail/);
-  assert.match(js, /is-detail-open/);
+  assert.match(app, /act-record-summary__cast/);
+  assert.match(app, /data-history-cast=/);
+  assert.match(app, /data-action="toggle-detail"/);
+  assert.match(app, /is-detail-open/);
   assert.match(css, /text-overflow:\s*ellipsis/);
 });
 
