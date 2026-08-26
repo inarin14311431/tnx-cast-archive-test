@@ -35,6 +35,7 @@
     "27_security_privilege_hardening.sql",
     "28_troops.sql",
     "29_troop_rules_v2.sql",
-    "30_delete_owned_experience_spending.sql"
+    "30_delete_owned_experience_spending.sql",
+    "31_act_participant_owner_mutations.sql"
   ]
 }
