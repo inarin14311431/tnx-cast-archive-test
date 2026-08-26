@@ -11,7 +11,7 @@ let scheduled = false;
 if (list) {
   bindControls();
   const observer = new MutationObserver(() => scheduleEnhance());
-  observer.observe(list, { childList: true, subtree: true, characterData: true });
+  observer.observe(list, { childList: true, subtree: true });
   list.addEventListener("click", handleListClick);
   scheduleEnhance();
 }
@@ -82,10 +82,10 @@ function ensureCompactSummary(record) {
   const exp = Number(record.querySelector("[data-experience-input]")?.value || 0);
   const date = extractDate(meta);
 
-  summary.querySelector(".act-record-summary__date").textContent = date;
-  summary.querySelector(".act-record-summary__title").textContent = title;
-  summary.querySelector(".act-record-summary__role").textContent = role;
-  summary.querySelector(".act-record-summary__exp").textContent = `+${exp} EXP`;
+  setText(summary.querySelector(".act-record-summary__date"), date);
+  setText(summary.querySelector(".act-record-summary__title"), title);
+  setText(summary.querySelector(".act-record-summary__role"), role);
+  setText(summary.querySelector(".act-record-summary__exp"), `+${exp} EXP`);
   record.dataset.historyYear = extractYear(date);
   record.dataset.historyTitle = title.toLocaleLowerCase("ja");
   record.dataset.historyRole = role;
@@ -96,7 +96,6 @@ function rebuildYearGroups(force = true) {
   list.querySelectorAll(".act-records").forEach(records => {
     const allRecords = [...records.querySelectorAll(".act-record")];
     if (!allRecords.length) return;
-
     if (!force && records.dataset.yearGrouped === "true") return;
 
     const characterId = records.closest(".act-character-group")?.querySelector("[data-character-id]")?.dataset.characterId || "cast";
@@ -146,7 +145,8 @@ function syncFilterOptions() {
     const previous = yearFilter.value;
     const years = [...new Set([...list.querySelectorAll(".act-record")].map(record => record.dataset.historyYear).filter(Boolean))]
       .sort((a, b) => yearSortValue(b) - yearSortValue(a));
-    yearFilter.innerHTML = `<option value="">すべての年</option>${years.map(year => `<option value="${escapeAttribute(year)}">${escapeHtml(year)}年</option>`).join("")}`;
+    const next = `<option value="">すべての年</option>${years.map(year => `<option value="${escapeAttribute(year)}">${escapeHtml(year)}年</option>`).join("")}`;
+    if (yearFilter.innerHTML !== next) yearFilter.innerHTML = next;
     if (years.includes(previous)) yearFilter.value = previous;
   }
 
@@ -154,7 +154,8 @@ function syncFilterOptions() {
     const previous = roleFilter.value;
     const roles = [...new Set([...list.querySelectorAll(".act-record")].map(record => record.dataset.historyRole).filter(role => role && role !== "—"))]
       .sort(localeCompareJa);
-    roleFilter.innerHTML = `<option value="">すべての参加枠</option>${roles.map(role => `<option value="${escapeAttribute(role)}">${escapeHtml(role)}</option>`).join("")}`;
+    const next = `<option value="">すべての参加枠</option>${roles.map(role => `<option value="${escapeAttribute(role)}">${escapeHtml(role)}</option>`).join("")}`;
+    if (roleFilter.innerHTML !== next) roleFilter.innerHTML = next;
     if (roles.includes(previous)) roleFilter.value = previous;
   }
 }
@@ -175,8 +176,7 @@ function applyEnhancedFilters() {
   list.querySelectorAll(".act-year-group").forEach(group => {
     const visible = [...group.querySelectorAll(".act-record")].filter(record => !record.hidden);
     group.hidden = visible.length === 0;
-    const count = group.querySelector(".act-year-toggle > span:nth-child(2)");
-    if (count) count.textContent = `${visible.length} ACTS`;
+    setText(group.querySelector(".act-year-toggle > span:nth-child(2)"), `${visible.length} ACTS`);
   });
 
   list.querySelectorAll(".act-character-group").forEach(group => {
@@ -198,7 +198,7 @@ function handleListClick(event) {
     const open = !record.classList.contains("is-detail-open");
     record.classList.toggle("is-detail-open", open);
     detailToggle.setAttribute("aria-expanded", String(open));
-    detailToggle.querySelector(".act-record-summary__icon").textContent = open ? "−" : "＋";
+    setText(detailToggle.querySelector(".act-record-summary__icon"), open ? "−" : "＋");
     return;
   }
 
@@ -210,7 +210,7 @@ function handleListClick(event) {
     const key = group.dataset.yearKey;
     group.classList.toggle("is-expanded", open);
     yearToggle.setAttribute("aria-expanded", String(open));
-    yearToggle.lastElementChild.textContent = open ? "−" : "＋";
+    setText(yearToggle.lastElementChild, open ? "−" : "＋");
     group.querySelector(".act-year-records").hidden = !open;
     if (key) {
       expandedYears.delete(open ? `!${key}` : key);
@@ -235,6 +235,9 @@ function yearSortValue(year) {
   return Number.isFinite(value) ? value : -1;
 }
 
+function setText(element, value) {
+  if (element && element.textContent !== String(value)) element.textContent = String(value);
+}
 function clean(value) { return String(value || "").replace(/\s+/g, " ").trim(); }
 function localeCompareJa(a, b) { return String(a ?? "").localeCompare(String(b ?? ""), "ja", { sensitivity: "base", numeric: true }); }
 function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
