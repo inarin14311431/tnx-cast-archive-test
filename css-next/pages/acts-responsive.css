@@ -1,5 +1,5 @@
-/* Low-level ACT page compatibility and mobile viewport fixes only.
-   Expanded records are owned exclusively by acts-record.css. */
+/* ACT browser and device compatibility only.
+   Structural page, history, expanded-record, and spending presentation live elsewhere. */
 
 .experience-spending-form,
 .experience-spending-form > label {
