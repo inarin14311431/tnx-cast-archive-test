@@ -17,15 +17,21 @@
 
 @media (max-width: 640px) {
   .experience-ticket-dialog { width: min(100%, 620px); }
-  .experience-ticket__fields { grid-template-columns: minmax(118px, .46fr) minmax(0, 1.54fr); }
+  .experience-ticket__fields { grid-template-columns: minmax(136px, .52fr) minmax(0, 1.48fr); }
   .experience-ticket__field,
   .experience-ticket__field:nth-child(even) { grid-column: auto; }
   .experience-ticket__field--wide,
   .experience-ticket__field--signature { grid-column: 1 / -1; }
-  .experience-ticket__field { min-height: 72px; padding: 10px 12px 12px; }
+  .experience-ticket__field { min-height: 72px; padding: 10px 10px 12px; }
   .experience-ticket__field > span { margin-bottom: 5px; font-size: clamp(.64rem, 2.9vw, .84rem); letter-spacing: .03em; }
   .experience-ticket__field > span small { margin-left: 4px; font-size: clamp(.42rem, 1.8vw, .52rem); }
   .experience-ticket__field > strong { font-size: clamp(.9rem, 4vw, 1.3rem); }
+  .experience-ticket__field--date > strong {
+    font-size: clamp(.78rem, 3.35vw, 1.02rem);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.025em;
+    text-overflow: clip;
+  }
   .experience-ticket__field--cast > strong { font-size: clamp(.82rem, 3.5vw, 1.15rem); }
   .experience-ticket__field--signature > strong { font-size: clamp(1.2rem, 5.2vw, 1.8rem); }
 }

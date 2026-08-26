@@ -11,8 +11,9 @@ const showcaseCss = fs.readFileSync("assets/styles/act-showcase-refine.css", "ut
 
 test("act history loads the PNG-capable experience ticket module and styles", () => {
   assert.match(actsHtml, /experience-ticket\.js\?v=3/);
+  assert.match(actsHtml, /handle-format\.js\?v=3/);
   assert.match(actsEntry, /experience-ticket\.css\?v=3/);
-  assert.match(actsEntry, /experience-ticket-layout\.css\?v=2/);
+  assert.match(actsEntry, /experience-ticket-layout\.css\?v=3/);
   assert.match(ticketJs, /dataIssueTicket|dataset\.issueTicket/);
   assert.match(ticketJs, /data-save-ticket-png/);
   assert.match(ticketJs, /PNG保存/);
@@ -27,7 +28,9 @@ test("experience ticket keeps full date and single-line mobile values", () => {
   assert.match(ticketJs, /fitTicketValues/);
   assert.match(ticketLayoutCss, /grid-template-columns:\s*minmax\(180px, \.42fr\) minmax\(0, 1\.58fr\)/);
   assert.match(ticketLayoutCss, /\.experience-ticket__field > strong\s*\{\s*white-space:\s*nowrap/);
-  assert.match(ticketLayoutCss, /@media \(max-width: 640px\)[\s\S]*grid-template-columns:\s*minmax\(118px, \.46fr\) minmax\(0, 1\.54fr\)/);
+  assert.match(ticketLayoutCss, /@media \(max-width: 640px\)[\s\S]*grid-template-columns:\s*minmax\(136px, \.52fr\) minmax\(0, 1\.48fr\)/);
+  assert.match(ticketLayoutCss, /\.experience-ticket__field--date > strong[\s\S]*font-variant-numeric:\s*tabular-nums/);
+  assert.match(ticketLayoutCss, /\.experience-ticket__field--date > strong[\s\S]*text-overflow:\s*clip/);
   assert.match(ticketLayoutCss, /\.experience-ticket__field--wide,[\s\S]*\.experience-ticket__field--signature\s*\{\s*grid-column:\s*1 \/ -1/);
 });
 
@@ -39,8 +42,9 @@ test("experience ticket PNG export renders a fixed-resolution image", () => {
   assert.match(ticketJs, /drawFitText/);
 });
 
-test("public act showcase loads its refinement layer", () => {
+test("public act showcase loads its refinement and shared handle formatting", () => {
   assert.match(showcaseHtml, /act-showcase-refine\.css\?v=1/);
+  assert.match(showcaseHtml, /handle-format\.js\?v=3/);
   assert.match(showcaseCss, /\.hero__act::before/);
   assert.match(showcaseCss, /DIRECTED BY/);
   assert.match(showcaseCss, /\.cast-card__tagline/);
