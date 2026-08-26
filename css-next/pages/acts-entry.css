@@ -3,7 +3,7 @@
 
 @import url("../index.css?v=64") layer(app);
 @import url("./auth.css?v=2") layer(auth-page);
-@import url("./acts.css?v=3") layer(acts-page);
+@import url("./acts.css?v=4") layer(acts-page);
 @import url("./acts-history-enhanced.css?v=1") layer(acts-page);
 @import url("./acts-clarity.css?v=1") layer(acts-page);
 @import url("./act-record-console.css?v=1") layer(acts-page);
