@@ -39,7 +39,9 @@ test("experience reward panel is shortened for the two-row fact layout", () => {
 
 test("spending cast select omits player name and normalizes handle quotes", () => {
   assert.match(app, /TNXHandleFormat\?\.formatIdentity/);
-  assert.doesNotMatch(app, /fullName\(c\).*displayPlayer/s);
+  const body = app.match(/function populateSpendingCharacterOptions\(\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
+  assert.match(body, /fullName\(c\)/);
+  assert.doesNotMatch(body, /displayPlayer\(/);
 });
 
 test("spending deletion uses canonical in-page confirmation and RLS scoped delete", () => {
