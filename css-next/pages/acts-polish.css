@@ -10,28 +10,32 @@ body[data-page="acts.html"] .act-year-group.is-expanded > .act-year-toggle {
   border-bottom-color: color-mix(in srgb, var(--color-accent) 42%, var(--color-border));
 }
 
+body[data-page="acts.html"] .act-year-group.is-expanded > .act-year-records {
+  padding: 8px 8px 10px;
+}
+
 body[data-page="acts.html"] .act-record.is-detail-open {
   position: relative;
-  margin: 8px;
+  margin: 10px 0 12px;
   padding: 0 14px 14px;
-  border: 2px solid color-mix(in srgb, var(--color-accent-strong) 78%, white 4%);
-  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+  border: 3px solid color-mix(in srgb, var(--color-accent-strong) 82%, white 5%);
+  background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-accent) 24%, transparent),
-    0 0 18px color-mix(in srgb, var(--color-accent) 28%, transparent),
-    inset 0 0 24px color-mix(in srgb, var(--color-accent) 5%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 28%, transparent),
+    0 0 22px color-mix(in srgb, var(--color-accent) 34%, transparent),
+    inset 0 0 30px color-mix(in srgb, var(--color-accent) 7%, transparent);
 }
 
 body[data-page="acts.html"] .act-record.is-detail-open::before {
   content: "ACTIVE RECORD";
   position: absolute;
-  top: -9px;
+  top: 7px;
   left: 16px;
   z-index: 2;
-  padding: 1px 8px;
+  padding: 2px 8px;
   border: 1px solid color-mix(in srgb, var(--color-accent-strong) 70%, var(--color-border));
-  background: var(--color-bg);
   color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
   font: 700 .55rem/1.5 var(--font-data);
   letter-spacing: .14em;
   box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 22%, transparent);
@@ -40,13 +44,83 @@ body[data-page="acts.html"] .act-record.is-detail-open::before {
 body[data-page="acts.html"] .act-record.is-detail-open > .act-record-summary {
   margin-inline: -14px;
   width: calc(100% + 28px);
+  padding-top: 30px;
   background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-alt));
-  box-shadow: inset 4px 0 var(--color-accent-strong);
+  box-shadow: inset 5px 0 var(--color-accent-strong);
+}
+
+body[data-page="acts.html"] .act-record-summary__title {
+  position: relative;
+  color: color-mix(in srgb, var(--color-text) 92%, var(--color-accent-strong));
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+body[data-page="acts.html"] .act-record-summary__title::before {
+  content: "//";
+  margin-right: 7px;
+  color: var(--color-accent-strong);
+  font-family: var(--font-data);
+  letter-spacing: -.08em;
+}
+
+body[data-page="acts.html"] .act-record.has-showcase-link .act-record-summary__title::after {
+  content: " ↗";
+  color: var(--color-accent-strong);
+  font-family: var(--font-data);
 }
 
 body[data-page="acts.html"] .act-record.is-detail-open .act-record-summary__title,
 body[data-page="acts.html"] .act-record.is-detail-open .act-record-summary__exp {
   color: var(--color-accent-strong);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 24%, transparent);
+}
+
+body[data-page="acts.html"] .act-record.is-detail-open .act-record__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  border-bottom-color: color-mix(in srgb, var(--color-accent) 38%, var(--color-border));
+  color: var(--color-accent-strong);
+  font-size: clamp(1.18rem, 2.1vw, 1.55rem);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+body[data-page="acts.html"] .act-record.is-detail-open .act-record__showcase-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 70%, var(--color-border));
+  color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  box-shadow: inset 3px 0 var(--color-accent-strong), 0 0 12px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+body[data-page="acts.html"] .act-record.is-detail-open .act-record__showcase-link::after {
+  content: "OPEN ACT FILE ↗";
+  flex: 0 0 auto;
+  color: var(--color-muted);
+  font: 700 .5rem/1 var(--font-data);
+  letter-spacing: .1em;
+}
+
+body[data-page="acts.html"] .act-record.is-detail-open .act-record__role {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+body[data-page="acts.html"] .act-record.is-detail-open .act-record__role strong {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: none;
+  min-height: 34px;
+  border-radius: 3px;
+  font-size: .82rem;
+  letter-spacing: .08em;
 }
 
 body[data-page="acts.html"] .experience-spending-list {
@@ -107,14 +181,25 @@ body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focu
 }
 
 @media (max-width: 800px) {
+  body[data-page="acts.html"] .act-year-group.is-expanded > .act-year-records { padding-inline: 4px; }
+
   body[data-page="acts.html"] .act-record.is-detail-open {
-    margin: 7px 4px;
+    margin: 8px 0 10px;
     padding-inline: 10px;
   }
 
   body[data-page="acts.html"] .act-record.is-detail-open > .act-record-summary {
     margin-inline: -10px;
     width: calc(100% + 20px);
+  }
+
+  body[data-page="acts.html"] .act-record.is-detail-open .act-record__title {
+    display: grid;
+    gap: 8px;
+  }
+
+  body[data-page="acts.html"] .act-record.is-detail-open .act-record__showcase-link::after {
+    content: "OPEN ↗";
   }
 
   body[data-page="acts.html"] .experience-spending-record {
@@ -133,6 +218,7 @@ body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focu
 
 @media (max-width: 560px) {
   body[data-page="acts.html"] .act-record.is-detail-open::before {
+    top: 6px;
     left: 10px;
     font-size: .48rem;
   }
