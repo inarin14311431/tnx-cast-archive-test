@@ -8,9 +8,8 @@ const css = fs.readFileSync("css-next/pages/acts-polish.css", "utf8");
 const detailCss = fs.readFileSync("css-next/pages/acts-detail-grid.css", "utf8");
 const roundedCss = fs.readFileSync("css-next/pages/acts-rounded-polish.css", "utf8");
 const spending = fs.readFileSync("js/acts-spending.js", "utf8");
-const spendingDelete = fs.readFileSync("js/acts-spending-delete-fix.js", "utf8");
 const uiFixes = fs.readFileSync("js/acts-ui-fixes.js", "utf8");
-const migration = fs.readFileSync("supabase/30_delete_owned_experience_spending.sql", "utf8");
+const migration = fs.readFileSync("supabase/09_experience_spending.sql", "utf8");
 
 test("open act record keeps neon focus without an ACTIVE RECORD badge", () => {
   assert.match(entry, /acts-polish\.css\?v=2/);
@@ -49,12 +48,20 @@ test("spending cast select omits player name and normalizes handle quotes", () =
   assert.match(spending, /TNXHandleFormat\?\.formatIdentity/);
 });
 
-test("spending deletion is one-click in UI but owner-scoped in DB", () => {
-  assert.match(html, /acts-spending-delete-fix\.js\?v=2/);
-  assert.doesNotMatch(spendingDelete, /window\.confirm/);
-  assert.match(spendingDelete, /supabase\.rpc\("delete_owned_experience_spending"/);
-  assert.match(migration, /security definer/i);
-  assert.match(migration, /c\.owner_id = v_user_id/);
+test("spending deletion uses one canonical handler with confirmation", () => {
+  assert.match(html, /acts-spending\.js\?v=7/);
+  assert.doesNotMatch(html, /acts-spending-delete-fix/);
+  assert.match(spending, /window\.confirm/);
+  assert.match(spending, /この操作は元に戻せません/);
+  assert.match(spending, /\.from\("character_experience_spending"\)[\s\S]*\.delete\(\)[\s\S]*\.eq\("id", row\.id\)[\s\S]*\.eq\("character_id", ownedCharacter\.id\)/s);
+  assert.doesNotMatch(spending, /delete_owned_experience_spending/);
+});
+
+test("spending deletion is owner-scoped by RLS", () => {
+  assert.match(migration, /create policy experience_spending_select_owner/i);
+  assert.match(migration, /create policy experience_spending_delete_owner/i);
+  assert.match(migration, /c\.owner_id = auth\.uid\(\)/i);
+  assert.match(migration, /grant select, insert, update, delete on table public\.character_experience_spending to authenticated/i);
 });
 
 test("spending records keep rounded delete treatment", () => {
@@ -66,9 +73,4 @@ test("spending records keep rounded delete treatment", () => {
   assert.ok(date >= 0 && date < cast && cast < amount && amount < description && description < remove);
   assert.match(roundedCss, /\.experience-spending-record\s*\{[\s\S]*border-radius:\s*13px/s);
   assert.match(roundedCss, /\.experience-spending-record__delete\s*\{[\s\S]*border-radius:\s*999px/s);
-});
-
-test("acts page cache-busts rounded style and delete handler", () => {
-  assert.match(html, /acts-entry\.css\?v=12/);
-  assert.match(html, /acts-spending-delete-fix\.js\?v=2/);
 });
