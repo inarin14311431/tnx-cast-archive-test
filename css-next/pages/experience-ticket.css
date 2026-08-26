@@ -82,9 +82,9 @@
   background: #efe7d8;
   clip-path: polygon(100% 0, 100% 100%, 0 100%);
 }
-.experience-ticket__brand span { display: block; font-size: clamp(1.5rem, 4vw, 2.65rem); font-weight: 900; letter-spacing: .06em; }
-.experience-ticket__brand small { display: block; margin-top: 2px; font: 700 .64rem/1.1 Georgia, serif; letter-spacing: .18em; opacity: .78; }
-.experience-ticket__brand > strong { color: #f6eee5; font: 900 clamp(1.05rem, 2vw, 1.45rem)/.9 Georgia, serif; letter-spacing: -.04em; text-align: right; }
+.experience-ticket__brand span { display: block; font-size: clamp(1.5rem, 4vw, 2.65rem); font-weight: 900; letter-spacing: .06em; white-space: nowrap; }
+.experience-ticket__brand small { display: block; margin-top: 2px; font: 700 .64rem/1.1 Georgia, serif; letter-spacing: .18em; opacity: .78; white-space: nowrap; }
+.experience-ticket__brand > strong { flex: 0 0 auto; color: #f6eee5; font: 900 clamp(1.05rem, 2vw, 1.45rem)/.9 Georgia, serif; letter-spacing: -.04em; text-align: right; white-space: nowrap; }
 .experience-ticket__brand > strong small { margin-top: 5px; font-size: .5rem; letter-spacing: .12em; }
 
 .experience-ticket__value-row {
@@ -94,10 +94,10 @@
   gap: 16px;
   padding: 20px 28px 14px;
 }
-.experience-ticket__exp-label span { display: block; font-size: 1.8rem; font-weight: 900; letter-spacing: .1em; }
-.experience-ticket__exp-label small { display: block; margin-top: -2px; font: 700 .72rem/1 Georgia, serif; letter-spacing: .34em; text-align: center; }
-.experience-ticket__value-row > strong { font-size: clamp(3.3rem, 10vw, 6.7rem); font-weight: 900; line-height: .78; text-align: right; }
-.experience-ticket__unit { padding-bottom: 5px; font-size: 2rem; font-weight: 900; }
+.experience-ticket__exp-label span { display: block; font-size: 1.8rem; font-weight: 900; letter-spacing: .1em; white-space: nowrap; }
+.experience-ticket__exp-label small { display: block; margin-top: -2px; font: 700 .72rem/1 Georgia, serif; letter-spacing: .34em; text-align: center; white-space: nowrap; }
+.experience-ticket__value-row > strong { font-size: clamp(3.3rem, 10vw, 6.7rem); font-weight: 900; line-height: .78; text-align: right; white-space: nowrap; }
+.experience-ticket__unit { padding-bottom: 5px; font-size: 2rem; font-weight: 900; white-space: nowrap; }
 .experience-ticket__rule { height: 2px; margin: 0 18px; background: #2a211c; }
 .experience-ticket__fields { display: grid; grid-template-columns: 1fr .7fr; }
 .experience-ticket__field { min-height: 86px; padding: 13px 20px 15px; border-right: 1px solid #6f6259; border-bottom: 1px solid #6f6259; }
@@ -106,33 +106,49 @@
 .experience-ticket__field--signature { grid-column: 1 / -1; min-height: 104px; border-right: 0; border-bottom: 0; background: rgb(36 26 22 / 5%); }
 .experience-ticket__field > span { display: block; margin-bottom: 7px; font-size: .98rem; font-weight: 900; letter-spacing: .06em; }
 .experience-ticket__field > span small { margin-left: 8px; font: 700 .58rem/1 Georgia, serif; letter-spacing: .06em; }
-.experience-ticket__field > strong { display: block; overflow-wrap: anywhere; font-size: clamp(1.2rem, 3vw, 1.85rem); line-height: 1.25; }
+.experience-ticket__field > strong { display: block; overflow: hidden; font-size: clamp(1.2rem, 3vw, 1.85rem); line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 .experience-ticket__field--signature > strong { font-size: clamp(1.55rem, 4vw, 2.3rem); font-style: italic; text-align: right; }
 .experience-ticket__footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 20px 11px; color: #51443b; border-top: 1px dashed #8e8075; font: 700 .62rem/1 Georgia, serif; letter-spacing: .08em; }
+.experience-ticket__footer > * { white-space: nowrap; }
 .experience-ticket-note { margin: 10px 2px 0; color: #7f9197; font-size: .67rem; line-height: 1.55; }
 
 @media (max-width: 640px) {
-  .experience-ticket-overlay { padding: 10px; }
-  .experience-ticket-dialog { padding: 9px; }
-  .experience-ticket-toolbar { align-items: flex-start; }
+  .experience-ticket-overlay {
+    place-items: start center;
+    padding: 8px;
+  }
+  .experience-ticket-dialog {
+    width: 100%;
+    max-width: 620px;
+    padding: 8px;
+  }
+  .experience-ticket-toolbar { margin-bottom: 8px; }
   .experience-ticket-toolbar p { display: none; }
   .experience-ticket-toolbar > div { width: 100%; }
-  .experience-ticket-toolbar button { flex: 1; }
-  .experience-ticket__brand { min-height: 72px; padding: 12px 16px; }
-  .experience-ticket__value-row { gap: 8px; padding: 17px 16px 12px; }
-  .experience-ticket__exp-label span { font-size: 1.2rem; }
-  .experience-ticket__unit { font-size: 1.2rem; }
-  .experience-ticket__fields { grid-template-columns: 1fr; }
+  .experience-ticket-toolbar button { flex: 1; min-height: 42px; padding-inline: 8px; font-size: .8rem; white-space: nowrap; }
+  .experience-ticket-toolbar button small { display: block; margin: 3px 0 0; font-size: .48rem; }
+  .experience-ticket__brand { min-height: 64px; gap: 8px; padding: 10px 12px; }
+  .experience-ticket__brand span { font-size: clamp(1.08rem, 5.3vw, 1.48rem); letter-spacing: .03em; }
+  .experience-ticket__brand small { font-size: .46rem; letter-spacing: .11em; }
+  .experience-ticket__brand > strong { font-size: clamp(.78rem, 3.8vw, 1rem); }
+  .experience-ticket__brand > strong small { font-size: .38rem; }
+  .experience-ticket__value-row { gap: 6px; padding: 14px 12px 10px; }
+  .experience-ticket__exp-label span { font-size: .94rem; }
+  .experience-ticket__exp-label small { font-size: .48rem; }
+  .experience-ticket__value-row > strong { font-size: clamp(2.6rem, 15vw, 4rem); }
+  .experience-ticket__unit { padding-bottom: 2px; font-size: .95rem; }
+  .experience-ticket__rule { margin-inline: 10px; }
+  .experience-ticket__fields { grid-template-columns: minmax(102px, .4fr) minmax(0, 1.6fr); }
   .experience-ticket__field,
-  .experience-ticket__field:nth-child(even) { grid-column: 1; border-right: 0; }
-}
-
-@media print {
-  body.has-experience-ticket > *:not(.experience-ticket-overlay) { display: none; }
-  body.has-experience-ticket { background: #fff; }
-  .experience-ticket-overlay { position: static; display: block; padding: 0; background: #fff; backdrop-filter: none; }
-  .experience-ticket-dialog { width: 100%; padding: 0; border: 0; background: #fff; box-shadow: none; }
-  .experience-ticket-toolbar,
-  .experience-ticket-note { display: none; }
-  .experience-ticket { box-shadow: inset 0 0 0 1px #35271f, inset 0 0 0 5px #fff, inset 0 0 0 6px #35271f; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .experience-ticket__field:nth-child(even) { min-height: 64px; padding: 9px 10px 10px; }
+  .experience-ticket__field--wide,
+  .experience-ticket__field--signature { grid-column: 1 / -1; }
+  .experience-ticket__field > span { margin-bottom: 4px; font-size: clamp(.58rem, 2.8vw, .75rem); letter-spacing: .02em; white-space: nowrap; }
+  .experience-ticket__field > span small { margin-left: 3px; font-size: clamp(.35rem, 1.7vw, .46rem); }
+  .experience-ticket__field > strong { font-size: clamp(.76rem, 3.6vw, 1.05rem); }
+  .experience-ticket__field--cast > strong { font-size: clamp(.7rem, 3.25vw, .96rem); }
+  .experience-ticket__field--signature { min-height: 72px; }
+  .experience-ticket__field--signature > strong { font-size: clamp(1rem, 5vw, 1.45rem); }
+  .experience-ticket__footer { gap: 6px; padding: 7px 10px 9px; font-size: .48rem; letter-spacing: .04em; }
+  .experience-ticket-note { margin-top: 8px; font-size: .58rem; line-height: 1.45; }
 }
