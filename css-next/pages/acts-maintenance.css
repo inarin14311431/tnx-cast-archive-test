@@ -1,22 +1,6 @@
-/* Consolidated low-level act-history adjustments.
-   Keep small cross-cutting fixes here instead of one-off patch files. */
+/* Low-level ACT page compatibility and mobile viewport fixes only.
+   Expanded records are owned exclusively by acts-record.css. */
 
-/* Expanded record ruler label/content. */
-.act-record.is-detail-open > .act-record__ruler {
-  color: var(--color-text);
-  font-size: .82rem;
-  font-weight: 800;
-}
-
-.act-record.is-detail-open > .act-record__ruler::before {
-  content: "RULER / SIGNATURE";
-}
-
-.act-record.is-detail-open > .act-record__ruler::after {
-  content: none;
-}
-
-/* Spending form containment, including narrow mobile date inputs. */
 .experience-spending-form,
 .experience-spending-form > label {
   min-width: 0;
@@ -30,8 +14,7 @@
   box-sizing: border-box;
 }
 
-/* iOS Safari can place the browser chrome over the visual viewport edge.
-   Keep the ACT header inside the safe/visible area without affecting desktop. */
+/* iOS Safari can place browser chrome over the visual viewport edge. */
 @media (max-width: 700px) {
   body[data-page="acts.html"] .act-history-header {
     box-sizing: border-box;
@@ -91,73 +74,8 @@
     padding: 5px;
   }
 
-  body[data-page="acts.html"] .act-record.is-detail-open {
-    margin: 7px 0 9px;
-    padding: 0 9px 10px;
-    border-width: 2px;
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--color-accent) 24%, transparent),
-      0 0 14px color-mix(in srgb, var(--color-accent) 20%, transparent),
-      inset 0 0 22px color-mix(in srgb, var(--color-accent) 5%, transparent);
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open > .act-record-summary {
-    margin-inline: -9px;
-    width: calc(100% + 18px);
-    padding: 25px 9px 8px;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open::before {
-    left: 10px;
-    padding: 2px 6px;
-    font-size: .46rem;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__title {
-    min-height: 0;
-    margin: 7px 0 5px;
-    padding: 10px 12px;
-    font-size: clamp(1.05rem, 5.2vw, 1.35rem);
-    line-height: 1.25;
-  }
-
-  body[data-page="acts.html"] .act-record__facts {
-    gap: 8px;
-  }
-
-  body[data-page="acts.html"] .act-record__fact {
-    min-height: 86px;
-    padding: 10px;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__exp label {
-    min-height: 96px;
-    padding: 10px 12px;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__exp label > input {
-    font-size: clamp(2rem, 12vw, 3rem);
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__exp-actions {
-    gap: 7px;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__exp-actions > button {
-    min-height: 48px;
-    padding: 8px 9px;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__ticket {
-    min-height: 56px;
-  }
-
   body[data-page="acts.html"] .experience-spending-form :is(input, select, button) {
     min-height: 46px;
-  }
-
-  body[data-page="acts.html"] .experience-spending-record {
-    padding: 9px 10px;
   }
 }
 
@@ -191,34 +109,5 @@
 
   body[data-page="acts.html"] .act-history-summary strong {
     font-size: 1.45rem;
-  }
-
-  body[data-page="acts.html"] .act-record-summary {
-    min-height: 64px;
-    padding: 8px 9px;
-  }
-
-  body[data-page="acts.html"] .act-record-summary__title {
-    font-size: .82rem;
-  }
-
-  body[data-page="acts.html"] .act-record__facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body[data-page="acts.html"] .act-record__fact {
-    min-height: 82px;
-  }
-
-  body[data-page="acts.html"] .act-record__fact small {
-    font-size: .49rem;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__exp-actions {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  body[data-page="acts.html"] .act-record.is-detail-open .act-record__ticket {
-    grid-column: 1 / -1;
   }
 }
