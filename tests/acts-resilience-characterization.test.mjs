@@ -36,12 +36,10 @@ test("load failure replaces both loading placeholders with a terminal error stat
   assert.match(failLoad, /setSpendingStatus\(message, "error"\)/);
 });
 
-test("ACT requests have one finite timeout boundary", () => {
-  assert.match(app, /const REQUEST_TIMEOUT_MS = 12000/);
-  const timeout = bodyOf("withRequestTimeout");
-  assert.match(timeout, /Promise\.race/);
-  assert.match(timeout, /window\.setTimeout/);
-  assert.match(timeout, /window\.clearTimeout/);
+test("ACT requests use the shared finite timeout boundary", () => {
+  assert.match(app, /withRequestTimeout/);
+  assert.match(app, /async-timeout\.js\?v=1/);
+  assert.doesNotMatch(app, /function withRequestTimeout\(/);
 });
 
 test("ACT and experience mutations expose success and failure feedback", () => {

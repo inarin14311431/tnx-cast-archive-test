@@ -4,10 +4,11 @@ import test from "node:test";
 
 const app = fs.readFileSync("js/showcase-dynamic-publish.js", "utf8");
 
-test("showcase publishing has a finite RPC timeout boundary", () => {
-  assert.match(app, /const PUBLISH_TIMEOUT_MS = 12000/);
-  assert.match(app, /withTimeout\(/);
+test("showcase publishing uses the shared finite RPC timeout boundary", () => {
+  assert.match(app, /withRequestTimeout/);
+  assert.match(app, /async-timeout\.js\?v=1/);
   assert.match(app, /publish_act_showcase_for_current_user/);
+  assert.doesNotMatch(app, /class PublishTimeoutError/);
 });
 
 test("showcase publish timeout is reported as uncertain completion", () => {

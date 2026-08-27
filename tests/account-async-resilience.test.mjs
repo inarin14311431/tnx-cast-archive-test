@@ -6,8 +6,8 @@ const app = fs.readFileSync("js/account.js", "utf8");
 const html = fs.readFileSync("account.html", "utf8");
 
 test("account data loading has a finite timeout boundary", () => {
-  assert.match(app, /const REQUEST_TIMEOUT_MS = 12000/);
-  assert.match(app, /withRequestTimeout\(/);
+  assert.match(app, /withRequestTimeout/);
+  assert.match(app, /async-timeout\.js\?v=1/);
   assert.match(app, /キャスト情報の取得がタイムアウトしました/);
 });
 
