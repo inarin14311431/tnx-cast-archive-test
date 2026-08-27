@@ -25,6 +25,23 @@ test("initial ACT load always exposes explicit loading and failure messages", ()
   assert.match(loadAll, /キャスト情報を取得できませんでした/);
   assert.match(loadAll, /参加アクト情報を取得できませんでした/);
   assert.match(loadAll, /経験点消費履歴を取得できませんでした/);
+  assert.match(loadAll, /withRequestTimeout\(/);
+});
+
+test("load failure replaces both loading placeholders with a terminal error state", () => {
+  const failLoad = bodyOf("failLoad");
+  assert.match(failLoad, /el\.actList\.innerHTML/);
+  assert.match(failLoad, /el\.spendingList\.innerHTML/);
+  assert.match(failLoad, /setHistoryStatus\(message, "error"\)/);
+  assert.match(failLoad, /setSpendingStatus\(message, "error"\)/);
+});
+
+test("ACT requests have one finite timeout boundary", () => {
+  assert.match(app, /const REQUEST_TIMEOUT_MS = 12000/);
+  const timeout = bodyOf("withRequestTimeout");
+  assert.match(timeout, /Promise\.race/);
+  assert.match(timeout, /window\.setTimeout/);
+  assert.match(timeout, /window\.clearTimeout/);
 });
 
 test("ACT and experience mutations expose success and failure feedback", () => {
@@ -38,14 +55,16 @@ test("ACT and experience mutations expose success and failure feedback", () => {
     const body = bodyOf(name);
     assert.match(body, new RegExp(success));
     assert.match(body, new RegExp(failure));
+    assert.match(body, /再読み込みして状態を確認してください/);
   }
 });
 
-test("current mutation paths enter and leave the shared busy state", () => {
+test("every mutation releases busy state through finally", () => {
   for (const name of ["saveExperience", "deleteParticipation", "addSpending", "onSpendingListClick"]) {
     const body = bodyOf(name);
     assert.match(body, /setBusy\(true\)/, `${name} must enter busy state`);
-    assert.match(body, /setBusy\(false\)/, `${name} must leave busy state`);
+    assert.match(body, /finally\s*\{\s*setBusy\(false\);\s*\}/s, `${name} must leave busy state in finally`);
+    assert.match(body, /withRequestTimeout\(/, `${name} must use the request timeout boundary`);
   }
 });
 
