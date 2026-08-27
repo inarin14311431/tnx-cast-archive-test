@@ -44,7 +44,8 @@ for (const theme of THEMES) {
     test.skip(testInfo.project.name !== "visual-mobile", "モバイル編集の基準画像はモバイル専用");
     await installVisualEnvironment(page, { authenticated:true, theme });
     await page.goto(`/sheet-mobile.html?id=${VISUAL_CAST_ID}`);
-    await expect(page.locator("#mobile-profile-form")).toBeVisible();
+    await expect(page.locator("#mobile-profile")).toBeVisible();
+    await expect(page.getByRole("button", { name:/基本情報/ }).first()).toBeVisible();
     await expect(page.locator('[data-mobile-character-field="character_name"]')).toHaveValue("夜明けのランナー");
     await capture(page, `sheet-mobile-${theme}-${testInfo.project.name}`);
   });
