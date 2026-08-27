@@ -57,3 +57,10 @@ test("spending cast labels contain cast identity only", () => {
   assert.match(body, /fullName\(c\)/);
   assert.doesNotMatch(body, /displayPlayer\(/);
 });
+
+test("ACT write actions share one local busy lifecycle boundary", () => {
+  assert.match(app, /async function runBusyAction\(task\)/);
+  assert.equal((app.match(/setBusy\(true\)/g) ?? []).length, 1);
+  assert.equal((app.match(/setBusy\(false\)/g) ?? []).length, 1);
+  assert.equal((app.match(/runBusyAction\(async \(\) => \{/g) ?? []).length, 4);
+});
