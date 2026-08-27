@@ -15,7 +15,15 @@ test("ACT showcase publishing is a critical module loaded before optional enhanc
   assert.match(loader, /reportOptionalModuleError/);
 });
 
+test("ACT showcase generator uses an explicit observable bootstrap", () => {
+  assert.match(loader, /async function initializeShowcaseGenerator\(\)/);
+  assert.match(loader, /dataset\.showcaseGeneratorState = "loading"/);
+  assert.match(loader, /dataset\.showcaseGeneratorState = "ready"/);
+  assert.match(loader, /dataset\.showcaseGeneratorState = "error"/);
+  assert.match(loader, /void initializeShowcaseGenerator\(\)/);
+});
+
 test("ACT showcase generator refreshes the critical loader cache boundary", () => {
-  assert.match(html, /showcase-generator-loader\.js\?v=19/);
-  assert.doesNotMatch(html, /showcase-generator-loader\.js\?v=18/);
+  assert.match(html, /showcase-generator-loader\.js\?v=20/);
+  assert.doesNotMatch(html, /showcase-generator-loader\.js\?v=(?:18|19)/);
 });
