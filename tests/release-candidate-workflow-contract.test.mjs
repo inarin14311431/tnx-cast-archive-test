@@ -3,11 +3,12 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const regression = await readFile(new URL("../.github/workflows/regression.yml", import.meta.url), "utf8");
+const security = await readFile(new URL("../.github/workflows/security.yml", import.meta.url), "utf8");
 const playwright = await readFile(new URL("../.github/workflows/playwright.yml", import.meta.url), "utf8");
 const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-test("release candidate routes regression CI through the full verification gate", () => {
+test("release candidate routes regression CI through the full non-security verification gate", () => {
   assert.match(regression, /npm run verify/);
 
   const verify = packageJson.scripts?.verify || "";
@@ -21,13 +22,18 @@ test("release candidate routes regression CI through the full verification gate"
     "npm run audit:cast",
     "npm run audit:troop",
     "npm run audit:mobile",
-    "npm run audit:security",
     "npm run report:sheet-ownership",
     "npm run report:cast-ownership",
     "npm run test:all"
   ]) {
     assert.match(verify, new RegExp(escapeRegExp(command)));
   }
+  assert.doesNotMatch(verify, /npm run audit:security/);
+});
+
+test("release candidate keeps security as an independent required workflow", () => {
+  assert.match(security, /npm run audit:security/);
+  assert.match(packageJson.scripts?.["audit:security"] || "", /node scripts\/audit-security\.mjs/);
 });
 
 test("release candidate keeps critical PC/public E2E paths", () => {
