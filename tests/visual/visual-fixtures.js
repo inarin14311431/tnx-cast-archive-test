@@ -146,9 +146,52 @@ const troop = Object.freeze({
   updated_at: "2026-08-25T00:00:00.000Z"
 });
 
-const ownedCharacters = Object.freeze([
-  { id:CHARACTER_ID, public_id:VISUAL_CAST_ID, character_name:character.character_name, handle:character.handle }
-]);
+const ownedCharacters = Object.freeze([{
+  id:CHARACTER_ID,
+  public_id:VISUAL_CAST_ID,
+  player_name:character.player_name,
+  character_name:character.character_name,
+  character_kana:character.character_kana,
+  handle:character.handle,
+  style_1:character.style_1,
+  style_1_mark:character.style_1_mark,
+  style_2:character.style_2,
+  style_2_mark:character.style_2_mark,
+  style_3:character.style_3,
+  style_3_mark:character.style_3_mark,
+  visibility:character.visibility,
+  updated_at:character.updated_at
+}]);
+
+const actParticipants = Object.freeze([{
+  id:"participant-visual-1",
+  character_id:CHARACTER_ID,
+  character_public_id:VISUAL_CAST_ID,
+  character_name:character.character_name,
+  player_name:character.player_name,
+  cast_order:1,
+  earned_experience:25,
+  participation_role:"PC1",
+  updated_at:"2026-08-20T12:00:00.000Z",
+  act:{
+    id:"act-visual-1",
+    slug:"visual-act-001",
+    act_name:"夜明けを駆ける者",
+    ruler_name:"VISUAL RULER",
+    public_url:"./act-showcase.html?id=visual-act-001",
+    published_at:"2026-08-20T12:00:00.000Z",
+    updated_at:"2026-08-20T12:00:00.000Z"
+  }
+}]);
+
+const experienceSpending = Object.freeze([{
+  id:"spending-visual-1",
+  character_id:CHARACTER_ID,
+  amount:10,
+  description:"スタイル技能の成長",
+  spent_on:"2026-08-21",
+  created_at:"2026-08-21T09:00:00.000Z"
+}]);
 
 function fakeJwt() {
   const encode = value => Buffer.from(JSON.stringify(value)).toString("base64url");
@@ -173,7 +216,7 @@ function responseForTroops(url) {
 }
 
 export async function installVisualEnvironment(page, { authenticated = false, theme = "nova" } = {}) {
-  const user = { id:USER_ID, email:"visual-test@example.invalid", aud:"authenticated", role:"authenticated" };
+  const user = { id:USER_ID, email:"visual-test@example.invalid", aud:"authenticated", role:"authenticated", last_sign_in_at:"2026-08-25T08:30:00.000Z" };
   if (authenticated) {
     const accessToken = fakeJwt();
     await page.addInitScript(({ key, session }) => localStorage.setItem(key, JSON.stringify(session)), {
@@ -199,6 +242,8 @@ export async function installVisualEnvironment(page, { authenticated = false, th
     if (url.pathname === "/rest/v1/character_combos") return json(200, combos);
     if (url.pathname === "/rest/v1/character_snapshots") return json(200, []);
     if (url.pathname === "/rest/v1/troops") return json(200, responseForTroops(url));
+    if (url.pathname === "/rest/v1/act_participants") return json(200, actParticipants);
+    if (url.pathname === "/rest/v1/character_experience_spending") return json(200, experienceSpending);
     if (request.method() === "GET") return json(200, []);
     return json(405, { message:`Unhandled visual route: ${request.method()} ${url.pathname}` });
   });
