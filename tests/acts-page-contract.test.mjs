@@ -6,7 +6,7 @@ const html = fs.readFileSync("acts.html", "utf8");
 const app = fs.readFileSync("js/acts-app.js", "utf8");
 
 test("ACT page uses one state-driven controller", () => {
-  assert.match(html, /acts-app\.js\?v=1/);
+  assert.match(html, /acts-app\.js\?v=2/);
   assert.doesNotMatch(html, /acts-role\.js|acts-history-enhanced\.js|acts-detail-toggle-fix\.js|acts-ui-fixes\.js|acts-spending\.js/);
   assert.doesNotMatch(app, /MutationObserver/);
   assert.match(app, /const state = \{/);
