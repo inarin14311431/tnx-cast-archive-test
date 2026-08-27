@@ -376,6 +376,15 @@ function toggleRecord(pid) {
   renderHistory();
 }
 
+async function runBusyAction(task) {
+  setBusy(true);
+  try {
+    return await task();
+  } finally {
+    setBusy(false);
+  }
+}
+
 async function saveExperience(record, button) {
   const pid = String(record.dataset.participationId || "");
   const row = state.participations.find(r => String(r.id) === pid);
@@ -386,32 +395,31 @@ async function saveExperience(record, button) {
     return;
   }
 
-  setBusy(true);
-  button.textContent = "保存中";
-  try {
-    const { data, error } = await withRequestTimeout(
-      supabase.from("act_participants")
-        .update({ earned_experience: value })
-        .eq("id", row.id).eq("character_id", character.id)
-        .select("id, earned_experience").single(),
-      "獲得経験点の保存がタイムアウトしました。"
-    );
-    if (error || String(data?.id ?? "") !== pid) {
+  await runBusyAction(async () => {
+    button.textContent = "保存中";
+    try {
+      const { data, error } = await withRequestTimeout(
+        supabase.from("act_participants")
+          .update({ earned_experience: value })
+          .eq("id", row.id).eq("character_id", character.id)
+          .select("id, earned_experience").single(),
+        "獲得経験点の保存がタイムアウトしました。"
+      );
+      if (error || String(data?.id ?? "") !== pid) {
+        console.error(error);
+        setHistoryStatus("獲得経験点を保存できませんでした。", "error");
+        renderHistory();
+        return;
+      }
+      row.earned_experience = Number(data.earned_experience || 0);
+      renderAll();
+      setHistoryStatus("獲得経験点を保存しました。", "success");
+    } catch (error) {
       console.error(error);
-      setHistoryStatus("獲得経験点を保存できませんでした。", "error");
+      setHistoryStatus("獲得経験点の保存結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
       renderHistory();
-      return;
     }
-    row.earned_experience = Number(data.earned_experience || 0);
-    renderAll();
-    setHistoryStatus("獲得経験点を保存しました。", "success");
-  } catch (error) {
-    console.error(error);
-    setHistoryStatus("獲得経験点の保存結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
-    renderHistory();
-  } finally {
-    setBusy(false);
-  }
+  });
 }
 
 async function deleteParticipation(pid) {
@@ -425,30 +433,29 @@ async function deleteParticipation(pid) {
   });
   if (!ok) return;
 
-  setBusy(true);
-  setHistoryStatus("参加アクト履歴を削除中…");
-  try {
-    const { data, error } = await withRequestTimeout(
-      supabase.from("act_participants").delete()
-        .eq("id", row.id).eq("character_id", character.id).select("id").single(),
-      "参加アクト履歴の削除がタイムアウトしました。"
-    );
-    if (error || String(data?.id ?? "") !== pid) {
+  await runBusyAction(async () => {
+    setHistoryStatus("参加アクト履歴を削除中…");
+    try {
+      const { data, error } = await withRequestTimeout(
+        supabase.from("act_participants").delete()
+          .eq("id", row.id).eq("character_id", character.id).select("id").single(),
+        "参加アクト履歴の削除がタイムアウトしました。"
+      );
+      if (error || String(data?.id ?? "") !== pid) {
+        console.error(error);
+        setHistoryStatus("参加アクト履歴を削除できませんでした。", "error");
+        return;
+      }
+      state.participations = state.participations.filter(r => String(r.id) !== pid);
+      state.openRecords.delete(pid);
+      populateDerivedFilters();
+      renderAll();
+      setHistoryStatus("参加アクト履歴を削除しました。", "success");
+    } catch (error) {
       console.error(error);
-      setHistoryStatus("参加アクト履歴を削除できませんでした。", "error");
-      return;
+      setHistoryStatus("参加アクト履歴の削除結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
     }
-    state.participations = state.participations.filter(r => String(r.id) !== pid);
-    state.openRecords.delete(pid);
-    populateDerivedFilters();
-    renderAll();
-    setHistoryStatus("参加アクト履歴を削除しました。", "success");
-  } catch (error) {
-    console.error(error);
-    setHistoryStatus("参加アクト履歴の削除結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
-  } finally {
-    setBusy(false);
-  }
+  });
 }
 
 async function addSpending(event) {
@@ -463,31 +470,30 @@ async function addSpending(event) {
   if (!Number.isInteger(amount) || amount < 1 || amount > 9999) return setSpendingStatus("消費経験点は1～9999の整数で入力してください。", "error");
   if (!spentOn) return setSpendingStatus("消費日を入力してください。", "error");
 
-  setBusy(true);
-  setSpendingStatus("経験点消費履歴を追加中…");
-  try {
-    const { data, error } = await withRequestTimeout(
-      supabase.from("character_experience_spending").insert({
-        character_id: character.id, amount, description, spent_on: spentOn, created_by: state.user.id
-      }).select("id, character_id, amount, description, spent_on, created_at").single(),
-      "経験点消費履歴の追加がタイムアウトしました。"
-    );
-    if (error) {
+  await runBusyAction(async () => {
+    setSpendingStatus("経験点消費履歴を追加中…");
+    try {
+      const { data, error } = await withRequestTimeout(
+        supabase.from("character_experience_spending").insert({
+          character_id: character.id, amount, description, spent_on: spentOn, created_by: state.user.id
+        }).select("id, character_id, amount, description, spent_on, created_at").single(),
+        "経験点消費履歴の追加がタイムアウトしました。"
+      );
+      if (error) {
+        console.error(error);
+        setSpendingStatus("経験点消費履歴を追加できませんでした。", "error");
+        return;
+      }
+      state.spending.unshift(data);
+      el.spendingAmount.value = "";
+      el.spendingDescription.value = "";
+      renderAll();
+      setSpendingStatus("経験点消費履歴を追加しました。", "success");
+    } catch (error) {
       console.error(error);
-      setSpendingStatus("経験点消費履歴を追加できませんでした。", "error");
-      return;
+      setSpendingStatus("経験点消費履歴の追加結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
     }
-    state.spending.unshift(data);
-    el.spendingAmount.value = "";
-    el.spendingDescription.value = "";
-    renderAll();
-    setSpendingStatus("経験点消費履歴を追加しました。", "success");
-  } catch (error) {
-    console.error(error);
-    setSpendingStatus("経験点消費履歴の追加結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
-  } finally {
-    setBusy(false);
-  }
+  });
 }
 
 async function onSpendingListClick(event) {
@@ -502,28 +508,27 @@ async function onSpendingListClick(event) {
   const ok = await confirmAction({ title: "経験点消費履歴を削除", lines: [["キャスト", fullName(character)], ["消費日", formatDate(row.spent_on)], ["消費経験点", `${Number(row.amount || 0)} EXP`], ["用途", row.description || "用途未記入"]], warning: "この操作は元に戻せません。" });
   if (!ok) return;
 
-  setBusy(true);
-  setSpendingStatus("経験点消費履歴を削除中…");
-  try {
-    const { data, error } = await withRequestTimeout(
-      supabase.from("character_experience_spending").delete()
-        .eq("id", row.id).eq("character_id", character.id).select("id").single(),
-      "経験点消費履歴の削除がタイムアウトしました。"
-    );
-    if (error || String(data?.id ?? "") !== id) {
+  await runBusyAction(async () => {
+    setSpendingStatus("経験点消費履歴を削除中…");
+    try {
+      const { data, error } = await withRequestTimeout(
+        supabase.from("character_experience_spending").delete()
+          .eq("id", row.id).eq("character_id", character.id).select("id").single(),
+        "経験点消費履歴の削除がタイムアウトしました。"
+      );
+      if (error || String(data?.id ?? "") !== id) {
+        console.error(error);
+        setSpendingStatus("経験点消費履歴を削除できませんでした。", "error");
+        return;
+      }
+      state.spending = state.spending.filter(r => String(r.id) !== id);
+      renderAll();
+      setSpendingStatus("経験点消費履歴を削除しました。", "success");
+    } catch (error) {
       console.error(error);
-      setSpendingStatus("経験点消費履歴を削除できませんでした。", "error");
-      return;
+      setSpendingStatus("経験点消費履歴の削除結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
     }
-    state.spending = state.spending.filter(r => String(r.id) !== id);
-    renderAll();
-    setSpendingStatus("経験点消費履歴を削除しました。", "success");
-  } catch (error) {
-    console.error(error);
-    setSpendingStatus("経験点消費履歴の削除結果を確認できませんでした。再読み込みして状態を確認してください。", "error");
-  } finally {
-    setBusy(false);
-  }
+  });
 }
 
 function setBusy(value) {
@@ -532,7 +537,6 @@ function setBusy(value) {
   document.querySelectorAll("#act-history-list button, #experience-spending-form button, #experience-spending-list button").forEach(button => { button.disabled = value; });
   populateSpendingCharacterOptions();
 }
-
 
 function confirmAction({ title, lines, warning }) {
   return new Promise(resolve => {
