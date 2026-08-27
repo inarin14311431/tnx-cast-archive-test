@@ -5,6 +5,10 @@ function reportRuntimeError(message) {
   status.className = "generator-status is-error";
 }
 
+function reportOptionalModuleError(name, error) {
+  console.error(`Optional showcase module could not be initialized: ${name}`, error);
+}
+
 window.addEventListener("error", event => {
   if (event?.message) reportRuntimeError(event.message);
 });
@@ -16,14 +20,27 @@ window.addEventListener("unhandledrejection", event => {
 
 try {
   await import("./showcase-generator-v3.js?v=7");
-  await import("./showcase-tagline.js?v=2");
-  await import("./showcase-tagline-auto.js?v=1");
-  await import("./showcase-history-role.js?v=1");
-  await import("./showcase-dynamic-publish.js?v=4");
+  // 公開処理は必須機能。装飾・補助モジュールより先に、独立して初期化する。
+  // 任意モジュールの失敗で旧履歴登録処理へフォールバックしないようにする。
+  await import("./showcase-dynamic-publish.js?v=5");
 } catch (error) {
-  console.error("Showcase generator could not be initialized.", error);
+  console.error("Showcase generator core could not be initialized.", error);
   reportRuntimeError(error?.message || "初期化に失敗しました。ページを再読み込みしてください。");
 }
+
+const optionalModules = [
+  ["tagline", "./showcase-tagline.js?v=2"],
+  ["tagline-auto", "./showcase-tagline-auto.js?v=1"],
+  ["history-role", "./showcase-history-role.js?v=1"]
+];
+
+await Promise.all(optionalModules.map(async ([name, source]) => {
+  try {
+    await import(source);
+  } catch (error) {
+    reportOptionalModuleError(name, error);
+  }
+}));
 
 setTimeout(() => {
   const publicStatus = document.querySelector("#library-status");
