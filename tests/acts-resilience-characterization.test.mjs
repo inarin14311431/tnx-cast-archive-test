@@ -57,11 +57,13 @@ test("ACT and experience mutations expose success and failure feedback", () => {
   }
 });
 
-test("every mutation releases busy state through finally", () => {
+test("every mutation uses the local busy lifecycle boundary", () => {
+  const boundary = bodyOf("runBusyAction");
+  assert.match(boundary, /setBusy\(true\)/, "busy boundary must enter busy state");
+  assert.match(boundary, /finally\s*\{\s*setBusy\(false\);\s*\}/s, "busy boundary must leave busy state in finally");
   for (const name of ["saveExperience", "deleteParticipation", "addSpending", "onSpendingListClick"]) {
     const body = bodyOf(name);
-    assert.match(body, /setBusy\(true\)/, `${name} must enter busy state`);
-    assert.match(body, /finally\s*\{\s*setBusy\(false\);\s*\}/s, `${name} must leave busy state in finally`);
+    assert.match(body, /await runBusyAction\(async \(\) => \{/, `${name} must use the busy lifecycle boundary`);
     assert.match(body, /withRequestTimeout\(/, `${name} must use the request timeout boundary`);
   }
 });
