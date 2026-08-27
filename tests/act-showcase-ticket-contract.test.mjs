@@ -7,7 +7,6 @@ const actsEntry = fs.readFileSync("css-next/pages/acts-entry.css", "utf8");
 const ticketJs = fs.readFileSync("js/experience-ticket.js", "utf8");
 const ticketLayoutCss = fs.readFileSync("css-next/pages/experience-ticket-layout.css", "utf8");
 const showcaseHtml = fs.readFileSync("act-showcase.html", "utf8");
-const showcaseCss = fs.readFileSync("assets/styles/act-showcase-refine.css", "utf8");
 
 test("act history loads the PNG-capable experience ticket module and styles", () => {
   assert.match(actsHtml, /experience-ticket\.js\?v=5/);
@@ -44,11 +43,11 @@ test("experience ticket PNG export renders a fixed-resolution image", () => {
   assert.match(ticketJs, /drawFitText/);
 });
 
-test("public act showcase loads its refinement and shared handle formatting", () => {
-  assert.match(showcaseHtml, /act-showcase-refine\.css\?v=1/);
-  assert.match(showcaseHtml, /handle-format\.js\?v=3/);
-  assert.match(showcaseCss, /\.hero__act::before/);
-  assert.match(showcaseCss, /DIRECTED BY/);
-  assert.match(showcaseCss, /\.cast-card__tagline/);
-  assert.match(showcaseCss, /@media \(max-width: 800px\)/);
+test("public act showcase keeps the production runtime shell", () => {
+  assert.match(showcaseHtml, /assets\/styles\/act-showcase\.css\?v=5/);
+  assert.match(showcaseHtml, /js\/act-showcase\.js\?v=7/);
+  assert.doesNotMatch(showcaseHtml, /act-showcase-refine\.css/);
+  assert.doesNotMatch(showcaseHtml, /act-showcase-title-fit\.css/);
+  assert.doesNotMatch(showcaseHtml, /handle-format\.js/);
+  assert.doesNotMatch(showcaseHtml, /act-showcase-title-fit\.js/);
 });
