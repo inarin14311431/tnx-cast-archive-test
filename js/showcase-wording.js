@@ -39,8 +39,10 @@
     const guide = document.querySelector("#act-name-length-guide");
     if (!input || !guide) return;
     const length = [...input.value].length;
-    guide.textContent = `公開画面は1行表示。推奨24文字程度 / 最大40文字 / 現在 ${length}文字`;
-    guide.dataset.state = length <= 24 ? "safe" : length <= 32 ? "compact" : "tight";
+    const nextText = `公開画面は1行表示。推奨24文字程度 / 最大40文字 / 現在 ${length}文字`;
+    const nextState = length <= 24 ? "safe" : length <= 32 ? "compact" : "tight";
+    if (guide.textContent !== nextText) guide.textContent = nextText;
+    if (guide.dataset.state !== nextState) guide.dataset.state = nextState;
   }
 
   let queued = false;
