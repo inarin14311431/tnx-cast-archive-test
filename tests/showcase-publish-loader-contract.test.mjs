@@ -23,7 +23,9 @@ test("ACT showcase generator uses an explicit observable bootstrap", () => {
   assert.match(loader, /void initializeShowcaseGenerator\(\)/);
 });
 
-test("ACT showcase generator refreshes the critical loader cache boundary", () => {
-  assert.match(html, /showcase-generator-loader\.js\?v=20/);
-  assert.doesNotMatch(html, /showcase-generator-loader\.js\?v=(?:18|19)/);
+test("ACT showcase generator refreshes both outer and nested cache boundaries", () => {
+  assert.match(html, /showcase-generator-loader\.js\?v=21/);
+  assert.doesNotMatch(html, /showcase-generator-loader\.js\?v=(?:18|19|20)/);
+  assert.match(loader, /showcase-generator-v3\.js\?v=8/);
+  assert.doesNotMatch(loader, /showcase-generator-v3\.js\?v=7/);
 });

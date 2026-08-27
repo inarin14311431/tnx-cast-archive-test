@@ -25,7 +25,9 @@ async function initializeShowcaseGenerator() {
   try {
     // Core generator and publishing are critical. Keep them independent from
     // optional presentation helpers so a decoration failure cannot block entry.
-    await import("./showcase-generator-v3.js?v=7");
+    // Bump the generator query whenever the core changes so iOS Safari cannot
+    // keep an older nested ES module even when the page itself is reloaded.
+    await import("./showcase-generator-v3.js?v=8");
     await import("./showcase-dynamic-publish.js?v=5");
     document.documentElement.dataset.showcaseGeneratorState = "ready";
   } catch (error) {
