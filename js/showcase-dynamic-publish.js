@@ -1,4 +1,5 @@
 import { supabase } from "./supabase-client.js";
+import { withRequestTimeout } from "./async-timeout.js?v=1";
 
 const preview = document.querySelector("#showcase-preview");
 const status = document.querySelector("#generator-status");
@@ -7,25 +8,7 @@ const actNameField = document.querySelector("#act-name");
 const rulerField = document.querySelector("#ruler-name");
 const MAX_SHOWCASE_BYTES = 500 * 1024;
 const TARGET_BACKGROUND_BYTES = 300 * 1024;
-const PUBLISH_TIMEOUT_MS = 12000;
 let publishing = false;
-
-class PublishTimeoutError extends Error {
-  constructor() {
-    super("公開結果を確認できませんでした。通信状態を確認し、ページを再読み込みして公開状態と参加履歴を確認してください。");
-    this.name = "PublishTimeoutError";
-  }
-}
-
-function withTimeout(operation, timeoutMs = PUBLISH_TIMEOUT_MS) {
-  let timer;
-  return Promise.race([
-    Promise.resolve(operation),
-    new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new PublishTimeoutError()), timeoutMs);
-    })
-  ]).finally(() => clearTimeout(timer));
-}
 
 // document のキャプチャ段階で処理することで、旧ジェネレーター側に残る
 // GitHub Pages公開リスナーより先にSupabase動的公開を実行する。
@@ -74,13 +57,13 @@ async function publishDynamicShowcase(button) {
     }
 
     setStatus("アクト紹介データと参加履歴を公開中…");
-    const { data: actId, error } = await withTimeout(supabase.rpc("publish_act_showcase_for_current_user", {
+    const { data: actId, error } = await withRequestTimeout(supabase.rpc("publish_act_showcase_for_current_user", {
       p_slug: slug,
       p_act_name: actName,
       p_ruler_name: rulerName,
       p_showcase_data: showcaseData,
       p_participant_ids: [...new Set(participantIds)]
-    }));
+    }), "公開結果を確認できませんでした。通信状態を確認し、ページを再読み込みして公開状態と参加履歴を確認してください。");
     if (error) throw new Error(translateError(error));
     if (!actId) throw new Error("公開したアクト紹介を確認できませんでした。");
 

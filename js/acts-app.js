@@ -1,7 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
-
-const REQUEST_TIMEOUT_MS = 12000;
+import { withRequestTimeout } from "./async-timeout.js?v=1";
 
 const el = {
   status: document.querySelector("#history-status"),
@@ -534,14 +533,6 @@ function setBusy(value) {
   populateSpendingCharacterOptions();
 }
 
-function withRequestTimeout(request, message, timeoutMs = REQUEST_TIMEOUT_MS) {
-  let timeoutId;
-  const timeout = new Promise((_, reject) => {
-    timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
-  });
-  return Promise.race([Promise.resolve(request), timeout])
-    .finally(() => window.clearTimeout(timeoutId));
-}
 
 function confirmAction({ title, lines, warning }) {
   return new Promise(resolve => {

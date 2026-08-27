@@ -2,8 +2,7 @@ import { SITE_BASE_PATH } from "./config.js?v=2";
 import { supabase } from "./supabase-client.js";
 import { requireAuth, signOut } from "./auth-state.js?v=4";
 import { getStyleColor } from "./style-colors.js";
-
-const REQUEST_TIMEOUT_MS = 12000;
+import { withRequestTimeout } from "./async-timeout.js?v=1";
 const VISIBILITY_LABELS = {
   public: "公開 / PUBLIC",
   private: "非公開 / PRIVATE"
@@ -343,15 +342,6 @@ async function runAccountWrite(button, operation) {
   }
 }
 
-function withRequestTimeout(operation, message, timeoutMs = REQUEST_TIMEOUT_MS) {
-  let timer;
-  return Promise.race([
-    Promise.resolve(operation),
-    new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(message)), timeoutMs);
-    })
-  ]).finally(() => clearTimeout(timer));
-}
 
 function obfuscatePublicId(value) {
   const source = `TNX_CAST_ARCHIVE::${String(value ?? "")}`;
