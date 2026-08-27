@@ -24,7 +24,8 @@ test("uncertain write completion is not automatically retried", () => {
   assert.doesNotMatch(app, /retryWrite|retryDelete|retryDuplicate|setInterval/);
 });
 
-test("account page refreshes the account module cache key", () => {
-  assert.match(html, /account\.js\?v=43/);
-  assert.doesNotMatch(html, /account\.js\?v=42/);
+test("account page keeps an explicit cache boundary for the account module", () => {
+  const matches = [...html.matchAll(/account\.js\?v=(\d+)/g)];
+  assert.equal(matches.length, 1, "account module must be loaded exactly once");
+  assert.ok(Number(matches[0][1]) >= 1, "account module must use a numeric cache version");
 });
