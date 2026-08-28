@@ -36,9 +36,13 @@ test("handle reading follows the same quote normalization rule", () => {
   assert.equal(format.quoteHandle("””ヨゴイ””"), "“ヨゴイ”");
 });
 
-test("composite cast identity removes duplicate handle quotes without changing the name", () => {
+test("composite cast identity parsing keeps handle and character name separate", () => {
   const format = loadHandleFormat();
-  assert.equal(format.formatIdentity("“メラキ”", "夜刀 秋"), "“メラキ” 夜刀 秋");
-  assert.equal(format.normalizeIdentityDisplay("““メラキ”” 夜刀 秋"), "“メラキ” 夜刀 秋");
-  assert.equal(format.normalizeIdentityDisplay("夜刀 秋"), "夜刀 秋");
+  const parsed = format.splitQuotedIdentity("“メラキ” 夜刀 秋");
+  assert.equal(parsed.handle, "メラキ");
+  assert.equal(parsed.name, "夜刀 秋");
+
+  const plain = format.splitQuotedIdentity("夜刀 秋");
+  assert.equal(plain.handle, "");
+  assert.equal(plain.name, "夜刀 秋");
 });
