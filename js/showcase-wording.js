@@ -56,7 +56,13 @@
     });
   };
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", queue, { once: true });
-  else queue();
-  new MutationObserver(queue).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  function bind() {
+    queue();
+    const root = document.body;
+    if (!root) return;
+    new MutationObserver(queue).observe(root, { childList: true, subtree: true, characterData: true });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
+  else bind();
 })();
