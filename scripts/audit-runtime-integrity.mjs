@@ -53,17 +53,68 @@ for (const file of htmlFiles) {
   }
 }
 
-// The remaining pre-existing generator is deferred to the larger view refactor.
-// Theme presentation is now static CSS; any new runtime <style> generator fails immediately.
-const runtimeStyleAllowlist = new Set([
-  "js/skill-display-enhancements.js"
-]);
+// Presentation must stay in static stylesheets. There are no remaining runtime-style exceptions.
 const jsFiles = await filesUnder(path.join(root, "js"), ".js");
 for (const file of jsFiles) {
   const source = await readFile(file, "utf8");
   const name = relative(file);
-  if (/document\.createElement\s*\(\s*["']style["']\s*\)/.test(source) && !runtimeStyleAllowlist.has(name)) {
-    problems.push(`${name}: new runtime <style> creation is prohibited; move presentation to css-next`);
+  if (/document\.createElement\s*\(\s*["']style["']\s*\)/.test(source)) {
+    problems.push(`${name}: runtime <style> creation is prohibited; move presentation to a static stylesheet`);
+  }
+}
+
+// MutationObserver ownership is inventory-controlled. The manifest records the current baseline;
+// it is not a blanket approval of each observer's performance characteristics.
+const observerManifest = JSON.parse(await readFile(path.join(root, "runtime-observer-manifest.json"), "utf8"));
+const registeredMutationFiles = new Set(observerManifest.files || []);
+if (registeredMutationFiles.size !== (observerManifest.files || []).length) {
+  problems.push("runtime-observer-manifest.json: duplicate MutationObserver module entries");
+}
+const observedMutationFiles = new Set();
+for (const file of jsFiles) {
+  const source = await readFile(file, "utf8");
+  const name = relative(file);
+  if (!/\bnew\s+MutationObserver\s*\(/.test(source)) continue;
+  observedMutationFiles.add(name);
+  if (!registeredMutationFiles.has(name)) {
+    problems.push(`${name}: MutationObserver is not registered in runtime-observer-manifest.json`);
+  }
+}
+for (const name of registeredMutationFiles) {
+  if (!observedMutationFiles.has(name)) {
+    problems.push(`${name}: stale MutationObserver manifest entry`);
+  }
+}
+
+// ACT Showcase intentionally owns a standalone presentation family outside css-next.
+// Keep that exception explicit and reject unowned stylesheets in assets/styles.
+const standaloneCssOwners = new Map([
+  ["act-showcase.html", new Set(["assets/styles/act-showcase.css"])]
+]);
+const standaloneStylesDir = path.join(root, "assets", "styles");
+const standaloneCssFiles = await filesUnder(standaloneStylesDir, ".css");
+const ownedStandaloneCss = new Set([...standaloneCssOwners.values()].flatMap(files => [...files]));
+for (const file of standaloneCssFiles) {
+  const name = relative(file);
+  if (!ownedStandaloneCss.has(name)) {
+    problems.push(`${name}: standalone stylesheet has no registered page owner`);
+  }
+}
+for (const [page, stylesheets] of standaloneCssOwners) {
+  const pageSource = await readFile(path.join(root, page), "utf8");
+  if (/<style\b/i.test(pageSource)) problems.push(`${page}: inline <style> is prohibited`);
+  const linkedLocalStyles = [...pageSource.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
+    .map(match => localAssetPath(match[1]))
+    .filter(Boolean);
+  for (const stylesheet of stylesheets) {
+    if (!linkedLocalStyles.includes(stylesheet)) {
+      problems.push(`${page}: registered standalone stylesheet is not linked: ${stylesheet}`);
+    }
+  }
+  for (const stylesheet of linkedLocalStyles.filter(item => item.startsWith("assets/styles/"))) {
+    if (!stylesheets.has(stylesheet)) {
+      problems.push(`${page}: unregistered standalone stylesheet link: ${stylesheet}`);
+    }
   }
 }
 
@@ -100,4 +151,4 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files.`);
+console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files, ${observedMutationFiles.size} inventoried MutationObserver modules, ${standaloneCssFiles.length} standalone stylesheet(s).`);
