@@ -1,3 +1,7 @@
+/* Shared structural shell for ACT history and the legacy combo editor.
+   ACT browsing lives in acts-history.css, expanded records in acts-record.css,
+   spending UI in acts-spending.css, and browser fixes in acts-responsive.css. */
+
 body[data-page="acts.html"] .act-history-header h1 {
   width: max-content;
   max-width: none;
@@ -36,73 +40,33 @@ body[data-page="acts.html"] .act-history-header h1 > small {
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface-alt);
 }
+
 .act-history-panel__header > div,
-.combo-editor-panel__header > div { display: flex; align-items: center; gap: 10px; }
+.combo-editor-panel__header > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .act-history-panel__header span { color: var(--color-accent); font-size: 1.4rem; }
+
 .act-history-panel__header h2,
-.combo-editor-panel__header h2 { margin: 0; color: var(--color-accent); font-size: 1.05rem; }
+.combo-editor-panel__header h2 {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 1.05rem;
+}
+
 .act-history-panel__header p,
-.combo-editor-panel__header p { margin: 0; color: var(--color-muted); font-size: .72rem; }
+.combo-editor-panel__header p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: .72rem;
+}
+
 .act-history-panel__body { padding: 16px; }
-.act-history-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) auto; gap: 12px; align-items: end; }
-.act-history-filters label,
-.experience-spending-form label { color: var(--color-muted); font-size: .78rem; }
-.act-history-filters select,
-.experience-spending-form :is(input, select) { width: 100%; margin-top: 5px; }
-.act-history-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
-.act-history-summary article { display: grid; gap: 3px; min-height: 112px; align-content: center; padding: 12px; border: 1px solid var(--color-border); background: var(--color-surface); text-align: center; }
-.act-history-summary span { color: var(--color-muted); font-size: .75rem; }
-.act-history-summary strong { color: var(--color-accent-strong); font-size: 2rem; line-height: 1; }
-.act-history-summary small { color: var(--color-muted); font-size: .62rem; letter-spacing: .12em; }
-.act-history-list,
-.experience-spending-list { display: grid; gap: 10px; }
-.act-history-list > article,
-.experience-spending-list > article { padding: 13px; border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent); background: var(--color-surface-alt); }
-.experience-balance-note,
-.experience-spending-status { color: var(--color-muted); }
-.experience-spending-form { display: grid; grid-template-columns: 1.2fr .6fr .8fr 1.6fr auto; gap: 10px; align-items: end; margin-block: 14px; }
 
-.experience-spending-confirm {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  background: rgb(0 4 8 / 78%);
-  backdrop-filter: blur(3px);
-}
-.experience-spending-confirm__panel {
-  width: min(520px, 100%);
-  max-height: calc(100dvh - 32px);
-  overflow: auto;
-  padding: 20px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--shadow-glow);
-}
-.experience-spending-confirm__eyebrow {
-  margin: 0 0 6px;
-  color: var(--color-danger);
-  font-size: .68rem;
-  letter-spacing: .12em;
-}
-.experience-spending-confirm__panel h2 { margin: 0 0 16px; color: var(--color-accent); }
-.experience-spending-confirm__details { display: grid; gap: 8px; margin: 0; }
-.experience-spending-confirm__details div {
-  display: grid;
-  grid-template-columns: 7em minmax(0, 1fr);
-  gap: 12px;
-  padding: 9px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
-}
-.experience-spending-confirm__details dt { color: var(--color-muted); }
-.experience-spending-confirm__details dd { margin: 0; overflow-wrap: anywhere; }
-.experience-spending-confirm__warning { margin: 16px 0 0; color: var(--color-danger); font-weight: 700; }
-.experience-spending-confirm__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
-.experience-spending-confirm__actions .danger { border-color: var(--color-danger); color: var(--color-danger); }
-
+/* Legacy combo editor remains here until it receives its own entry stylesheet. */
 .combo-editor-panel__header { padding: 16px; }
 .combo-list { display: grid; gap: 12px; padding: 16px; }
 .combo-list > article,
@@ -133,26 +97,18 @@ body[data-page="combos.html"] .combo-card__ability--life { border-color: color-m
 .combo-dialog__actions { position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 10px; padding: 13px 18px; border-top: 1px solid var(--color-border); background: var(--color-surface-alt); }
 .combo-dialog__actions .danger { margin-right: auto; border-color: var(--color-danger); color: var(--color-danger); }
 
-@media (max-width: 799px) {
-  .act-history-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .act-history-filters,
-  .experience-spending-form { grid-template-columns: 1fr 1fr; }
-  .act-history-filters button,
-  .experience-spending-form button { grid-column: 1 / -1; }
-}
 @media (max-width: 560px) {
   body[data-page="acts.html"] .act-history-header h1 {
     font-size: clamp(1.8rem, 9vw, 3rem);
     gap: 8px;
   }
+
   .act-history-panel__header,
-  .combo-editor-panel__header { align-items: flex-start; flex-direction: column; }
-  .act-history-summary,
-  .act-history-filters,
-  .experience-spending-form,
+  .combo-editor-panel__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   body[data-page="combos.html"] .combo-form-grid { grid-template-columns: 1fr; }
   body[data-page="combos.html"] .combo-form-grid__wide { grid-column: auto; }
-  .experience-spending-confirm__details div { grid-template-columns: 1fr; gap: 3px; }
-  .experience-spending-confirm__actions { flex-direction: column-reverse; }
-  .experience-spending-confirm__actions button { width: 100%; }
 }
