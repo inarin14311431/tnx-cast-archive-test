@@ -36,6 +36,13 @@
     "28_troops.sql",
     "29_troop_rules_v2.sql",
     "30_delete_owned_experience_spending.sql",
-    "31_act_participant_owner_mutations.sql"
+    "30_owner_scoped_act_reads.sql",
+    "31_act_participant_owner_mutations.sql",
+    "31_privileged_editor_capability_gate.sql",
+    "32_character_image_upload_limits.sql",
+    "33_archive_legacy_migration_tables.sql",
+    "34_prune_archived_migration_tables.sql",
+    "35_least_privilege_troops_grants.sql",
+    "36_hide_internal_security_helpers.sql"
   ]
 }
