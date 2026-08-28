@@ -86,22 +86,36 @@ for (const name of registeredMutationFiles) {
   }
 }
 
-// ACT Showcase is now owned by css-next like the other page presentation.
-const showcasePageSource = await readFile(path.join(root, "act-showcase.html"), "utf8");
-const showcaseStylesheets = [...showcasePageSource.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
-  .map(match => localAssetPath(match[1]))
-  .filter(Boolean);
-if (!showcaseStylesheets.includes("css-next/pages/act-showcase.css")) {
-  problems.push("act-showcase.html: ACT Showcase stylesheet must be owned by css-next/pages/act-showcase.css");
+// ACT Showcase intentionally owns a standalone presentation family outside css-next.
+// Keep that exception explicit and reject unowned stylesheets in assets/styles.
+const standaloneCssOwners = new Map([
+  ["act-showcase.html", new Set(["assets/styles/act-showcase.css"])]
+]);
+const standaloneStylesDir = path.join(root, "assets", "styles");
+const standaloneCssFiles = await filesUnder(standaloneStylesDir, ".css");
+const ownedStandaloneCss = new Set([...standaloneCssOwners.values()].flatMap(files => [...files]));
+for (const file of standaloneCssFiles) {
+  const name = relative(file);
+  if (!ownedStandaloneCss.has(name)) {
+    problems.push(`${name}: standalone stylesheet has no registered page owner`);
+  }
 }
-if (showcaseStylesheets.some(stylesheet => stylesheet.startsWith("assets/styles/"))) {
-  problems.push("act-showcase.html: legacy assets/styles stylesheet ownership must not be restored");
-}
-if (/<style\b/i.test(showcasePageSource)) {
-  problems.push("act-showcase.html: inline <style> is prohibited");
-}
-if (await exists(path.join(root, "assets", "styles"))) {
-  problems.push("assets/styles: legacy standalone stylesheet directory must not be restored");
+for (const [page, stylesheets] of standaloneCssOwners) {
+  const pageSource = await readFile(path.join(root, page), "utf8");
+  if (/<style\b/i.test(pageSource)) problems.push(`${page}: inline <style> is prohibited`);
+  const linkedLocalStyles = [...pageSource.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
+    .map(match => localAssetPath(match[1]))
+    .filter(Boolean);
+  for (const stylesheet of stylesheets) {
+    if (!linkedLocalStyles.includes(stylesheet)) {
+      problems.push(`${page}: registered standalone stylesheet is not linked: ${stylesheet}`);
+    }
+  }
+  for (const stylesheet of linkedLocalStyles.filter(item => item.startsWith("assets/styles/"))) {
+    if (!stylesheets.has(stylesheet)) {
+      problems.push(`${page}: unregistered standalone stylesheet link: ${stylesheet}`);
+    }
+  }
 }
 
 const packageJson = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
@@ -137,4 +151,4 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files, ${observedMutationFiles.size} inventoried MutationObserver modules; ACT Showcase presentation is owned by css-next.`);
+console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files, ${observedMutationFiles.size} inventoried MutationObserver modules, ${standaloneCssFiles.length} standalone stylesheet(s).`);
