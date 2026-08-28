@@ -130,7 +130,7 @@ test("troop styles use explicit cascade layers without important overrides", () 
   const sources = [
     "troops.css", "troop-base.css", "troops-registry-base.css", "troop-layout.css",
     "troop-combo-dialog.css", "troop-combo-rules.css", "troop-screen.css",
-    "troops-registry-polish.css"
+    "troops-registry.css"
   ].map(file => read(`css-next/pages/${file}`));
 
   assert.match(html, /troop-entry\.css\?v=1/);
@@ -139,6 +139,7 @@ test("troop styles use explicit cascade layers without important overrides", () 
   assert.match(detailEntry, /troop-base\.css\?v=1[^\n]*layer\(troop-base\)/);
   assert.match(registryEntry, /@layer app, troop-base, troop-registry/);
   assert.match(registryEntry, /troops-registry-base\.css\?v=1[^\n]*layer\(troop-base\)/);
+  assert.match(registryEntry, /troops-registry\.css\?v=1[^\n]*layer\(troop-registry\)/);
   sources.forEach(source => assert.doesNotMatch(source, /!important/));
 });
 
