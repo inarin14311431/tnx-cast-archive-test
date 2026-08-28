@@ -30,7 +30,8 @@ test('account cast actions keep consolidated icons and stylesheet ownership', ()
   assert.match(icons, /aria-hidden="true"/);
   assert.match(icons, /MutationObserver/);
   assert.match(html, /account-entry\.css\?v=1/);
-  assert.match(entry, /account-action-hierarchy\.css\?v=7/);
+  assert.match(entry, /account-action-hierarchy\.css\?v=8/);
+  assert.doesNotMatch(entry, /account-troop-links-v2\.css/);
   assert.doesNotMatch(html, /account-action-icons\.css/);
   assert.doesNotMatch(html, /account-mobile-compact\.css/);
   assert.ok(html.indexOf('account-action-icons.js?v=1') > html.indexOf('account.js?v=42'));
@@ -39,7 +40,7 @@ test('account cast actions keep consolidated icons and stylesheet ownership', ()
 test('account cast action layout stays compact and theme aware', () => {
   assert.match(css, /\.owned-cast \{[\s\S]*grid-template-columns:\s*minmax\(230px, \.8fr\) minmax\(500px, 1\.35fr\)/);
   assert.match(css, /\.owned-cast__links[\s\S]*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(css, /\.owned-cast__management[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 2fr\)/);
+  assert.match(css, /\.owned-cast__management[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\) minmax\(0, 2fr\)/);
   assert.match(css, /\.owned-cast__management > a[\s\S]*min-height:\s*46px/);
   assert.match(css, /\.owned-cast__links > a[\s\S]*min-height:\s*46px/);
   assert.match(css, /\.owned-cast__management > button[\s\S]*width:\s*56px/);
