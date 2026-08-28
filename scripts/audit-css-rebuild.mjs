@@ -114,6 +114,7 @@ const activeThemePages = [
   "sheet.html", "showcase-generator.html", "statistics.html", "transfer.html",
   "troop.html", "troops.html"
 ];
+const cssReachabilityPages = [...activeThemePages, "act-showcase.html"];
 
 for (const file of cssFiles) {
   const source = await readFile(file, "utf8");
@@ -278,7 +279,7 @@ for (const page of activeThemePages) {
 const cssSources = new Map(await Promise.all(cssFiles.map(async file => [file, await readFile(file, "utf8")])));
 const reachableCss = new Set();
 const cssQueue = [];
-for (const page of activeThemePages) {
+for (const page of cssReachabilityPages) {
   const source = await readFile(path.join(root, page), "utf8");
   for (const match of source.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)) {
     const href = match[1].split("?")[0];
@@ -517,9 +518,9 @@ if (!/\.cast-card__image\s*\{[^}]*260px[^}]*min-height:\s*260px[^}]*max-height:\
     !/\.cast-card__image img\s*\{[^}]*object-fit:\s*cover[^}]*object-position:\s*50%\s+0/s.test(archiveCssSource)) {
   violations.push("css-next/pages/archive.css: fixed-size top-cropped archive images missing");
 }
-const actShowcaseAssetSource = await readFile(path.join(root, "assets", "styles", "act-showcase.css"), "utf8");
+const actShowcaseAssetSource = await readFile(path.join(root, "css-next", "pages", "act-showcase.css"), "utf8");
 if (!/\.cast-card__image img\s*\{[^}]*object-fit:\s*cover[^}]*object-position:\s*50%\s+0/s.test(actShowcaseAssetSource)) {
-  violations.push("assets/styles/act-showcase.css: public act cast images are not top-cropped consistently");
+  violations.push("css-next/pages/act-showcase.css: public act cast images are not top-cropped consistently");
 }
 const accountCssSource = await readFile(path.join(root, "css-next", "pages", "account.css"), "utf8");
 if (!accountCssSource.includes("width: min(960px, calc(100% - 32px))") ||
