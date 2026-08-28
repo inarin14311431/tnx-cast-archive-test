@@ -7,13 +7,6 @@ const sheetSource = await readFile(new URL("../js/sheet.js", import.meta.url), "
 const rendererSource = await readFile(new URL("../js/sheet-outfit-renderer.js", import.meta.url), "utf8");
 const payloadSource = await readFile(new URL("../js/sheet-save-payload.js", import.meta.url), "utf8");
 
-function functionBlock(source, name, nextName) {
-  assert.ok(nextName, `${name} block needs an explicit next function boundary`);
-  const match = source.match(new RegExp(`function ${name}\\([\\s\\S]*?\\n}\\n\\n(?:export )?(?:async )?function ${nextName}`));
-  assert.ok(match, `${name} block should exist`);
-  return match[0];
-}
-
 function trailingFunctionBlock(source, name) {
   const match = source.match(new RegExp(`function ${name}\\([\\s\\S]*$`));
   assert.ok(match, `${name} block should exist`);
@@ -48,9 +41,8 @@ test("renderer exposes canonical category-owned control and CS fields", () => {
 });
 
 test("classic sheet delegates outfit serialization to the payload contract", () => {
-  const collect = functionBlock(sheetSource, "collectOutfits", "openImport");
-  assert.match(collect, /buildOutfitSavePayloads\(outfits\)/);
-  assert.doesNotMatch(collect, /payload\.defense|mundane_modifier/);
+  assert.match(sheetSource, /buildCharacterSavePayload, buildSkillSavePayloads, buildOutfitSavePayloads/);
+  assert.match(sheetSource, /function collectOutfits\(\)\s*\{\s*return buildOutfitSavePayloads\(outfits\);\s*\}/);
 
   const builder = payloadSource.match(/export function buildOutfitSavePayloads\([\s\S]*$/)?.[0] || "";
   assert.ok(builder, "buildOutfitSavePayloads block should exist");
