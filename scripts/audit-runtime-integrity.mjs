@@ -86,34 +86,42 @@ for (const name of registeredMutationFiles) {
   }
 }
 
-// ACT Showcase intentionally owns a standalone presentation family outside css-next.
-// Keep that exception explicit and reject unowned stylesheets in assets/styles.
-const standaloneCssOwners = new Map([
-  ["act-showcase.html", new Set(["assets/styles/act-showcase.css"])]
-]);
-const standaloneStylesDir = path.join(root, "assets", "styles");
-const standaloneCssFiles = await filesUnder(standaloneStylesDir, ".css");
-const ownedStandaloneCss = new Set([...standaloneCssOwners.values()].flatMap(files => [...files]));
-for (const file of standaloneCssFiles) {
-  const name = relative(file);
-  if (!ownedStandaloneCss.has(name)) {
-    problems.push(`${name}: standalone stylesheet has no registered page owner`);
+// ACT Showcase runtime presentation is owned by css-next. The legacy assets/styles copy is retained
+// only as a byte-identical audit compatibility mirror until audit-css-rebuild.mjs is migrated.
+const showcasePageSource = await readFile(path.join(root, "act-showcase.html"), "utf8");
+const showcaseStylesheets = [...showcasePageSource.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
+  .map(match => localAssetPath(match[1]))
+  .filter(Boolean);
+if (!showcaseStylesheets.includes("css-next/pages/act-showcase.css")) {
+  problems.push("act-showcase.html: ACT Showcase runtime stylesheet must be css-next/pages/act-showcase.css");
+}
+if (showcaseStylesheets.some(stylesheet => stylesheet.startsWith("assets/styles/"))) {
+  problems.push("act-showcase.html: audit compatibility stylesheet must never be linked at runtime");
+}
+if (/<style\b/i.test(showcasePageSource)) problems.push("act-showcase.html: inline <style> is prohibited");
+
+const showcaseCanonical = path.join(root, "css-next", "pages", "act-showcase.css");
+const showcaseAuditMirror = path.join(root, "assets", "styles", "act-showcase.css");
+if (!await exists(showcaseCanonical)) {
+  problems.push("css-next/pages/act-showcase.css: canonical ACT Showcase stylesheet missing");
+}
+if (!await exists(showcaseAuditMirror)) {
+  problems.push("assets/styles/act-showcase.css: temporary audit compatibility mirror missing");
+} else if (await exists(showcaseCanonical)) {
+  const [canonicalSource, mirrorSource] = await Promise.all([
+    readFile(showcaseCanonical, "utf8"),
+    readFile(showcaseAuditMirror, "utf8")
+  ]);
+  if (canonicalSource !== mirrorSource) {
+    problems.push("assets/styles/act-showcase.css: audit compatibility mirror diverged from css-next/pages/act-showcase.css");
   }
 }
-for (const [page, stylesheets] of standaloneCssOwners) {
-  const pageSource = await readFile(path.join(root, page), "utf8");
-  if (/<style\b/i.test(pageSource)) problems.push(`${page}: inline <style> is prohibited`);
-  const linkedLocalStyles = [...pageSource.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
-    .map(match => localAssetPath(match[1]))
-    .filter(Boolean);
-  for (const stylesheet of stylesheets) {
-    if (!linkedLocalStyles.includes(stylesheet)) {
-      problems.push(`${page}: registered standalone stylesheet is not linked: ${stylesheet}`);
-    }
-  }
-  for (const stylesheet of linkedLocalStyles.filter(item => item.startsWith("assets/styles/"))) {
-    if (!stylesheets.has(stylesheet)) {
-      problems.push(`${page}: unregistered standalone stylesheet link: ${stylesheet}`);
+const standaloneStylesDir = path.join(root, "assets", "styles");
+if (await exists(standaloneStylesDir)) {
+  const standaloneCssFiles = await filesUnder(standaloneStylesDir, ".css");
+  for (const file of standaloneCssFiles) {
+    if (relative(file) !== "assets/styles/act-showcase.css") {
+      problems.push(`${relative(file)}: unowned legacy standalone stylesheet`);
     }
   }
 }
@@ -151,4 +159,4 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files, ${observedMutationFiles.size} inventoried MutationObserver modules, ${standaloneCssFiles.length} standalone stylesheet(s).`);
+console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files, ${observedMutationFiles.size} inventoried MutationObserver modules; ACT Showcase runtime CSS is owned by css-next.`);
