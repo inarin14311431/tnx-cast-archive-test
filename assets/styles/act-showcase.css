@@ -9,7 +9,7 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-[hidden] { display: none !important; }
+[hidden] { display: none; }
 
 body {
   margin: 0;
@@ -288,11 +288,11 @@ body::after {
   animation: heroReveal .9s ease forwards;
 }
 
-.hero__code { animation-delay: .1s; }
-.hero h1 { animation-delay: .28s; }
-.hero__act { animation-delay: .48s; }
-.hero__ruler { animation-delay: .66s; }
-.hero__intro { animation-delay: .84s; }
+.hero .hero__code { animation-delay: .1s; }
+.hero .hero__content h1 { animation-delay: .28s; }
+.hero .hero__act { animation-delay: .48s; }
+.hero .hero__ruler { animation-delay: .66s; }
+.hero .hero__intro { animation-delay: .84s; }
 
 .hero__scroll-cue {
   position: absolute;
@@ -471,7 +471,7 @@ body::after {
   min-width: 112px;
   padding: 9px 14px 10px;
   border-width: 2px;
-  color: #fff !important;
+  color: #fff;
   background: linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,84,181,.14));
   box-shadow: 0 0 0 1px var(--style-color),0 0 24px rgba(255,84,181,.34),inset 0 0 18px rgba(255,255,255,.05);
   font-size: .82rem;
@@ -594,29 +594,31 @@ body::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
+  #act-showcase-page *,
+  #act-showcase-page *::before,
+  #act-showcase-page *::after {
+    animation: none;
+    transition: none;
+    scroll-behavior: auto;
   }
 
-  .cinematic-intro { display: none !important; }
-  .cast-card,
-  .hero__code,
-  .hero h1,
-  .hero__act,
-  .hero__ruler,
-  .hero__intro,
-  .cast-card__slot,
-  .cast-card__reading,
-  .cast-card__name,
-  .cast-card__styles,
-  .cast-card__meta,
-  .cast-card__tagline,
-  .cast-card__handout,
-  .cast-card__link,
-  .cast-card__serial {
-    opacity: 1 !important;
-    transform: none !important;
+  #act-showcase-page .cinematic-intro { display: none; }
+  #act-showcase-page .cast-card,
+  #act-showcase-page .hero__code,
+  #act-showcase-page .hero h1,
+  #act-showcase-page .hero__act,
+  #act-showcase-page .hero__ruler,
+  #act-showcase-page .hero__intro,
+  #act-showcase-page .cast-card__slot,
+  #act-showcase-page .cast-card__reading,
+  #act-showcase-page .cast-card__name,
+  #act-showcase-page .cast-card__styles,
+  #act-showcase-page .cast-card__meta,
+  #act-showcase-page .cast-card__tagline,
+  #act-showcase-page .cast-card__handout,
+  #act-showcase-page .cast-card__link,
+  #act-showcase-page .cast-card__serial {
+    opacity: 1;
+    transform: none;
   }
 }
