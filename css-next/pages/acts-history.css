@@ -1,0 +1,244 @@
+/* Canonical ACT history browsing presentation.
+   Owns filters, summary, year groups, compact record rows, and section tone.
+   Expanded record layout belongs exclusively to acts-record.css. */
+
+body[data-page="acts.html"] .act-history-panel--acts {
+  --section-tone: color-mix(in srgb, var(--color-accent-strong) 82%, #78ddff);
+}
+
+body[data-page="acts.html"] .act-history-panel--experience {
+  --section-tone: color-mix(in srgb, var(--color-accent-strong) 58%, #f0c969);
+}
+
+body[data-page="acts.html"] .act-history-panel:is(.act-history-panel--acts, .act-history-panel--experience) {
+  border-color: color-mix(in srgb, var(--section-tone) 42%, var(--color-border));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--section-tone) 9%, transparent);
+}
+
+body[data-page="acts.html"] .act-history-panel:is(.act-history-panel--acts, .act-history-panel--experience) > .act-history-panel__header {
+  border-bottom-color: color-mix(in srgb, var(--section-tone) 38%, var(--color-border));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--section-tone) 11%, var(--color-surface-alt)), var(--color-surface-alt) 62%);
+}
+
+body[data-page="acts.html"] .act-history-panel:is(.act-history-panel--acts, .act-history-panel--experience) > .act-history-panel__header :is(span, h2) {
+  color: var(--section-tone);
+}
+
+body[data-page="acts.html"] .act-history-filters {
+  display: grid;
+  grid-template-columns: 1fr .72fr 1.45fr .92fr .82fr auto;
+  gap: 12px;
+  align-items: end;
+  padding-bottom: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--section-tone) 24%, var(--color-border));
+}
+
+body[data-page="acts.html"] .act-history-filters label {
+  min-width: 0;
+  color: var(--color-muted);
+  font-size: .78rem;
+}
+
+body[data-page="acts.html"] .act-history-filters :is(input, select) {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.act-history-resultbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 2px 8px;
+  color: var(--color-muted);
+}
+
+.act-history-resultbar p { margin: 0; }
+.act-history-resultbar strong { color: var(--section-tone); font-family: var(--font-data); }
+.act-history-resultbar small { font: 600 .62rem/1 var(--font-data); letter-spacing: .12em; }
+
+body[data-page="acts.html"] .act-history-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+body[data-page="acts.html"] .act-history-summary article {
+  display: grid;
+  gap: 3px;
+  min-height: 112px;
+  align-content: center;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+body[data-page="acts.html"] .act-history-panel--experience .act-history-summary article {
+  border-color: color-mix(in srgb, var(--section-tone) 28%, var(--color-border));
+}
+
+body[data-page="acts.html"] .act-history-summary span { color: var(--color-muted); font-size: .75rem; }
+body[data-page="acts.html"] .act-history-summary strong { color: var(--section-tone); font-size: 2rem; line-height: 1; }
+body[data-page="acts.html"] .act-history-summary small { color: var(--color-muted); font-size: .62rem; letter-spacing: .12em; }
+
+body[data-page="acts.html"] .act-history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.act-records--flat { display: grid; gap: 0; }
+
+.act-year-group {
+  margin-top: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 64%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 36%, transparent);
+}
+
+.act-year-toggle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 28px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 7px 10px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface-alt) 88%, transparent);
+  text-align: left;
+}
+
+.act-year-group.is-expanded > .act-year-toggle { border-bottom-color: var(--color-border-muted); }
+.act-year-toggle > span:first-child { display: flex; align-items: baseline; gap: 8px; }
+.act-year-toggle strong { color: var(--color-accent-strong); font-size: 1rem; }
+.act-year-toggle small { color: var(--color-muted); font-size: .52rem; letter-spacing: .12em; }
+.act-year-toggle > span:nth-child(2) { color: var(--color-muted); font: 600 .68rem/1 var(--font-data); letter-spacing: .08em; }
+.act-year-records { display: grid; }
+
+.act-character-group--flat {
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+
+.act-character-group--flat > .act-record { margin: 0; }
+
+.act-record {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 52%, transparent);
+  background: transparent;
+}
+
+.act-record:last-child { border-bottom: 0; }
+
+.act-record-summary {
+  display: grid;
+  grid-template-columns: 104px minmax(220px, 1fr) minmax(150px, .72fr) minmax(88px, .46fr) 88px 22px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 10px;
+  border: 0;
+  color: var(--color-text);
+  background: transparent;
+  text-align: left;
+}
+
+.act-record-summary:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+  box-shadow: inset 2px 0 var(--color-accent);
+}
+
+.act-record-summary__date,
+.act-record-summary__role,
+.act-record-summary__exp { font-family: var(--font-data); }
+
+.act-record-summary__date { color: var(--color-muted); font-size: .72rem; }
+
+.act-record-summary__title {
+  overflow: hidden;
+  font-size: .88rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.act-record-summary__cast {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: .74rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.act-record-summary__role {
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: .7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.act-record-summary__exp {
+  color: var(--color-accent-strong);
+  font-size: .74rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.act-record-summary__icon { color: var(--color-accent); text-align: center; }
+
+/* Closed rows show only the compact summary. Expanded layout itself is owned by acts-record.css. */
+.act-record > :not(.act-record-summary) { display: none; }
+.act-record.is-detail-open > :not(.act-record-summary) { display: block; }
+
+@media (max-width: 1000px) {
+  body[data-page="acts.html"] .act-history-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body[data-page="acts.html"] .act-history-filters button { align-self: stretch; }
+  .act-record-summary { grid-template-columns: 94px minmax(180px, 1fr) minmax(130px, .65fr) 80px 22px; gap: 8px; }
+  .act-record-summary__role { display: none; }
+}
+
+@media (max-width: 700px) {
+  body[data-page="acts.html"] .act-history-layout { width: min(100% - 18px, 1120px); }
+  body[data-page="acts.html"] .act-history-panel__body { padding: 12px; }
+  body[data-page="acts.html"] .act-history-filters { grid-template-columns: 1fr 1fr; gap: 9px; }
+  body[data-page="acts.html"] .act-history-filter--query { grid-column: 1 / -1; }
+  body[data-page="acts.html"] .act-history-filters button { grid-column: 1 / -1; }
+  body[data-page="acts.html"] .act-history-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+  body[data-page="acts.html"] .act-history-summary article { min-height: 88px; padding: 8px 6px; }
+  body[data-page="acts.html"] .act-history-summary strong { font-size: 1.55rem; }
+
+  .act-record-summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title exp"
+      "cast icon"
+      "date role";
+    gap: 3px 10px;
+    min-height: 70px;
+    padding: 9px 10px;
+  }
+
+  .act-record-summary__title { grid-area: title; }
+  .act-record-summary__exp { grid-area: exp; }
+  .act-record-summary__cast { grid-area: cast; color: var(--color-muted); font-size: .68rem; }
+  .act-record-summary__icon { grid-area: icon; }
+  .act-record-summary__date { grid-area: date; font-size: .65rem; }
+  .act-record-summary__role { display: block; grid-area: role; font-size: .65rem; text-align: right; }
+  .act-history-resultbar { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
+
+@media (max-width: 520px) {
+  body[data-page="acts.html"] .act-history-filters { grid-template-columns: 1fr; }
+  body[data-page="acts.html"] .act-history-filter--query,
+  body[data-page="acts.html"] .act-history-filters button { grid-column: auto; }
+  body[data-page="acts.html"] .act-history-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-page="acts.html"] .act-history-summary article:nth-child(4) { grid-column: span 2; }
+}
