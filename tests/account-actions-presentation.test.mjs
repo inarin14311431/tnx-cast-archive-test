@@ -30,7 +30,7 @@ test('account cast actions keep consolidated icons and stylesheet ownership', ()
   assert.match(icons, /aria-hidden="true"/);
   assert.match(icons, /MutationObserver/);
   assert.match(html, /account-entry\.css\?v=1/);
-  assert.match(entry, /account-actions\.css\?v=8/);
+  assert.match(entry, /account-actions\.css\?v=1/);
   assert.doesNotMatch(entry, /account-troop-links-v2\.css/);
   assert.doesNotMatch(html, /account-action-icons\.css/);
   assert.doesNotMatch(html, /account-mobile-compact\.css/);
