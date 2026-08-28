@@ -44,8 +44,9 @@ test("experience ticket PNG export renders a fixed-resolution image", () => {
 });
 
 test("public act showcase keeps the production runtime shell", () => {
-  assert.match(showcaseHtml, /assets\/styles\/act-showcase\.css\?v=5/);
+  assert.match(showcaseHtml, /css-next\/pages\/act-showcase\.css\?v=1/);
   assert.match(showcaseHtml, /js\/act-showcase\.js\?v=7/);
+  assert.doesNotMatch(showcaseHtml, /assets\/styles\/act-showcase\.css/);
   assert.doesNotMatch(showcaseHtml, /act-showcase-refine\.css/);
   assert.doesNotMatch(showcaseHtml, /act-showcase-title-fit\.css/);
   assert.doesNotMatch(showcaseHtml, /handle-format\.js/);
