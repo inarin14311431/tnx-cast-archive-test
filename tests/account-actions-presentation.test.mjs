@@ -5,7 +5,7 @@ import fs from 'node:fs';
 const account = fs.readFileSync(new URL('../js/account.js', import.meta.url), 'utf8');
 const mobileLinks = fs.readFileSync(new URL('../js/account-mobile-editor-links.js', import.meta.url), 'utf8');
 const icons = fs.readFileSync(new URL('../js/account-action-icons.js', import.meta.url), 'utf8');
-const css = fs.readFileSync(new URL('../css-next/pages/account-action-hierarchy.css', import.meta.url), 'utf8');
+const css = fs.readFileSync(new URL('../css-next/pages/account-actions.css', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../account.html', import.meta.url), 'utf8');
 const entry = fs.readFileSync(new URL('../css-next/pages/account-entry.css', import.meta.url), 'utf8');
 
@@ -30,7 +30,7 @@ test('account cast actions keep consolidated icons and stylesheet ownership', ()
   assert.match(icons, /aria-hidden="true"/);
   assert.match(icons, /MutationObserver/);
   assert.match(html, /account-entry\.css\?v=1/);
-  assert.match(entry, /account-action-hierarchy\.css\?v=8/);
+  assert.match(entry, /account-actions\.css\?v=8/);
   assert.doesNotMatch(entry, /account-troop-links-v2\.css/);
   assert.doesNotMatch(html, /account-action-icons\.css/);
   assert.doesNotMatch(html, /account-mobile-compact\.css/);
