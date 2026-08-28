@@ -252,7 +252,7 @@ const entryScopeRequirements = new Map([
   ["sheet-entry.css", ["../components/help.css", "../editor/editor.css", "../components/sheet-import-help.css"]],
   ["sheet-mobile-entry.css", ["./sheet-mobile.css", "./sheet-mobile-ux.css"]],
   ["troop-entry.css", ["./troops.css", "./troop-screen.css"]],
-  ["troops-entry.css", ["./troops.css", "./troops-registry-polish.css"]]
+  ["troops-entry.css", ["./troops.css", "./troops-registry.css"]]
 ]);
 for (const [entryName, requiredImports] of entryScopeRequirements) {
   const source = await readFile(path.join(root, "css-next", "pages", entryName), "utf8");
