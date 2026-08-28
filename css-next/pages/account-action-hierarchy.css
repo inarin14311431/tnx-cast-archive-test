@@ -76,7 +76,7 @@ body[data-page="account.html"] .owned-cast__links {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 body[data-page="account.html"] .owned-cast__management {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
   padding: 0;
   border: 0;
   opacity: .94;
@@ -350,11 +350,7 @@ body[data-page="account.html"] .owned-cast__management:hover {
   }
 }
 
-/* Troop/act management columns belong to the same action cluster. */
-body[data-page="account.html"] .owned-cast__management {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
-}
-
+/* Troop/act links use columns owned by the management action cluster above. */
 body[data-page="account.html"] .owned-cast__management > .owned-cast__acts {
   grid-column: 1;
   grid-row: 1;
