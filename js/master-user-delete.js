@@ -177,14 +177,20 @@ function waitForElement(selector, timeout) {
       return;
     }
 
+    const root = document.querySelector(".account-layout");
+    if (!root) {
+      resolve(null);
+      return;
+    }
+
     const observer = new MutationObserver(() => {
-      const element = document.querySelector(selector);
+      const element = root.querySelector(selector);
       if (!element) return;
       observer.disconnect();
       clearTimeout(timer);
       resolve(element);
     });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+    observer.observe(root, { childList: true, subtree: true });
 
     const timer = setTimeout(() => {
       observer.disconnect();

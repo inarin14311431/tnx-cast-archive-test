@@ -45,6 +45,20 @@
     window.TNXDirectTransfer?.sync?.(root);
   }
 
+  function observationRoots() {
+    const page = document.body?.dataset.page || "";
+    if (page === "sheet.html") return [document.querySelector(".sheet-layout")].filter(Boolean);
+    if (page === "cast.html") {
+      return [
+        document.querySelector(".cast-header"),
+        document.querySelector("#mobile-cast-view"),
+        document.querySelector("#cast-content"),
+        document.querySelector("#quick-sheet")
+      ].filter(Boolean);
+    }
+    return [];
+  }
+
   async function initializePostMode() {
     document.documentElement.dataset.transferMode = ACTIVE_MODE;
     removeInactiveBookmarkletActions();
@@ -62,7 +76,7 @@
       if (!mutations.some(mutation => mutation.addedNodes.length)) return;
       queueMicrotask(() => syncPostUi());
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observationRoots().forEach(root => observer.observe(root, { childList: true, subtree: true }));
   }
 
   if (document.readyState === "loading") {
