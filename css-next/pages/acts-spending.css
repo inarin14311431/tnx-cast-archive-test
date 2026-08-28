@@ -1,5 +1,5 @@
 /* Canonical experience-spending presentation.
-   Owns the spending form, status, confirmation dialog, ledger cards, and responsive layout. */
+   Owns the spending form, status, confirmation dialog, ledger cards, and responsive/browser compatibility. */
 
 body[data-page="acts.html"] .experience-balance-note,
 body[data-page="acts.html"] .experience-spending-status {
@@ -11,10 +11,12 @@ body[data-page="acts.html"] .experience-spending-form {
   grid-template-columns: 1.2fr .6fr .8fr 1.6fr auto;
   gap: 10px;
   align-items: end;
+  min-width: 0;
   margin-block: 14px;
 }
 
 body[data-page="acts.html"] .experience-spending-form label {
+  min-width: 0;
   color: var(--color-muted);
   font-size: .78rem;
 }
@@ -22,6 +24,14 @@ body[data-page="acts.html"] .experience-spending-form label {
 body[data-page="acts.html"] .experience-spending-form :is(input, select) {
   width: 100%;
   margin-top: 5px;
+}
+
+body[data-page="acts.html"] .experience-spending-form input[type="date"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 body[data-page="acts.html"] .experience-spending-list {
@@ -170,6 +180,12 @@ body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focu
   }
 }
 
+@media (max-width: 700px) {
+  body[data-page="acts.html"] .experience-spending-form :is(input, select, button) {
+    min-height: 46px;
+  }
+}
+
 @media (max-width: 560px) {
   body[data-page="acts.html"] .experience-spending-form {
     grid-template-columns: 1fr;
@@ -204,5 +220,11 @@ body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focu
 
   .experience-spending-confirm__actions button {
     width: 100%;
+  }
+
+  body[data-page="acts.html"] .experience-spending-form input[type="date"] {
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
   }
 }
