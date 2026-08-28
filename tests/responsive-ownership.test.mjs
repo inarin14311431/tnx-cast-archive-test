@@ -9,7 +9,7 @@ test("responsive rules live with the page layer that owns their selectors", asyn
     read("css-next/index.css"),
     read("css-next/pages/archive.css"),
     read("css-next/pages/account.css"),
-    read("css-next/pages/account-action-hierarchy.css"),
+    read("css-next/pages/account-actions.css"),
     read("css-next/pages/cast.css"),
     read("css-next/editor/editor.css")
   ]);
