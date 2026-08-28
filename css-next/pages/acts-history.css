@@ -1,5 +1,5 @@
 /* Canonical ACT history browsing presentation.
-   Owns filters, summary, year groups, compact record rows, and section tone.
+   Owns filters, summary, year groups, compact record rows, section tone, and history responsive compatibility.
    Expanded record layout belongs exclusively to acts-record.css. */
 
 body[data-page="acts.html"] .act-history-panel--acts {
@@ -206,14 +206,46 @@ body[data-page="acts.html"] .act-history-list {
 }
 
 @media (max-width: 700px) {
-  body[data-page="acts.html"] .act-history-layout { width: min(100% - 18px, 1120px); }
-  body[data-page="acts.html"] .act-history-panel__body { padding: 12px; }
+  body[data-page="acts.html"] .act-history-header {
+    box-sizing: border-box;
+    padding-top: max(14px, env(safe-area-inset-top));
+    padding-inline: 14px;
+    scroll-margin-top: max(14px, env(safe-area-inset-top));
+  }
+
+  body[data-page="acts.html"] .act-history-header > p {
+    margin-top: 18px;
+    font-size: .62rem;
+    letter-spacing: .16em;
+  }
+
+  body[data-page="acts.html"] .act-history-header h1 {
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 5px;
+    font-size: clamp(1.65rem, 7.5vw, 2.5rem);
+    line-height: 1.05;
+  }
+
+  body[data-page="acts.html"] .act-history-header h1 small {
+    padding-top: 4px;
+    font-size: .54rem;
+    letter-spacing: .08em;
+  }
+
+  body[data-page="acts.html"] .app-back-link { min-height: 44px; }
+  body[data-page="acts.html"] .act-history-layout { width: min(100% - 12px, 1120px); padding-block: 14px 42px; }
+  body[data-page="acts.html"] .act-history-panel { margin-bottom: 12px; }
+  body[data-page="acts.html"] .act-history-panel__header { gap: 8px; padding: 10px 12px; }
+  body[data-page="acts.html"] .act-history-panel__body { padding: 10px; }
   body[data-page="acts.html"] .act-history-filters { grid-template-columns: 1fr 1fr; gap: 9px; }
   body[data-page="acts.html"] .act-history-filter--query { grid-column: 1 / -1; }
   body[data-page="acts.html"] .act-history-filters button { grid-column: 1 / -1; }
   body[data-page="acts.html"] .act-history-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
   body[data-page="acts.html"] .act-history-summary article { min-height: 88px; padding: 8px 6px; }
   body[data-page="acts.html"] .act-history-summary strong { font-size: 1.55rem; }
+  body[data-page="acts.html"] .act-year-toggle { min-height: 48px; padding: 8px 10px; }
+  body[data-page="acts.html"] .act-year-group.is-expanded > .act-year-records { padding: 5px; }
 
   .act-record-summary {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -233,6 +265,15 @@ body[data-page="acts.html"] .act-history-list {
   .act-record-summary__date { grid-area: date; font-size: .65rem; }
   .act-record-summary__role { display: block; grid-area: role; font-size: .65rem; text-align: right; }
   .act-history-resultbar { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
+
+@media (max-width: 560px) {
+  body[data-page="acts.html"] .act-history-header { padding-top: max(20px, env(safe-area-inset-top)); }
+  body[data-page="acts.html"] .act-history-header h1 { flex-direction: column; }
+  body[data-page="acts.html"] .act-history-header h1 small { padding-top: 0; }
+  body[data-page="acts.html"] .act-history-summary { gap: 6px; }
+  body[data-page="acts.html"] .act-history-summary article { min-height: 78px; padding: 7px 5px; }
+  body[data-page="acts.html"] .act-history-summary strong { font-size: 1.45rem; }
 }
 
 @media (max-width: 520px) {
