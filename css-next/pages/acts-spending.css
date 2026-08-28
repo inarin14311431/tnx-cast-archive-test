@@ -1,28 +1,208 @@
-/* Canonical experience-spending ledger presentation. */
-body[data-page="acts.html"] .experience-spending-list { display: grid; gap: 8px; }
+/* Canonical experience-spending presentation.
+   Owns the spending form, status, confirmation dialog, ledger cards, and responsive layout. */
+
+body[data-page="acts.html"] .experience-balance-note,
+body[data-page="acts.html"] .experience-spending-status {
+  color: var(--color-muted);
+}
+
+body[data-page="acts.html"] .experience-spending-form {
+  display: grid;
+  grid-template-columns: 1.2fr .6fr .8fr 1.6fr auto;
+  gap: 10px;
+  align-items: end;
+  margin-block: 14px;
+}
+
+body[data-page="acts.html"] .experience-spending-form label {
+  color: var(--color-muted);
+  font-size: .78rem;
+}
+
+body[data-page="acts.html"] .experience-spending-form :is(input, select) {
+  width: 100%;
+  margin-top: 5px;
+}
+
+body[data-page="acts.html"] .experience-spending-list {
+  display: grid;
+  gap: 8px;
+}
+
 body[data-page="acts.html"] .experience-spending-record {
-  display: grid; grid-template-columns: 118px minmax(180px, .95fr) 112px minmax(220px, 1.5fr) auto; align-items: center; gap: 14px;
-  min-height: 68px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border)); border-radius: 13px;
+  display: grid;
+  grid-template-columns: 118px minmax(180px, .95fr) 112px minmax(220px, 1.5fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 68px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border));
+  border-radius: 13px;
   background: linear-gradient(105deg, color-mix(in srgb, var(--color-accent) 5%, var(--color-surface-alt)), var(--color-surface-alt) 38%);
   box-shadow: inset 3px 0 color-mix(in srgb, var(--color-accent) 46%, transparent);
 }
-body[data-page="acts.html"] .experience-spending-record > p { display: grid; gap: 4px; min-width: 0; margin: 0; }
-body[data-page="acts.html"] .experience-spending-record small { color: var(--color-muted); font: 700 .52rem/1 var(--font-data); letter-spacing: .11em; }
-body[data-page="acts.html"] .experience-spending-record strong { overflow: hidden; color: var(--color-text); font-size: .86rem; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+
+body[data-page="acts.html"] .experience-spending-record > p {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+}
+
+body[data-page="acts.html"] .experience-spending-record small {
+  color: var(--color-muted);
+  font: 700 .52rem/1 var(--font-data);
+  letter-spacing: .11em;
+}
+
+body[data-page="acts.html"] .experience-spending-record strong {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: .86rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 body[data-page="acts.html"] .experience-spending-record__date strong,
-body[data-page="acts.html"] .experience-spending-record__amount strong { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
-body[data-page="acts.html"] .experience-spending-record__amount strong { color: var(--color-accent-strong); font-weight: 800; }
-body[data-page="acts.html"] .experience-spending-record__delete { min-width: 72px; padding-inline: 14px; border-color: color-mix(in srgb, var(--color-danger) 55%, var(--color-border)); border-radius: 999px; color: var(--color-danger); }
-body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focus-visible) { background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface-alt)); box-shadow: 0 0 12px color-mix(in srgb, var(--color-danger) 18%, transparent); }
+body[data-page="acts.html"] .experience-spending-record__amount strong {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-page="acts.html"] .experience-spending-record__amount strong {
+  color: var(--color-accent-strong);
+  font-weight: 800;
+}
+
+body[data-page="acts.html"] .experience-spending-record__delete {
+  min-width: 72px;
+  padding-inline: 14px;
+  border-color: color-mix(in srgb, var(--color-danger) 55%, var(--color-border));
+  border-radius: 999px;
+  color: var(--color-danger);
+}
+
+body[data-page="acts.html"] .experience-spending-record__delete:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface-alt));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-danger) 18%, transparent);
+}
+
+.experience-spending-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 4 8 / 78%);
+  backdrop-filter: blur(3px);
+}
+
+.experience-spending-confirm__panel {
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-glow);
+}
+
+.experience-spending-confirm__eyebrow {
+  margin: 0 0 6px;
+  color: var(--color-danger);
+  font-size: .68rem;
+  letter-spacing: .12em;
+}
+
+.experience-spending-confirm__panel h2 {
+  margin: 0 0 16px;
+  color: var(--color-accent);
+}
+
+.experience-spending-confirm__details {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.experience-spending-confirm__details div {
+  display: grid;
+  grid-template-columns: 7em minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 58%, transparent);
+}
+
+.experience-spending-confirm__details dt { color: var(--color-muted); }
+.experience-spending-confirm__details dd { margin: 0; overflow-wrap: anywhere; }
+.experience-spending-confirm__warning { margin: 16px 0 0; color: var(--color-danger); font-weight: 700; }
+.experience-spending-confirm__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.experience-spending-confirm__actions .danger { border-color: var(--color-danger); color: var(--color-danger); }
+
 @media (max-width: 800px) {
-  body[data-page="acts.html"] .experience-spending-record { grid-template-columns: 108px minmax(0, 1fr) 94px auto; grid-template-areas: "date cast amount delete" "description description description delete"; gap: 8px 10px; padding: 9px 10px; }
+  body[data-page="acts.html"] .experience-spending-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body[data-page="acts.html"] .experience-spending-form button {
+    grid-column: 1 / -1;
+  }
+
+  body[data-page="acts.html"] .experience-spending-record {
+    grid-template-columns: 108px minmax(0, 1fr) 94px auto;
+    grid-template-areas:
+      "date cast amount delete"
+      "description description description delete";
+    gap: 8px 10px;
+    padding: 9px 10px;
+  }
+
   body[data-page="acts.html"] .experience-spending-record__date { grid-area: date; }
   body[data-page="acts.html"] .experience-spending-record__cast { grid-area: cast; }
   body[data-page="acts.html"] .experience-spending-record__amount { grid-area: amount; }
   body[data-page="acts.html"] .experience-spending-record__description { grid-area: description; }
-  body[data-page="acts.html"] .experience-spending-record__delete { grid-area: delete; align-self: stretch; }
+  body[data-page="acts.html"] .experience-spending-record__delete {
+    grid-area: delete;
+    align-self: stretch;
+  }
 }
+
 @media (max-width: 560px) {
-  body[data-page="acts.html"] .experience-spending-record { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date amount" "cast cast" "description delete"; align-items: end; }
-  body[data-page="acts.html"] .experience-spending-record__delete { min-width: 64px; min-height: 42px; }
+  body[data-page="acts.html"] .experience-spending-form {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="acts.html"] .experience-spending-form button {
+    grid-column: auto;
+  }
+
+  body[data-page="acts.html"] .experience-spending-record {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "date amount"
+      "cast cast"
+      "description delete";
+    align-items: end;
+  }
+
+  body[data-page="acts.html"] .experience-spending-record__delete {
+    min-width: 64px;
+    min-height: 42px;
+  }
+
+  .experience-spending-confirm__details div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .experience-spending-confirm__actions {
+    flex-direction: column-reverse;
+  }
+
+  .experience-spending-confirm__actions button {
+    width: 100%;
+  }
 }
