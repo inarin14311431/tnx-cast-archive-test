@@ -176,7 +176,9 @@
   }
 
   function initializeDisplayNormalization(){
-    normalizeDisplays(document);
+    const root=document.querySelector("main");
+    if(!root)return;
+    normalizeDisplays(root);
     const observer=new MutationObserver(mutations=>{
       for(const mutation of mutations){
         if(mutation.type==="characterData"){
@@ -192,7 +194,7 @@
         });
       }
     });
-    observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+    observer.observe(root,{childList:true,subtree:true,characterData:true});
   }
 
   window.TNXHandleFormat={stripOuterQuotes,quoteHandle,formatIdentity,normalizeIdentityDisplay,splitQuotedIdentity};
