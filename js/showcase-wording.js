@@ -58,7 +58,7 @@
 
   function bind() {
     queue();
-    const root = document.body;
+    const root = document.querySelector(".showcase-layout");
     if (!root) return;
     new MutationObserver(queue).observe(root, { childList: true, subtree: true, characterData: true });
   }
