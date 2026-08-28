@@ -13,7 +13,7 @@
     "check:js": "node scripts/check-js.mjs",
     "audit:modules": "node scripts/audit-module-graph.mjs",
     "audit:integrity": "node scripts/audit-runtime-integrity.mjs",
-    "audit:css": "node scripts/run-css-audit.mjs",
+    "audit:css": "node scripts/audit-css-rebuild.mjs",
     "audit:themes": "node scripts/audit-theme-system.mjs",
     "audit:sheet": "node scripts/audit-sheet-runtime.mjs",
     "audit:cast": "node scripts/audit-cast-runtime.mjs",
