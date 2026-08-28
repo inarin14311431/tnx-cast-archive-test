@@ -33,7 +33,8 @@ test('retired compatibility scripts are no longer loaded', async () => {
   assert.doesNotMatch(html, /sheet-master-search-dash-fix\.js/);
   assert.doesNotMatch(html, /outfit-ofc-tsv-category-fix\.js/);
   assert.match(html, /style-skill-detail-integrity\.js/);
-  assert.match(html, /sheet-master-search-access\.js/);
+  assert.match(html, /privileged-tools-bootstrap\.js/);
+  assert.doesNotMatch(html, /sheet-master-search-access\.js/);
 });
 
 test('style import compatibility owns JSON repair and preserves symbols', async () => {
@@ -102,18 +103,15 @@ test('save failures expose a diagnostic module with database metadata', async ()
   for (const code of ['23502', '23505', '23514', '22001', '42501']) assert.match(source, new RegExp(code));
 });
 
-test('OFC responsibilities keep import compatibility, TSV normalization and display separate', async () => {
+test('OFC responsibilities keep import compatibility, master-search normalization and display separate', async () => {
   const compat = await read('js/sheet-import-outfit-compat.js');
   assert.match(compat, /legacy-import-apply/);
   assert.match(compat, /sourceOutfits/);
 
-  const access = await read('js/sheet-master-search-access.js');
-  assert.match(access, /import "\.\/outfit-ofc-tsv-category-normalize\.js"/);
-
-  const category = await read('js/outfit-ofc-tsv-category-normalize.js');
-  assert.match(category, /function restoreCategories/);
-  assert.match(category, /targetToCategory/);
-  assert.doesNotMatch(category, /legacy-import-apply|save_character_bundle/);
+  const normalize = await read('js/sheet-master-search-ofc-normalize.js');
+  assert.match(normalize, /purchase_value/);
+  assert.match(normalize, /function restoreDash/);
+  assert.doesNotMatch(normalize, /legacy-import-apply|save_character_bundle/);
 
   const display = await read('js/outfit-display-rules-v5.js');
   assert.match(display, /const LAYOUTS/);
@@ -134,17 +132,11 @@ test('OFC save projection is owned by the DOM-free payload contract', async () =
   assert.doesNotMatch(fields, /BASE_SAVE_RPC|OFC_SAVE_RPC|wrapSaveRpc|enrichOutfitPayload|__tnxOfcSaveWrapped/);
 });
 
-test('OFC TSV transfer is isolated from field rendering', async () => {
-  const tsv = await read('js/outfit-ofc-tsv.js');
-  assert.match(tsv, /function handleMasterCopy/);
-  assert.match(tsv, /function handleTsvImport/);
-  assert.match(tsv, /function createFullOfcTsv/);
-  assert.match(tsv, /function parseTsv/);
-  assert.match(tsv, /outfit-ofc-utils\.js/);
-  assert.doesNotMatch(tsv, /save_character_bundle_with_ofc|CATEGORY_FIELDS|enhanceTable/);
-
+test('retired OFC TSV transfer is not loaded into privileged editor tools', async () => {
   const access = await read('js/sheet-master-search-access.js');
-  assert.match(access, /import "\.\/outfit-ofc-tsv\.js(?:\?[^\"]+)?"/);
+  const privileged = await read('js/sheet-privileged-tools.js');
+  assert.doesNotMatch(access, /outfit-ofc-tsv(?:-category-normalize)?\.js/);
+  assert.doesNotMatch(privileged, /outfit-ofc-tsv(?:-category-normalize)?\.js/);
 
   const fields = await read('js/outfit-ofc-fields.js');
   assert.doesNotMatch(fields, /handleMasterCopy|handleTsvImport|createFullOfcTsv|parseTsv|toTsv|TSV_EXTRA_HEADERS/);
