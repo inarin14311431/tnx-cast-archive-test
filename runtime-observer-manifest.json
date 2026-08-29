@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "policy": "Every JavaScript module that constructs a MutationObserver must be listed here. Listing records current ownership inventory; it does not imply that the observer is performance-optimal. New observer modules require an explicit audit update.",
   "files": [
-    "js/act-showcase-title-fit.js",
     "js/cast-archetype-view.js",
     "js/cast-combo-enhancements.js",
     "js/cast-compact-skills.js",
