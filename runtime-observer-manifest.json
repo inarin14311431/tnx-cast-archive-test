@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "policy": "Every JavaScript module that constructs a MutationObserver must be listed here. Listing records current ownership inventory; it does not imply that the observer is performance-optimal. New observer modules require an explicit audit update.",
+  "policy": "Every JavaScript module that constructs a MutationObserver must be listed here. Listing records reviewed runtime ownership, not a requirement to remove a narrow observer. New observer modules require an explicit audit update. Prefer producer-owned events when render completion is controlled; never replace a scoped MutationObserver with recurring polling merely to reduce the observer count. Body/document-wide observers require an explicit reviewed exception and rationale in the observer scope contract.",
   "files": [
     "js/cast-archetype-view.js",
     "js/cast-combo-enhancements.js",
