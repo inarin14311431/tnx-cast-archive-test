@@ -28,13 +28,14 @@ test('account cast actions keep consolidated icons and stylesheet ownership', ()
   }
   assert.match(icons, /stroke="currentColor"/);
   assert.match(icons, /aria-hidden="true"/);
-  assert.match(icons, /MutationObserver/);
+  assert.match(icons, /root\?\.addEventListener\(RENDER_EVENT, enhance\)/);
+  assert.doesNotMatch(icons, /MutationObserver/);
   assert.match(html, /account-entry\.css\?v=1/);
   assert.match(entry, /account-actions\.css\?v=1/);
   assert.doesNotMatch(entry, /account-troop-links-v2\.css/);
   assert.doesNotMatch(html, /account-action-icons\.css/);
   assert.doesNotMatch(html, /account-mobile-compact\.css/);
-  assert.ok(html.indexOf('account-action-icons.js?v=1') > html.indexOf('account.js?v=42'));
+  assert.ok(html.indexOf('account-action-icons.js?v=2') > html.indexOf('account.js?v=45'));
 });
 
 test('account cast action layout stays compact and theme aware', () => {
