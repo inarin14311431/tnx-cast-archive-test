@@ -39,10 +39,5 @@ function enhance() {
   });
 }
 
-function refresh() {
-  enhance();
-  root?.dispatchEvent(new CustomEvent(RENDER_EVENT));
-}
-
-refresh();
-if (root) new MutationObserver(refresh).observe(root, { childList: true, subtree: true });
+enhance();
+root?.addEventListener(RENDER_EVENT, enhance);
