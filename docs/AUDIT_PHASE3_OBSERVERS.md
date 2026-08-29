@@ -22,11 +22,15 @@ Phase 3 is complete when all of the following remain true:
 - observer removal must not be replaced with recurring polling merely to reduce the inventory count;
 - regression, security, quality, E2E, and visual-regression checks remain green.
 
-## Reviewed broad-root exception
+## Reviewed broad-root exceptions
 
-`js/theme-scope.js` is the single reviewed body-wide exception. Theme normalization intentionally covers page content plus dynamically inserted dialogs/fragments that can be created by independent feature modules. Restricting it to one component root would leave those injected surfaces outside theme normalization. Its observer is therefore treated as shared theme infrastructure rather than component-local rendering logic.
+Three broad-root observers remain after the final review:
 
-The exception is enforced by `tests/runtime-observer-scope.test.mjs`; if this module stops observing a broad root, the allowlist must be removed.
+- `js/theme-scope.js`: shared theme infrastructure intentionally normalizes page content plus dialogs/fragments inserted by independent modules. This is the only persistent body-wide observer exception.
+- `js/sheet-master-search-bs-tooltips.js`: its broad observer exists only as a one-time readiness fallback for the master-search dialog, which another module appends directly to `body`; it disconnects immediately after `#master-search-results` is available. The ongoing result observer is scoped to that results container.
+- `js/sheet-master-search-filters.js`: likewise uses a broad observer only as a one-time readiness fallback for the separately-created master-search dialog and disconnects as soon as pagination can bind. The ongoing pagination observer is scoped to the results container.
+
+These exceptions are enforced by `tests/runtime-observer-scope.test.mjs`. If an exception no longer observes a broad root, its allowlist entry must be removed. Any new broad observer fails the regression contract until it receives an explicit review and rationale.
 
 ## Remaining observer categories
 
