@@ -8,7 +8,15 @@ const manifest = JSON.parse(await readFile(manifestUrl, "utf8"));
 const broadObserverAllowlist = new Map([
   [
     "js/theme-scope.js",
-    "Theme semantics must normalize dynamically injected dialogs and page fragments across the full body; this is the single reviewed body-wide observer exception."
+    "Theme semantics must normalize dynamically injected dialogs and page fragments across the full body; this shared infrastructure intentionally owns the page-wide theme boundary."
+  ],
+  [
+    "js/sheet-master-search-bs-tooltips.js",
+    "The only broad observer is a one-time readiness fallback for the master-search dialog, which is appended directly to body by a separate module; it disconnects immediately after the results root exists."
+  ],
+  [
+    "js/sheet-master-search-filters.js",
+    "The only broad observer is a one-time readiness fallback for the master-search dialog, which is appended directly to body by a separate module; it disconnects immediately after pagination can bind to the results root."
   ]
 ]);
 
