@@ -23,7 +23,6 @@
     "js/general-initial-skill-rules.js",
     "js/general-master-skills.js",
     "js/handle-format.js",
-    "js/master-user-delete.js",
     "js/mobile-bookmarklet-transfer.js",
     "js/mobile-editor-route.js",
     "js/outfit-display-rules-v5.js",
