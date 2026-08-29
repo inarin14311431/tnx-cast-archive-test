@@ -365,14 +365,6 @@
     document.querySelector("#import-skd")?.addEventListener("click", () => renderGuide("skd"));
     document.querySelector("#import-ofc")?.addEventListener("click", () => renderGuide("ofc"));
     document.querySelector("#tsv-apply")?.addEventListener("click", applyExpandedImport, true);
-
-    const title = dialog.querySelector("#tsv-title");
-    if (title) {
-      new MutationObserver(() => {
-        const text = title.textContent || "";
-        renderGuide(text.includes("OFC") ? "ofc" : "skd");
-      }).observe(title, { childList: true, characterData: true, subtree: true });
-    }
   }
 
   if (document.readyState === "loading") {
