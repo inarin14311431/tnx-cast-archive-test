@@ -8,6 +8,7 @@
   if(window.matchMedia?.('(max-width: 600px)').matches===true)return;
   document.body.classList.add('cast-scan-mode');
   const publicId=new URLSearchParams(location.search).get('id')?.trim()||'UNKNOWN';
+  const displayId=window.TNXArchiveId?.format(publicId)||'TNX-VOID-VOID';
   const scanSessionKey='tnx-cast-scan-complete-v2';
   const fastScanWindowMs=10*60*1000;
   let fastScan=false;
@@ -43,7 +44,7 @@
     <div class="cast-access-terminal">
       <p class="cast-access-kicker">N◎VA MUNICIPAL NET // SECURE TRACE</p>
       <h1 class="cast-access-title">CAST DATA SCAN</h1>
-      <p class="cast-access-target">TARGET: ${escapeHtml(publicId)}</p>
+      <p class="cast-access-target">TARGET: ${escapeHtml(displayId)}</p>
       <div class="cast-access-progress" aria-label="スキャン進行"><span></span></div>
       <div class="cast-access-log"></div>
     </div>`;
@@ -81,5 +82,5 @@
     if(failed){clearInterval(timer);finish(false);return;}if(dataReady&&progress>=96){clearInterval(timer);finish(true);}
   },fastScan?45:130);
   window.setTimeout(()=>{if(resolved)return;const content=document.querySelector('#cast-content'),error=document.querySelector('#cast-error');if(content&&!content.hidden){clearInterval(timer);finish(true);}else if(error&&!error.hidden){clearInterval(timer);finish(false);}},fastScan?1000:4600);
-  function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
+  function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]));}
 })();
