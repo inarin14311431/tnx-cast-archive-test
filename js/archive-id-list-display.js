@@ -4,7 +4,11 @@
   if (!grid || typeof formatter !== "function") return;
 
   const apply = root => {
-    const elements = root.matches?.(".cast-card__serial") ? [root] : [...root.querySelectorAll?.(".cast-card__serial") ?? []];
+    const matchesSerial = typeof root.matches === "function" && root.matches(".cast-card__serial");
+    const descendants = typeof root.querySelectorAll === "function"
+      ? [...root.querySelectorAll(".cast-card__serial")]
+      : [];
+    const elements = matchesSerial ? [root] : descendants;
     for (const element of elements) {
       const current = element.textContent.trim();
       if (!current || /^TNX-[23456789A-HJ-NP-Z]{4}-[23456789A-HJ-NP-Z]{4}$/.test(current)) continue;
