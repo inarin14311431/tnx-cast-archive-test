@@ -42,6 +42,7 @@
     "js/sheet-mobile-ui.js",
     "js/sheet-mobile-ux.js",
     "js/sheet-multiline-fields-v3.js",
+    "js/sheet-navigation-context.js",
     "js/sheet-sidebar-actions.js",
     "js/showcase-tagline.js",
     "js/skill-display-enhancements.js",
