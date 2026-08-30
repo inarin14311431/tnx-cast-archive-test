@@ -7,6 +7,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  contract:
+    name: Verification contract parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify quality contract
+        run: node scripts/audit-quality-gates.mjs
+
   accessibility:
     name: Accessibility baseline
     runs-on: ubuntu-latest
