@@ -1,5 +1,6 @@
 const root = document.querySelector('#owned-casts');
 const RENDER_EVENT = 'tnx:owned-casts-rendered';
+const ACTIONS_UPDATED_EVENT = 'tnx:owned-cast-actions-updated';
 const ACCOUNT_RETURN = './account.html';
 
 const ICONS = {
@@ -54,3 +55,4 @@ function enhance() {
 
 enhance();
 root?.addEventListener(RENDER_EVENT, enhance);
+root?.addEventListener(ACTIONS_UPDATED_EVENT, enhance);
