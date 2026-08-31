@@ -1,4 +1,5 @@
 import { buildCharacterSheetEditUrl, extractCharacterSheetKey } from "./character-sheet-url.js?v=2";
+import "./sheet-character-sheet-compare.js?v=1";
 
 const RUN_SELECTOR = "#character-sheets-import-run";
 const SOURCE_SELECTOR = "#character-sheets-import-url";
