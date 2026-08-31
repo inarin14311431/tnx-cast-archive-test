@@ -150,7 +150,7 @@ body[data-page="sheet.html"] .skill-toolbar--two.has-style-divider { align-items
   box-shadow: var(--shadow-glow);
 }
 
-#style-skills textarea[data-style-field="description"] {
+#style-skills textarea[data-f="description"] {
   resize: vertical;
   overflow-x: hidden;
   overflow-y: auto;
