@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const tables = await readFile(new URL("../js/outfit-tables.js", import.meta.url), "utf8");
 const armorAligner = await readFile(new URL("../js/armor-grand-total.js", import.meta.url), "utf8");
-const multiline = await readFile(new URL("../js/sheet-multiline-fields-v3.js", import.meta.url), "utf8");
+const multiline = await readFile(new URL("../js/sheet-multiline-fields.js", import.meta.url), "utf8");
 const autofill = await readFile(new URL("../js/sheet-master-autofill.js", import.meta.url), "utf8");
 const features = await readFile(new URL("../js/sheet-features.js", import.meta.url), "utf8");
 
@@ -23,9 +23,9 @@ test("outfit tables publish an explicit post-render completion event", () => {
   assert.match(tables, /root\.replaceChildren\(fragment\);\s*notifyRendered\(\);/);
 });
 
-test("multiline outfit enhancement consumes render completion instead of observing outfit DOM", () => {
-  assert.match(multiline, /OUTFIT_RENDER_EVENT="tnx:outfit-tables-rendered"/);
-  assert.match(multiline, /outfitRoot\?\.addEventListener\(OUTFIT_RENDER_EVENT,queue\)/);
+test("multiline outfit enhancement consumes the shared render completion contract instead of observing outfit DOM", () => {
+  assert.match(multiline, /import \{ APP_EVENTS \} from "\.\/app-events\.js\?v=1"/);
+  assert.match(multiline, /outfitRoot\?\.addEventListener\(APP_EVENTS\.OUTFIT_TABLES_RENDERED,queue\)/);
   assert.doesNotMatch(multiline, /new MutationObserver\(queue\)\.observe\(outfitRoot/);
   assert.doesNotMatch(multiline, /outfitRoot&&new MutationObserver/);
   assert.match(multiline, /window\.TNXMultilineFields=\{enhance,queue,normalize,setStyleNameExact\}/);
