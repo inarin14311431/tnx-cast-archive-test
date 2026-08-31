@@ -1,4 +1,5 @@
-import { normalizeCharacterSheetUrl } from "./character-sheet-url.js?v=1";
+import { normalizeCharacterSheetUrl } from "./character-sheet-url.js?v=2";
+import "./character-sheet-url-import-sync.js?v=1";
 
 const BASE_FIELD_SELECTORS = {
   character_name: "#character-name",
@@ -17,13 +18,12 @@ const BUILTIN_STRUCTURED_FIELD_SELECTORS = {
 
 function ensureCharacterSheetUrlField(root = document) {
   if (root.querySelector("#character-sheet-url")) return;
-  const rank = root.querySelector("#citizen-rank")?.closest("label");
-  const grid = rank?.parentElement || root.querySelector(".basic-profile-grid");
+  const grid = root.querySelector(".basic-profile-grid");
   if (!grid) return;
 
   const ownerDocument = root.ownerDocument || root;
   const label = ownerDocument.createElement("label");
-  label.className = "character-sheet-url-field";
+  label.className = "basic-profile-summary character-sheet-url-field";
   label.append(ownerDocument.createTextNode("キャラクターシート倉庫URL"));
 
   const input = ownerDocument.createElement("input");
@@ -33,10 +33,11 @@ function ensureCharacterSheetUrlField(root = document) {
   input.autocomplete = "url";
   input.maxLength = 2048;
   input.placeholder = "https://character-sheets.appspot.com/tnx/edit.html?key=...";
-  input.title = "キャラクターシート倉庫TNXの編集URLを入力してください。";
+  input.title = "キャラクターシート倉庫TNXのURLを入力してください。取込時は自動設定されます。";
   label.append(input);
 
-  if (rank) rank.insertAdjacentElement("afterend", label);
+  const summary = root.querySelector("#summary")?.closest("label");
+  if (summary?.parentElement === grid) grid.insertBefore(label, summary);
   else grid.append(label);
 }
 
@@ -47,7 +48,7 @@ function collectBuiltInStructured(root, value) {
     if (name === "character_sheet_url") {
       const normalized = normalizeCharacterSheetUrl(raw);
       if (normalized === null) {
-        throw new Error("キャラクターシート倉庫URLは https://character-sheets.appspot.com/tnx/edit.html?key=... の形式で入力してください。");
+        throw new Error("キャラクターシート倉庫URLは character-sheets.appspot.com のTNX保存済みシートURLを入力してください。");
       }
       result[name] = normalized;
     } else {
