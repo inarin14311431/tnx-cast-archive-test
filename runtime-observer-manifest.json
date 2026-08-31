@@ -41,7 +41,7 @@
     "js/sheet-mobile-summary-text.js",
     "js/sheet-mobile-ui.js",
     "js/sheet-mobile-ux.js",
-    "js/sheet-multiline-fields-v3.js",
+    "js/sheet-multiline-fields.js",
     "js/sheet-navigation-context.js",
     "js/sheet-sidebar-actions.js",
     "js/showcase-tagline.js",
@@ -52,6 +52,6 @@
     "js/style-skill-fields.js",
     "js/theme-scope.js",
     "js/troop-combo-copy.js",
-    "js/ui-v25.js"
+    "js/sheet-skill-ui.js"
   ]
 }
