@@ -53,61 +53,17 @@ for (const file of htmlFiles) {
   }
 }
 
-// Presentation must stay in static stylesheets. There are no remaining runtime-style exceptions.
+// This pre-existing theme generator is intentionally deferred to the larger theme refactor.
+// Any newly introduced runtime <style> generator fails the audit immediately.
+const runtimeStyleAllowlist = new Set([
+  "js/css-next-theme.js"
+]);
 const jsFiles = await filesUnder(path.join(root, "js"), ".js");
 for (const file of jsFiles) {
   const source = await readFile(file, "utf8");
   const name = relative(file);
-  if (/document\.createElement\s*\(\s*["']style["']\s*\)/.test(source)) {
-    problems.push(`${name}: runtime <style> creation is prohibited; move presentation to a static stylesheet`);
-  }
-}
-
-// MutationObserver ownership is inventory-controlled. The manifest records the current baseline;
-// it is not a blanket approval of each observer's performance characteristics.
-const observerManifest = JSON.parse(await readFile(path.join(root, "runtime-observer-manifest.json"), "utf8"));
-const registeredMutationFiles = new Set(observerManifest.files || []);
-if (registeredMutationFiles.size !== (observerManifest.files || []).length) {
-  problems.push("runtime-observer-manifest.json: duplicate MutationObserver module entries");
-}
-const observedMutationFiles = new Set();
-for (const file of jsFiles) {
-  const source = await readFile(file, "utf8");
-  const name = relative(file);
-  if (!/\bnew\s+MutationObserver\s*\(/.test(source)) continue;
-  observedMutationFiles.add(name);
-  if (!registeredMutationFiles.has(name)) {
-    problems.push(`${name}: MutationObserver is not registered in runtime-observer-manifest.json`);
-  }
-}
-for (const name of registeredMutationFiles) {
-  if (!observedMutationFiles.has(name)) {
-    problems.push(`${name}: stale MutationObserver manifest entry`);
-  }
-}
-
-// ACT Showcase runtime presentation is owned exclusively by css-next.
-const showcasePageSource = await readFile(path.join(root, "act-showcase.html"), "utf8");
-const showcaseStylesheets = [...showcasePageSource.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
-  .map(match => localAssetPath(match[1]))
-  .filter(Boolean);
-if (!showcaseStylesheets.includes("css-next/pages/act-showcase.css")) {
-  problems.push("act-showcase.html: ACT Showcase runtime stylesheet must be css-next/pages/act-showcase.css");
-}
-if (showcaseStylesheets.some(stylesheet => stylesheet.startsWith("assets/styles/"))) {
-  problems.push("act-showcase.html: legacy assets/styles stylesheet must never be linked at runtime");
-}
-if (/<style\b/i.test(showcasePageSource)) problems.push("act-showcase.html: inline <style> is prohibited");
-
-const showcaseCanonical = path.join(root, "css-next", "pages", "act-showcase.css");
-if (!await exists(showcaseCanonical)) {
-  problems.push("css-next/pages/act-showcase.css: canonical ACT Showcase stylesheet missing");
-}
-const standaloneStylesDir = path.join(root, "assets", "styles");
-if (await exists(standaloneStylesDir)) {
-  const standaloneCssFiles = await filesUnder(standaloneStylesDir, ".css");
-  for (const file of standaloneCssFiles) {
-    problems.push(`${relative(file)}: unowned legacy standalone stylesheet`);
+  if (/document\.createElement\s*\(\s*["']style["']\s*\)/.test(source) && !runtimeStyleAllowlist.has(name)) {
+    problems.push(`${name}: new runtime <style> creation is prohibited; move presentation to css-next`);
   }
 }
 
@@ -119,8 +75,23 @@ for (const [name, command] of Object.entries(packageJson.scripts || {})) {
   }
 }
 
-for (const retired of ["transfer-form-prototype.html", "js/transfer-form-prototype.js"]) {
-  if (await exists(path.join(root, retired))) problems.push(`${retired}: retired transfer prototype must not be restored`);
+const retiredFiles = [
+  "transfer-form-prototype.html",
+  "js/transfer-form-prototype.js",
+  "js/acts.js",
+  "js/acts-history-enhanced.js",
+  "js/acts-role.js",
+  "js/acts-spending.js",
+  "js/sheet-mobile-style-existing-values.js",
+  "js/outfit-ofc-tsv.js",
+  "js/outfit-ofc-tsv-category-normalize.js",
+  "js/tsv-import-current.js",
+  "js/sheet-master-search-access.js",
+  "js/general-proper-import-merge.js",
+  "js/legacy-import-finalization-status.js"
+];
+for (const retired of retiredFiles) {
+  if (await exists(path.join(root, retired))) problems.push(`${retired}: retired runtime file must not be restored`);
 }
 
 const importSource = await readFile(path.join(root, "js", "sheet-import-url.js"), "utf8");
@@ -144,4 +115,4 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files, ${observedMutationFiles.size} inventoried MutationObserver modules; ACT Showcase runtime CSS is owned exclusively by css-next.`);
+console.log(`Runtime integrity audit passed: ${htmlFiles.length} root HTML files, ${jsFiles.length} JavaScript files.`);

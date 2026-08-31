@@ -1,14 +1,12 @@
 {
-  "name": "tnx-cast-archive-test",
+  "name": "tnx-cast-list-production",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "npm run test:all",
-    "test:core": "node scripts/run-test-suite.mjs core",
-    "test:presentation": "node scripts/run-test-suite.mjs presentation",
-    "test:all": "node scripts/run-test-suite.mjs all",
+    "test": "node --test tests/*.test.mjs",
     "test:troop": "node --test tests/troop-*.test.mjs",
     "test:visual": "playwright test --config=playwright.visual.config.js",
+    "test:visual:production": "playwright test --config=playwright.visual.config.js --project=visual-desktop --grep-invert 'キャスト閲覧 spectrum-neon' && playwright test --config=playwright.visual.config.js --project=visual-mobile",
     "test:quality": "playwright test --config=playwright.quality.config.js",
     "check:js": "node scripts/check-js.mjs",
     "audit:modules": "node scripts/audit-module-graph.mjs",
@@ -22,16 +20,16 @@
     "audit:security": "node scripts/audit-security.mjs",
     "audit:migrations": "node scripts/audit-migrations.mjs",
     "audit:quality": "node scripts/audit-quality-gates.mjs",
+    "audit:js-reachability": "node scripts/audit-js-reachability.mjs",
+    "audit:ci": "node scripts/audit-ci-contract.mjs",
     "report:sheet-ownership": "node scripts/report-sheet-dom-ownership.mjs",
     "report:cast-ownership": "node scripts/report-cast-dom-ownership.mjs",
-    "verify": "npm run check:js && npm run audit:modules && npm run audit:integrity && npm run audit:css && npm run audit:themes && npm run audit:sheet && npm run audit:cast && npm run audit:troop && npm run audit:mobile && npm run audit:migrations && npm run audit:quality && npm run report:sheet-ownership && npm run report:cast-ownership && npm run test:all",
+    "verify": "npm run check:js && npm run audit:modules && npm run audit:integrity && npm run audit:css && npm run audit:themes && npm run audit:sheet && npm run audit:cast && npm run audit:troop && npm run audit:mobile && npm run audit:security && npm run audit:migrations && npm run audit:quality && npm run audit:js-reachability && npm run audit:ci && npm run report:sheet-ownership && npm run report:cast-ownership && npm test",
     "e2e": "playwright test",
     "e2e:troop": "playwright test tests/e2e/troop-view.spec.js tests/e2e/troop-editor-flow.spec.js --project=chromium",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
-    "e2e:install": "playwright install chromium webkit",
-    "visual": "npm run test:visual",
-    "visual:update": "playwright test --config=playwright.visual.config.js --update-snapshots"
+    "e2e:install": "playwright install chromium webkit"
   },
   "devDependencies": {
     "@fontsource/noto-sans-jp": "5.3.0",

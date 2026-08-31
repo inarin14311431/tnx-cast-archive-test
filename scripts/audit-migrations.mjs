@@ -16,7 +16,6 @@ for (const file of listed) {
 for (const file of actual) {
   if (!listed.includes(file)) failures.push(`Untracked migration: ${file}`);
 }
-
 for (let i = 1; i < listed.length; i += 1) {
   const previous = Number(listed[i - 1].match(/^(\d+)/)?.[1]);
   const current = Number(listed[i].match(/^(\d+)/)?.[1]);

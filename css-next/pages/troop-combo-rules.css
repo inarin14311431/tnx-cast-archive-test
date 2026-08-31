@@ -1,4 +1,4 @@
-/* Compact troop combo check-preset editor rules. */
+/* Troop combo v2: a compact check preset editor. */
 #troop-combo-dialog {
   width:min(720px,calc(100vw - 24px));
   max-width:720px;

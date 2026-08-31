@@ -18,7 +18,7 @@ test("mobile combo section uses the same numbered heading style as other section
   assert.match(ux, /ensureNavLink\("#mobile-combos-section","07 コンボ"\)/);
 });
 
-test("mobile nav normalization is idempotent and scopes the child-list observer to the mobile runtime root", () => {
+test("mobile nav normalization is idempotent and observes only the mobile editor root", () => {
   assert.match(ux, /if\(link\.textContent!==label\)link\.textContent=label/);
   assert.doesNotMatch(ux, /\n  link\.textContent=label;\n/);
   assert.match(ux, /const mobileRoot=document\.querySelector\("main"\)/);

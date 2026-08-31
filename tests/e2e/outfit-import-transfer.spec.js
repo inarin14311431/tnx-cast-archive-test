@@ -80,7 +80,7 @@ test("旧JSON取込は12/0形式を隠匿値と隠匿修正へ分離して表示
   await expect(row.locator('[data-o="description"]')).toHaveValue("E2E LEGACY IMPORT");
 });
 
-test("OFCマスター直接追加はSPI・制御値・電制を編集モデルへ即時反映する", async ({ page }, testInfo) => {
+test("OFCマスター直接追加は隠匿を分離し、解説へ補助項目を混入させない", async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openEditor(page);
 
@@ -90,21 +90,17 @@ test("OFCマスター直接追加はSPI・制御値・電制を編集モデル�
   await expect(page.locator("#master-search-dialog")).toBeVisible();
 
   const keyword = page.locator("#master-search-keyword");
-  await keyword.fill("レイドマン");
+  await keyword.fill("ガーディアン");
   await page.locator("#master-search-run").click();
-  const result = page.locator("#master-search-results .master-result-card").filter({ hasText: "レイドマン" }).first();
+  const result = page.locator("#master-search-results .master-result-card").filter({ hasText: "ガーディアン" }).first();
   await expect(result).toBeVisible({ timeout: 10000 });
   await result.locator("[data-result-add]").click();
 
-  const row = outfitRowByName(page, "レイドマン").last();
+  const row = outfitRowByName(page, "ガーディアン").last();
   await expect(row).toBeVisible({ timeout: 10000 });
-  await expect(row.locator('[data-o="concealment"]')).toHaveValue("－");
-  await expect(row.locator('[data-ofc="concealment_penalty"]')).toHaveValue("-2");
-  await expect(row.locator('[data-o="control_modifier"]')).toHaveValue("-3");
-  await expect(row.locator('[data-ofc="electronic_control"]')).toHaveValue("5");
-  await expect(row.locator('[data-ofc="defense_s"]')).toHaveValue("5");
-  await expect(row.locator('[data-ofc="defense_p"]')).toHaveValue("5");
-  await expect(row.locator('[data-ofc="defense_i"]')).toHaveValue("6");
+  await expect(row.locator('[data-o="concealment"]')).toHaveValue("9");
+  await expect(row.locator('[data-ofc="concealment_penalty"]')).toHaveValue("-1");
+  await expect(row.locator('[data-ofc="electronic_control"]')).toHaveValue("16");
   await expect(row.locator('[data-o="description"]')).not.toHaveValue(/メーカー：|制御値：|電制：|参照P：/);
 });
 

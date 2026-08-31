@@ -18,13 +18,14 @@ test("mobile transfer helper uses bookmarklet and clipboard flow without direct 
   assert.match(controller, /transfer-tsv-export\.js/);
 });
 
-test("mobile cast transfer trigger routes to the bookmarklet helper while desktop keeps POST", async () => {
-  const adapter = await read("js/direct-transfer-button-post.js");
+test("production transfer router keeps desktop and mobile on bookmarklet flow", async () => {
+  const router = await read("js/direct-transfer-button.js");
 
-  assert.match(adapter, /direct-transfer-button--mobile/);
-  assert.match(adapter, /mobile-transfer\.html\?id=/);
-  assert.match(adapter, /transfer\.html\?embed=1&id=/);
-  assert.match(adapter, /isMobileBookmarkletTrigger/);
+  assert.match(router, /ACTIVE_MODE = "bookmarklet"/);
+  assert.match(router, /removeInactivePostTriggers/);
+  assert.match(router, /mobile-transfer\.html\?id=/);
+  assert.match(router, /transfer-tsv-export\.js\?v=1/);
+  assert.doesNotMatch(router, /direct-transfer-button-post\.js/);
 });
 
 test("bookmarklet retains paste fallback for mobile clipboard restrictions", async () => {

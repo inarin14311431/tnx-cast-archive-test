@@ -12,9 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
-      - name: Verify quality contract
-        run: node scripts/audit-quality-gates.mjs
+      - name: Checkout production
+        uses: actions/checkout@v7
+      - name: Checkout verification contract
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: main
+          path: .verification-contract
+          sparse-checkout: quality-gates.json
+          sparse-checkout-cone-mode: false
+      - name: Compare quality contracts
+        run: node scripts/audit-quality-gates.mjs --compare .verification-contract/quality-gates.json
 
   accessibility:
     name: Accessibility baseline
@@ -25,8 +34,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-          cache: npm
-      - run: npm ci
+      - run: npm install
       - run: npx playwright install chromium
       - name: Run accessibility baseline
         run: npx playwright test --config=playwright.quality.config.js tests/quality/accessibility.spec.js
@@ -47,8 +55,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-          cache: npm
-      - run: npm ci
+      - run: npm install
       - run: npx playwright install chromium
       - name: Run performance budgets
         run: npx playwright test --config=playwright.quality.config.js tests/quality/performance-budget.spec.js

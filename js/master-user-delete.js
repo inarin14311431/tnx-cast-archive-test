@@ -1,8 +1,6 @@
 import { supabase } from "./supabase-client.js";
 
 const FUNCTION_NAME = "master-auth-users";
-const PRIMARY_ADMIN_USER_ID = "f44d74d1-5f09-425f-8de8-a7fb6b46ea79";
-const PRIMARY_ADMIN_EMAIL = "inarin1431@gmail.com";
 const USER_PANEL_READY_EVENT = "tnx:master-user-panel-ready";
 const USER_SELECTION_CHANGED_EVENT = "tnx:master-user-selection-changed";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -41,13 +39,10 @@ async function initialize() {
 
 function refreshDeleteState(panel, deleteButton) {
   const selected = getSelectedUser(panel);
-  const protectedAdmin = isProtectedAdmin(selected);
-  deleteButton.disabled = !selected || protectedAdmin;
-  deleteButton.title = protectedAdmin
-    ? "管理者本人のアカウントは削除できません。"
-    : selected
-      ? "選択したAuthユーザーと関連データを完全削除します。"
-      : "削除する登録メールアドレスを選択してください。";
+  deleteButton.disabled = !selected;
+  deleteButton.title = selected
+    ? "選択したAuthユーザーと関連データを完全削除します。管理者アカウントはサーバー側で保護されます。"
+    : "削除する登録メールアドレスを選択してください。";
 }
 
 function getSelectedUser(panel) {
@@ -57,21 +52,10 @@ function getSelectedUser(panel) {
   return { email, userId };
 }
 
-function isProtectedAdmin(user) {
-  if (!user) return false;
-  return user.userId === PRIMARY_ADMIN_USER_ID || user.email.toLowerCase() === PRIMARY_ADMIN_EMAIL;
-}
-
 async function deleteSelectedUser(panel, deleteButton) {
   const selected = getSelectedUser(panel);
   const status = panel.querySelector("#master-search-user-sql-status");
   if (!selected || !status) return;
-
-  if (isProtectedAdmin(selected)) {
-    status.textContent = "管理者本人のアカウントは削除できません。";
-    status.className = "is-error";
-    return;
-  }
 
   const confirmed = window.confirm(
     `次のユーザーを完全削除します。\n\n${selected.email}\n${selected.userId}\n\n` +
@@ -132,10 +116,7 @@ function setBusy(panel, busy) {
   if (emailInput) emailInput.disabled = busy;
   if (reloadButton) reloadButton.disabled = busy;
   if (copyButton) copyButton.disabled = busy || !panel.querySelector("#master-search-user-sql-preview")?.value;
-  if (deleteButton) {
-    const selected = getSelectedUser(panel);
-    deleteButton.disabled = busy || !selected || isProtectedAdmin(selected);
-  }
+  if (deleteButton) deleteButton.disabled = busy || !getSelectedUser(panel);
 }
 
 async function invoke(body) {
@@ -154,7 +135,7 @@ async function invoke(body) {
 
 function formatDeleteError(error) {
   const message = String(error?.message || error || "");
-  if (/primary administrator|管理者本人/i.test(message)) return "管理者本人のアカウントは削除できません。";
+  if (/administrator|管理者/i.test(message)) return "管理者アカウントは削除できません。";
   if (/restricted|403|permission/i.test(message)) return "ユーザー削除を実行する管理者権限がありません。";
   if (/not found|404/i.test(message)) return "対象ユーザーが見つかりません。登録者一覧を再読み込みしてください。";
   if (/master_search_users|schema cache/i.test(message)) return "検索利用者テーブルを確認できません。SQL 21の適用状況を確認してください。";
