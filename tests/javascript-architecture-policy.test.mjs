@@ -4,11 +4,17 @@ import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("cast and sheet composition roots are bootstrapped from the early shared head runtime", async () => {
-  const themeScope = await read("js/theme-scope.js");
-  assert.match(themeScope, /"cast\.html": "\.\/cast-app\.js\?v=1"/);
+test("cast runtime is bootstrapped by its page composition root while sheet remains on the staged early bootstrap", async () => {
+  const [castHtml, castApp, themeScope] = await Promise.all([
+    read("cast.html"),
+    read("js/cast-app.js"),
+    read("js/theme-scope.js")
+  ]);
+  assert.match(castHtml, /type="module" src="\.\/js\/cast-app\.js\?v=2"/);
+  assert.doesNotMatch(castHtml, /type="module" src="\.\/js\/cast(?:\.js|-compact-skills\.js|-ui\.js|-style-skills\.js|-outfits\.js|-mobile\.js|-troops-link\.js)/);
+  assert.match(castApp, /for \(const modulePath of runtimeModules\) await import\(modulePath\)/);
+  assert.doesNotMatch(themeScope, /"cast\.html": "\.\/cast-app\.js/);
   assert.match(themeScope, /"sheet\.html": "\.\/sheet-app\.js\?v=1"/);
-  assert.match(themeScope, /import\(pageRoot\)/);
 });
 
 test("composition roots declare explicit DOM owners and lifecycle events", async () => {
