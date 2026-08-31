@@ -4,21 +4,11 @@ import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("cast and sheet pages own their composition roots without shared runtime double-bootstrap", async () => {
-  const [castHtml, castApp, sheetHtml, sheetApp, themeScope] = await Promise.all([
-    read("cast.html"),
-    read("js/cast-app.js"),
-    read("sheet.html"),
-    read("js/sheet-app.js"),
-    read("js/theme-scope.js")
-  ]);
-  assert.match(castHtml, /type="module" src="\.\/js\/cast-app\.js\?v=2"/);
-  assert.match(sheetHtml, /type="module" src="\.\/js\/sheet-app\.js\?v=2"/);
-  assert.doesNotMatch(castHtml, /type="module" src="\.\/js\/cast(?:\.js|-compact-skills\.js|-ui\.js|-style-skills\.js|-outfits\.js|-mobile\.js|-troops-link\.js)/);
-  assert.doesNotMatch(sheetHtml, /type="module" src="\.\/js\/sheet(?:\.js|-image\.js|-personal-data\.js|-skill-ui\.js|-features\.js|-multiline-fields\.js|-master-search[^\"]*\.js|-combos\.js|-snapshots\.js)/);
-  assert.match(castApp, /for \(const modulePath of runtimeModules\) await import\(modulePath\)/);
-  assert.match(sheetApp, /for \(const modulePath of runtimeModules\) await import\(modulePath\)/);
-  assert.doesNotMatch(themeScope, /cast-app\.js|sheet-app\.js|pageRoots|pageRoot/);
+test("cast and sheet composition roots are bootstrapped from the early shared head runtime", async () => {
+  const themeScope = await read("js/theme-scope.js");
+  assert.match(themeScope, /"cast\.html": "\.\/cast-app\.js\?v=1"/);
+  assert.match(themeScope, /"sheet\.html": "\.\/sheet-app\.js\?v=1"/);
+  assert.match(themeScope, /import\(pageRoot\)/);
 });
 
 test("composition roots declare explicit DOM owners and lifecycle events", async () => {

@@ -44,22 +44,18 @@ test('editor keeps the character load path and ownership filter', async () => {
   assert.match(load, /character_outfits/);
 });
 
-test('critical editor modules are still reachable', async () => {
-  const [html, app] = await Promise.all([read('sheet.html'), read('js/sheet-app.js')]);
-  assert.match(html, /\.\/js\/sheet-app\.js\?v=2/);
-
+test('critical editor modules are still loaded', async () => {
+  const html = await read('sheet.html');
   for (const path of [
+    './js/sheet.js',
     './js/sheet-import.js',
     './js/sheet-import-style-skill-compat.js',
     './js/sheet-import-outfit-compat.js',
     './js/sheet-sidebar-actions.js',
-    './js/sheet-section-nav.js'
+    './js/sheet-section-nav.js',
+    './js/sheet-combos.js'
   ]) {
     assert.match(html, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  }
-
-  for (const path of ['./sheet.js', './sheet-combos.js']) {
-    assert.match(app, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 });
 

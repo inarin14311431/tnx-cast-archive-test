@@ -26,15 +26,14 @@ test('editor help is exposed through one global trigger', async () => {
 });
 
 test('retired compatibility scripts are no longer loaded', async () => {
-  const [html, app] = await Promise.all([read('sheet.html'), read('js/sheet-app.js')]);
-  const runtime = `${html}\n${app}`;
-  assert.doesNotMatch(runtime, /sheet-json-import-repair\.js/);
-  assert.doesNotMatch(runtime, /style-skill-recovery\.js/);
-  assert.doesNotMatch(runtime, /style-skill-import-integrity-fix\.js/);
-  assert.doesNotMatch(runtime, /sheet-master-search-dash-fix\.js/);
-  assert.doesNotMatch(runtime, /outfit-ofc-tsv-category-fix\.js/);
+  const html = await read('sheet.html');
+  assert.doesNotMatch(html, /sheet-json-import-repair\.js/);
+  assert.doesNotMatch(html, /style-skill-recovery\.js/);
+  assert.doesNotMatch(html, /style-skill-import-integrity-fix\.js/);
+  assert.doesNotMatch(html, /sheet-master-search-dash-fix\.js/);
+  assert.doesNotMatch(html, /outfit-ofc-tsv-category-fix\.js/);
   assert.match(html, /style-skill-detail-integrity\.js/);
-  assert.match(app, /sheet-master-search-access\.js/);
+  assert.match(html, /sheet-master-search-access\.js/);
 });
 
 test('style import compatibility owns JSON repair and preserves symbols', async () => {

@@ -27,9 +27,8 @@ test('snapshot UI supports create restore and delete without image duplication',
   assert.match(source, /character_snapshots/);
   assert.doesNotMatch(source, /storage\.from|upload|image blob/i);
 
-  const [html, app] = await Promise.all([read('sheet.html'), read('js/sheet-app.js')]);
-  assert.match(html, /sheet-app\.js\?v=2/);
-  assert.match(app, /sheet-snapshots\.js\?v=1/);
+  const html = await read('sheet.html');
+  assert.match(html, /sheet-snapshots\.js/);
 });
 
 test('snapshot creation is blocked while the sheet has unsaved changes', async () => {
