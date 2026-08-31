@@ -91,4 +91,11 @@
   else bind();
 })();
 
+const pageName = location.pathname.split("/").filter(Boolean).at(-1) || "index.html";
+const pageRoots = Object.freeze({
+  "cast.html": "./cast-app.js?v=1",
+  "sheet.html": "./sheet-app.js?v=1"
+});
+const pageRoot = pageRoots[pageName];
+if (pageRoot) import(pageRoot).catch(error => console.error(`Failed to load ${pageName} composition root`, error));
 import("./legal-notices.js?v=1").catch(error => console.error("Failed to load legal notices", error));
