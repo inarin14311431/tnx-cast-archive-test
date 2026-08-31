@@ -29,7 +29,7 @@ if (cleanScripts.filter(src => src === compositionRoot).length !== 1) {
 }
 
 const appSource = fs.readFileSync(path.join(root, compositionRoot), "utf8");
-const composedScripts = [...appSource.matchAll(/["'](\.\/cast[^"']+\.js(?:\?[^"']*)?)["']/g)]
+const composedScripts = [...appSource.matchAll(/["'](\.\/cast[^"']*\.js(?:\?[^"']*)?)["']/g)]
   .map(match => clean(match[1]));
 const composedDuplicates = composedScripts.filter((src, index) => composedScripts.indexOf(src) !== index);
 if (composedDuplicates.length) errors.push(`duplicate composition imports: ${[...new Set(composedDuplicates)].join(", ")}`);
