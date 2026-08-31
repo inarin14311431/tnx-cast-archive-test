@@ -19,16 +19,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create exact production snapshot branch
+      - name: Clone production main
+        shell: bash
+        run: git clone --depth 1 --branch main https://github.com/inarin14311431/tnx_cast_list.git /tmp/tnx-production
+
+      - name: Create snapshot branch
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote add production https://github.com/inarin14311431/tnx_cast_list.git
-          git fetch --no-tags production main
-          git switch -C sync/exact-production-tree-20260831
-          git rm -r --ignore-unmatch .
-          git checkout production/main -- .
+          git switch -c sync/exact-production-tree-20260831-v2
+
+      - name: Replace files with production tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          rsync -a --delete --exclude='.git/' /tmp/tnx-production/ ./
+          git add -A
+          git status --short
           git commit -m "Align verification environment with production baseline"
-          git push --force origin HEAD:sync/exact-production-tree-20260831
+
+      - name: Push snapshot branch
+        shell: bash
+        run: git push origin HEAD:sync/exact-production-tree-20260831-v2
