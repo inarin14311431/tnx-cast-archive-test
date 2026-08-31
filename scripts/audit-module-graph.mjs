@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const jsRoot = path.join(root, "js");
 const problems = [];
-const warnings = [];
 const graph = new Map();
 
 const retired = new Set([
@@ -99,7 +98,7 @@ function visit(node) {
       const key = cycle.join(" -> ");
       if (!cycleKeys.has(key)) {
         cycleKeys.add(key);
-        warnings.push(`module cycle: ${key}`);
+        problems.push(`module cycle: ${key}`);
       }
       continue;
     }
@@ -113,11 +112,6 @@ function visit(node) {
 
 for (const node of graph.keys()) visit(node);
 
-if (warnings.length) {
-  console.warn("Module graph warnings:");
-  for (const warning of warnings) console.warn(`- ${warning}`);
-}
-
 if (problems.length) {
   console.error("Module dependency graph audit failed:");
   for (const problem of problems) console.error(`- ${problem}`);
@@ -125,4 +119,4 @@ if (problems.length) {
 }
 
 const edges = [...graph.values()].reduce((sum, dependencies) => sum + dependencies.size, 0);
-console.log(`Module dependency graph audit passed: ${graph.size} modules, ${edges} local import edges, ${warnings.length} cycle warning(s).`);
+console.log(`Module dependency graph audit passed: ${graph.size} modules, ${edges} local import edges, 0 cycles.`);
