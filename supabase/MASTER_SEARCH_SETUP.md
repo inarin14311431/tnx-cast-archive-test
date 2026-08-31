@@ -56,7 +56,7 @@ where user_id = '<利用を停止するUID>';
 
 `MASTER_DATA_ADMIN_USER_IDS`は同期操作の管理者設定です。ここへ登録しただけでは検索許可リストへ自動登録されません。同期管理者自身も検索する場合は、そのUIDを`public.master_search_users`へ登録してください。
 
-## 3. Edge Function Secrets設定
+## 3. 同期管理者設定
 
 アカウント画面に同期パネルを表示する管理者をEdge FunctionのSecretsへ登録します。ユーザーIDかメールアドレスのどちらか一方で構いません。
 
@@ -75,21 +75,19 @@ supabase secrets set \
 
 複数指定はカンマ区切りです。
 
-同期元スプレッドシートのIDとgidはリポジトリへ記載せず、必ずEdge Function Secretsへ登録します。`sync-master-data`には既定値を持たせていないため、次の4項目はデプロイ前に必須です。
+スプレッドシートIDとgidはEdge Function内に既定値があります。変更する場合だけ次を設定します。
 
 ```bash
 supabase secrets set \
-  MASTER_SKD_SPREADSHEET_ID="<SKDスプレッドシートID>" \
-  MASTER_SKD_GID="<SKDのgid>" \
-  MASTER_OFC_SPREADSHEET_ID="<OFCスプレッドシートID>" \
-  MASTER_OFC_GID="<OFCのgid>"
+  MASTER_SKD_SPREADSHEET_ID="1XSSgipkhFU0nukt4Hy7rk3AC1MJ0XhzdSe-J873Uivo" \
+  MASTER_SKD_GID="1787190988" \
+  MASTER_OFC_SPREADSHEET_ID="1gIjy8ze7954YLL3SOxGhRr9Lec-cXv1LgHIvlRjjjSg" \
+  MASTER_OFC_GID="0"
 ```
-
-実値はGitHubのREADME、Issue、コミットメッセージ、ソースコードへ記載しないでください。
 
 ## 4. Edge Functionデプロイ
 
-マスタ同期用と、管理者向け登録メール一覧取得用の2つをデプロイします。スプレッドシート関連Secretsを登録してから`sync-master-data`をデプロイしてください。
+マスタ同期用と、管理者向け登録メール一覧取得用の2つをデプロイします。
 
 ```bash
 supabase functions deploy sync-master-data

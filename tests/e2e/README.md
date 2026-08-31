@@ -96,21 +96,3 @@ npx.cmd playwright show-report
 - `E2E_TROOP_ID`
 
 Secretsが未登録でも公開画面のテストは実行され、認証必須テストはskipされます。
-
-## Visual Regression
-
-Visual Regressionは実データではなく、`tests/visual/visual-fixtures.js` の固定データを使用します。
-基準画像と比較する通常実行は次のとおりです。
-
-```powershell
-npm.cmd run visual
-```
-
-画面変更が意図したものであることを確認した後、基準画像を更新します。
-
-```powershell
-npm.cmd run visual:update
-```
-
-基準画像はLinux Noble・Playwright 1.55.0で生成し、`tests/visual/__screenshots__/` をGit管理します。
-CIは基準画像を更新せず、不一致時に期待画像・実画像・差分画像をArtifactへ保存します。

@@ -53,6 +53,11 @@ function enhance() {
   });
 }
 
-enhance();
-root?.addEventListener(RENDER_EVENT, enhance);
+function refresh() {
+  enhance();
+  root?.dispatchEvent(new CustomEvent(RENDER_EVENT));
+}
+
+refresh();
 root?.addEventListener(ACTIONS_UPDATED_EVENT, enhance);
+if (root) new MutationObserver(refresh).observe(root, { childList: true, subtree: true });

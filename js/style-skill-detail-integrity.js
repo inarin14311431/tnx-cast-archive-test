@@ -116,9 +116,6 @@
         const encoded = canonical(detail);
         if (original.value !== encoded) {
           original.value = encoded;
-          // This is a presentation-time compatibility repair, not a user edit.
-          // Keep the event available to presentation modules while allowing the
-          // sheet editor to exclude it from dirty/model synchronization.
           dispatchInternalNormalization(original);
         }
       }

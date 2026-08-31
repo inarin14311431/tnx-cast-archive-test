@@ -124,7 +124,7 @@ function applyFilters() {
   const selectedPlayer = playerFilter.value;
   const filtered = allCharacters.filter(character => {
     const searchableText = normalizeText([
-      character.public_id, character.character_name, character.character_kana,
+      character.public_id, obfuscatePublicId(character.public_id), character.character_name, character.character_kana,
       character.handle, character.player_name, character.affiliation,
       character.citizen_rank, character.summary,
       character.style_1, character.style_2, character.style_3
@@ -196,7 +196,7 @@ function renderCharacters(characters) {
 function createCharacterCard(character) {
   const imageUrl = character.image_url || "./assets/placeholders/scan-failed.webp";
   const imagePosition = getImageObjectPosition(character.image_url);
-  const displayId = String(character.public_id ?? "").trim() || "TNX-UNKNOWN";
+  const displayId = obfuscatePublicId(character.public_id);
   const archiveReturnUrl = `./index.html${window.location.search}`;
   const castUrl = new URL("./cast.html", location.href);
   castUrl.searchParams.set("id", character.public_id);
@@ -229,6 +229,15 @@ function createCharacterCard(character) {
         </div>
       </a>
     </article>`;
+}
+
+function obfuscatePublicId(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "TNX-******";
+  const match = text.match(/^(.*?)(\d{6})$/);
+  if (match) return `${match[1]}***${match[2].slice(-3)}`;
+  if (text.length <= 3) return "*".repeat(text.length);
+  return `${text.slice(0, Math.min(4, text.length - 3))}${"*".repeat(Math.max(3, text.length - 7))}${text.slice(-3)}`;
 }
 
 function normalizeText(value) { return String(value ?? "").normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim(); }

@@ -15,7 +15,6 @@ const ownedCastStyle = document.querySelector("#owned-cast-style");
 const ownedCastSort = document.querySelector("#owned-cast-sort");
 const ownedCastReset = document.querySelector("#owned-cast-reset");
 const ownedCastResultCount = document.querySelector("#owned-cast-result-count");
-const OWNED_CASTS_RENDER_EVENT = "tnx:owned-casts-rendered";
 let currentUser = null;
 let ownedCharacters = [];
 let accountWriteBusy = false;
@@ -188,8 +187,6 @@ function renderOwnedCharacters() {
   ownedCastsContainer.querySelectorAll("[data-duplicate]").forEach(button => {
     button.addEventListener("click", () => duplicateCharacter(button.dataset.duplicate, button));
   });
-
-  ownedCastsContainer.dispatchEvent(new CustomEvent(OWNED_CASTS_RENDER_EVENT));
 }
 
 function sortOwnedCharacters(characters, mode) {
@@ -344,7 +341,6 @@ async function runAccountWrite(button, operation) {
     if (button?.isConnected) button.disabled = false;
   }
 }
-
 
 function obfuscatePublicId(value) {
   const source = `TNX_CAST_ARCHIVE::${String(value ?? "")}`;

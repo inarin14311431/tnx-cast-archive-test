@@ -1,7 +1,0 @@
-node_modules/
-playwright/.auth/
-playwright-report/
-playwright-report-visual/
-test-results/
-.env
-.env.local

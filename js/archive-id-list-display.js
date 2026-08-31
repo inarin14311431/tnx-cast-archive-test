@@ -4,15 +4,15 @@
   if (!grid || typeof formatter !== "function") return;
 
   const apply = root => {
-    const matchesSerial = typeof root.matches === "function" && root.matches(".cast-card__serial");
-    const descendants = typeof root.querySelectorAll === "function"
-      ? [...root.querySelectorAll(".cast-card__serial")]
-      : [];
-    const elements = matchesSerial ? [root] : descendants;
-    for (const element of elements) {
-      const current = element.textContent.trim();
-      if (!current || /^TNX-[23456789A-HJ-NP-Z]{4}-[23456789A-HJ-NP-Z]{4}$/.test(current)) continue;
-      element.textContent = formatter(current);
+    const cards = root.matches?.(".cast-card") ? [root] : [...root.querySelectorAll?.(".cast-card") ?? []];
+    for (const card of cards) {
+      const serial = card.querySelector(".cast-card__serial");
+      const link = card.querySelector("a[data-archive-cast-link]");
+      if (!serial || !link) continue;
+      let rawId = "";
+      try { rawId = new URL(link.href, location.href).searchParams.get("id")?.trim() || ""; } catch {}
+      if (!rawId) continue;
+      serial.textContent = formatter(rawId);
     }
   };
 

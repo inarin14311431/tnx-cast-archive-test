@@ -1,5 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+const DEFAULT_SKD_SPREADSHEET_ID = "1XSSgipkhFU0nukt4Hy7rk3AC1MJ0XhzdSe-J873Uivo";
+const DEFAULT_SKD_GID = "1787190988";
+const DEFAULT_OFC_SPREADSHEET_ID = "1gIjy8ze7954YLL3SOxGhRr9Lec-cXv1LgHIvlRjjjSg";
+const DEFAULT_OFC_GID = "0";
 const DEFAULT_ALLOWED_ORIGIN = "https://inarin14311431.github.io";
 const MAX_CSV_BYTES = 20 * 1024 * 1024;
 const UPSERT_CHUNK_SIZE = 300;
@@ -40,15 +44,16 @@ Deno.serve(async request => {
     if (action !== "sync") throw new HttpError(400, "Unknown action.");
     if (!isMasterAdmin(user)) throw new HttpError(403, "Master synchronization is restricted to administrators.");
 
-    const skdSpreadsheetId = requireEnvironment("MASTER_SKD_SPREADSHEET_ID");
-    const skdGid = requireEnvironment("MASTER_SKD_GID");
-    const ofcSpreadsheetId = requireEnvironment("MASTER_OFC_SPREADSHEET_ID");
-    const ofcGid = requireEnvironment("MASTER_OFC_GID");
-
     const startedAt = new Date().toISOString();
     const [skdCsv, ofcCsv] = await Promise.all([
-      fetchSpreadsheetCsv(skdSpreadsheetId, skdGid),
-      fetchSpreadsheetCsv(ofcSpreadsheetId, ofcGid)
+      fetchSpreadsheetCsv(
+        Deno.env.get("MASTER_SKD_SPREADSHEET_ID")?.trim() || DEFAULT_SKD_SPREADSHEET_ID,
+        Deno.env.get("MASTER_SKD_GID")?.trim() || DEFAULT_SKD_GID
+      ),
+      fetchSpreadsheetCsv(
+        Deno.env.get("MASTER_OFC_SPREADSHEET_ID")?.trim() || DEFAULT_OFC_SPREADSHEET_ID,
+        Deno.env.get("MASTER_OFC_GID")?.trim() || DEFAULT_OFC_GID
+      )
     ]);
 
     const skdRows = buildSkdRows(skdCsv);
@@ -289,12 +294,6 @@ function clean(value: unknown) {
 
 function searchable(values: unknown[]) {
   return values.map(clean).join(" ").normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
-}
-
-function requireEnvironment(name: string) {
-  const value = Deno.env.get(name)?.trim();
-  if (!value) throw new HttpError(500, `${name} is not configured.`);
-  return value;
 }
 
 async function requireAuthenticatedUser(request: Request): Promise<AuthenticatedUser> {
