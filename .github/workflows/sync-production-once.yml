@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   prepare-production-tree:
-    if: contains(github.event.head_commit.message, 'Add one-time production sync workflow')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout verification repository
