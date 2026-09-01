@@ -32,6 +32,7 @@ test("character input snapshot preserves base and structured field mappings", ()
       "#summary": "summary",
       "#profile": "profile",
       "#visibility": "public",
+      "#character-sheet-url": "https://character-sheets.appspot.com/tnx/edit.html?key=abc_123-XYZ",
       "#age": "24",
       "#gender": "X"
     }),
@@ -51,7 +52,11 @@ test("character input snapshot preserves base and structured field mappings", ()
     visibility: "public",
     experience_points: 18
   });
-  assert.deepEqual(snapshot.structured, { age: "24", gender: "X" });
+  assert.deepEqual(snapshot.structured, {
+    character_sheet_url: "https://character-sheets.appspot.com/tnx/edit.html?key=abc_123-XYZ",
+    age: "24",
+    gender: "X"
+  });
 });
 
 test("missing controls fall back to empty strings", () => {
@@ -62,7 +67,7 @@ test("missing controls fall back to empty strings", () => {
   });
   assert.equal(snapshot.base.character_name, "");
   assert.equal(snapshot.base.experience_points, 0);
-  assert.deepEqual(snapshot.structured, { age: "" });
+  assert.deepEqual(snapshot.structured, { character_sheet_url: "", age: "" });
 });
 
 test("character input application restores base structured and visibility fields", () => {
@@ -76,6 +81,7 @@ test("character input application restores base structured and visibility fields
     "#summary": "",
     "#profile": "",
     "#visibility": "private",
+    "#character-sheet-url": "",
     "#age": "",
     "#gender": ""
   });
@@ -92,6 +98,7 @@ test("character input application restores base structured and visibility fields
       summary: "summary",
       profile: "profile",
       visibility: "public",
+      character_sheet_url: "https://character-sheets.appspot.com/tnx/edit.html?key=loaded_123",
       age: "31",
       gender: "X"
     },
@@ -99,6 +106,7 @@ test("character input application restores base structured and visibility fields
   });
 
   assert.equal(root.controls.get("#character-name").value, "ロードキャスト");
+  assert.equal(root.controls.get("#character-sheet-url").value, "https://character-sheets.appspot.com/tnx/edit.html?key=loaded_123");
   assert.equal(root.controls.get("#age").value, "31");
   assert.equal(root.controls.get("#visibility").value, "public");
 });
