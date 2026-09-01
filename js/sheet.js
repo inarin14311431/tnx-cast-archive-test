@@ -5,7 +5,7 @@ import { SITE_BASE_PATH } from "./config.js?v=2";
 import { createSheetSaveCoordinator } from "./sheet-save-coordinator.js?v=2";
 import { persistSheetBundle } from "./sheet-save-persistence.js?v=1";
 import { loadSheetBundle } from "./sheet-load-persistence.js?v=1";
-import { buildCharacterSavePayload, buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=1";
+import { buildCharacterSavePayload, buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=2";
 import {
   STYLE_SEPARATOR_MARKER,
   isStyleSeparatorRecord as isStyleSeparator,
