@@ -92,7 +92,8 @@ function outfitCsModifier(data={}){
   return /[-−－]/.test(match[1])?-amount:amount;
 }
 function sourceCsModifier(map){let total=0;for(const [,prefixes] of OUTFIT_GROUPS)for(const item of groups(map,prefixes))total+=outfitCsModifier(item);return total;}
-function rowsByIdentity(rows,identity,normalize){const out={},counts=new Map();for(const row of rows){const base=String(identity(row)),count=(counts.get(base)||0)+1;counts.set(base,count);out[count===1?base:`${base} #${count}`]=normalize(row);}return out;}
+function stableRowSignature(value={}){return JSON.stringify(Object.entries(value).sort(([a],[b])=>a.localeCompare(b,"ja")));}
+function rowsByIdentity(rows,identity,normalize){const out={},groupsByIdentity=new Map();for(const row of rows){const base=String(identity(row)),normalized=normalize(row);if(!groupsByIdentity.has(base))groupsByIdentity.set(base,[]);groupsByIdentity.get(base).push(normalized);}for(const [base,values] of groupsByIdentity){values.sort((a,b)=>stableRowSignature(a).localeCompare(stableRowSignature(b),"ja"));values.forEach((value,index)=>{out[index===0?base:`${base} #${index+1}`]=value;});}return out;}
 function emptyCharacterCanonical(){return{basic:{},personal:{},styles:{},abilities:{},general:{},social:{},connection:{},styleSkills:{},outfits:{}};}
 function parseNamedValue(value){const raw=String(value||"").trim(),match=raw.match(/^[\s　]*[“”"「『](.+?)[“”"」』][\s　]*(.+)$/);return match?{prefix:match[1].trim(),value:match[2].trim()}:{prefix:"",value:raw};}
 function buildProfile(map){const parts=[get(map,"base.memoir","base.profile","profile"),get(map,"base.memo")&&`【メモ】\n${get(map,"base.memo")}`,get(map,"base.birth")&&`出身：${get(map,"base.birth")}`].filter(Boolean);return text(parts.join("\n\n"));}
