@@ -1,6 +1,6 @@
-/* Character-sheets direct URL import for the sheet editor. VERSION 1.5.2 */
+/* Character-sheets direct URL import for the sheet editor. VERSION 1.5.3 */
 (()=>{
-  const VERSION='1.5.2';
+  const VERSION='1.5.3';
   const STYLE_CODE_NAMES=new Map([
     ['0','カブキ'],['1','バサラ'],['2','タタラ'],['3','ミストレス'],['4','カブト'],['5','カリスマ'],['6','マネキン'],['7','カゼ'],['8','フェイト'],['9','クロマク'],['10','エグゼク'],['11','カタナ'],['12','クグツ'],['13','カゲ'],['14','チャクラ'],['15','レッガー'],['16','カブトワリ'],['17','ハイランダー'],['18','マヤカシ'],['19','トーキー'],['20','イヌ'],['21','ニューロ'],
     ['-0','コモン'],['-1','ヒルコ'],['-2','クロガネ'],['-4','イブキ'],['-6','シキガミ'],['-7','アラシ'],['-9','カゲムシャ'],['-12','ミギウデ'],['-17','エトランゼ'],['-18','アヤカシ'],['-21','ウツワ']
@@ -14,6 +14,7 @@
   const legacyCopy=document.querySelector('#legacy-bookmarklet-copy');
   const message=document.querySelector('#legacy-import-message');
   const importButton=document.querySelector('#legacy-import-open');
+  const saveButton=document.querySelector('#save-button');
   if(!dialog||!form||!legacyText||!legacyApply||!message||!importButton)return;
   if(dialog.dataset.urlImportReady==='1')return;
   dialog.dataset.urlImportReady='1';
@@ -195,10 +196,25 @@
     });
   }
 
+  async function waitForStyleRepair(promise,timeout=180000){
+    if(!promise||typeof promise.then!=='function')throw new Error('スタイル技能詳細の修復処理を開始できませんでした。');
+    let timer;
+    try{
+      await Promise.race([
+        promise,
+        new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('スタイル技能詳細の修復がタイムアウトしました。')),timeout);})
+      ]);
+    }finally{
+      clearTimeout(timer);
+    }
+  }
+
   async function importFromUrl(){
     if(run.disabled)return;
+    const restoreSaveDisabled=saveButton?.disabled??false;
     run.disabled=true;
     input.disabled=true;
+    if(saveButton)saveButton.disabled=true;
     setMessage('キャラクターシート倉庫からデータを取得しています…');
     try{
       const key=resolveSource(input.value);
@@ -209,13 +225,18 @@
       legacyText.value=JSON.stringify(data);
       legacyText.dispatchEvent(new Event('input',{bubbles:true}));
       legacyApply.click();
+      const styleRepair=window.TNXLegacyStyleSkillRepair;
       await waitUntilFinished();
+      setMessage(`${name?`「${name}」の`:''}スタイル技能詳細を確認しています…`);
+      await waitForStyleRepair(styleRepair);
+      setMessage(`${name?`「${name}」の`:''}取込みが完了しました。内容を確認して保存してください。`);
     }catch(error){
       console.error('character-sheets direct import failed',error);
       setMessage(`取込エラー：${error?.message||error}`,true);
     }finally{
       run.disabled=false;
       input.disabled=false;
+      if(saveButton)saveButton.disabled=restoreSaveDisabled;
     }
   }
 
