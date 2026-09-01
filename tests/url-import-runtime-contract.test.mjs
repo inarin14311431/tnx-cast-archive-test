@@ -43,3 +43,9 @@ test("URL import strips legacy star display markers before free-level mapping", 
   assert.match(source, /replace\(\/\^\\s\*★\\s\*\/,' '\)|replace\(\/\^\\s\*★\\s\*\/,''\)/);
   assert.match(source, /data=stripLegacyStarSkillMarkers\(data\)/);
 });
+test("style import repair prefers direct source skill arrays before flattened fallback", async () => {
+  const source = await read("js/sheet-import-style-skill-compat.js");
+  assert.ok(source.includes("function sourceRecords(data)"));
+  assert.ok(source.includes("if(Array.isArray(data?.[key]))direct.push(...data[key])"));
+  assert.ok(source.includes("return sourceRecords(data)"));
+});
