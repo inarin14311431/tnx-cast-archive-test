@@ -7,7 +7,7 @@ const snapshots = fs.readFileSync(new URL("../js/sheet-snapshots.js", import.met
 const migration = fs.readFileSync(new URL("../supabase/38_snapshot_from_bundle.sql", import.meta.url), "utf8");
 
 test("comparison remains read-only until the user chooses a side", () => {
-  assert.match(compare, /getSheetSaveState\(\) !== "saved"/);
+  assert.match(compare, /getSheetSaveState\(\)\s*!==\s*"saved"/);
   assert.match(compare, /showComparisonModal/);
   assert.match(compare, /compare-adopt-warehouse/);
   assert.match(compare, /compare-keep-archive/);
@@ -17,10 +17,10 @@ test("comparison remains read-only until the user chooses a side", () => {
 });
 
 test("large comparisons collapse modal details but retain full clipboard output", () => {
-  assert.match(compare, /const DETAIL_LIMIT = 10/);
-  assert.match(compare, /differences\.length <= DETAIL_LIMIT/);
+  assert.match(compare, /const\s+DETAIL_LIMIT\s*=\s*10/);
+  assert.match(compare, /differences\.length\s*<=\s*DETAIL_LIMIT/);
   assert.match(compare, /差分が多いため詳細表示を省略/);
-  assert.match(compare, /for \(const item of context\.differences\)/);
+  assert.match(compare, /for\s*\(\s*const\s+item\s+of\s+context\.differences\s*\)/);
   assert.match(compare, /navigator\.clipboard\.writeText/);
 });
 
