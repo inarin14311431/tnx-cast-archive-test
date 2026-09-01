@@ -99,8 +99,17 @@
       .map(([,value])=>value);
   }
 
+  function sourceRecords(data){
+    const direct=[];
+    for(const key of ["superhumanskills","styleskills","styleSkills"]){
+      if(Array.isArray(data?.[key]))direct.push(...data[key]);
+    }
+    if(direct.length)return direct;
+    return groups(fieldMap(data),["superhumanskills","styleskills","styleSkills"]);
+  }
+
   function sourceSkills(data){
-    return groups(fieldMap(data),["superhumanskills","styleskills","styleSkills"])
+    return sourceRecords(data)
       .map(item=>({...item,name:exactName(first(item,"name"))}))
       .filter(item=>item.name&&!item.name.startsWith("■")&&skillLevel(item)>0);
   }
