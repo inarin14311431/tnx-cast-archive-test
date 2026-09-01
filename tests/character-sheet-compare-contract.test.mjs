@@ -39,3 +39,16 @@ test("comparison reuses the existing snapshot table and restore format", () => {
   assert.match(migration, /offset 10/);
   assert.match(migration, /jsonb_typeof\(p_snapshot_data->'character'\)/);
 });
+
+test("JSONP comparison normalizes importer representation differences", () => {
+  assert.match(compare, /STYLE_DETAIL_MARKER\s*=\s*"@@TNX_STYLE_DETAIL_V1@@"/);
+  assert.match(compare, /normalizeStyleSkillDescription/);
+  assert.match(compare, /JSON\.parse\(json\)\?\.description/);
+  assert.match(compare, /normalizeConcealment/);
+  assert.match(compare, /text\.split\("\/",1\)/);
+  assert.match(compare, /normalizeOutfitSlot/);
+  assert.match(compare, /\["0","全身","片手持ち"\]/);
+  assert.match(compare, /normalizeOutfitRow/);
+  assert.match(compare, /defense_s/);
+  assert.match(compare, /electronic_control/);
+});
