@@ -51,13 +51,4 @@ jobs:
       - name: Report cast DOM ownership
         run: npm run report:cast-ownership
       - name: Run Node regression tests
-        run: |
-          set -o pipefail
-          npm test 2>&1 | tee node-test.log
-      - name: Upload Node regression diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: node-regression-diagnostics
-          path: node-test.log
-          retention-days: 3
+        run: npm test
