@@ -88,6 +88,7 @@ async function createCurrentSnapshot(label = "") {
   if (hasUnsavedSheetChanges()) {
     const warning = "未保存の変更があります。先にキャストを保存してからスナップショットを作成してください。";
     setMessage(warning, "error");
+    alert(warning);
     focusSheetSaveButton();
     throw new Error(warning);
   }
@@ -130,7 +131,6 @@ async function createSnapshotFromUi() {
   } catch (error) {
     console.error(error);
     setMessage(error?.message || "スナップショットの作成に失敗しました。", "error");
-    if (hasUnsavedSheetChanges()) alert(error?.message || "先にキャストを保存してください。");
   } finally {
     button.disabled = false;
   }
