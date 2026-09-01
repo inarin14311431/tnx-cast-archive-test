@@ -1,5 +1,4 @@
 import { buildCharacterSheetEditUrl, extractCharacterSheetKey } from "./character-sheet-url.js?v=2";
-import "./sheet-character-sheet-compare.js?v=1";
 
 const RUN_SELECTOR = "#character-sheets-import-run";
 const SOURCE_SELECTOR = "#character-sheets-import-url";
@@ -49,4 +48,9 @@ function handleImportStart(event) {
   waitForImportCompletion(candidateUrl);
 }
 
-document.addEventListener("click", handleImportStart);
+if (typeof document !== "undefined") {
+  document.addEventListener("click", handleImportStart);
+  import("./sheet-character-sheet-compare.js?v=1").catch(error => {
+    console.error("character sheet comparison could not be initialized", error);
+  });
+}
