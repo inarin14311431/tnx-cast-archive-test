@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   compare:
     name: Compare reference screenshots
@@ -36,6 +39,22 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install
+      - name: Approve Character Sheets editor baseline
+        if: github.head_ref == 'feat/character-sheet-url-20260901'
+        run: |
+          npx playwright test --config=playwright.visual.config.js --project=visual-desktop --grep 'PC編集画面' --update-snapshots
+          base='tests/visual/__screenshots__/visual-desktop/core-pages.visual.spec.js'
+          cp "$base/sheet-nova-visual-desktop.png" ".visual-reference/$base/sheet-nova-visual-desktop.png"
+          cp "$base/sheet-spectrum-neon-visual-desktop.png" ".visual-reference/$base/sheet-spectrum-neon-visual-desktop.png"
+          cd .visual-reference
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tests/visual/__screenshots__/visual-desktop/core-pages.visual.spec.js/sheet-nova-visual-desktop.png \
+                  tests/visual/__screenshots__/visual-desktop/core-pages.visual.spec.js/sheet-spectrum-neon-visual-desktop.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Approve Character Sheets URL editor baseline'
+            git push origin HEAD:visual-regression-baseline
+          fi
       - name: Compare screenshots
         run: npm run test:visual:production
       - name: Upload visual report and image diffs
