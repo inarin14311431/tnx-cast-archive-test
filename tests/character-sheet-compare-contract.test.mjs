@@ -18,7 +18,7 @@ test("comparison remains read-only until the user chooses a side", () => {
 
 test("large comparisons collapse modal details but retain full clipboard output", () => {
   assert.match(compare, /const\s+DETAIL_LIMIT\s*=\s*10/);
-  assert.match(compare, /differences\.length\s*<=\s*DETAIL_LIMIT/);
+  assert.match(compare, /(?:diffs|differences)\.length\s*<=\s*DETAIL_LIMIT/);
   assert.match(compare, /差分が多いため詳細表示を省略/);
   assert.match(compare, /for\s*\(\s*const\s+item\s+of\s+context\.differences\s*\)/);
   assert.match(compare, /navigator\.clipboard\.writeText/);
