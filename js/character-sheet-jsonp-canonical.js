@@ -17,7 +17,7 @@ const text=value=>String(value??"").replace(/\r\n?/g,"\n").trim();
 const scalar=value=>value===null||value===undefined?"":typeof value==="boolean"||typeof value==="number"?value:typeof value==="object"?JSON.stringify(value):String(value).trim();
 const numberScalar=value=>{const result=Number(value??0);return Number.isFinite(result)?result:0};
 const stripQuotes=value=>String(value??"").trim().replace(/^[“”"「『](.*)[“”"」』]$/,"$1").trim();
-const zeroEmpty=value=>{const source=String(value??"").trim();return source==="0"?"":source;};
+const zeroEmpty=value=>{const source=String(value??"").trim();return ["0","-","－","ー"].includes(source)?"":source;};
 
 function flatten(value,prefix,map){
   if(value===null||value===undefined)return;
@@ -82,6 +82,16 @@ function normalizeJsonpOutfit(category,data){
   const purchase=first(data,"purchase","purchaseValue"),permanent=first(data,"permanent","experienceCost");
   return{name:cleanName(first(data,"name")),category,slot:normalizeOutfitSlot(first(data,"slot","part")),range:scalar(first(data,"range")),attack:scalar(first(data,"attack")),concealment:normalizeConcealment(first(data,"concealA","concealment")),purchase_value:zeroEmpty(purchase),experience_cost:numberScalar(permanent),cs_modifier:numberScalar(modifiers.cs_modifier),control_modifier:numberScalar(modifiers.control_modifier),description:text(first(data,"notes","description")),defense_s:scalar(details.defense_s),defense_p:scalar(details.defense_p),defense_i:scalar(details.defense_i),purchase_target:zeroEmpty(purchase),permanent_cost:zeroEmpty(permanent),electronic_control:scalar(details.electronic_control),concealment_penalty:scalar(details.concealment_penalty)};
 }
+function outfitCsModifier(data={}){
+  const explicit=first(data,"cs","csModifier");
+  if(String(explicit??"").trim()!=="")return number(explicit);
+  const source=text(first(data,"notes","description"));
+  const match=source.match(/(?:^|[^A-Z])CS\s*([+＋\-−－])\s*(\d+)/i);
+  if(!match)return 0;
+  const amount=Number(match[2]||0);
+  return /[-−－]/.test(match[1])?-amount:amount;
+}
+function sourceCsModifier(map){let total=0;for(const [,prefixes] of OUTFIT_GROUPS)for(const item of groups(map,prefixes))total+=outfitCsModifier(item);return total;}
 function rowsByIdentity(rows,identity,normalize){const out={},counts=new Map();for(const row of rows){const base=String(identity(row)),count=(counts.get(base)||0)+1;counts.set(base,count);out[count===1?base:`${base} #${count}`]=normalize(row);}return out;}
 function emptyCharacterCanonical(){return{basic:{},personal:{},styles:{},abilities:{},general:{},social:{},connection:{},styleSkills:{},outfits:{}};}
 function parseNamedValue(value){const raw=String(value||"").trim(),match=raw.match(/^[\s　]*[“”"「『](.+?)[“”"」』][\s　]*(.+)$/);return match?{prefix:match[1].trim(),value:match[2].trim()}:{prefix:"",value:raw};}
@@ -96,7 +106,7 @@ export function canonicalizeCharacterSheetJsonp(data={}){
   result.personal={age:scalar(get(map,"base.age","age")),gender:scalar(get(map,"base.sex","base.gender","sex","gender")),height:scalar(get(map,"base.height","height")),weight:scalar(get(map,"base.weight","weight")),eyes:scalar(get(map,"base.eyes","eyes")),hair:scalar(get(map,"base.hair","hair")),skin:scalar(get(map,"base.skin","skin")),life_path_origin:scalar(get(map,"base.lifepath.origin","base.lifepath.experience","life_path_origin")),life_path_experience:scalar(get(map,"base.lifepath.environment","life_path_experience")),life_path_encounter:scalar(get(map,"base.lifepath.encounter","base.lifepath.encouter","life_path_encounter"))};
   const direct=groups(map,["styles","style"]),outline=String(get(map,"outline","base.outline","base.style","stylesOutline")||"").replace(/^STYLE:/i,"").replace(/\s+(?:ID|AGE|GENDER):.*$/i,""),parts=outline.split(/[=,]/).map(v=>v.trim()).filter(Boolean);
   result.styles={};for(let i=0;i<3;i++){const item=direct[i]||{},raw=first(item,"name","style","value")||get(map,`style${i+1}`,`styles.${i}.name`)||parts[i]||"",name=styleName(raw);result.styles[`style_${i+1}`]=name;result.styles[`style_${i+1}_mark`]=styleMark(first(item,"mark","symbol")||raw);result.styles[`style_${i+1}_attribute`]=name==="ウツワ"?scalar(first(item,"attribute","utsuwa")):"";}
-  result.abilities={};for(const key of ["reason","passion","life","mundane"]){const ability=number(get(map,`ability.${key}.abl`,`ability.${key}.value`,`abilities.${key}.value`)),controls=(String(get(map,`ability.${key}.ctl`,`ability.${key}.control`,`abilities.${key}.control`)??"").match(/-?\d+/g)||[]).map(Number),base=controls[0]||0,final=controls[1]??base;result.abilities[`${key}_base`]=ability;result.abilities[`${key}_gear`]=0;result.abilities[`${key}_control_base`]=base;result.abilities[`${key}_control_gear`]=final-base;}result.abilities.cs_base=number(get(map,"ability.cs","abilities.cs","cs"));result.abilities.cs_gear=0;
+  result.abilities={};for(const key of ["reason","passion","life","mundane"]){const ability=number(get(map,`ability.${key}.abl`,`ability.${key}.value`,`abilities.${key}.value`)),controls=(String(get(map,`ability.${key}.ctl`,`ability.${key}.control`,`abilities.${key}.control`)??"").match(/-?\d+/g)||[]).map(Number),base=controls[0]||0,final=controls[1]??base;result.abilities[`${key}_base`]=ability;result.abilities[`${key}_gear`]=0;result.abilities[`${key}_control_base`]=base;result.abilities[`${key}_control_gear`]=final-base;}const sourceCs=number(get(map,"ability.cs","abilities.cs","cs")),csModifier=sourceCsModifier(map);result.abilities.cs_base=sourceCs-csModifier;result.abilities.cs_gear=0;
   const skills=skillRowsFromJsonp(map);for(const [category,key] of [["general","general"],["social","social"],["connection","connection"],["style","styleSkills"]])result[key]=rowsByIdentity(skills.filter(r=>r.category===category),r=>r.description===STYLE_SEPARATOR_MARKER?`区切り:${r.name}`:r.name||"名称なし",normalizeSkillRow);
   const outfits=[];for(const [category,prefixes] of OUTFIT_GROUPS)for(const item of groups(map,prefixes)){if(cleanName(first(item,"name")))outfits.push({category,...item});}result.outfits=rowsByIdentity(outfits,r=>`${r.category||"other"}:${cleanName(first(r,"name"))||"名称なし"}`,r=>normalizeJsonpOutfit(r.category,r));
   return result;
@@ -109,9 +119,10 @@ export function canonicalizeArchiveBundle(bundle={}){
 }
 
 export function diffCanonicalBundles(left={},right={}){const out=[];for(const category of ["basic","personal","styles","abilities","general","social","connection","styleSkills","outfits"])diffObject(left[category]||{},right[category]||{},category,[],out);return out;}
+function styleDescriptionsEqual(a,b){const left=text(a),right=text(b);if(!left||!right)return true;if(left===right)return true;const longer=left.length>=right.length?left:right,shorter=left.length>=right.length?right:left;const lines=longer.split("\n");return lines.length>1&&text(lines.slice(1).join("\n"))===shorter;}
 function valuesEqual(a,b,category,path){
   const key=path[path.length-1]||"";
-  if(category==="styleSkills"&&key==="description"&&(!text(a)||!text(b)))return true;
+  if(category==="styleSkills"&&key==="description")return styleDescriptionsEqual(a,b);
   return String(a??"")===String(b??"");
 }
 function diffObject(left,right,category,path,out){for(const key of new Set([...Object.keys(left||{}),...Object.keys(right||{})])){const a=left?.[key],b=right?.[key],next=[...path,key],oa=a&&typeof a==="object"&&!Array.isArray(a),ob=b&&typeof b==="object"&&!Array.isArray(b);if(oa||ob){diffObject(oa?a:{},ob?b:{},category,next,out);continue;}if(!valuesEqual(a,b,category,next))out.push({category,path:next.join(" / "),archive:a??"",warehouse:b??""});}}
