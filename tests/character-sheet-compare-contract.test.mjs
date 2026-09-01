@@ -28,7 +28,7 @@ test("choice actions snapshot the opposite version before adopting", () => {
   assert.match(compare, /snapshots\.createCurrent/);
   assert.match(compare, /applyLegacyPayload\(context\.externalPayload\)/);
   assert.match(compare, /snapshots\.createBundle/);
-  assert.match(compare, /character: \{ \.\.\.context\.archiveBundle\.character, \.\.\.context\.warehouseBundle\.character/);
+  assert.match(compare, /character:\s*\{\s*\.\.\.context\.archiveBundle\.character,\s*\.\.\.context\.warehouseBundle\.character/);
 });
 
 test("comparison reuses the existing snapshot table and restore format", () => {
