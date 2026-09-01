@@ -4,6 +4,7 @@ on:
   push:
     branches: [feat/character-sheet-url-20260901]
     paths: [.github/workflows/approve-visual-baseline.yml]
+  workflow_dispatch:
 
 permissions:
   contents: write
