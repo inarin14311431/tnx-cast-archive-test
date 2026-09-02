@@ -90,7 +90,7 @@
   text-align: left;
 }
 .sheet-help-dialog__nav button span { font-weight: 800; }
-.sheet-help-dialog__nav button small { color: var(--color-muted); font: 700 .56rem/1 var(--font-data); letter-spacing: .09em; }
+.sheet-help-dialog__nav button small { display: block; color: var(--color-muted); font: 700 .56rem/1.15 var(--font-data); letter-spacing: .09em; transform: translateY(-2px); }
 .sheet-help-dialog__nav button:hover,
 .sheet-help-dialog__nav button:focus-visible,
 .sheet-help-dialog__nav button.is-active { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 13%, transparent); color: var(--color-accent); }

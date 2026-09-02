@@ -3,7 +3,7 @@
 
 @import url("../index.css?v=64") layer(app);
 
-@import url("../components/help.css?v=2") layer(sheet-components);
+@import url("../components/help.css?v=3") layer(sheet-components);
 @import url("../components/save-diagnostics.css?v=1") layer(sheet-components);
 @import url("../components/sheet-snapshots.css?v=1") layer(sheet-components);
 @import url("../components/sheet-url-import.css?v=1") layer(sheet-components);
