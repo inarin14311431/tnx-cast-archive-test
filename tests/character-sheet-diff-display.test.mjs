@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { groupCharacterSheetDifferences } from "../js/character-sheet-diff-display.js";
+import { groupCharacterSheetDifferences, summarizeCharacterSheetDifferences } from "../js/character-sheet-diff-display.js";
 
 test("groups all changed fields of one skill into one display difference", () => {
   const fields = ["name", "level", "free_level", "reason", "passion", "life", "mundane", "skill_kind"];
@@ -40,6 +40,33 @@ test("keeps field details when both sides contain the same record", () => {
   assert.equal(groups.length, 1);
   assert.equal(groups[0].presence, "changed");
   assert.deepEqual(groups[0].fields.map(field => field.field), ["name", "level"]);
+});
+
+test("summarizes additions and deletions from the warehouse baseline", () => {
+  const groups = groupCharacterSheetDifferences([
+    { category: "general", path: "操縦：地上車両 / name", archive: "", warehouse: "操縦：地上車両" },
+    { category: "general", path: "操縦：地上車両 / level", archive: 0, warehouse: 1 },
+    { category: "outfits", path: "weapon:単分子ブレード / name", archive: "単分子ブレード", warehouse: "" }
+  ]);
+
+  assert.deepEqual(summarizeCharacterSheetDifferences(groups), [
+    "一般技能「操縦：地上車両」が削除されている",
+    "ウェポンに「単分子ブレード」が追加されている"
+  ]);
+});
+
+test("summarizes level ability and description changes", () => {
+  const groups = groupCharacterSheetDifferences([
+    { category: "general", path: "白兵 / level", archive: 2, warehouse: 1 },
+    { category: "abilities", path: "reason_base", archive: 5, warehouse: 4 },
+    { category: "outfits", path: "weapon:単分子ブレード / description", archive: "新しい解説", warehouse: "元の解説" }
+  ]);
+
+  assert.deepEqual(summarizeCharacterSheetDifferences(groups), [
+    "白兵のレベルが1上がっている",
+    "【理性】が1増えている",
+    "単分子ブレードの解説文が変更されている"
+  ]);
 });
 
 test("does not merge scalar differences or records from different categories", () => {
