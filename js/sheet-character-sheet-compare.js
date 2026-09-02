@@ -4,7 +4,7 @@ import { buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-pa
 import { getSheetSaveState, focusSheetSaveButton } from "./sheet-save-state.js?v=2";
 import { normalizeCharacterSheetUrl, buildCharacterSheetReadUrl, extractCharacterSheetKey } from "./character-sheet-url.js?v=2";
 import { canonicalizeArchiveBundle, canonicalizeCharacterSheetJsonp, diffCanonicalBundles } from "./character-sheet-jsonp-canonical.js?v=1";
-import { groupCharacterSheetDifferences } from "./character-sheet-diff-display.js?v=1";
+import { groupCharacterSheetDifferences } from "./character-sheet-diff-display.js?v=2";
 
 const SESSION_KEY = "tnx:character-sheet-comparison:v2";
 const DETAIL_LIMIT = 10;
@@ -90,6 +90,10 @@ function showComparisonModal(context){
   document.body.append(dialog);dialog.querySelector("#compare-copy").addEventListener("click",()=>copyDifferences(context));dialog.querySelector("#compare-adopt-warehouse").addEventListener("click",()=>adoptWarehouse(context,dialog));dialog.querySelector("#compare-keep-archive").addEventListener("click",()=>keepArchive(context,dialog));dialog.addEventListener("close",()=>{if(dialog.returnValue==="cancel")clearSession();});dialog.showModal();
 }
 function renderDifference(item){
+  if(item.presence==="added"||item.presence==="removed"){
+    const direction=item.presence==="added"?"倉庫側に追加":"倉庫側から削除";
+    return `<article><strong>${esc(CATEGORY_LABELS[item.category]||item.category)} / ${esc(item.path)}</strong><div><span><b>差分</b>${esc(direction)}</span></div></article>`;
+  }
   const fields=item.fields||[];
   if(!item.record){
     const field=fields[0]||{};
@@ -105,6 +109,11 @@ async function copyDifferences(context){
   const lines=["キャラクターシート倉庫との差分",`比較日時: ${formatDate(context.comparedAt)}`,`URL: ${context.sourceUrl}`,`差分: ${diffs.length}件`,""];
   if(!diffs.length)lines.push("差分なし");
   for(const item of diffs){
+    if(item.presence==="added"||item.presence==="removed"){
+      const direction=item.presence==="added"?"倉庫側に追加":"倉庫側から削除";
+      lines.push(`[${CATEGORY_LABELS[item.category]||item.category}] ${item.path}`,`差分: ${direction}`,"");
+      continue;
+    }
     if(!item.record){
       const field=item.fields[0]||{};
       lines.push(`[${CATEGORY_LABELS[item.category]||item.category}] ${item.path}`,`CAST ARCHIVE: ${displayValue(field.archive)}`,`倉庫: ${displayValue(field.warehouse)}`,"");
