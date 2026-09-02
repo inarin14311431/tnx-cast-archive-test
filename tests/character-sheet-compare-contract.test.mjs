@@ -27,11 +27,11 @@ test("comparison remains read-only until the user chooses a side", () => {
   assert.doesNotMatch(compare, /save_character_bundle/);
 });
 
-test("large comparisons collapse modal details but retain full clipboard output", () => {
-  assert.match(compare, /const\s+DETAIL_LIMIT\s*=\s*10/);
-  assert.match(compare, /diffs\.length\s*<=\s*DETAIL_LIMIT/);
-  assert.match(compare, /差分が多いため詳細表示を省略/);
+test("comparison modal and clipboard use concise warehouse-baseline summaries", () => {
   assert.match(compare, /groupCharacterSheetDifferences\(context\.differences\)/);
+  assert.match(compare, /summarizeCharacterSheetDifferences\(diffs\)/);
+  assert.match(compare, /キャラクターシート倉庫のデータと比べ、CAST ARCHIVEでは次の差分があります/);
+  assert.doesNotMatch(compare, /function renderDifference/);
   assert.match(compare, /for\s*\(\s*const\s+item\s+of\s+diffs\s*\)/);
   assert.match(compare, /item\.presence==="added"/);
   assert.match(compare, /item\.presence==="removed"/);
