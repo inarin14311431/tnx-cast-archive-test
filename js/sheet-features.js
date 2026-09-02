@@ -1,4 +1,4 @@
-import "./help-ui.js?v=5";
+import "./help-ui.js?v=6";
 import "./combo-multi-suit.js?v=1";
 import "./sheet-save-state.js?v=2";
 import "./direct-transfer-button.js?v=6";
@@ -22,7 +22,7 @@ function ensureGlobalHelpAvailable(){
   if(document.body?.dataset.page!=="sheet.html")return;
   window.setTimeout(()=>{
     if(document.querySelector("#sheet-global-help"))return;
-    import("./help-ui.js?v=5&retry=1").catch(error=>console.error("Help UI bootstrap failed",error));
+    import("./help-ui.js?v=6&retry=1").catch(error=>console.error("Help UI bootstrap failed",error));
   },250);
 }
 
