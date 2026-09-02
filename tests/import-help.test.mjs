@@ -15,8 +15,11 @@ test('data import uses direct character-sheets URL and global help', async () =>
 
   const helpUi = await read('js/help-ui.js');
   assert.match(helpUi, /sheet-global-help/);
-  assert.match(helpUi, /help-content\.js\?v=2/);
+  assert.match(helpUi, /help-content\.js\?v=3/);
   assert.doesNotMatch(helpUi, /sheet-import-help\.js/);
+
+  const helpCss = await read('css-next/components/help.css');
+  assert.match(helpCss, /transform: translateY\(-2px\)/);
 
   const helpContent = await read('js/help-content.js');
   assert.match(helpContent, /importData/);
@@ -26,7 +29,7 @@ test('data import uses direct character-sheets URL and global help', async () =>
   assert.match(helpContent, /倉庫との差分比較/);
   assert.match(helpContent, /取込は単純な追加ではありません/);
   assert.match(helpContent, /能力値・制御値・CS/);
-  assert.match(helpContent, /SKD・OFC補完/);
+  assert.doesNotMatch(helpContent, /masterData|マスタ|SKD|OFC/);
   assert.match(helpContent, /A4縦の複数ページ/);
 });
 
