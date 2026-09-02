@@ -9,6 +9,10 @@ test("URL import waits for style detail repair before allowing save", async () =
   assert.ok(source.includes("const saveButton=document.querySelector('#save-button')"));
   assert.ok(source.includes("if(saveButton)saveButton.disabled=true"));
   assert.ok(source.includes("const styleRepair=window.TNXLegacyStyleSkillRepair"));
+  assert.ok(source.includes("function waitForBaseImport"));
+  assert.ok(source.includes("const baseImport=waitForBaseImport()"));
+  assert.ok(source.includes("await baseImport"));
+  assert.ok(source.includes("if(styleRepair)await waitForStyleRepair(styleRepair)"));
   assert.ok(source.includes("await waitForStyleRepair(styleRepair)"));
   assert.ok(source.includes("if(saveButton)saveButton.disabled=restoreSaveDisabled"));
 });
