@@ -33,6 +33,8 @@ test("large comparisons collapse modal details but retain full clipboard output"
   assert.match(compare, /差分が多いため詳細表示を省略/);
   assert.match(compare, /groupCharacterSheetDifferences\(context\.differences\)/);
   assert.match(compare, /for\s*\(\s*const\s+item\s+of\s+diffs\s*\)/);
+  assert.match(compare, /item\.presence==="added"/);
+  assert.match(compare, /item\.presence==="removed"/);
   assert.match(compare, /navigator\.clipboard\.writeText/);
 });
 
