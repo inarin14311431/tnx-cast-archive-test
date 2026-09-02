@@ -34,7 +34,22 @@ export function groupCharacterSheetDifferences(differences = []) {
     group.fields.push(Object.assign({}, difference || {}, { field: recordPath.field }));
   }
 
-  return groups;
+  return groups.map(group => group.record ? Object.assign({}, group, { presence: detectRecordPresence(group) }) : group);
+}
+
+function detectRecordPresence(group) {
+  const nameField = group.fields.find(field => field.field === "name");
+  if (!nameField) return "changed";
+
+  const archiveName = recordNameValue(nameField.archive);
+  const warehouseName = recordNameValue(nameField.warehouse);
+  if (!archiveName && warehouseName) return "added";
+  if (archiveName && !warehouseName) return "removed";
+  return "changed";
+}
+
+function recordNameValue(value) {
+  return String(value ?? "").trim();
 }
 
 function splitRecordPath(path) {
