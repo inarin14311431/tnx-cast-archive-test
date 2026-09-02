@@ -69,21 +69,14 @@ async function fetchCharacterSheet(key: string) {
   const callback = `tnxSourceProxy_${crypto.randomUUID().replaceAll("-", "")}`;
   const candidates = [
     "/tnx/display?ajax=1",
-    "/tnx/display.html?ajax=1",
-    "/tnx/display?ajax=1",
     "/tnx/display.html?ajax=1"
-  ];
-  const queryOrders = [
-    [["key", key], ["callback", callback]],
-    [["key", key], ["callback", callback]],
-    [["key", key], ["callback", callback]],
-    [["key", key], ["callback", callback]]
   ];
   let lastFailure: unknown = null;
 
-  for (let index = 0; index < candidates.length; index += 1) {
-    const url = new URL(`https://${SOURCE_HOST}${candidates[index]}`);
-    for (const [name, value] of queryOrders[index]) url.searchParams.set(name, value);
+  for (const candidate of candidates) {
+    const url = new URL(`https://${SOURCE_HOST}${candidate}`);
+    url.searchParams.set("key", key);
+    url.searchParams.set("callback", callback);
 
     try {
       const response = await fetchWithTimeout(url);
