@@ -141,6 +141,6 @@ test("classic sheet delegates profile DOM collection and application to snapshot
   assert.match(editorCss, /profile-source-field[\s\S]*character-sheet-url-field/);
   assert.match(editorCss, /profile-text-field textarea[\s\S]*min-height: 350px/);
   assert.match(editorCss, /image-rights-notice/);
-  assert.match(editorCss, /image-drop-zone[\\s\\S]*min-height: 96px/);
+  assert.match(editorCss, /image-drop-zone[\s\S]*min-height: 96px/);
   assert.doesNotMatch(source, /\["character_name", "character_kana", "handle", "player_name"/);
 });
