@@ -122,9 +122,10 @@ test("classic sheet delegates profile DOM collection and application to snapshot
   assert.match(source, /sheet-character-input-snapshot\.js\?v=6/);
   assert.match(source, /collectCharacterInputSnapshot/);
   assert.match(source, /applyCharacterInputSnapshot/);
-  assert.match(source, /profile-source-field/);
-  assert.match(source, /character-sheet-url-field/);
-  assert.doesNotMatch(source, /basic-profile-summary/);
+  const snapshotSource = await readFile(new URL("../js/sheet-character-input-snapshot.js", import.meta.url), "utf8");
+  assert.match(snapshotSource, /profile-source-field/);
+  assert.match(snapshotSource, /character-sheet-url-field/);
+  assert.doesNotMatch(snapshotSource, /basic-profile-summary/);
 
   const html = await readFile(new URL("../sheet.html", import.meta.url), "utf8");
   assert.match(html, /profile-source-panel wide/);
