@@ -132,9 +132,15 @@ test("classic sheet delegates profile DOM collection and application to snapshot
   assert.match(html, /profile-summary-field wide/);
   assert.match(html, /一言 <small>TAGLINE<\/small>/);
   assert.doesNotMatch(html, /basic-profile-summary">概要/);
+  assert.match(html, /image-rights-notice/);
+  assert.match(html, /自身が使用・公開する権利を有する画像のみ登録してください。/);
+  assert.ok(html.indexOf("image-preview-panel") < html.indexOf("image-rights-notice"));
+  assert.ok(html.indexOf("image-rights-notice") < html.indexOf("image-control-panel"));
 
   const editorCss = await readFile(new URL("../css-next/editor/editor.css", import.meta.url), "utf8");
   assert.match(editorCss, /profile-source-field[\s\S]*character-sheet-url-field/);
-  assert.match(editorCss, /profile-text-field textarea[\s\S]*min-height: 380px/);
+  assert.match(editorCss, /profile-text-field textarea[\s\S]*min-height: 350px/);
+  assert.match(editorCss, /image-rights-notice/);
+  assert.match(editorCss, /image-drop-zone[\s\S]*min-height: 96px/);
   assert.doesNotMatch(source, /\["character_name", "character_kana", "handle", "player_name"/);
 });
