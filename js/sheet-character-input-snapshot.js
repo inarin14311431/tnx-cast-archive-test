@@ -18,13 +18,16 @@ const BUILTIN_STRUCTURED_FIELD_SELECTORS = {
 
 function ensureCharacterSheetUrlField(root = document) {
   if (root.querySelector("#character-sheet-url")) return;
-  const grid = root.querySelector(".basic-profile-grid");
-  if (!grid) return;
+  const container = root.querySelector(".profile-source-field");
+  if (!container) return;
 
   const ownerDocument = root.ownerDocument || root;
   const label = ownerDocument.createElement("label");
-  label.className = "basic-profile-summary character-sheet-url-field";
-  label.append(ownerDocument.createTextNode("キャラクターシート倉庫URL"));
+  label.className = "character-sheet-url-field";
+
+  const labelText = ownerDocument.createElement("span");
+  labelText.textContent = "キャラクターシート倉庫URL";
+  label.append(labelText);
 
   const input = ownerDocument.createElement("input");
   input.id = "character-sheet-url";
@@ -36,9 +39,7 @@ function ensureCharacterSheetUrlField(root = document) {
   input.title = "キャラクターシート倉庫TNXのURLを入力してください。取込時は自動設定されます。";
   label.append(input);
 
-  const summary = root.querySelector("#summary")?.closest("label");
-  if (summary?.parentElement === grid) grid.insertBefore(label, summary);
-  else grid.append(label);
+  container.append(label);
 }
 
 function collectBuiltInStructured(root, value) {
