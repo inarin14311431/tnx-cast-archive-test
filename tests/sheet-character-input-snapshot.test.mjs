@@ -119,7 +119,7 @@ test("non-public visibility restores as private", () => {
 
 test("classic sheet delegates profile DOM collection and application to snapshot module", async () => {
   const source = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
-  assert.match(source, /sheet-character-input-snapshot\.js\?v=2/);
+  assert.match(source, /sheet-character-input-snapshot\.js\?v=3/);
   assert.match(source, /collectCharacterInputSnapshot/);
   assert.match(source, /applyCharacterInputSnapshot/);
   assert.doesNotMatch(source, /\["character_name", "character_kana", "handle", "player_name"/);
