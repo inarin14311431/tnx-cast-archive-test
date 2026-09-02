@@ -77,25 +77,32 @@ body[data-page="sheet.html"] .form-grid { display: grid; grid-template-columns: 
 .profile-top-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
 .profile-top-grid .life-path-panel { grid-column: auto; }
 .profile-media-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
-.basic-profile-panel, .personal-data-panel, .life-path-panel, .sheet-image-editor, .profile-text-field { box-sizing: border-box; min-width: 0; padding: 12px; border: 1px solid var(--color-border-muted); background: color-mix(in srgb, var(--color-bg) 28%, transparent); }
-.basic-profile-panel__header, .personal-data-panel__header, .life-path-panel__header, .sheet-image-editor__header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 11px; padding: 0 0 8px; border-bottom: 1px solid var(--color-border-muted); background: transparent; }
-.basic-profile-panel__header h3, .personal-data-panel__header h3, .life-path-panel__header h3, .sheet-image-editor__header h3 { display: inline; margin: 0; color: var(--color-accent); font: 800 .86rem/1.2 var(--font-data); letter-spacing: .04em; }
-.basic-profile-panel__header small, .personal-data-panel__header small, .life-path-panel__header small, .sheet-image-editor__header small { margin-left: 7px; color: var(--color-muted); font: 600 .62rem/1 var(--font-data); letter-spacing: .08em; }
+.basic-profile-panel, .personal-data-panel, .life-path-panel, .sheet-image-editor, .profile-text-field, .profile-source-panel, .profile-summary-field { box-sizing: border-box; min-width: 0; padding: 12px; border: 1px solid var(--color-border-muted); background: color-mix(in srgb, var(--color-bg) 28%, transparent); }
+.basic-profile-panel__header, .personal-data-panel__header, .life-path-panel__header, .sheet-image-editor__header, .profile-source-panel__header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 11px; padding: 0 0 8px; border-bottom: 1px solid var(--color-border-muted); background: transparent; }
+.basic-profile-panel__header h3, .personal-data-panel__header h3, .life-path-panel__header h3, .sheet-image-editor__header h3, .profile-source-panel__header h3 { display: inline; margin: 0; color: var(--color-accent); font: 800 .86rem/1.2 var(--font-data); letter-spacing: .04em; }
+.basic-profile-panel__header small, .personal-data-panel__header small, .life-path-panel__header small, .sheet-image-editor__header small, .profile-source-panel__header small { margin-left: 7px; color: var(--color-muted); font: 600 .62rem/1 var(--font-data); letter-spacing: .08em; }
 .basic-profile-grid, .personal-data-grid, .life-path-grid { display: grid; row-gap: 9px; column-gap: 10px; padding: 0; }
 .basic-profile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .personal-data-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .life-path-grid { grid-template-columns: 1fr; }
-.basic-profile-grid label, .personal-data-grid label, .life-path-grid label, .profile-text-field { display: grid; min-width: 0; gap: 4px; color: var(--color-muted); font-size: .76rem; }
+.basic-profile-grid label, .personal-data-grid label, .life-path-grid label, .profile-text-field, .profile-summary-field { display: grid; min-width: 0; gap: 4px; color: var(--color-muted); font-size: .76rem; }
 .form-grid :is(input, select, textarea), .style-card :is(input, select, textarea) { font-size: 1rem; line-height: 1.4; }
 .basic-profile-grid :is(input, textarea), .personal-data-grid input, .life-path-grid input { box-sizing: border-box; min-height: 38px; padding: 8px 9px; }
 .basic-profile-grid input, .personal-data-grid input, .life-path-grid input { padding-block: 0; line-height: normal; }
-.basic-profile-summary { grid-column: 1 / -1; }
-.basic-profile-summary textarea { min-height: 92px; resize: vertical; line-height: 1.55; }
+.profile-source-field { min-width: 0; }
+.profile-source-field .character-sheet-url-field { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; align-items: end; gap: 10px; margin: 0; color: var(--color-muted); font-size: .76rem; }
+.profile-source-field .character-sheet-url-field > span { align-self: end; padding-bottom: 9px; white-space: nowrap; }
+.profile-source-field .character-sheet-url-field > input { min-width: 0; min-height: 38px; }
+.profile-source-field .character-sheet-compare-button { align-self: end; margin-top: 0; white-space: nowrap; }
+.profile-summary-field { display: grid; gap: 5px; color: var(--color-muted); font-size: .76rem; }
+.profile-summary-field > span { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--color-accent); font: 800 .86rem/1.2 var(--font-data); letter-spacing: .04em; }
+.profile-summary-field > span small { margin-left: auto; color: var(--color-muted); font: 600 .62rem/1 var(--font-data); letter-spacing: .08em; }
+.profile-summary-field textarea { box-sizing: border-box; min-height: 54px; height: 54px; resize: vertical; line-height: 1.5; }
 #personal-data-status, #life-path-status { min-height: 1.2em; margin: 9px 0 0; color: var(--color-muted); font: .66rem/1.4 var(--font-data); }
 .profile-text-field { position: relative; display: block; padding: 52px 12px 12px; color: transparent; font-size: 0; }
 .profile-text-field::before { position: absolute; top: 12px; right: 12px; left: 12px; box-sizing: border-box; height: 29px; padding: 0 90px 8px 0; border-bottom: 1px solid var(--color-border-muted); content: "背景設定"; color: var(--color-accent); font: 800 .86rem/20px var(--font-data); letter-spacing: .04em; }
 .profile-text-field::after { position: absolute; top: 13px; right: 12px; content: "PROFILE"; color: var(--color-muted); font: .62rem/20px var(--font-data); letter-spacing: .08em; }
-.profile-text-field textarea { display: block; box-sizing: border-box; height: 100%; min-height: 430px; margin: 0; resize: vertical; color: var(--color-text); font-size: 1rem; line-height: 1.65; }
+.profile-text-field textarea { display: block; box-sizing: border-box; height: 100%; min-height: 380px; margin: 0; resize: vertical; color: var(--color-text); font-size: 1rem; line-height: 1.65; }
 .sheet-image-grid { display: grid; grid-template-columns: minmax(150px, .76fr) minmax(180px, 1fr); gap: 12px; align-items: start; }
 .sheet-image-editor .image-preview-frame { position: relative; overflow: hidden; aspect-ratio: 3 / 4; border: 1px solid var(--color-border-muted); background: var(--color-bg); }
 .sheet-image-editor .image-preview-frame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; transform: scale(var(--tnx-image-scale, 1)); transform-origin: var(--tnx-image-origin, 50% 0%); }
@@ -332,6 +339,9 @@ body[data-page="sheet.html"] .exp-panel .sheet-import-control .floating-help-lin
   body[data-page="sheet.html"] main.sheet-layout > .exp-panel { position: static; z-index: auto; }
   body[data-page="sheet.html"] main.sheet-layout .sheet-section-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body[data-page="sheet.html"] .sheet-image-grid { grid-template-columns: 1fr; }
+  body[data-page="sheet.html"] .profile-source-field .character-sheet-url-field { grid-template-columns: 1fr; gap: 5px; }
+  body[data-page="sheet.html"] .profile-source-field .character-sheet-url-field > span { padding-bottom: 0; }
+  body[data-page="sheet.html"] .profile-source-field .character-sheet-compare-button { width: 100%; }
   body[data-page="sheet.html"] .sheet-image-editor .image-preview-panel { width: min(100%, 280px); margin-inline: auto; }
   body[data-page="sheet.html"] #style-grid .style-card { padding: 14px 10px 0; }
   body[data-page="sheet.html"] #style-grid .style-fields > label:first-child select { min-height: 52px; padding-left: 11px; font-size: 1.08rem; }

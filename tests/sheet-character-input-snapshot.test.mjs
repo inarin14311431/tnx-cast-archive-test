@@ -119,8 +119,22 @@ test("non-public visibility restores as private", () => {
 
 test("classic sheet delegates profile DOM collection and application to snapshot module", async () => {
   const source = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
-  assert.match(source, /sheet-character-input-snapshot\.js\?v=5/);
+  assert.match(source, /sheet-character-input-snapshot\.js\?v=6/);
   assert.match(source, /collectCharacterInputSnapshot/);
   assert.match(source, /applyCharacterInputSnapshot/);
+  const snapshotSource = await readFile(new URL("../js/sheet-character-input-snapshot.js", import.meta.url), "utf8");
+  assert.match(snapshotSource, /profile-source-field/);
+  assert.match(snapshotSource, /character-sheet-url-field/);
+  assert.doesNotMatch(snapshotSource, /basic-profile-summary/);
+
+  const html = await readFile(new URL("../sheet.html", import.meta.url), "utf8");
+  assert.match(html, /profile-source-panel wide/);
+  assert.match(html, /profile-summary-field wide/);
+  assert.match(html, /一言 <small>TAGLINE<\/small>/);
+  assert.doesNotMatch(html, /basic-profile-summary">概要/);
+
+  const editorCss = await readFile(new URL("../css-next/editor/editor.css", import.meta.url), "utf8");
+  assert.match(editorCss, /profile-source-field[\s\S]*character-sheet-url-field/);
+  assert.match(editorCss, /profile-text-field textarea[\s\S]*min-height: 380px/);
   assert.doesNotMatch(source, /\["character_name", "character_kana", "handle", "player_name"/);
 });
