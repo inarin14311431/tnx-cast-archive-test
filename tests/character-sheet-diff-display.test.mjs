@@ -17,7 +17,29 @@ test("groups all changed fields of one skill into one display difference", () =>
   assert.equal(groups[0].record, true);
   assert.equal(groups[0].category, "general");
   assert.equal(groups[0].path, "操縦：地上車両");
+  assert.equal(groups[0].presence, "added");
   assert.deepEqual(groups[0].fields.map(field => field.field), fields);
+});
+
+test("classifies a record missing from the warehouse as removed", () => {
+  const groups = groupCharacterSheetDifferences([
+    { category: "general", path: "隠密 / name", archive: "隠密", warehouse: "" },
+    { category: "general", path: "隠密 / level", archive: 2, warehouse: "" }
+  ]);
+
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].presence, "removed");
+});
+
+test("keeps field details when both sides contain the same record", () => {
+  const groups = groupCharacterSheetDifferences([
+    { category: "general", path: "射撃 / name", archive: "射撃", warehouse: "射撃" },
+    { category: "general", path: "射撃 / level", archive: 1, warehouse: 2 }
+  ]);
+
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].presence, "changed");
+  assert.deepEqual(groups[0].fields.map(field => field.field), ["name", "level"]);
 });
 
 test("does not merge scalar differences or records from different categories", () => {
