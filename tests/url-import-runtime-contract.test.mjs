@@ -11,10 +11,14 @@ test("supabase client does not load retired transfer TSV module", async () => {
 
 test("character-sheets URL import provides multiple JSONP endpoint candidates", async () => {
   const source = await read("js/sheet-import-url.js");
-  assert.match(source, /VERSION='1\.5\.3'/);
+  assert.match(source, /VERSION='1\.6\.0'/);
   assert.match(source, /\/tnx\/display\?ajax=1&key=/);
   assert.match(source, /\/tnx\/display\.html\?ajax=1&key=/);
   assert.match(source, /async function fetchJsonp\(key\)/);
+  assert.match(source, /SOURCE_PROXY_FUNCTION='character-sheet-source'/);
+  assert.match(source, /async function fetchViaProxy\(key\)/);
+  assert.match(source, /supabase\.functions\.invoke\(SOURCE_PROXY_FUNCTION/);
+  assert.match(source, /async function fetchSource\(key\)/);
   assert.match(source, /character-sheets JSONP endpoints failed/);
 });
 
