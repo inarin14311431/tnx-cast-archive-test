@@ -93,7 +93,14 @@ function renderDifference(item){
   const fields=item.fields||[];
   if(!item.record){
     const field=fields[0]||{};
-    return `<article><strong>${esc(CATEGORY_LABELS[item.category]||item.category)} / ${esc(item.path)}</strong><div><span><b>CAST ARCHIVE</b>${esc(displayValue(field.archiasync function copyDifferences(context){
+    return `<article><strong>${esc(CATEGORY_LABELS[item.category]||item.category)} / ${esc(item.path)}</strong><div><span><b>CAST ARCHIVE</b>${esc(displayValue(field.archive))}</span><span><b>倉庫</b>${esc(displayValue(field.warehouse))}</span></div></article>`;
+  }
+  const suffix=fields.length>1?` <small>（${fields.length}項目）</small>`:"";
+  const archive=fields.map(field=>`${esc(field.field||field.path)}: ${esc(displayValue(field.archive))}`).join("<br>");
+  const warehouse=fields.map(field=>`${esc(field.field||field.path)}: ${esc(displayValue(field.warehouse))}`).join("<br>");
+  return `<article><strong>${esc(CATEGORY_LABELS[item.category]||item.category)} / ${esc(item.path)}${suffix}</strong><div><span><b>CAST ARCHIVE</b>${archive}</span><span><b>倉庫</b>${warehouse}</span></div></article>`;
+}
+async function copyDifferences(context){
   const diffs=groupCharacterSheetDifferences(context.differences);
   const lines=["キャラクターシート倉庫との差分",`比較日時: ${formatDate(context.comparedAt)}`,`URL: ${context.sourceUrl}`,`差分: ${diffs.length}件`,""];
   if(!diffs.length)lines.push("差分なし");
@@ -113,9 +120,6 @@ function renderDifference(item){
   const output=lines.join("\n");
   try{await navigator.clipboard.writeText(output);setMessage("差分をクリップボードへコピーしました。","saved");}catch{prompt("差分をコピーしてください。",output);}
 }
-rehouse}</span></div></article>`;
-}
-async function copyDifferences(context){const lines=["キャラクターシート倉庫との差分",`比較日時: ${formatDate(context.comparedAt)}`,`URL: ${context.sourceUrl}`,`差分: ${context.differences.length}件`,""];if(!context.differences.length)lines.push("差分なし");for(const item of context.differences)lines.push(`[${CATEGORY_LABELS[item.category]||item.category}] ${item.path}`,`CAST ARCHIVE: ${displayValue(item.archive)}`,`倉庫: ${displayValue(item.warehouse)}`,"");const output=lines.join("\n");try{await navigator.clipboard.writeText(output);setMessage("差分をクリップボードへコピーしました。","saved");}catch{prompt("差分をコピーしてください。",output);}}
 async function adoptWarehouse(context,dialog){if(!confirm("現在のCAST ARCHIVEをスナップショットに保存し、比較したキャラクターシート倉庫版を編集画面へ反映します。続行しますか？"))return;disableChoices(dialog,true);try{const snapshots=await waitForSnapshots();setMessage("CAST ARCHIVE版をスナップショットへ保存しています…");await snapshots.createCurrent(`比較前 CAST ARCHIVE ${formatDate(context.comparedAt)}`);setMessage("キャラクターシート倉庫版を編集画面へ反映しています…");await applyLegacyPayload(context.externalPayload);setCharacterSheetUrl(context.sourceUrl);clearSession();dialog.close("adopted");}catch(error){console.error(error);setMessage(`処理に失敗しました：${error?.message||error}`,"error");disableChoices(dialog,false);}}
 async function keepArchive(context,dialog){if(!confirm("比較したキャラクターシート倉庫版をスナップショットに保存し、現在のCAST ARCHIVE版を編集画面に残します。続行しますか？"))return;disableChoices(dialog,true);try{const snapshots=await waitForSnapshots();setMessage("キャラクターシート倉庫版をスナップショットへ変換しています…");await applyLegacyPayload(context.externalPayload);setCharacterSheetUrl(context.sourceUrl);const warehouseBundle=captureEditorBundle(context.sourceUrl),snapshotData={character:{...context.archiveBundle.character,...warehouseBundle.character,character_sheet_url:context.sourceUrl},skills:warehouseBundle.skills,outfits:warehouseBundle.outfits};setMessage("キャラクターシート倉庫版をスナップショットへ保存しています…");await snapshots.createBundle(snapshotData,`キャラクターシート倉庫 ${formatDate(context.comparedAt)}`);clearSession();dialog.close("kept-archive");location.reload();}catch(error){console.error(error);setMessage(`スナップショット作成に失敗しました：${error?.message||error}`,"error");disableChoices(dialog,false);}}
 function setCharacterSheetUrl(sourceUrl){const target=document.querySelector("#character-sheet-url");if(target){target.value=sourceUrl;target.dispatchEvent(new Event("input",{bubbles:true}));target.dispatchEvent(new Event("change",{bubbles:true}));}}
