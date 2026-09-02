@@ -76,7 +76,7 @@ function createDialog() {
     <div class="sheet-help-dialog__shell">
       <header class="sheet-help-dialog__header">
         <div><span>WEB APP GUIDE</span><strong id="sheet-help-title">ヘルプ</strong></div>
-        <button type="button" class="sheet-help-dialog__close" data-help-close aria-label="ヘルプを閉じる">×</button>
+        <button type="button" class="sheet-help-dialog__close" data-help-close aria-label="ヘルプを閉じる">閉じる</button>
       </header>
       <div class="sheet-help-dialog__layout">
         <nav class="sheet-help-dialog__nav" aria-label="ヘルプ項目">
