@@ -13,6 +13,14 @@ test("URL import waits for style detail repair before allowing save", async () =
   assert.ok(source.includes("if(saveButton)saveButton.disabled=restoreSaveDisabled"));
 });
 
+test("base style import encodes source detail before compatibility repair", async () => {
+  const source = await read("js/sheet-import.js");
+  assert.ok(source.includes("const STYLE_DETAIL_PREFIX='@@TNX_STYLE_DETAIL_V1@@'"));
+  assert.ok(source.includes("function styleDetailFromSource") || source.includes("const styleDetailFromSource="));
+  assert.ok(source.includes("current?.closest('#style-skills')"));
+  assert.ok(source.includes("encodeStyleDetail(styleDetailFromSource(data))"));
+});
+
 test("style detail repair preserves all canonical detail fields", async () => {
   const source = await read("js/sheet-import-style-skill-compat.js");
   assert.ok(source.includes("@@TNX_STYLE_DETAIL_V1@@"));
