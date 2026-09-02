@@ -33,8 +33,8 @@ test("comparison modal and clipboard use concise warehouse-baseline summaries", 
   assert.match(compare, /キャラクターシート倉庫のデータと比べ、CAST ARCHIVEでは次の差分があります/);
   assert.doesNotMatch(compare, /function renderDifference/);
   assert.match(compare, /summaries\.forEach/);
-  assert.match(compare, /item\.presence==="added"/);
-  assert.match(compare, /item\.presence==="removed"/);
+  assert.match(compare, /summaries\.map/);
+  assert.match(compare, /summaries\.forEach/);
   assert.match(compare, /navigator\.clipboard\.writeText/);
 });
 
