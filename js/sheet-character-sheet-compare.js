@@ -4,6 +4,7 @@ import { buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-pa
 import { getSheetSaveState, focusSheetSaveButton } from "./sheet-save-state.js?v=2";
 import { normalizeCharacterSheetUrl, buildCharacterSheetReadUrl, extractCharacterSheetKey } from "./character-sheet-url.js?v=2";
 import { canonicalizeArchiveBundle, canonicalizeCharacterSheetJsonp, diffCanonicalBundles } from "./character-sheet-jsonp-canonical.js?v=1";
+import { groupCharacterSheetDifferences } from "./character-sheet-diff-display.js?v=1";
 
 const SESSION_KEY = "tnx:character-sheet-comparison:v2";
 const DETAIL_LIMIT = 10;
@@ -84,12 +85,41 @@ function captureSkills(){const rows=[];document.querySelectorAll(".skill-group[d
 function captureOutfits(){const rows=[];document.querySelectorAll(".outfit-card[data-outfit-key]").forEach(card=>{const item={};card.querySelectorAll("[data-o]").forEach(control=>{item[control.dataset.o]=control.type==="number"?Number(control.value||0):control.value;});try{item._ofc_details=JSON.parse(card.dataset.outfitOfcDetails||"{}");}catch{item._ofc_details={};}rows.push(item);});return buildOutfitSavePayloads(rows);}
 
 function showComparisonModal(context){
-  document.querySelector("#character-sheet-compare-dialog")?.remove();const dialog=document.createElement("dialog");dialog.id="character-sheet-compare-dialog";dialog.className="character-sheet-compare-dialog";const diffs=context.differences,grouped=diffs.reduce((a,x)=>(a[x.category]=(a[x.category]||0)+1,a),{});const detail=diffs.length<=DETAIL_LIMIT?`<div class="character-sheet-compare-details">${diffs.map(renderDifference).join("")||'<p class="character-sheet-compare-same">差分はありません。CAST ARCHIVEとキャラクターシート倉庫は一致しています。</p>'}</div>`:`<div class="character-sheet-compare-summary"><p>差分が多いため詳細表示を省略しています。全内容は「差分をコピー」で確認できます。</p>${Object.entries(grouped).map(([key,count])=>`<span><b>${esc(CATEGORY_LABELS[key]||key)}</b><strong>${count}件</strong></span>`).join("")}</div>`;
+  document.querySelector("#character-sheet-compare-dialog")?.remove();const dialog=document.createElement("dialog");dialog.id="character-sheet-compare-dialog";dialog.className="character-sheet-compare-dialog";const diffs=groupCharacterSheetDifferences(context.differences),grouped=diffs.reduce((a,x)=>(a[x.category]=(a[x.category]||0)+1,a),{});const detail=diffs.length<=DETAIL_LIMIT?`<div class="character-sheet-compare-details">${diffs.map(renderDifference).join("")||'<p class="character-sheet-compare-same">差分はありません。CAST ARCHIVEとキャラクターシート倉庫は一致しています。</p>'}</div>`:`<div class="character-sheet-compare-summary"><p>差分が多いため詳細表示を省略しています。全内容は「差分をコピー」で確認できます。</p>${Object.entries(grouped).map(([key,count])=>`<span><b>${esc(CATEGORY_LABELS[key]||key)}</b><strong>${count}件</strong></span>`).join("")}</div>`;
   dialog.innerHTML=`<form method="dialog"><header class="character-sheet-compare-header"><div><h2>キャラクターシート倉庫との差分</h2><small>${esc(formatDate(context.comparedAt))}</small></div><button value="cancel" aria-label="閉じる">×</button></header><section class="character-sheet-compare-meta"><strong>差分 ${diffs.length}件</strong><a href="${esc(context.sourceUrl)}" target="_blank" rel="noopener noreferrer">キャラクターシート倉庫を開く</a></section>${detail}<section class="character-sheet-compare-choice"><h3>どちらを編集画面に残しますか？</h3><button id="compare-adopt-warehouse" type="button"><strong>CAST ARCHIVEを保存して、倉庫版を採用</strong><small>現在のCAST ARCHIVEをスナップショットに残し、比較した倉庫版を編集画面へ反映します。</small></button><button id="compare-keep-archive" type="button"><strong>倉庫版を保存して、CAST ARCHIVE版を採用</strong><small>比較した倉庫版をスナップショットに残し、現在の編集画面はそのまま維持します。</small></button></section><footer class="character-sheet-compare-actions"><button id="compare-copy" type="button">差分をコピー</button><button value="cancel">閉じる</button></footer><p id="character-sheet-compare-message" aria-live="polite"></p></form>`;
   document.body.append(dialog);dialog.querySelector("#compare-copy").addEventListener("click",()=>copyDifferences(context));dialog.querySelector("#compare-adopt-warehouse").addEventListener("click",()=>adoptWarehouse(context,dialog));dialog.querySelector("#compare-keep-archive").addEventListener("click",()=>keepArchive(context,dialog));dialog.addEventListener("close",()=>{if(dialog.returnValue==="cancel")clearSession();});dialog.showModal();
 }
-function renderDifference(item){return`<article><strong>${esc(CATEGORY_LABELS[item.category]||item.category)} / ${esc(item.path)}</strong><div><span><b>CAST ARCHIVE</b>${esc(displayValue(item.archive))}</span><span><b>倉庫</b>${esc(displayValue(item.warehouse))}</span></div></article>`;}
-async function copyDifferences(context){const lines=["キャラクターシート倉庫との差分",`比較日時: ${formatDate(context.comparedAt)}`,`URL: ${context.sourceUrl}`,`差分: ${context.differences.length}件`,""];if(!context.differences.length)lines.push("差分なし");for(const item of context.differences)lines.push(`[${CATEGORY_LABELS[item.category]||item.category}] ${item.path}`,`CAST ARCHIVE: ${displayValue(item.archive)}`,`倉庫: ${displayValue(item.warehouse)}`,"");const output=lines.join("\n");try{await navigator.clipboard.writeText(output);setMessage("差分をクリップボードへコピーしました。","saved");}catch{prompt("差分をコピーしてください。",output);}}
+function renderDifference(item){
+  const fields=item.fields||[];
+  if(!item.record){
+    const field=fields[0]||{};
+    return `<article><strong>${esc(CATEGORY_LABELS[item.category]||item.category)} / ${esc(item.path)}</strong><div><span><b>CAST ARCHIVE</b>${esc(displayValue(field.archive))}</span><span><b>倉庫</b>${esc(displayValue(field.warehouse))}</span></div></article>`;
+  }
+  const suffix=fields.length>1?` <small>（${fields.length}項目）</small>`:"";
+  const archive=fields.map(field=>`${esc(field.field||field.path)}: ${esc(displayValue(field.archive))}`).join("<br>");
+  const warehouse=fields.map(field=>`${esc(field.field||field.path)}: ${esc(displayValue(field.warehouse))}`).join("<br>");
+  return `<article><strong>${esc(CATEGORY_LABELS[item.category]||item.category)} / ${esc(item.path)}${suffix}</strong><div><span><b>CAST ARCHIVE</b>${archive}</span><span><b>倉庫</b>${warehouse}</span></div></article>`;
+}
+async function copyDifferences(context){
+  const diffs=groupCharacterSheetDifferences(context.differences);
+  const lines=["キャラクターシート倉庫との差分",`比較日時: ${formatDate(context.comparedAt)}`,`URL: ${context.sourceUrl}`,`差分: ${diffs.length}件`,""];
+  if(!diffs.length)lines.push("差分なし");
+  for(const item of diffs){
+    if(!item.record){
+      const field=item.fields[0]||{};
+      lines.push(`[${CATEGORY_LABELS[item.category]||item.category}] ${item.path}`,`CAST ARCHIVE: ${displayValue(field.archive)}`,`倉庫: ${displayValue(field.warehouse)}`,"");
+      continue;
+    }
+    const fields=item.fields||[],suffix=fields.length>1?`（${fields.length}項目）`:"";
+    lines.push(`[${CATEGORY_LABELS[item.category]||item.category}] ${item.path}${suffix}`,"CAST ARCHIVE:");
+    fields.forEach(field=>lines.push(`${field.field||field.path}: ${displayValue(field.archive)}`));
+    lines.push("倉庫:");
+    fields.forEach(field=>lines.push(`${field.field||field.path}: ${displayValue(field.warehouse)}`));
+    lines.push("");
+  }
+  const output=lines.join("\n");
+  try{await navigator.clipboard.writeText(output);setMessage("差分をクリップボードへコピーしました。","saved");}catch{prompt("差分をコピーしてください。",output);}
+}
 async function adoptWarehouse(context,dialog){if(!confirm("現在のCAST ARCHIVEをスナップショットに保存し、比較したキャラクターシート倉庫版を編集画面へ反映します。続行しますか？"))return;disableChoices(dialog,true);try{const snapshots=await waitForSnapshots();setMessage("CAST ARCHIVE版をスナップショットへ保存しています…");await snapshots.createCurrent(`比較前 CAST ARCHIVE ${formatDate(context.comparedAt)}`);setMessage("キャラクターシート倉庫版を編集画面へ反映しています…");await applyLegacyPayload(context.externalPayload);setCharacterSheetUrl(context.sourceUrl);clearSession();dialog.close("adopted");}catch(error){console.error(error);setMessage(`処理に失敗しました：${error?.message||error}`,"error");disableChoices(dialog,false);}}
 async function keepArchive(context,dialog){if(!confirm("比較したキャラクターシート倉庫版をスナップショットに保存し、現在のCAST ARCHIVE版を編集画面に残します。続行しますか？"))return;disableChoices(dialog,true);try{const snapshots=await waitForSnapshots();setMessage("キャラクターシート倉庫版をスナップショットへ変換しています…");await applyLegacyPayload(context.externalPayload);setCharacterSheetUrl(context.sourceUrl);const warehouseBundle=captureEditorBundle(context.sourceUrl),snapshotData={character:{...context.archiveBundle.character,...warehouseBundle.character,character_sheet_url:context.sourceUrl},skills:warehouseBundle.skills,outfits:warehouseBundle.outfits};setMessage("キャラクターシート倉庫版をスナップショットへ保存しています…");await snapshots.createBundle(snapshotData,`キャラクターシート倉庫 ${formatDate(context.comparedAt)}`);clearSession();dialog.close("kept-archive");location.reload();}catch(error){console.error(error);setMessage(`スナップショット作成に失敗しました：${error?.message||error}`,"error");disableChoices(dialog,false);}}
 function setCharacterSheetUrl(sourceUrl){const target=document.querySelector("#character-sheet-url");if(target){target.value=sourceUrl;target.dispatchEvent(new Event("input",{bubbles:true}));target.dispatchEvent(new Event("change",{bubbles:true}));}}
