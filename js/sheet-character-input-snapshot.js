@@ -1,5 +1,5 @@
 import { normalizeCharacterSheetUrl } from "./character-sheet-url.js?v=2";
-import "./character-sheet-url-import-sync.js?v=1";
+import "./character-sheet-url-import-sync.js?v=2";
 
 const BASE_FIELD_SELECTORS = {
   character_name: "#character-name",
