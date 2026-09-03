@@ -8,8 +8,6 @@ body.is-mobile-cast-view .mobile-cast-source-compare{display:flex;align-items:ce
 body.is-mobile-cast-view .mobile-cast-source-compare span{font-size:11px}
 body.is-mobile-cast-view .mobile-cast-source-compare small{color:var(--color-muted);font-size:8px;letter-spacing:.08em}
 body.is-mobile-cast-view .mobile-cast-source-compare:disabled{opacity:.55}
-body.is-mobile-cast-view .mobile-cast-lifepath p{grid-template-columns:auto minmax(0,1fr);align-items:center}
-body.is-mobile-cast-view .mobile-cast-lifepath-skill{grid-column:2;display:block;margin-top:2px;color:var(--color-muted);font-size:9px;font-style:normal;overflow-wrap:anywhere}
 .mobile-character-sheet-compare-dialog{width:min(94vw,560px);max-height:82vh;padding:0;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text)}
 .mobile-character-sheet-compare-dialog::backdrop{background:rgba(0,0,0,.72)}
 .mobile-character-sheet-compare-dialog form{display:grid;max-height:82vh}
