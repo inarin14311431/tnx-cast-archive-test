@@ -112,10 +112,34 @@ export async function loadCharacterSheetPayload(sourceUrl, { request = jsonpOnce
   throw lastError || new Error("キャラクターシート倉庫からデータを取得できませんでした。");
 }
 
+function normalizeConcealmentForComparison(value) {
+  const source = String(value ?? "").trim();
+  if (!source || source === "0") return "";
+  if (["-", "－", "ー", "―", "−"].includes(source)) return "-";
+  return source;
+}
+
+export function normalizeCanonicalForComparison(bundle = {}) {
+  const normalized = {
+    ...bundle,
+    outfits: Object.fromEntries(Object.entries(bundle.outfits || {}).map(([key, outfit]) => [
+      key,
+      {
+        ...outfit,
+        concealment: normalizeConcealmentForComparison(outfit?.concealment),
+        concealment_penalty: String(outfit?.concealment_penalty ?? "").trim() === ""
+          ? 0
+          : outfit.concealment_penalty
+      }
+    ]))
+  };
+  return normalized;
+}
+
 export function compareCharacterSheetPayload(archiveBundle, externalPayload) {
   return diffCanonicalBundles(
-    canonicalizeArchiveBundle(archiveBundle || {}),
-    canonicalizeCharacterSheetJsonp(normalizeCharacterSheetPayload(externalPayload))
+    normalizeCanonicalForComparison(canonicalizeArchiveBundle(archiveBundle || {})),
+    normalizeCanonicalForComparison(canonicalizeCharacterSheetJsonp(normalizeCharacterSheetPayload(externalPayload)))
   );
 }
 
