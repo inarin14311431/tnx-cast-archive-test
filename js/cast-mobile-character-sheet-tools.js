@@ -6,30 +6,6 @@ import { groupCharacterSheetDifferences, summarizeCharacterSheetDifferences } fr
 const ROOT_SELECTOR = "#mobile-cast-view";
 const STYLE_CODE_NAMES = new Map([["0","カブキ"],["1","バサラ"],["2","タタラ"],["3","ミストレス"],["4","カブト"],["5","カリスマ"],["6","マネキン"],["7","カゼ"],["8","フェイト"],["9","クロマク"],["10","エグゼク"],["11","カタナ"],["12","クグツ"],["13","カゲ"],["14","チャクラ"],["15","レッガー"],["16","カブトワリ"],["17","ハイランダー"],["18","マヤカシ"],["19","トーキー"],["20","イヌ"],["21","ニューロ"],["-0","コモン"],["-1","ヒルコ"],["-2","クロガネ"],["-4","イブキ"],["-6","シキガミ"],["-7","アラシ"],["-9","カゲムシャ"],["-12","ミギウデ"],["-17","エトランゼ"],["-18","アヤカシ"],["-21","ウツワ"]]);
 
-function splitLifePath(value) {
-  const text = String(value || "").trim();
-  const angle = text.match(/^(.*?)(?:[：:]\s*)?[＜<]\s*([^＜<>＞]+?)\s*[＞>]+\s*$/);
-  if (angle) return { name: angle[1].replace(/[：:]\s*$/, "").trim(), skill: angle[2].trim() };
-  const round = text.match(/^(.*?)[（(]([^（）()]*)[）)]\s*$/);
-  return round ? { name: round[1].trim(), skill: round[2].trim() } : { name: text, skill: "" };
-}
-
-function normalizeLifePathDisplay(root) {
-  root.querySelectorAll(".mobile-cast-lifepath p").forEach(row => {
-    if (row.dataset.mobileLifePathSplit === "1") return;
-    const value = row.querySelector("b");
-    if (!value) return;
-    const detail = splitLifePath(value.textContent);
-    if (!detail.skill) return;
-    value.textContent = detail.name || "—";
-    const skill = document.createElement("em");
-    skill.className = "mobile-cast-lifepath-skill";
-    skill.textContent = detail.skill;
-    row.append(skill);
-    row.dataset.mobileLifePathSplit = "1";
-  });
-}
-
 function removeDuplicateSourceLink(root) {
   root.querySelectorAll(".mobile-cast-character-sheet-link,[data-character-sheet-link='1']").forEach(element => element.remove());
 }
@@ -185,7 +161,6 @@ async function startComparison(button, sourceUrl) {
 }
 
 async function applyTools(root) {
-  normalizeLifePathDisplay(root);
   removeDuplicateSourceLink(root);
   const character = await getCharacter();
   const href = normalizeCharacterSheetUrl(character?.character_sheet_url);
