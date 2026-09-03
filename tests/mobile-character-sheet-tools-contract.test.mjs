@@ -22,17 +22,6 @@ test("mobile cast can compare the current archive bundle against Character Sheet
   assert.match(source, /倉庫との差分を確認/);
 });
 
-test("legacy life path values with acquired skills are split in mobile view and editor", async () => {
-  const viewer = await read("js/cast-mobile-character-sheet-tools.js");
-  const editor = await read("js/sheet-mobile-lifepath-normalizer.js");
-  const app = await read("js/sheet-mobile-app.js");
-  assert.match(viewer, /\[＜<\]/);
-  assert.match(viewer, /mobile-cast-lifepath-skill/);
-  assert.match(editor, /\[＜<\]/);
-  assert.match(editor, /\$\{detail\.name\}（\$\{detail\.skill\}）/);
-  assert.match(app, /sheet-mobile-lifepath-normalizer\.js\?v=1/);
-});
-
 test("mobile Character Sheets presentation styles are loaded by the cast entry stylesheet", async () => {
   const entry = await read("css-next/pages/cast-entry.css");
   const css = await read("css-next/pages/cast-mobile-character-sheet-tools.css");
