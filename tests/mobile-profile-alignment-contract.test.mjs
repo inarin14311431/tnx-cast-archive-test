@@ -18,7 +18,7 @@ test("mobile editor keeps URL on the existing character_sheet_url field", async 
   const profile = await read("js/sheet-mobile-profile.js");
   assert.match(editor, /"character_sheet_url"/);
   assert.match(editor, /normalizeCharacterSheetUrl\(payload\.character_sheet_url\)/);
-  assert.match(profile, /data-mobile-profile-modal-field=\\?"\$\{field\}\\?"/);
+  assert.match(profile, /data-mobile-profile-modal-field="\$\{field\}"/);
 });
 
 test("mobile cast view adds bilingual profile labels, tagline and Character Sheets link", async () => {
