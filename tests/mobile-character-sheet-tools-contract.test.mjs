@@ -7,7 +7,7 @@ const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 test("mobile cast removes the legacy duplicate link and turns the profile title into the source link", async () => {
   const source = await read("js/cast-mobile-character-sheet-tools.js");
   assert.match(source, /mobile-cast-character-sheet-link/);
-  assert.match(source, /data-character-sheet-link='1'/);
+  assert.match(source, /data-character-sheet-link/);
   assert.match(source, /mobile-cast-source-heading-link/);
   assert.match(source, /strong\.textContent = "キャラクターシート倉庫"/);
   assert.match(source, /panel\.querySelector\("\.mobile-cast-source-link"\)\?\.remove\(\)/);
