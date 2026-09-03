@@ -1,0 +1,53 @@
+name: Approve visual baseline temporary
+
+on:
+  push:
+    branches: [fix/mobile-style-emphasis]
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v7
+      - name: Checkout approved visual reference
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: visual-regression-baseline
+          path: .visual-reference
+          persist-credentials: true
+      - name: Sync visual test contract
+        run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Refresh approved mobile cast screenshots
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-mobile --grep 'キャスト閲覧' --update-snapshots
+      - name: Copy only approved cast screenshots
+        run: |
+          cp tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-nova-visual-mobile.png .visual-reference/tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-nova-visual-mobile.png
+          cp tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-spectrum-neon-visual-mobile.png .visual-reference/tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-spectrum-neon-visual-mobile.png
+      - name: Commit approved baseline
+        working-directory: .visual-reference
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-nova-visual-mobile.png
+          git add tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-spectrum-neon-visual-mobile.png
+          git diff --cached --quiet && exit 0
+          git commit -m 'モバイル表示強調をビジュアル基準へ反映'
+          git push origin HEAD:visual-regression-baseline
