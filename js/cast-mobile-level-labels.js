@@ -162,6 +162,10 @@
   }
 })();
 
+import("./cast-mobile-character-sheet-tools.js?v=1").catch(error => {
+  console.error("mobile Character Sheets tools failed to load", error);
+});
+
 import("./cast-troops-link.js?v=2").catch(error => {
   console.error("cast troop navigation failed to load", error);
 });
