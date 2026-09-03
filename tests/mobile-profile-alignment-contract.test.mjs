@@ -35,6 +35,25 @@ test("mobile cast view adds bilingual profile labels, tagline and linked Charact
   assert.doesNotMatch(source, /倉庫との差分を確認/);
 });
 
+test("mobile cast view removes obsolete CHARACTER SHEET metadata row", async () => {
+  const source = await read("js/cast-mobile-level-labels.js");
+  assert.match(source, /\.mobile-cast-meta > div/);
+  assert.match(source, /label === "CHARACTER SHEET" \|\| label === "CHARACTER SHEETS"/);
+  assert.match(source, /if \(isCharacterSheetLabel \|\| hasCharacterSheetLink\) row\.remove\(\)/);
+});
+
+test("mobile cast view aligns each style and mark directly above its divine work", async () => {
+  const source = await read("js/cast-mobile-level-labels.js");
+  const viewCss = await read("css-next/pages/cast-mobile-readability.css");
+  assert.match(source, /function alignStyleDivineRows\(root\)/);
+  assert.match(source, /\.mobile-cast-divines > article/);
+  assert.match(source, /styleLabel\.classList\.add\("mobile-cast-divine-style"\)/);
+  assert.match(source, /styleLabel\.append\(mark\.cloneNode\(true\)\)/);
+  assert.match(source, /styleRow\?\.remove\(\)/);
+  assert.match(viewCss, /\.mobile-cast-divines \.mobile-cast-divine-style/);
+  assert.match(viewCss, /\.mobile-cast-divines strong \{ display:block;font-size:12px/);
+});
+
 test("mobile profile CSS preserves a two-line tagline editor and underlined warehouse section link", async () => {
   const editorCss = await read("css-next/pages/sheet-mobile-profile.css");
   const viewCss = await read("css-next/pages/cast-mobile-readability.css");
