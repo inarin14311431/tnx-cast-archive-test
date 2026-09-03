@@ -26,21 +26,24 @@ test("mobile cast view adds bilingual profile labels, tagline and linked Charact
   assert.match(source, /\["プレイヤー",\s*"PLAYER"\]/);
   assert.match(source, /makeSubheading\("一言",\s*"TAGLINE"/);
   assert.match(source, /function makeSourceHeading\(href\)/);
-  assert.match(source, /strong\.textContent = "キャラクターシート倉庫"/);
-  assert.match(source, /small\.textContent = "CHARACTER SHEETS"/);
+  assert.match(source, /strong\.textContent = "キャラクターシート倉庫を開く"/);
+  assert.match(source, /small\.textContent = "OPEN CHARACTER SHEETS"/);
   assert.match(source, /link\.href = href/);
   assert.match(source, /character\.character_sheet_url/);
   assert.match(source, /normalizeCharacterSheetUrl\(character\.character_sheet_url\)/);
   assert.match(source, /makeSubheading\("背景設定",\s*"BACKGROUND"/);
+  assert.doesNotMatch(source, /倉庫との差分を確認/);
 });
 
-test("mobile profile CSS preserves a two-line tagline editor and bilingual warehouse controls", async () => {
+test("mobile profile CSS preserves a two-line tagline editor and underlined warehouse section link", async () => {
   const editorCss = await read("css-next/pages/sheet-mobile-profile.css");
   const viewCss = await read("css-next/pages/cast-mobile-readability.css");
+  const linkCss = await read("css-next/pages/cast-mobile-character-sheet-link.css");
   assert.match(editorCss, /textarea\[data-mobile-profile-modal-field="summary"\]\{min-height:72px;height:72px/);
   assert.match(editorCss, /\.mobile-profile-en\{/);
   assert.match(viewCss, /\.mobile-cast-source-heading-link/);
-  assert.match(viewCss, /\.mobile-cast-source-compare/);
   assert.match(viewCss, /\.mobile-cast-profile-subheading/);
+  assert.match(linkCss, /\.mobile-cast-source-heading-link/);
+  assert.match(linkCss, /text-decoration:\s*underline/);
   assert.doesNotMatch(viewCss, /\.mobile-cast-source-link/);
 });
