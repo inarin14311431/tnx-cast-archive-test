@@ -20,11 +20,13 @@ test("mobile viewer exposes one underlined warehouse section link without compar
   assert.match(linkCss, /text-decoration:\s*underline/);
 });
 
-test("mobile viewer removes duplicate warehouse links from the metadata area", () => {
+test("mobile viewer removes the obsolete warehouse metadata row", () => {
   assert.match(mobileSource, /function removeMetaCharacterSheetLinks/);
-  assert.match(mobileSource, /\.mobile-cast-meta a\[href\]/);
+  assert.match(mobileSource, /\.mobile-cast-meta > div/);
+  assert.match(mobileSource, /label === "CHARACTER SHEET" \|\| label === "CHARACTER SHEETS"/);
   assert.match(mobileSource, /https:\/\/character-sheets\.appspot\.com/);
   assert.match(mobileSource, /url\.pathname\.startsWith\("\/tnx\/"\)/);
+  assert.match(mobileSource, /if \(isCharacterSheetLabel \|\| hasCharacterSheetLink\) row\.remove\(\)/);
   assert.match(mobileSource, /removeMetaCharacterSheetLinks\(root\)/);
 });
 
