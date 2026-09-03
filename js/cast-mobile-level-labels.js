@@ -40,6 +40,19 @@
     element.dataset.mobileBilingualLabel = "1";
   }
 
+  function removeMetaCharacterSheetLinks(root) {
+    root.querySelectorAll?.(".mobile-cast-meta a[href]").forEach(link => {
+      try {
+        const url = new URL(link.href, location.href);
+        if (url.origin === "https://character-sheets.appspot.com" && url.pathname.startsWith("/tnx/")) {
+          link.remove();
+        }
+      } catch {
+        // Ignore unrelated malformed links in metadata.
+      }
+    });
+  }
+
   function findProfileSection(root) {
     return [...root.querySelectorAll(".mobile-cast-section")].find(section => {
       return String(section.querySelector(".mobile-cast-section__title h2")?.textContent || "").trim() === "プロフィール";
@@ -60,6 +73,7 @@
   }
 
   function enhanceStaticLabels(root) {
+    removeMetaCharacterSheetLinks(root);
     root.querySelectorAll(".mobile-cast-meta dt").forEach(dt => {
       const key = String(dt.textContent || "").trim().toUpperCase();
       const labels = META_LABELS[key];
