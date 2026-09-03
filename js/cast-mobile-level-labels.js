@@ -40,17 +40,41 @@
     element.dataset.mobileBilingualLabel = "1";
   }
 
+  function isCharacterSheetUrl(href) {
+    try {
+      const url = new URL(href, location.href);
+      return url.origin === "https://character-sheets.appspot.com" && url.pathname.startsWith("/tnx/");
+    } catch {
+      return false;
+    }
+  }
+
   function removeMetaCharacterSheetLinks(root) {
-    root.querySelectorAll?.(".mobile-cast-meta a[href]").forEach(link => {
-      try {
-        const url = new URL(link.href, location.href);
-        if (url.origin === "https://character-sheets.appspot.com" && url.pathname.startsWith("/tnx/")) {
-          link.remove();
-        }
-      } catch {
-        // Ignore unrelated malformed links in metadata.
-      }
+    root.querySelectorAll?.(".mobile-cast-meta > div").forEach(row => {
+      const label = String(row.querySelector("dt")?.textContent || "").trim().toUpperCase();
+      const isCharacterSheetLabel = label === "CHARACTER SHEET" || label === "CHARACTER SHEETS";
+      const hasCharacterSheetLink = [...row.querySelectorAll("a[href]")].some(link => isCharacterSheetUrl(link.href));
+      if (isCharacterSheetLabel || hasCharacterSheetLink) row.remove();
     });
+  }
+
+  function alignStyleDivineRows(root) {
+    const styleRow = root.querySelector(".mobile-cast-styles");
+    const styles = [...(styleRow?.querySelectorAll(":scope > span") || [])];
+    const divines = [...root.querySelectorAll(".mobile-cast-divines > article")];
+    if (!divines.length) return;
+
+    divines.forEach((article, index) => {
+      if (article.dataset.mobileStyleDivineAligned === "1") return;
+      const styleLabel = article.querySelector(":scope > span");
+      if (!styleLabel) return;
+      styleLabel.classList.add("mobile-cast-divine-style");
+      const mark = styles[index]?.querySelector("em");
+      if (mark && !styleLabel.querySelector("em")) styleLabel.append(mark.cloneNode(true));
+      article.dataset.mobileStyleDivineAligned = "1";
+    });
+
+    styleRow?.remove();
   }
 
   function findProfileSection(root) {
@@ -74,6 +98,7 @@
 
   function enhanceStaticLabels(root) {
     removeMetaCharacterSheetLinks(root);
+    alignStyleDivineRows(root);
     root.querySelectorAll(".mobile-cast-meta dt").forEach(dt => {
       const key = String(dt.textContent || "").trim().toUpperCase();
       const labels = META_LABELS[key];
