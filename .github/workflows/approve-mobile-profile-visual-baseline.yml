@@ -1,0 +1,63 @@
+name: Approve Mobile Profile Visual Baseline
+
+on:
+  push:
+    branches: [feat/mobile-profile-alignment]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    name: Update approved mobile screenshots
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v7
+      - name: Checkout approved visual reference
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: visual-regression-baseline
+          path: .visual-reference
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Sync visual test contract
+        run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Generate approved mobile profile screenshots
+        run: >-
+          npx playwright test --config=playwright.visual.config.js
+          --project=visual-mobile
+          --grep 'キャスト閲覧|モバイル編集'
+          --update-snapshots=all
+      - name: Copy approved screenshots
+        run: |
+          cp tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-nova-visual-mobile.png .visual-reference/tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/
+          cp tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/cast-spectrum-neon-visual-mobile.png .visual-reference/tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js/
+          cp tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/sheet-mobile-nova-visual-mobile.png .visual-reference/tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/
+          cp tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/sheet-mobile-spectrum-neon-visual-mobile.png .visual-reference/tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/
+      - name: Commit approved visual reference
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE/.visual-reference"
+          git -C .visual-reference config user.name "github-actions[bot]"
+          git -C .visual-reference config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C .visual-reference add tests/visual/__screenshots__/visual-mobile
+          if git -C .visual-reference diff --cached --quiet; then
+            echo "No visual baseline changes to commit."
+            exit 0
+          fi
+          git -C .visual-reference commit -m "モバイルプロフィール統一をビジュアル基準へ反映"
+          git -C .visual-reference push origin HEAD:visual-regression-baseline
