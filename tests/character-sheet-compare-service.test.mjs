@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   normalizeCharacterSheetPayload,
+  normalizeCanonicalForComparison,
   loadCharacterSheetPayload
 } from "../js/character-sheet-compare-service.js";
 
@@ -27,6 +28,22 @@ test("normalizeCharacterSheetPayload rejects non-object warehouse data", () => {
     () => normalizeCharacterSheetPayload("not-json"),
     /TNXキャラクターとして認識できません/
   );
+});
+
+test("comparison semantics treat concealment 0 as blank and preserve dash as an explicit value", () => {
+  const zero = normalizeCanonicalForComparison({
+    outfits: { "other:装備": { concealment: "0", concealment_penalty: "" } }
+  });
+  const blank = normalizeCanonicalForComparison({
+    outfits: { "other:装備": { concealment: "", concealment_penalty: 0 } }
+  });
+  const dash = normalizeCanonicalForComparison({
+    outfits: { "other:装備": { concealment: "ー", concealment_penalty: 0 } }
+  });
+  assert.deepEqual(zero.outfits["other:装備"], blank.outfits["other:装備"]);
+  assert.equal(blank.outfits["other:装備"].concealment, "");
+  assert.equal(blank.outfits["other:装備"].concealment_penalty, 0);
+  assert.equal(dash.outfits["other:装備"].concealment, "-");
 });
 
 test("loadCharacterSheetPayload uses the shared warehouse read URL and supports an injected request", async () => {
