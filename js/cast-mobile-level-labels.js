@@ -4,6 +4,19 @@
     ".mobile-skill-row > b",
     ".mobile-style-row > b"
   ].join(",");
+  const META_LABELS = {
+    PLAYER: ["プレイヤー", "PLAYER"],
+    AFFILIATION: ["所属", "AFFILIATION"],
+    RANK: ["市民ランク", "CITIZEN RANK"],
+    EXP: ["消費経験点", "EXP SPENT"]
+  };
+  const PROFILE_LABELS = {
+    年齢: ["年齢", "AGE"], 性別: ["性別", "GENDER"], 身長: ["身長", "HEIGHT"], 体重: ["体重", "WEIGHT"],
+    瞳: ["瞳", "EYES"], 髪: ["髪", "HAIR"], 肌: ["肌", "SKIN"]
+  };
+  const LIFE_PATH_LABELS = {
+    出自: ["出自", "ORIGIN"], 経験: ["経験", "EXPERIENCE"], 邂逅: ["邂逅", "ENCOUNTER"]
+  };
 
   function apply(root = document) {
     let updated = 0;
@@ -18,11 +31,127 @@
     return updated;
   }
 
+  function bilingualLabel(element, japanese, english) {
+    if (!element || element.dataset.mobileBilingualLabel === "1") return;
+    element.replaceChildren(document.createTextNode(japanese));
+    const small = document.createElement("small");
+    small.textContent = english;
+    element.append(small);
+    element.dataset.mobileBilingualLabel = "1";
+  }
+
+  function findProfileSection(root) {
+    return [...root.querySelectorAll(".mobile-cast-section")].find(section => {
+      return String(section.querySelector(".mobile-cast-section__title h2")?.textContent || "").trim() === "プロフィール";
+    }) || null;
+  }
+
+  function ensureProfileSection(root) {
+    let section = findProfileSection(root);
+    if (section) return section;
+    const main = root.querySelector(".mobile-cast-main");
+    if (!main) return null;
+    section = document.createElement("section");
+    section.className = "mobile-cast-section mobile-cast-profile-section";
+    section.innerHTML = '<header class="mobile-cast-section__title"><h2>プロフィール</h2><small>PROFILE</small></header>';
+    const before = main.querySelector(".mobile-core-skills, .mobile-cast-section:nth-of-type(3)");
+    if (before) main.insertBefore(section, before); else main.append(section);
+    return section;
+  }
+
+  function enhanceStaticLabels(root) {
+    root.querySelectorAll(".mobile-cast-meta dt").forEach(dt => {
+      const key = String(dt.textContent || "").trim().toUpperCase();
+      const labels = META_LABELS[key];
+      if (labels) bilingualLabel(dt, ...labels);
+    });
+    root.querySelectorAll(".mobile-cast-profile-grid dt").forEach(dt => {
+      const labels = PROFILE_LABELS[String(dt.textContent || "").trim()];
+      if (labels) bilingualLabel(dt, ...labels);
+    });
+    root.querySelectorAll(".mobile-cast-lifepath p > span").forEach(span => {
+      const labels = LIFE_PATH_LABELS[String(span.textContent || "").trim()];
+      if (labels) bilingualLabel(span, ...labels);
+    });
+  }
+
+  function makeSubheading(japanese, english, className) {
+    const header = document.createElement("div");
+    header.className = `mobile-cast-profile-subheading ${className || ""}`.trim();
+    const strong = document.createElement("strong");
+    strong.textContent = japanese;
+    const small = document.createElement("small");
+    small.textContent = english;
+    header.append(strong, small);
+    return header;
+  }
+
+  async function enhanceProfile(root) {
+    if (root.dataset.mobileProfileAligned === "1" || !root.querySelector(".mobile-cast-main")) return;
+    root.dataset.mobileProfileAligned = "pending";
+    try {
+      const [{ getCharacter }, { normalizeCharacterSheetUrl }] = await Promise.all([
+        import("./cast-data-store.js"),
+        import("./character-sheet-url.js?v=2")
+      ]);
+      const character = await getCharacter();
+      if (!character) return;
+      const section = ensureProfileSection(root);
+      if (!section) return;
+      section.classList.add("mobile-cast-profile-section");
+      const sectionHeader = section.querySelector(".mobile-cast-section__title");
+
+      enhanceStaticLabels(root);
+
+      const summary = root.querySelector(".mobile-cast-summary");
+      if (summary && !section.querySelector(".mobile-cast-tagline-panel")) {
+        const panel = document.createElement("div");
+        panel.className = "mobile-cast-profile-item mobile-cast-tagline-panel";
+        panel.append(makeSubheading("一言", "TAGLINE", "mobile-cast-tagline-heading"), summary);
+        sectionHeader?.after(panel);
+      }
+
+      const normalizedUrl = normalizeCharacterSheetUrl(character.character_sheet_url);
+      if (normalizedUrl && !section.querySelector(".mobile-cast-source-panel")) {
+        const panel = document.createElement("div");
+        panel.className = "mobile-cast-profile-item mobile-cast-source-panel";
+        const link = document.createElement("a");
+        link.className = "mobile-cast-source-link";
+        link.href = normalizedUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "キャラクターシート倉庫を開く";
+        const small = document.createElement("small");
+        small.textContent = "OPEN CHARACTER SHEETS";
+        link.append(small);
+        const taglinePanel = section.querySelector(".mobile-cast-tagline-panel");
+        panel.append(makeSubheading("キャラクターシート倉庫", "CHARACTER SHEETS"), link);
+        if (taglinePanel) taglinePanel.after(panel); else sectionHeader?.after(panel);
+      }
+
+      const profileText = section.querySelector(".mobile-cast-profile-text");
+      if (profileText && !profileText.previousElementSibling?.classList.contains("mobile-cast-background-heading")) {
+        const heading = makeSubheading("背景設定", "BACKGROUND", "mobile-cast-background-heading");
+        profileText.before(heading);
+      }
+
+      root.dataset.mobileProfileAligned = "1";
+    } catch (error) {
+      root.dataset.mobileProfileAligned = "error";
+      console.error("mobile profile alignment failed", error);
+    }
+  }
+
   function initialize() {
     const root = document.querySelector(ROOT_SELECTOR);
     if (!root) return;
     apply(root);
-    const observer = new MutationObserver(() => apply(root));
+    enhanceProfile(root);
+    const observer = new MutationObserver(() => {
+      apply(root);
+      if (root.dataset.mobileProfileAligned !== "1" && root.querySelector(".mobile-cast-main")) enhanceProfile(root);
+      else enhanceStaticLabels(root);
+    });
     observer.observe(root, { childList: true, subtree: true });
   }
 
