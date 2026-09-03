@@ -78,7 +78,25 @@ test("life path source text with acquired skills produces zero differences after
     character: {
       life_path_origin: rawOrigin,
       life_path_experience: rawExperience,
-      life_path_encounter: rawEncounter
+      life_path_encounter: rawEncounter,
+      reason_base: 0,
+      reason_gear: 0,
+      reason_control_base: 0,
+      reason_control_gear: 0,
+      passion_base: 0,
+      passion_gear: 0,
+      passion_control_base: 0,
+      passion_control_gear: 0,
+      life_base: 0,
+      life_gear: 0,
+      life_control_base: 0,
+      life_control_gear: 0,
+      mundane_base: 0,
+      mundane_gear: 0,
+      mundane_control_base: 0,
+      mundane_control_gear: 0,
+      cs_base: 0,
+      cs_gear: 0
     },
     skills: [],
     outfits: []
