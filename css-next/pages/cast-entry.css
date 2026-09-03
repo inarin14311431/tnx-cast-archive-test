@@ -1,8 +1,8 @@
 /* Canonical stylesheet entry for the public cast viewer. */
 @layer app, cast-components, cast-base, cast-details, cast-combos,
   cast-mobile-theme, cast-quick-sheet, cast-enhancements, cast-effects,
-  cast-runtime, cast-mobile, cast-mobile-readability, cast-mobile-combos,
-  cast-transfer, cast-troop-modal;
+  cast-runtime, cast-mobile, cast-mobile-readability, cast-mobile-character-sheet,
+  cast-mobile-combos, cast-transfer, cast-troop-modal;
 
 @import url("../index.css?v=64") layer(app);
 @import url("../components/cast-troops.css?v=1") layer(cast-components);
@@ -17,6 +17,7 @@
 @import url("./cast-cyber-runtime.css?v=2") layer(cast-runtime);
 @import url("./cast-mobile.css?v=4") layer(cast-mobile);
 @import url("./cast-mobile-readability.css?v=1") layer(cast-mobile-readability);
+@import url("./cast-mobile-character-sheet-tools.css?v=1") layer(cast-mobile-character-sheet);
 @import url("./cast-mobile-combos.css?v=3") layer(cast-mobile-combos);
 @import url("./cast-transfer.css?v=2") layer(cast-transfer);
 @import url("./cast-troop-modal.css?v=5") layer(cast-troop-modal);
