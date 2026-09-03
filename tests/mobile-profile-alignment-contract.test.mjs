@@ -50,8 +50,9 @@ test("mobile cast view aligns each style and mark directly above its divine work
   assert.match(source, /styleLabel\.classList\.add\("mobile-cast-divine-style"\)/);
   assert.match(source, /styleLabel\.append\(mark\.cloneNode\(true\)\)/);
   assert.match(source, /styleRow\?\.remove\(\)/);
-  assert.match(viewCss, /\.mobile-cast-divines \.mobile-cast-divine-style/);
-  assert.match(viewCss, /\.mobile-cast-divines strong \{ display:block;font-size:12px/);
+  assert.match(viewCss, /\.mobile-cast-divines \.mobile-cast-divine-style \{[^}]*font-size:14px[^}]*font-weight:900/);
+  assert.match(viewCss, /\.mobile-cast-divines \.mobile-cast-divine-style em \{[^}]*font-size:14px[^}]*font-weight:900/);
+  assert.match(viewCss, /\.mobile-cast-divines strong \{ display:block;font-size:11px;line-height:1\.3;font-weight:700/);
 });
 
 test("mobile profile CSS preserves a two-line tagline editor and underlined warehouse section link", async () => {
@@ -65,4 +66,13 @@ test("mobile profile CSS preserves a two-line tagline editor and underlined ware
   assert.match(linkCss, /\.mobile-cast-source-heading-link/);
   assert.match(linkCss, /text-decoration:\s*underline/);
   assert.doesNotMatch(viewCss, /\.mobile-cast-source-link/);
+});
+
+test("desktop cast profile panels can collapse even when their content has a stronger display layout", async () => {
+  const detailsCss = await read("css-next/pages/cast-view-details.css");
+  const entryCss = await read("css-next/pages/cast-entry.css");
+  const castHtml = await read("cast.html");
+  assert.match(detailsCss, /body\[data-page="cast\.html"\] \.data-panel\.is-collapsed > :not\(\.data-panel__header\)\{\s*display:none;\s*\}/);
+  assert.match(entryCss, /cast-view-details\.css\?v=4/);
+  assert.match(castHtml, /cast-entry\.css\?v=6/);
 });
