@@ -21,6 +21,17 @@ test("mobile editor keeps URL on the existing character_sheet_url field", async 
   assert.match(profile, /data-mobile-profile-modal-field="\$\{field\}"/);
 });
 
+test("mobile lifepath modal edits each stored lifepath string with one input", async () => {
+  const source = await read("js/sheet-mobile-profile.js");
+  assert.match(source, /const LIFE_PATHS = \[\["life_path_origin", "出自", "ORIGIN"\],\["life_path_experience", "経験", "EXPERIENCE"\],\["life_path_encounter", "邂逅", "ENCOUNTER"\]\]/);
+  assert.match(source, /function buildLifePathEditor\(\).*data-mobile-profile-modal-field="\$\{field\}"/);
+  assert.match(source, /original\.value=control\.value/);
+  assert.doesNotMatch(source, /data-mobile-lifepath-name/);
+  assert.doesNotMatch(source, /data-mobile-lifepath-skill/);
+  assert.doesNotMatch(source, /function joinLifePath/);
+  assert.doesNotMatch(source, /ACQUIRED SKILL/);
+});
+
 test("mobile cast view adds bilingual profile labels, tagline and linked Character Sheets heading", async () => {
   const source = await read("js/cast-mobile-level-labels.js");
   assert.match(source, /\["プレイヤー",\s*"PLAYER"\]/);
