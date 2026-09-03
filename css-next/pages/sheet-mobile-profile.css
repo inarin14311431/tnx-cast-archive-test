@@ -38,19 +38,17 @@ body[data-page="sheet-mobile.html"] .mobile-personal-summary em{min-width:0;over
 body[data-page="sheet-mobile.html"] .mobile-basic-meta-grid>span:first-child{grid-column:1/-1}
 
 body[data-page="sheet-mobile.html"] .mobile-lifepath-summary{display:grid;gap:6px}
-body[data-page="sheet-mobile.html"] .mobile-lifepath-row{display:grid;grid-template-columns:48px minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:5px;min-width:0}
+body[data-page="sheet-mobile.html"] .mobile-lifepath-row{display:grid;grid-template-columns:48px minmax(0,1fr);align-items:stretch;gap:5px;min-width:0}
 body[data-page="sheet-mobile.html"] .mobile-lifepath-row>b{display:grid;place-items:center;gap:1px;color:var(--mobile-section-accent,var(--color-accent));font-size:10px}
 body[data-page="sheet-mobile.html"] .mobile-lifepath-row>b .mobile-profile-en{margin:0;font-size:6px}
 body[data-page="sheet-mobile.html"] .mobile-lifepath-row>span{min-width:0;overflow:hidden;padding:6px;border:1px solid color-mix(in srgb,var(--mobile-section-accent,var(--color-accent)) 22%,var(--color-border-muted));font-size:11px;text-overflow:ellipsis;white-space:nowrap}
-body[data-page="sheet-mobile.html"] .mobile-lifepath-row>span:last-child{color:var(--color-muted)}
 body[data-page="sheet-mobile.html"] #mobile-profile-dialog-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 body[data-page="sheet-mobile.html"] #mobile-profile-dialog-fields>*{min-width:0}
-body[data-page="sheet-mobile.html"] .mobile-lifepath-editor{display:grid;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:9px;border:1px solid color-mix(in srgb,var(--color-section-profile) 28%,var(--color-border-muted))}
-body[data-page="sheet-mobile.html"] .mobile-lifepath-editor h3{display:flex;grid-column:1/-1;align-items:baseline;gap:6px;margin:0;color:var(--color-section-profile);font-size:12px}
-body[data-page="sheet-mobile.html"] .mobile-lifepath-editor h3 .mobile-profile-en{margin-left:0}
+body[data-page="sheet-mobile.html"] .mobile-lifepath-editor{display:grid;grid-column:1/-1;gap:6px;padding:9px;border:1px solid color-mix(in srgb,var(--color-section-profile) 28%,var(--color-border-muted))}
+body[data-page="sheet-mobile.html"] .mobile-lifepath-editor>input{width:100%;min-width:0}
 
 @media(max-width:390px){
   body[data-page="sheet-mobile.html"] .mobile-profile-summary-grid{grid-template-columns:1fr 1fr;gap:6px}
   body[data-page="sheet-mobile.html"] .mobile-profile-summary-card{min-height:70px;padding:9px}
-  body[data-page="sheet-mobile.html"] .mobile-lifepath-row{grid-template-columns:42px minmax(0,1fr) minmax(0,1fr);gap:4px}
+  body[data-page="sheet-mobile.html"] .mobile-lifepath-row{grid-template-columns:42px minmax(0,1fr);gap:4px}
 }
