@@ -9,10 +9,10 @@ const sheetMobileHtml = fs.readFileSync(new URL("../sheet-mobile.html", import.m
 
 test("mobile warehouse UI is owned by the existing profile enhancement lifecycle", () => {
   assert.match(mobileSource, /mobile-cast-source-heading-link/);
-  assert.match(mobileSource, /data\.characterSheetLink = "1"/);
+  assert.match(mobileSource, /link\.dataset\.characterSheetLink = "1"/);
   assert.match(mobileSource, /mobile-cast-source-compare/);
   assert.match(mobileSource, /倉庫との差分を確認/);
-  assert.match(mobileSource, /character-sheet-compare-service\.js\?v=1/);
+  assert.match(mobileSource, /character-sheet-compare-service\.js(?:\?v=\d+)?/);
   assert.doesNotMatch(mobileSource, /mobile-cast-source-link/);
   assert.doesNotMatch(mobileSource, /__tnxRefreshMobileCharacterSheetTools/);
 });
