@@ -4,20 +4,31 @@ import fs from "node:fs";
 
 const mobileSource = fs.readFileSync(new URL("../js/cast-mobile-level-labels.js", import.meta.url), "utf8");
 const serviceSource = fs.readFileSync(new URL("../js/character-sheet-compare-service.js", import.meta.url), "utf8");
-const mobileCss = fs.readFileSync(new URL("../css-next/pages/cast-mobile-readability.css", import.meta.url), "utf8");
-const sheetMobileHtml = fs.readFileSync(new URL("../sheet-mobile.html", import.meta.url), "utf8");
+const linkCss = fs.readFileSync(new URL("../css-next/pages/cast-mobile-character-sheet-link.css", import.meta.url), "utf8");
+const editorApp = fs.readFileSync(new URL("../js/sheet-mobile-app.js", import.meta.url), "utf8");
+const editorCompare = fs.readFileSync(new URL("../js/sheet-mobile-character-sheet-compare.js", import.meta.url), "utf8");
 
-test("mobile warehouse UI is owned by the existing profile enhancement lifecycle", () => {
+test("mobile viewer exposes one underlined warehouse section link without comparison controls", () => {
   assert.match(mobileSource, /mobile-cast-source-heading-link/);
   assert.match(mobileSource, /link\.dataset\.characterSheetLink = "1"/);
-  assert.match(mobileSource, /mobile-cast-source-compare/);
-  assert.match(mobileSource, /倉庫との差分を確認/);
-  assert.match(mobileSource, /character-sheet-compare-service\.js(?:\?v=\d+)?/);
-  assert.doesNotMatch(mobileSource, /mobile-cast-source-link/);
-  assert.doesNotMatch(mobileSource, /__tnxRefreshMobileCharacterSheetTools/);
+  assert.match(mobileSource, /キャラクターシート倉庫を開く/);
+  assert.match(mobileSource, /OPEN CHARACTER SHEETS/);
+  assert.doesNotMatch(mobileSource, /mobile-cast-source-compare/);
+  assert.doesNotMatch(mobileSource, /倉庫との差分を確認/);
+  assert.doesNotMatch(mobileSource, /character-sheet-compare-service/);
+  assert.match(linkCss, /\.mobile-cast-source-heading-link/);
+  assert.match(linkCss, /text-decoration:\s*underline/);
 });
 
-test("mobile code delegates canonical comparison instead of duplicating normalization", () => {
+test("mobile viewer removes duplicate warehouse links from the metadata area", () => {
+  assert.match(mobileSource, /function removeMetaCharacterSheetLinks/);
+  assert.match(mobileSource, /\.mobile-cast-meta a\[href\]/);
+  assert.match(mobileSource, /https:\/\/character-sheets\.appspot\.com/);
+  assert.match(mobileSource, /url\.pathname\.startsWith\("\/tnx\/"\)/);
+  assert.match(mobileSource, /removeMetaCharacterSheetLinks\(root\)/);
+});
+
+test("canonical comparison remains centralized in the shared service", () => {
   assert.doesNotMatch(mobileSource, /canonicalizeArchiveBundle/);
   assert.doesNotMatch(mobileSource, /canonicalizeCharacterSheetJsonp/);
   assert.doesNotMatch(mobileSource, /diffCanonicalBundles/);
@@ -26,20 +37,17 @@ test("mobile code delegates canonical comparison instead of duplicating normaliz
   assert.match(serviceSource, /diffCanonicalBundles/);
 });
 
-test("source panel construction is idempotent across profile enhancement passes", () => {
+test("source panel construction remains idempotent across viewer enhancement passes", () => {
   assert.match(mobileSource, /!section\.querySelector\("\.mobile-cast-source-panel"\)/);
   assert.match(mobileSource, /section\.dataset\.mobileProfileEnhanced = "1"/);
   assert.match(mobileSource, /section\?\.dataset\.mobileProfileEnhanced !== "1"/);
 });
 
-test("warehouse heading and compare controls have mobile styling", () => {
-  assert.match(mobileCss, /\.mobile-cast-source-heading-link/);
-  assert.match(mobileCss, /\.mobile-cast-source-compare/);
-  assert.match(mobileCss, /\.mobile-character-sheet-compare-dialog/);
-  assert.doesNotMatch(mobileCss, /\.mobile-cast-source-link/);
-});
-
-test("mobile editor is not coupled to public viewer comparison code", () => {
-  assert.doesNotMatch(sheetMobileHtml, /cast-mobile-character-sheet-tools/);
-  assert.doesNotMatch(sheetMobileHtml, /character-sheet-compare-service/);
+test("warehouse comparison is owned by the mobile editor", () => {
+  assert.match(editorApp, /sheet-mobile-character-sheet-compare\.js\?v=1/);
+  assert.match(editorCompare, /倉庫との差分を確認/);
+  assert.match(editorCompare, /compareCharacterSheetSource/);
+  assert.match(editorCompare, /data-mobile-profile-group=\"source\"/);
+  assert.match(editorCompare, /data-mobile-profile-modal-field=\"character_sheet_url\"/);
+  assert.doesNotMatch(editorCompare, /__tnxRefreshMobileCharacterSheetTools/);
 });
