@@ -96,67 +96,12 @@
     link.rel = "noopener noreferrer";
     link.dataset.characterSheetLink = "1";
     const strong = document.createElement("strong");
-    strong.textContent = "キャラクターシート倉庫";
+    strong.textContent = "キャラクターシート倉庫を開く";
     const small = document.createElement("small");
-    small.textContent = "CHARACTER SHEETS";
+    small.textContent = "OPEN CHARACTER SHEETS";
     link.append(strong, small);
     header.append(link);
     return header;
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, char => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[char]));
-  }
-
-  function showComparison(summaries) {
-    document.querySelector("#mobile-character-sheet-compare-dialog")?.remove();
-    const dialog = document.createElement("dialog");
-    dialog.id = "mobile-character-sheet-compare-dialog";
-    dialog.className = "mobile-character-sheet-compare-dialog";
-    const body = summaries.length
-      ? `<p>キャラクターシート倉庫と比較し、CAST ARCHIVE側に次の差分があります。</p><ul>${summaries.map(summary => `<li>${escapeHtml(summary)}</li>`).join("")}</ul>`
-      : "<p>差分はありません。CAST ARCHIVEとキャラクターシート倉庫は一致しています。</p>";
-    dialog.innerHTML = `<form method="dialog"><header><div><strong>キャラクターシート倉庫との差分</strong><small>CHARACTER SHEETS COMPARISON</small></div><button value="close" aria-label="閉じる">×</button></header><div class="mobile-character-sheet-compare-dialog__body">${body}</div><footer><button value="close">閉じる</button></footer></form>`;
-    document.body.append(dialog);
-    dialog.addEventListener("close", () => dialog.remove(), { once: true });
-    dialog.showModal();
-  }
-
-  async function startComparison(button, sourceUrl) {
-    if (button.disabled) return;
-    button.disabled = true;
-    const original = button.innerHTML;
-    button.innerHTML = "<span>比較中…</span><small>COMPARING</small>";
-    try {
-      const [{ getCharacter, getSkills, getOutfits }, { compareCharacterSheetSource }, diffDisplay] = await Promise.all([
-        import("./cast-data-store.js"),
-        import("./character-sheet-compare-service.js?v=1"),
-        import("./character-sheet-diff-display.js?v=3")
-      ]);
-      const [character, skills, outfits] = await Promise.all([getCharacter(), getSkills(), getOutfits()]);
-      const differences = await compareCharacterSheetSource(sourceUrl, { character, skills, outfits });
-      const summaries = diffDisplay.summarizeCharacterSheetDifferences(
-        diffDisplay.groupCharacterSheetDifferences(differences)
-      );
-      showComparison(summaries);
-    } catch (error) {
-      console.error("mobile character sheet comparison failed", error);
-      alert(`差分比較に失敗しました：${error?.message || error}`);
-    } finally {
-      button.disabled = false;
-      button.innerHTML = original;
-    }
-  }
-
-  function makeCompareButton(sourceUrl) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "mobile-cast-source-compare";
-    button.innerHTML = "<span>倉庫との差分を確認</span><small>COMPARE</small>";
-    button.addEventListener("click", () => startComparison(button, sourceUrl));
-    return button;
   }
 
   async function enhanceProfile(root) {
@@ -194,7 +139,7 @@
       if (normalizedUrl && !section.querySelector(".mobile-cast-source-panel")) {
         const panel = document.createElement("div");
         panel.className = "mobile-cast-profile-item mobile-cast-source-panel";
-        panel.append(makeSourceHeading(normalizedUrl), makeCompareButton(normalizedUrl));
+        panel.append(makeSourceHeading(normalizedUrl));
         const taglinePanel = section.querySelector(".mobile-cast-tagline-panel");
         if (taglinePanel) taglinePanel.after(panel); else sectionHeader?.after(panel);
       }
