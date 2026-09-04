@@ -6,12 +6,18 @@ const details = await readFile(new URL("../css-next/pages/cast-view-details.css"
 const entry = await readFile(new URL("../css-next/pages/cast-entry.css", import.meta.url), "utf8");
 const castHtml = await readFile(new URL("../cast.html", import.meta.url), "utf8");
 
+const desktopPlacementRule = /@media\(min-width:1200px\)\{\s*body\[data-page="cast\.html"\] \.identity-grid > \.cast-character-sheet-link\{\s*grid-column:4;\s*\}\s*\}/;
+
 test("desktop character sheet warehouse link is pinned to the fourth identity column", () => {
-  assert.match(details, /@media\(min-width:1200px\)\{[\s\S]*\.identity-grid > \.cast-character-sheet-link\{[\s\S]*grid-column:4;/);
+  assert.match(details, desktopPlacementRule);
 });
 
-test("mobile layout is not forced into the desktop fourth column", () => {
-  assert.doesNotMatch(details, /@media\(max-width:[^)]+\)[\s\S]*\.identity-grid > \.cast-character-sheet-link[\s\S]*grid-column:4/);
+test("the fourth-column pin exists only inside the desktop media rule", () => {
+  const withoutDesktopRule = details.replace(desktopPlacementRule, "");
+  assert.doesNotMatch(
+    withoutDesktopRule,
+    /\.identity-grid > \.cast-character-sheet-link\s*\{[^}]*grid-column:4/
+  );
 });
 
 test("cast viewer cache generations include the placement update", () => {
