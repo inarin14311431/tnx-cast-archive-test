@@ -13,8 +13,11 @@ test("desktop cast polish is isolated in the final cascade layer", () => {
 });
 
 test("desktop cast polish covers the four review targets", () => {
-  assert.match(css, /\.cast-header__primary-actions/);
+  assert.match(css, /\.cast-header__actions #cast-edit-button/);
+  assert.match(css, /:is\(\.cast-quick-sheet-link, \.cast-view-mode-link, \.cast-troops-jump\)/);
   assert.match(css, /\.identity-grid > div:not\(\.cast-character-sheet-link\)/);
   assert.match(css, /\.identity-grid > \.cast-character-sheet-link[\s\S]*grid-column: 4;[\s\S]*grid-row: 2;/);
   assert.match(css, /\.cast-hero[\s\S]*grid-template-columns: minmax\(280px, 360px\) minmax\(0, 1fr\);/);
+  assert.match(css, /\.cast-hero__image-panel[\s\S]*height: auto;/);
+  assert.match(css, /\.cast-hero__image-frame[\s\S]*aspect-ratio: 3 \/ 4;/);
 });
