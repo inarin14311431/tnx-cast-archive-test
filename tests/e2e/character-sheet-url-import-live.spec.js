@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 const PUBLIC_CASTS = [
-  { publicId: "TNX-000132", expectedName: "白雲" },
-  { publicId: "TNX-000029", expectedName: "トリル" }
+  { publicId: "TNX-000029", expectedName: "トリル" },
+  { publicId: "TNX-000037", expectedName: "ルカ　日向" },
+  { publicId: "TNX-000054", expectedName: "躑躅" }
 ];
 
 function parseJsonp(text, callback) {
