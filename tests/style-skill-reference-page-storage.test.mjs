@@ -2,16 +2,25 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const fields = await readFile(new URL("../js/style-skill-fields.js", import.meta.url), "utf8");
+const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
+const fields = await read("js/style-skill-fields.js");
+const mobileHtml = await read("sheet-mobile.html");
+const mobileSkills = await read("js/sheet-mobile-skills.js");
 
-test("style skill backing description is not treated as an editable projected field", () => {
+test("PC style skill reference page stays an editable projected field", () => {
+  assert.match(fields, /\["page","参照P","input"\]/);
   assert.match(fields, /delete original\.dataset\.styleField;/);
   assert.match(fields, /row\.querySelectorAll\("\[data-style-field\]"\)\.forEach\(element=>\{\s*if\(element===original\)return;/);
 });
 
-test("nested legacy style details are unwrapped so reference page can be restored", () => {
-  assert.match(fields, /for\(let depth=0;depth<8;depth\+\+\)/);
-  assert.match(fields, /const nested=decode\(data\.description\);/);
-  assert.match(fields, /if\(isBlank\(data\[key\]\)&&!isBlank\(nested\[key\]\)\)data\[key\]=nested\[key\];/);
-  assert.match(fields, /data\.description=String\(nested\.description\?\?""\);/);
+test("reference page remains editable and saved on the mobile editor too", () => {
+  assert.match(mobileHtml, /<label>参照P<input data-mobile-style-detail="page"><\/label>/);
+  assert.match(mobileSkills, /const DETAIL_FIELDS = \[[^\]]*"page"\];/);
+  assert.match(mobileSkills, /for \(const key of DETAIL_FIELDS\) detail\[key\] = document\.querySelector\(`/);
+  assert.match(mobileSkills, /item\.description = encodeDetail\(detail\);/);
+});
+
+test("existing nested data is not repaired by the editor fix", () => {
+  assert.doesNotMatch(fields, /for\(let depth=0;depth<8;depth\+\+\)/);
+  assert.doesNotMatch(fields, /const nested=decode\(data\.description\);/);
 });
