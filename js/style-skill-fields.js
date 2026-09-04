@@ -22,11 +22,31 @@
   ];
 
   function emptyData(){return Object.fromEntries(FIELDS.map(([key])=>[key,""]));}
+  function isBlank(value){return value===undefined||value===null||String(value).trim()==="";}
+  function decode(value){
+    const text=String(value||"");
+    if(!text.startsWith(PREFIX))return null;
+    try{
+      const parsed=JSON.parse(text.slice(PREFIX.length).trim());
+      return parsed&&typeof parsed==="object"&&!Array.isArray(parsed)?parsed:null;
+    }catch{return null;}
+  }
 
   function parse(value){
     const text=String(value||"");
-    if(text.startsWith(PREFIX)){
-      try{return {...emptyData(),...JSON.parse(text.slice(PREFIX.length).trim())};}catch{}
+    const first=decode(text);
+    if(first){
+      const data={...emptyData(),...first};
+      for(let depth=0;depth<8;depth++){
+        const nested=decode(data.description);
+        if(!nested)break;
+        for(const [key] of FIELDS){
+          if(key==="description")continue;
+          if(isBlank(data[key])&&!isBlank(nested[key]))data[key]=nested[key];
+        }
+        data.description=String(nested.description??"");
+      }
+      return Object.fromEntries(FIELDS.map(([key])=>[key,String(data[key]??"")]));
     }
     const data=emptyData();
     const labels={"技能":"skill","上限":"limit","タイミング":"timing","対象":"target","射程":"range","目標値":"difficulty","対決":"confrontation","参照P":"page"};
@@ -115,6 +135,12 @@
     const actionCell=row.lastElementChild;
     if(!nameCell||!typeCell||!levelCell||suitCells.length!==4||!original||!actionCell)return;
 
+    // This textarea is backing storage, not an editable projected field. A semantic
+    // marker added for resize styling in #201 made it collide with the visible
+    // description field and caused the whole encoded payload to be nested inside
+    // description on every input.
+    delete original.dataset.styleField;
+
     suitCells.forEach((cell,index)=>{
       cell.classList.add("style-suit-cell",`style-suit-cell--${SUITS[index][0]}`);
       const checkbox=cell.querySelector('input[type="checkbox"]');
@@ -133,7 +159,10 @@
       if(tag==="textarea")control.rows=1;
       control.addEventListener("input",()=>{
         const values={};
-        row.querySelectorAll("[data-style-field]").forEach(element=>values[element.dataset.styleField]=element.value);
+        row.querySelectorAll("[data-style-field]").forEach(element=>{
+          if(element===original)return;
+          values[element.dataset.styleField]=element.value;
+        });
         original.value=encode(values);
         original.dispatchEvent(new Event("input",{bubbles:true}));
       });
