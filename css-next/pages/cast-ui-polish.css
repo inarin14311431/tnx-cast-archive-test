@@ -67,6 +67,7 @@
 
   /* 2. Identity metadata: keep name/styles/divine works dominant and flatten secondary facts. */
   body[data-page="cast.html"] .cast-hero__identity {
+    align-self: start;
     padding-right: 8px;
     border-left-width: 2px;
     background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 42%);
@@ -175,9 +176,5 @@
 
   body[data-page="cast.html"] .cast-hero__image-frame {
     width: 100%;
-  }
-
-  body[data-page="cast.html"] .cast-hero__identity {
-    align-self: start;
   }
 }
