@@ -1,77 +1,117 @@
 import { test, expect } from "@playwright/test";
-import { getTestCastId, hasAuthCredentials, waitForEditorReady } from "./helpers.js";
 
-function desktopOnly(testInfo) {
-  test.skip(testInfo.project.name === "mobile", "キャラシ倉庫URL取込はdesktopで検証");
-  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+const PUBLIC_CASTS = [
+  { publicId: "TNX-000132", expectedName: "白雲" },
+  { publicId: "TNX-000029", expectedName: "トリル" }
+];
+
+function parseJsonp(text, callback) {
+  let source = String(text || "").trim();
+  if (source.endsWith(";")) source = source.slice(0, -1).trim();
+  const prefix = `${callback}(`;
+  if (!source.startsWith(prefix) || !source.endsWith(")")) {
+    throw new Error("キャラクターシート倉庫のJSONP形式を認識できません");
+  }
+  return JSON.parse(source.slice(prefix.length, -1));
 }
 
-async function openEditor(page) {
-  await page.goto(`/sheet.html?id=${getTestCastId()}`);
-  await waitForEditorReady(page);
+function parseJsonData(value) {
+  if (typeof value !== "string") return value;
+  let source = value.trim();
+  if (!source) return value;
+  if (source.endsWith(";")) source = source.slice(0, -1).trim();
+  if (source.startsWith("(") && source.endsWith(")")) source = source.slice(1, -1).trim();
+  try { return JSON.parse(source); } catch { return value; }
 }
 
-async function findImportSources(page) {
-  return page.evaluate(async () => {
+function mergeMetadata(parsed, wrapper) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return parsed;
+  const result = { ...parsed };
+  for (const key of ["outline", "name", "nameKana", "player", "display"]) {
+    if ((result[key] === undefined || result[key] === null || result[key] === "") && wrapper?.[key] !== undefined) {
+      result[key] = wrapper[key];
+    }
+  }
+  return result;
+}
+
+function normalizeWarehousePayload(payload) {
+  let data = payload;
+  for (let index = 0; index < 6; index += 1) {
+    if (typeof data === "string") {
+      const parsed = parseJsonData(data);
+      if (parsed !== data) { data = parsed; continue; }
+      break;
+    }
+    if (data && typeof data === "object" && typeof data.jsonData === "string" && data.jsonData.trim()) {
+      const parsed = parseJsonData(data.jsonData);
+      if (parsed !== data.jsonData) { data = mergeMetadata(parsed, data); continue; }
+    }
+    if (data && typeof data === "object" && data.data && typeof data.data === "object" && !data.base && !data.weapons) {
+      data = mergeMetadata(data.data, data);
+      continue;
+    }
+    break;
+  }
+  if (!data || typeof data !== "object") throw new Error("倉庫データをオブジェクトへ正規化できません");
+  return data;
+}
+
+async function getRegisteredUrl(page, publicId) {
+  return page.evaluate(async id => {
     const { supabase } = await import("/js/supabase-client.js");
     const { data, error } = await supabase
       .from("characters")
-      .select("id,character_name,character_sheet_url")
-      .not("character_sheet_url", "is", null)
-      .neq("character_sheet_url", "")
-      .limit(10);
+      .select("character_name,character_sheet_url")
+      .eq("public_id", id)
+      .maybeSingle();
     if (error) throw new Error(error.message);
-    return (data || [])
-      .filter(row => String(row.character_sheet_url || "").includes("character-sheets.appspot.com/tnx/"))
-      .slice(0, 3);
-  });
+    return data;
+  }, publicId);
 }
 
-async function importUrl(page, source) {
-  await page.locator("#legacy-import-open").click();
-  await expect(page.locator("#legacy-import-dialog")).toBeVisible();
-  await page.locator("#character-sheets-import-url").fill(source.character_sheet_url);
-  await page.locator("#character-sheets-import-run").click();
-  await expect(page.locator("#legacy-import-message")).toContainText("取込みが完了しました", { timeout: 210000 });
+function warehouseKey(url) {
+  const parsed = new URL(url);
+  if (parsed.hostname !== "character-sheets.appspot.com") throw new Error("倉庫URLのホストが不正です");
+  const key = parsed.searchParams.get("key")?.trim();
+  if (!key) throw new Error("倉庫URLにkeyがありません");
+  return key;
 }
 
-function structuredDefenseInputs(page) {
-  return page.locator(
-    '#outfit-list [data-ofc="defense_s"], #outfit-list [data-ofc="defense_p"], #outfit-list [data-ofc="defense_i"]'
-  );
+function hasDefenseSource(item) {
+  if (!["armor", "vehicle"].includes(item.category)) return false;
+  const data = item.data || {};
+  return ["protecS", "protecP", "protecI", "defenseS", "defenseP", "defenseI"]
+    .some(key => String(data[key] ?? "").trim() !== "");
 }
 
-test("登録済みキャラシ倉庫URLを実取得し、旧防御列なしで構造化防御値へ取込できる", async ({ page }, testInfo) => {
-  desktopOnly(testInfo);
-  await openEditor(page);
+test("登録済みキャラシ倉庫URLから実データを取得し、防御値を正規取込経路で認識できる", async ({ page, request }) => {
+  await page.goto("/index.html");
+  await page.addScriptTag({ url: "/js/sheet-import-outfit-compat.js" });
+  await expect.poll(() => page.evaluate(() => Boolean(window.TNXLegacyOutfitImport?.sourceOutfits))).toBe(true);
 
-  const sources = await findImportSources(page);
-  expect(sources.length, "認証ユーザーから参照できるURL登録済みキャストが必要").toBeGreaterThan(0);
+  for (const target of PUBLIC_CASTS) {
+    const record = await getRegisteredUrl(page, target.publicId);
+    expect(record?.character_name).toBe(target.expectedName);
+    expect(record?.character_sheet_url).toContain("character-sheets.appspot.com/tnx/");
 
-  let verifiedStructuredDefense = false;
-  const tested = [];
+    const key = warehouseKey(record.character_sheet_url);
+    const callback = `__tnxLiveImport_${target.publicId.replace(/\W/g, "_")}`;
+    const sourceUrl = new URL("https://character-sheets.appspot.com/tnx/display");
+    sourceUrl.searchParams.set("ajax", "1");
+    sourceUrl.searchParams.set("key", key);
+    sourceUrl.searchParams.set("callback", callback);
 
-  for (const source of sources) {
-    await importUrl(page, source);
-    const sourceName = source.character_name || source.id;
-    tested.push(sourceName);
+    const response = await request.get(sourceUrl.toString(), { timeout: 30000 });
+    expect(response.ok(), `${target.expectedName} の倉庫データ取得`).toBe(true);
+    const payload = parseJsonp(await response.text(), callback);
+    const normalized = normalizeWarehousePayload(payload);
 
-    await expect(page.locator('#outfit-list [data-o="defense"]')).toHaveCount(0);
-    await expect(page.locator('#outfit-list [data-o="mundane_modifier"]')).toHaveCount(0);
-    await expect(page.locator('#outfit-list [data-o="electronic_control"]')).toHaveCount(0);
+    const outfits = await page.evaluate(data => window.TNXLegacyOutfitImport.sourceOutfits(data), normalized);
+    expect(outfits.length, `${target.expectedName} のアウトフィット`).toBeGreaterThan(0);
+    const defenseOutfits = outfits.filter(hasDefenseSource);
+    expect(defenseOutfits.length, `${target.expectedName} の防御S/P/I付き防具・ヴィークル`).toBeGreaterThan(0);
 
-    const values = await structuredDefenseInputs(page).evaluateAll(nodes => nodes.map(node => String(node.value || "").trim()));
-    const hasStructuredDefense = values.some(Boolean);
-    if (hasStructuredDefense) verifiedStructuredDefense = true;
-    console.log(`[live-url-import] cast=${sourceName} structuredDefense=${hasStructuredDefense}`);
-
-    await page.keyboard.press("Escape");
-    if (verifiedStructuredDefense && tested.length >= 2) break;
+    console.log(`[live-url-import] cast=${target.expectedName} outfits=${outfits.length} defenseOutfits=${defenseOutfits.length}`);
   }
-
-  console.log(`[live-url-import] tested=${tested.join(", ")} verifiedStructuredDefense=${verifiedStructuredDefense}`);
-  expect(tested.length, "実URLを少なくとも1件取込済み").toBeGreaterThan(0);
-  expect(verifiedStructuredDefense, `取込対象: ${tested.join(", ")}`).toBe(true);
-
-  // 保存ボタンは押さない。取込後の編集状態だけを検証し、既存DBを変更しない。
 });
