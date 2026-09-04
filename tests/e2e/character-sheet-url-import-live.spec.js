@@ -53,19 +53,23 @@ test("登録済みキャラシ倉庫URLを実取得し、旧防御列なしで�
 
   for (const source of sources) {
     await importUrl(page, source);
-    tested.push(source.character_name || source.id);
+    const sourceName = source.character_name || source.id;
+    tested.push(sourceName);
 
     await expect(page.locator('#outfit-list [data-o="defense"]')).toHaveCount(0);
     await expect(page.locator('#outfit-list [data-o="mundane_modifier"]')).toHaveCount(0);
     await expect(page.locator('#outfit-list [data-o="electronic_control"]')).toHaveCount(0);
 
     const values = await structuredDefenseInputs(page).evaluateAll(nodes => nodes.map(node => String(node.value || "").trim()));
-    if (values.some(Boolean)) verifiedStructuredDefense = true;
+    const hasStructuredDefense = values.some(Boolean);
+    if (hasStructuredDefense) verifiedStructuredDefense = true;
+    console.log(`[live-url-import] cast=${sourceName} structuredDefense=${hasStructuredDefense}`);
 
     await page.keyboard.press("Escape");
     if (verifiedStructuredDefense && tested.length >= 2) break;
   }
 
+  console.log(`[live-url-import] tested=${tested.join(", ")} verifiedStructuredDefense=${verifiedStructuredDefense}`);
   expect(tested.length, "実URLを少なくとも1件取込済み").toBeGreaterThan(0);
   expect(verifiedStructuredDefense, `取込対象: ${tested.join(", ")}`).toBe(true);
 
