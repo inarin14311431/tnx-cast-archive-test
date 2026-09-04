@@ -146,23 +146,9 @@ function normalizeConcealmentForComparison(value) {
   return source;
 }
 
-function normalizeStyleMarkForComparison(value) {
-  const source = String(value ?? "");
-  const hasDouble = source.includes("◎");
-  const hasSingle = source.includes("●");
-  if (hasDouble && hasSingle) return "◎●";
-  if (hasDouble) return "◎";
-  if (hasSingle) return "●";
-  return "";
-}
-
 export function normalizeCanonicalForComparison(bundle = {}) {
   const normalized = {
     ...bundle,
-    styles: Object.fromEntries(Object.entries(bundle.styles || {}).map(([key, value]) => [
-      key,
-      key.endsWith("_mark") ? normalizeStyleMarkForComparison(value) : value
-    ])),
     outfits: Object.fromEntries(Object.entries(bundle.outfits || {}).map(([key, outfit]) => [
       key,
       {
