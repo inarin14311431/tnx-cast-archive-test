@@ -91,6 +91,8 @@
 
   /* 2. Identity metadata: keep name/styles/divine works dominant and flatten secondary facts. */
   body[data-page="cast.html"] .cast-hero__identity {
+    height: auto;
+    min-height: 0;
     align-self: start;
     padding-right: 8px;
     border-left-width: 2px;
@@ -185,7 +187,7 @@
     text-underline-offset: 3px;
   }
 
-  /* 4. Portrait balance: reduce visual weight and let the information column size naturally. */
+  /* 4. Portrait balance: reduce width and stop forcing both hero columns to a fixed 610-650px height. */
   body[data-page="cast.html"] .cast-hero {
     grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     align-items: start;
@@ -195,10 +197,15 @@
   body[data-page="cast.html"] .cast-hero__image-panel {
     width: 100%;
     max-width: 360px;
+    height: auto;
+    min-height: 0;
     align-self: start;
   }
 
   body[data-page="cast.html"] .cast-hero__image-frame {
     width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 3 / 4;
   }
 }
