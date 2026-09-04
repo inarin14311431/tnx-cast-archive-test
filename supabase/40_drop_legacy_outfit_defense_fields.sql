@@ -34,26 +34,34 @@ declare
   v_definition text;
   v_updated text;
 begin
-  select pg_get_functiondef(
-    'public.save_character_bundle(uuid,jsonb,jsonb,jsonb)'::regprocedure
+  select replace(
+    pg_get_functiondef('public.save_character_bundle(uuid,jsonb,jsonb,jsonb)'::regprocedure),
+    E'\r\n',
+    E'\n'
   ) into v_definition;
 
-  v_updated := regexp_replace(
+  v_updated := replace(
     v_definition,
-    E'concealment, attack, defense, range, slot, description,\\s+control_modifier, cs_modifier, mundane_modifier, sort_order',
-    E'concealment, attack, range, slot, description,\n    control_modifier, cs_modifier, sort_order'
+$old$    concealment, attack, defense, range, slot, description,
+    control_modifier, cs_modifier, mundane_modifier, sort_order$old$,
+$new$    concealment, attack, range, slot, description,
+    control_modifier, cs_modifier, sort_order$new$
   );
 
-  v_updated := regexp_replace(
+  v_updated := replace(
     v_updated,
-    E'coalesce\\(x\\.concealment, ''\\'\\'\\), coalesce\\(x\\.attack, ''\\'\\'\\), coalesce\\(x\\.defense, ''\\'\\'\\), coalesce\\(x\\.range, ''\\'\\'\\), coalesce\\(x\\.slot, ''\\'\\'\\), coalesce\\(x\\.description, ''\\'\\'\\),\\s+coalesce\\(x\\.control_modifier, 0\\), coalesce\\(x\\.cs_modifier, 0\\), coalesce\\(x\\.mundane_modifier, 0\\), coalesce\\(x\\.sort_order, 0\\)',
-    E'coalesce(x.concealment, ''''), coalesce(x.attack, ''''), coalesce(x.range, ''''), coalesce(x.slot, ''''), coalesce(x.description, ''''),\n    coalesce(x.control_modifier, 0), coalesce(x.cs_modifier, 0), coalesce(x.sort_order, 0)'
+$old$    coalesce(x.concealment, ''), coalesce(x.attack, ''), coalesce(x.defense, ''), coalesce(x.range, ''), coalesce(x.slot, ''), coalesce(x.description, ''),
+    coalesce(x.control_modifier, 0), coalesce(x.cs_modifier, 0), coalesce(x.mundane_modifier, 0), coalesce(x.sort_order, 0)$old$,
+$new$    coalesce(x.concealment, ''), coalesce(x.attack, ''), coalesce(x.range, ''), coalesce(x.slot, ''), coalesce(x.description, ''),
+    coalesce(x.control_modifier, 0), coalesce(x.cs_modifier, 0), coalesce(x.sort_order, 0)$new$
   );
 
-  v_updated := regexp_replace(
+  v_updated := replace(
     v_updated,
-    E'concealment text, attack text, defense text, range text, slot text, description text,\\s+control_modifier integer, cs_modifier integer, mundane_modifier integer, sort_order integer',
-    E'concealment text, attack text, range text, slot text, description text,\n    control_modifier integer, cs_modifier integer, sort_order integer'
+$old$    concealment text, attack text, defense text, range text, slot text, description text,
+    control_modifier integer, cs_modifier integer, mundane_modifier integer, sort_order integer$old$,
+$new$    concealment text, attack text, range text, slot text, description text,
+    control_modifier integer, cs_modifier integer, sort_order integer$new$
   );
 
   if v_updated = v_definition then
