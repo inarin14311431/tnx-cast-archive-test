@@ -1,0 +1,45 @@
+name: Generate cross-screen visual baseline candidates
+
+on:
+  push:
+    branches: [ui/cross-screen-polish-20260905]
+    paths: [.github/workflows/approve-ui-visual-baseline.yml]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 20
+    steps:
+      - name: Checkout feature
+        uses: actions/checkout@v7
+      - name: Checkout visual baseline
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: visual-regression-baseline
+          path: .visual-reference
+      - name: Sync visual test contract
+        run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Generate desktop candidates
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-desktop --grep-invert 'キャスト閲覧 spectrum-neon' --update-snapshots
+      - name: Generate mobile candidates
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-mobile --update-snapshots
+      - name: Upload candidate screenshots
+        uses: actions/upload-artifact@v6
+        with:
+          name: cross-screen-visual-candidates
+          path: tests/visual/__screenshots__/
+          if-no-files-found: error
+          retention-days: 3
