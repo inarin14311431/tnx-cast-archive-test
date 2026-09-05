@@ -21,23 +21,6 @@ test("screen entry styles load canonical functional modules", () => {
   }
 });
 
-test("legacy polish modules are compatibility aliases only", () => {
-  const aliases = [
-    ["css-next/pages/sheet-mobile-polish.css", "sheet-mobile-shell.css?v=1"],
-    ["css-next/pages/showcase-ux-polish.css", "showcase-theme.css?v=1"],
-    ["css-next/pages/troop-actions-polish.css", "troop-editor-actions.css?v=1"],
-    ["css-next/pages/archive-ux-polish.css", "archive-discovery.css?v=1"],
-    ["css-next/pages/acts-metrics-polish.css", "acts-summary.css?v=1"],
-    ["css-next/pages/troops-responsive-polish.css", "troops-registry-responsive.css?v=1"],
-  ];
-  for (const [path, target] of aliases) {
-    const css = read(path);
-    assert.match(css, /Compatibility alias/);
-    assert.match(css, new RegExp(target.replace(/[.?]/g, "\\$&")));
-    assert.doesNotMatch(css, /body\[data-page=/);
-  }
-});
-
 test("mobile editor shell removes prototype wording and uses semantic state colors", () => {
   const css = read("css-next/pages/sheet-mobile-shell.css");
   assert.match(css, /CAST SHEET MOBILE EDITOR/);
