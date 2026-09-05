@@ -1,4 +1,4 @@
-/* Theme-aligned operation UI for the showcase generator. The iframe preview remains isolated. */
+/* Canonical theme integration and action hierarchy for the showcase generator. The iframe preview remains isolated. */
 body[data-page="showcase-generator.html"] {
   --showcase-cyan: var(--color-accent);
   --showcase-magenta: var(--color-danger);

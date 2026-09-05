@@ -1,4 +1,4 @@
-/* Give the actionable EXP balance stronger hierarchy than supporting metrics. */
+/* Canonical act-history summary hierarchy and EXP balance emphasis. */
 body[data-page="acts.html"] .act-history-summary article {
   min-height: 94px;
   border-color: color-mix(in srgb, var(--color-border) 76%, transparent);

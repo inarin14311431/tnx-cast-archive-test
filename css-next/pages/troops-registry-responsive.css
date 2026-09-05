@@ -1,4 +1,4 @@
-/* Intermediate-width troop registry layout. Mobile rules remain owned by the base registry CSS. */
+/* Canonical intermediate-width layout for the troop registry. */
 @media (min-width: 761px) and (max-width: 1050px) {
   body[data-page="troops.html"] .troop-card {
     grid-template-columns: minmax(0, 1fr) 168px;

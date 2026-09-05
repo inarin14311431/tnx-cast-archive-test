@@ -4,22 +4,25 @@ import { readFileSync } from "node:fs";
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("screen entry styles load isolated polish layers", () => {
+test("screen entry styles load canonical functional modules", () => {
   const contracts = [
-    ["css-next/pages/sheet-mobile-entry.css", "sheet-mobile-polish.css?v=1"],
-    ["css-next/pages/showcase-entry.css", "showcase-ux-polish.css?v=1"],
-    ["css-next/pages/troop-entry.css", "troop-actions-polish.css?v=1"],
-    ["css-next/pages/archive-entry.css", "archive-ux-polish.css?v=1"],
-    ["css-next/pages/acts-entry.css", "acts-metrics-polish.css?v=1"],
-    ["css-next/pages/troops-entry.css", "troops-responsive-polish.css?v=1"],
+    ["css-next/pages/sheet-mobile-entry.css", "sheet-mobile-shell.css?v=1", "mobile-shell"],
+    ["css-next/pages/showcase-entry.css", "showcase-theme.css?v=1", "showcase-theme"],
+    ["css-next/pages/troop-entry.css", "troop-editor-actions.css?v=1", "troop-actions"],
+    ["css-next/pages/archive-entry.css", "archive-discovery.css?v=1", "archive-discovery"],
+    ["css-next/pages/acts-entry.css", "acts-summary.css?v=1", "acts-summary"],
+    ["css-next/pages/troops-entry.css", "troops-registry-responsive.css?v=1", "troop-registry-responsive"],
   ];
-  for (const [path, expected] of contracts) {
-    assert.match(read(path), new RegExp(expected.replace(/[.?]/g, "\\$&")));
+  for (const [path, moduleName, layerName] of contracts) {
+    const entry = read(path);
+    assert.match(entry, new RegExp(moduleName.replace(/[.?]/g, "\\$&")));
+    assert.match(entry, new RegExp(layerName));
+    assert.doesNotMatch(entry, /polish/);
   }
 });
 
-test("mobile editor removes prototype wording and uses semantic state colors", () => {
-  const css = read("css-next/pages/sheet-mobile-polish.css");
+test("mobile editor shell removes prototype wording and uses semantic state colors", () => {
+  const css = read("css-next/pages/sheet-mobile-shell.css");
   assert.match(css, /CAST SHEET MOBILE EDITOR/);
   assert.match(css, /repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(css, /var\(--color-warning/);
@@ -27,16 +30,16 @@ test("mobile editor removes prototype wording and uses semantic state colors", (
   assert.doesNotMatch(css, /PROTOTYPE/);
 });
 
-test("showcase operations use theme tokens with a primary publish action", () => {
-  const css = read("css-next/pages/showcase-ux-polish.css");
+test("showcase theme uses site tokens with a primary publish action", () => {
+  const css = read("css-next/pages/showcase-theme.css");
   assert.match(css, /--showcase-cyan: var\(--color-accent\)/);
   assert.match(css, /#publish-button:not\(:disabled\)/);
   assert.match(css, /#download-button, #copy-button/);
 });
 
 test("troop editor actions stay available and registry rows reflow before mobile", () => {
-  const editor = read("css-next/pages/troop-actions-polish.css");
-  const registry = read("css-next/pages/troops-responsive-polish.css");
+  const editor = read("css-next/pages/troop-editor-actions.css");
+  const registry = read("css-next/pages/troops-registry-responsive.css");
   assert.match(editor, /position: sticky/);
   assert.match(editor, /button\[type="submit"\]/);
   assert.match(registry, /min-width: 761px/);
@@ -44,9 +47,9 @@ test("troop editor actions stay available and registry rows reflow before mobile
   assert.match(registry, /grid-column: 1 \/ -1/);
 });
 
-test("archive and act history expose the intended visual hierarchy", () => {
-  const archive = read("css-next/pages/archive-ux-polish.css");
-  const acts = read("css-next/pages/acts-metrics-polish.css");
+test("archive discovery and act summary retain the approved hierarchy", () => {
+  const archive = read("css-next/pages/archive-discovery.css");
+  const acts = read("css-next/pages/acts-summary.css");
   assert.match(archive, /archive-control--search input/);
   assert.match(archive, /height: 232px/);
   assert.match(acts, /article:nth-child\(4\)/);

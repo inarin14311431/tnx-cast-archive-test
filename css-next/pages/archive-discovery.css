@@ -1,4 +1,4 @@
-/* Archive scanning/search polish. Desktop density changes are intentionally isolated. */
+/* Canonical archive search hierarchy and desktop card density. */
 body[data-page="index.html"] .archive-control--search > span {
   color: var(--color-accent);
   font-weight: 900;

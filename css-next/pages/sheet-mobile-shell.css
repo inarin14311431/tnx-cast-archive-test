@@ -1,4 +1,4 @@
-/* Final UX polish for the mobile editor. Kept isolated for easy rollback. */
+/* Canonical mobile-editor shell: title, section navigation and save-state emphasis. */
 body[data-page="sheet-mobile.html"] .mobile-sheet-header__title small {
   font-size: 0;
 }

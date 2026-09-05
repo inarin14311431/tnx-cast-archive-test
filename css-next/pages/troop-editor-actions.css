@@ -1,4 +1,4 @@
-/* Persistent troop-editor actions. Isolated so the experiment can be reverted independently. */
+/* Canonical persistent action bar for troop editing. */
 body[data-page="troop.html"] .troop-editor-actions {
   position: sticky;
   z-index: 24;
