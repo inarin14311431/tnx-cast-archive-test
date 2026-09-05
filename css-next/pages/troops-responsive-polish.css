@@ -1,21 +1,2 @@
-/* Intermediate-width troop registry layout. Mobile rules remain owned by the base registry CSS. */
-@media (min-width: 761px) and (max-width: 1050px) {
-  body[data-page="troops.html"] .troop-card {
-    grid-template-columns: minmax(0, 1fr) 168px;
-    grid-template-rows: auto auto;
-    gap: 7px 10px;
-  }
-  body[data-page="troops.html"] .troop-card__head {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  body[data-page="troops.html"] .troop-card__actions {
-    grid-column: 2;
-    grid-row: 1;
-  }
-  body[data-page="troops.html"] .troop-card__stats {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
+/* Compatibility alias for cached verification entry styles. Active entries use troops-registry-responsive.css. */
+@import url("./troops-registry-responsive.css?v=1");
