@@ -1,0 +1,64 @@
+name: Approve archive page-size label visual baseline
+
+on:
+  push:
+    branches: [fix/archive-page-size-label-20260905]
+    paths: [.github/workflows/approve-archive-page-size-label-baseline.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 15
+    steps:
+      - name: Checkout feature
+        uses: actions/checkout@v7
+      - name: Checkout visual baseline
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: visual-regression-baseline
+          path: .visual-reference
+      - name: Sync visual test contract
+        run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Regenerate approved archive snapshots
+        run: |
+          npx playwright test --config=playwright.visual.config.js --project=visual-desktop --grep 'キャスト一覧' --update-snapshots
+          npx playwright test --config=playwright.visual.config.js --project=visual-mobile --grep 'キャスト一覧' --update-snapshots
+          npx playwright test tests/visual/themes.visual.spec.js --config=playwright.visual.config.js --project=visual-desktop --update-snapshots
+      - name: Update only archive-related baselines
+        run: |
+          core='tests/visual/__screenshots__/visual-desktop/core-pages.visual.spec.js'
+          mobile='tests/visual/__screenshots__/visual-mobile/core-pages.visual.spec.js'
+          themes='tests/visual/__screenshots__/visual-desktop/themes.visual.spec.js'
+          mkdir -p ".visual-reference/$core" ".visual-reference/$mobile" ".visual-reference/$themes"
+          cp "$core/archive-nova-visual-desktop.png" ".visual-reference/$core/archive-nova-visual-desktop.png"
+          cp "$core/archive-spectrum-neon-visual-desktop.png" ".visual-reference/$core/archive-spectrum-neon-visual-desktop.png"
+          cp "$mobile/archive-nova-visual-mobile.png" ".visual-reference/$mobile/archive-nova-visual-mobile.png"
+          cp "$mobile/archive-spectrum-neon-visual-mobile.png" ".visual-reference/$mobile/archive-spectrum-neon-visual-mobile.png"
+          cp "$themes"/theme-*.png ".visual-reference/$themes/"
+          cd .visual-reference
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$core/archive-nova-visual-desktop.png" \
+                  "$core/archive-spectrum-neon-visual-desktop.png" \
+                  "$mobile/archive-nova-visual-mobile.png" \
+                  "$mobile/archive-spectrum-neon-visual-mobile.png" \
+                  "$themes"/theme-*.png
+          git diff --cached --quiet && exit 0
+          git commit -m 'Approve archive page-size label visual baseline'
+          git push origin HEAD:visual-regression-baseline
