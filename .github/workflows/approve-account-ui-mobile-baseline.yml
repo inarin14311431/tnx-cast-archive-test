@@ -1,0 +1,52 @@
+name: Approve account UI mobile visual baseline
+
+on:
+  push:
+    branches: [fix/account-ui-organization-20260905]
+    paths: [.github/workflows/approve-account-ui-mobile-baseline.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 15
+    steps:
+      - name: Checkout feature
+        uses: actions/checkout@v7
+      - name: Checkout visual baseline
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: visual-regression-baseline
+          path: .visual-reference
+      - name: Sync visual test contract
+        run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Regenerate approved mobile account snapshots
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-mobile --grep 'アカウント' --update-snapshots
+      - name: Update only mobile account baselines
+        run: |
+          mobile='tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js'
+          cp "$mobile/account-nova-visual-mobile.png" ".visual-reference/$mobile/account-nova-visual-mobile.png"
+          cp "$mobile/account-spectrum-neon-visual-mobile.png" ".visual-reference/$mobile/account-spectrum-neon-visual-mobile.png"
+          cd .visual-reference
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/account-nova-visual-mobile.png \
+                  tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/account-spectrum-neon-visual-mobile.png
+          git diff --cached --quiet && exit 0
+          git commit -m 'Approve account UI mobile visual baseline'
+          git push origin HEAD:visual-regression-baseline
