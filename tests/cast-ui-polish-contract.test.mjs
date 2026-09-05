@@ -9,7 +9,7 @@ const castUi = await readFile(new URL("../js/cast-ui.js", import.meta.url), "utf
 
 test("desktop cast polish is isolated in the final cascade layer", () => {
   assert.match(entry, /cast-transfer, cast-troop-modal, cast-polish;/);
-  assert.match(entry, /@import url\("\.\/cast-ui-polish\.css\?v=1"\) layer\(cast-polish\);/);
+  assert.match(entry, /@import url\("\.\/cast-ui-polish\.css\?v=2"\) layer\(cast-polish\);/);
   assert.match(css, /@media \(min-width: 1200px\)/);
   assert.doesNotMatch(css, /@media\s*\([^)]*max-width/i);
 });
@@ -22,6 +22,12 @@ test("desktop cast polish covers the four review targets", () => {
   assert.match(css, /\.cast-hero[\s\S]*grid-template-columns: minmax\(280px, 360px\) minmax\(0, 1fr\);/);
   assert.match(css, /\.cast-hero__image-panel[\s\S]*height: auto;/);
   assert.match(css, /\.cast-hero__image-frame[\s\S]*aspect-ratio: 3 \/ 4;/);
+});
+
+test("cast edit hover keeps readable theme-based text", () => {
+  assert.match(css, /#cast-edit-button:is\(:hover, :focus-visible\)[\s\S]*color: var\(--color-text\);/);
+  assert.match(css, /#cast-edit-button:is\(:hover, :focus-visible\)[\s\S]*color-mix\(in srgb, var\(--color-accent\) 34%, var\(--color-surface\)\)/);
+  assert.match(css, /#cast-edit-button:is\(:hover, :focus-visible\) small[\s\S]*var\(--color-text\)/);
 });
 
 test("desktop cast polish keeps the theme system authoritative", () => {
