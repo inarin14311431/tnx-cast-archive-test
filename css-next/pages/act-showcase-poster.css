@@ -1,0 +1,89 @@
+body.showcase-poster-ready{background:#040817;color:#eef6ff}
+body.showcase-poster-ready .ambient-stage{opacity:.28}
+body.showcase-poster-ready .scene-progress[hidden]{display:none}
+body.showcase-poster-ready .showcase-story{overflow:visible}
+body.showcase-poster-ready .scene-opening{position:relative;min-height:min(94svh,980px);padding:0;overflow:hidden;background:#060b19}
+body.showcase-poster-ready .scene-opening:before{position:absolute;inset:0;z-index:0;content:"";background-image:linear-gradient(180deg,rgba(2,6,16,.34),rgba(2,6,16,.7)),var(--showcase-background);background-position:center;background-size:cover;filter:saturate(1.12) contrast(1.04)}
+body.showcase-poster-ready .scene-opening:after{position:absolute;inset:22px;z-index:1;content:"";border:1px solid rgba(127,215,255,.2);clip-path:polygon(0 12px,12px 0,calc(100% - 72px) 0,100% 72px,100% 100%,0 100%);pointer-events:none}
+body.showcase-poster-ready .opening-world{display:none}
+body.showcase-poster-ready .opening-content{position:relative;z-index:3;width:min(1380px,calc(100% - 80px));min-height:min(94svh,980px);margin:0 auto;padding:190px 0 116px;justify-content:center;align-items:flex-start;text-align:left}
+body.showcase-poster-ready .opening-content:before{position:absolute;left:0;top:50%;width:min(620px,68vw);height:66%;content:"";transform:translateY(-42%);border:1px solid rgba(127,215,255,.14);background:linear-gradient(135deg,rgba(4,10,28,.58),rgba(4,10,28,.16));backdrop-filter:blur(10px);box-shadow:0 26px 80px rgba(0,0,0,.28);pointer-events:none}
+body.showcase-poster-ready .opening-systemline{display:none}
+body.showcase-poster-ready .opening-content .scene-index,body.showcase-poster-ready .opening-kicker,body.showcase-poster-ready .opening-content h1,body.showcase-poster-ready .opening-subtitle,body.showcase-poster-ready .opening-ruler{position:relative;z-index:2;margin-left:34px}
+body.showcase-poster-ready .opening-content .scene-index{margin-bottom:14px;color:#a6caff;font-size:.62rem;letter-spacing:.17em}
+body.showcase-poster-ready .opening-kicker{margin-bottom:13px;color:#e5efff;font:700 .82rem/1 "Share Tech Mono",monospace;letter-spacing:.18em}
+body.showcase-poster-ready .opening-content h1{max-width:760px;margin-top:0;margin-bottom:0;color:#fff;font:900 clamp(2.5rem,5.6vw,5.3rem)/1.04 "Noto Sans JP",sans-serif;letter-spacing:.015em;text-shadow:0 5px 28px rgba(0,0,0,.36)}
+body.showcase-poster-ready .opening-subtitle{margin-top:16px;color:#ff79dc;font:500 clamp(1.2rem,2.5vw,2.25rem)/1.1 Orbitron,"Noto Sans JP",sans-serif;letter-spacing:.05em;text-shadow:0 0 20px rgba(255,98,208,.34)}
+body.showcase-poster-ready .opening-ruler{margin-top:20px;color:#b9cce8;font-size:.68rem;letter-spacing:.12em}
+body.showcase-poster-ready .opening-scroll{position:absolute;right:0;bottom:56px;left:auto;z-index:3;display:flex;align-items:center;gap:16px;transform:none;color:#dcecff;font-size:.56rem;letter-spacing:.18em;cursor:pointer}
+body.showcase-poster-ready .opening-scroll i{width:82px;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.18),#7fd7ff)}
+body.showcase-poster-ready .poster-opening-topbar{position:absolute;top:24px;left:34px;right:34px;z-index:4;display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:start;padding:0 8px 14px;border-bottom:1px solid rgba(143,201,255,.2)}
+body.showcase-poster-ready .poster-brand{display:flex;align-items:flex-start;gap:14px}
+body.showcase-poster-ready .poster-brand__logo{color:#fff;font:800 2rem/.9 Orbitron,sans-serif;letter-spacing:.16em}
+body.showcase-poster-ready .poster-brand__sub{white-space:pre-line;color:#aebed8;font:700 .58rem/1.25 Orbitron,sans-serif;letter-spacing:.1em}
+body.showcase-poster-ready .poster-nav{display:flex;justify-content:center;gap:24px;padding-top:4px;color:#b9cce4}
+body.showcase-poster-ready .poster-nav__item{font:600 .64rem/1 Orbitron,sans-serif;letter-spacing:.09em;opacity:.72}
+body.showcase-poster-ready .poster-nav__item.is-active{color:#fff;opacity:1;text-shadow:0 0 16px rgba(167,111,255,.5)}
+body.showcase-poster-ready .poster-topnote{display:grid;justify-items:end;gap:3px;color:#e6eefc;font:700 .56rem/1.2 "Share Tech Mono",monospace;letter-spacing:.1em}
+body.showcase-poster-ready .poster-topnote small{color:#8fa6c5;font-size:.5rem}
+body.showcase-poster-ready .poster-side-copy{position:absolute;left:34px;top:50%;z-index:4;transform:translateY(-42%);writing-mode:vertical-rl;color:#fff;font-size:.8rem;line-height:2;letter-spacing:.18em;text-shadow:0 2px 16px #000}
+body.showcase-poster-ready .poster-side-copy:before,body.showcase-poster-ready .poster-side-copy:after{display:block;width:1px;height:72px;margin:12px auto;content:"";background:linear-gradient(transparent,#7fd7ff,transparent)}
+body.showcase-poster-ready .poster-opening-aside{position:absolute;right:34px;top:50%;z-index:4;display:grid;gap:7px;transform:translateY(-35%);color:#edf3ff;text-align:right}
+body.showcase-poster-ready .poster-opening-aside strong,body.showcase-poster-ready .poster-opening-aside span,body.showcase-poster-ready .poster-opening-aside small{font:700 .57rem/1.35 "Share Tech Mono",monospace;letter-spacing:.13em}
+body.showcase-poster-ready .poster-opening-aside span{color:#a8bad4}
+body.showcase-poster-ready .poster-opening-aside small{margin-top:12px;color:#8399ba}
+body.showcase-poster-ready .poster-showcase-board{position:relative;z-index:5;margin-top:-74px;padding:0 32px 42px;opacity:0;transform:translateY(22px);transition:.75s opacity,.75s transform}
+body.showcase-poster-ready .poster-showcase-board.is-visible{opacity:1;transform:none}
+body.showcase-poster-ready .poster-showcase-frame{position:relative;max-width:1480px;margin:0 auto;padding:16px;border:1px solid rgba(154,207,255,.26);background:linear-gradient(180deg,rgba(7,18,39,.86),rgba(4,12,28,.9));box-shadow:0 26px 90px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.035);backdrop-filter:blur(14px)}
+body.showcase-poster-ready .poster-showcase-frame:before{position:absolute;inset:0;content:"";border:1px solid rgba(255,100,214,.1);clip-path:polygon(0 18px,18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%);pointer-events:none}
+body.showcase-poster-ready .poster-showcase-grid{display:grid;gap:14px;align-items:stretch}
+body.showcase-poster-ready .poster-showcase-grid[data-columns="4"]{grid-template-columns:minmax(270px,.95fr) minmax(300px,1.05fr) minmax(300px,1.06fr) minmax(280px,.94fr)}
+body.showcase-poster-ready .poster-showcase-grid[data-columns="3"]{grid-template-columns:minmax(300px,.9fr) minmax(360px,1.2fr) minmax(320px,.9fr)}
+body.showcase-poster-ready .poster-panel{min-width:0;padding:13px;border:1px solid rgba(154,207,255,.18);background:linear-gradient(180deg,rgba(8,20,43,.72),rgba(6,15,32,.56));box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+body.showcase-poster-ready .poster-panel__head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:11px;padding:0 2px 10px;border-bottom:1px solid rgba(154,207,255,.18)}
+body.showcase-poster-ready .poster-panel__head strong{color:#dcecff;font:700 .7rem/1 Orbitron,sans-serif;letter-spacing:.1em}
+body.showcase-poster-ready .poster-panel__head span{color:#8cb9ee;font:700 .55rem/1 "Share Tech Mono",monospace;letter-spacing:.08em}
+body.showcase-poster-ready .poster-panel__body{position:relative;min-width:0}
+body.showcase-poster-ready .poster-panel--visual .cast-card__image{position:relative;width:100%;height:auto;min-height:0;aspect-ratio:9/11;overflow:hidden;border:1px solid rgba(154,207,255,.15);background:#081329;opacity:1;transform:none}
+body.showcase-poster-ready .poster-panel--visual .cast-card__image:before{background:linear-gradient(to top,rgba(3,9,21,.88),transparent 46%)}
+body.showcase-poster-ready .poster-panel--visual .cast-card__image img{width:100%;height:100%;object-fit:cover;transition:.5s transform}
+body.showcase-poster-ready .poster-panel--visual:hover .cast-card__image img{transform:scale(calc(var(--tnx-image-scale,1)*1.02))}
+body.showcase-poster-ready .poster-visual-caption{position:absolute;right:12px;bottom:14px;left:12px;z-index:5;color:#fff;font-size:.8rem;line-height:1.6;text-shadow:0 2px 12px #000;pointer-events:none}
+body.showcase-poster-ready .poster-visual-caption span{white-space:pre-wrap}
+body.showcase-poster-ready .poster-visual-caption strong{display:block;margin-top:7px;color:#ff8de0;font:700 1.05rem/1 Orbitron,"Noto Sans JP",sans-serif}
+body.showcase-poster-ready .poster-panel--profile .cast-card__body{display:flex;min-height:100%;flex-direction:column;padding:4px 4px 2px;opacity:1;transform:none}
+body.showcase-poster-ready .poster-panel--profile .cast-card__slot{display:none}
+body.showcase-poster-ready .poster-panel--profile .cast-card__reading{margin:3px 0 4px;color:#63bfff;font-size:.7rem}
+body.showcase-poster-ready .poster-panel--profile .cast-card__name{margin:3px 0 0;color:#80e1ff;font-size:clamp(1.7rem,2.4vw,2.8rem);line-height:1.08;letter-spacing:.01em}
+body.showcase-poster-ready .poster-panel--profile .cast-card__styles{margin-top:14px}
+body.showcase-poster-ready .poster-panel--profile .style{font-size:.58rem}
+body.showcase-poster-ready .poster-panel--profile .cast-card__meta{margin-top:14px}
+body.showcase-poster-ready .poster-panel--profile .cast-card__meta>div{padding:7px 9px}
+body.showcase-poster-ready .poster-panel--profile .cast-card__tagline{order:-1;margin:12px 0 10px;padding-left:12px;border-left:1px solid #7fd7ff;color:#f5f8ff;font-size:.88rem;line-height:1.75}
+body.showcase-poster-ready .poster-panel--profile .cast-card__handout-flag{margin-top:12px}
+body.showcase-poster-ready .poster-panel--profile .cast-card__link{margin-top:auto;padding-top:14px}
+body.showcase-poster-ready .poster-panel--handout .handout-file{min-height:0;border:0;background:transparent;box-shadow:none}
+body.showcase-poster-ready .poster-panel--handout .handout-file:before{display:none}
+body.showcase-poster-ready .poster-panel--handout .handout-file__top{padding:5px 2px 10px;border-bottom:1px solid rgba(154,207,255,.12)}
+body.showcase-poster-ready .poster-panel--handout .handout-file__body{padding:15px 4px 4px}
+body.showcase-poster-ready .poster-panel--handout .handout-file__body>p:first-child{font-size:.5rem}
+body.showcase-poster-ready .poster-panel--handout .handout-file h3{margin-top:11px;color:#7fe1ff;font-size:1.3rem}
+body.showcase-poster-ready .poster-panel--handout .handout-file__copy{margin-top:14px;color:#e7f0ff;font-size:.78rem;line-height:1.85;max-height:18em;overflow:auto}
+body.showcase-poster-ready .poster-credit-table{display:grid;gap:10px}
+body.showcase-poster-ready .poster-credit-row{display:grid;grid-template-columns:82px 1fr;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(154,207,255,.14)}
+body.showcase-poster-ready .poster-credit-row span{color:#7fd7ff;font:700 .66rem/1.2 Orbitron,sans-serif;letter-spacing:.06em}
+body.showcase-poster-ready .poster-credit-row strong{color:#eff6ff;font-size:.8rem;line-height:1.55;overflow-wrap:anywhere}
+body.showcase-poster-ready .poster-credit-kicker{margin:18px 0 0;padding-top:15px;border-top:1px solid rgba(154,207,255,.18);color:#edf4ff;font-size:1rem;line-height:1.6}
+body.showcase-poster-ready .poster-credit-note{margin:13px 0 0;color:#9fb3cf;font-size:.7rem;line-height:1.8;white-space:pre-line}
+body.showcase-poster-ready .poster-roster{margin-top:14px;padding:13px;border:1px solid rgba(154,207,255,.14);background:rgba(6,15,32,.46)}
+body.showcase-poster-ready .poster-roster__title{margin-bottom:9px;color:#8fbbea;font:700 .58rem/1 Orbitron,sans-serif;letter-spacing:.1em}
+body.showcase-poster-ready .poster-roster__list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+body.showcase-poster-ready .poster-roster__item{display:grid;gap:5px;padding:10px;border:1px solid rgba(154,207,255,.12);background:rgba(7,19,40,.56)}
+body.showcase-poster-ready .poster-roster__item span{color:#6faee8;font:700 .5rem/1 "Share Tech Mono",monospace}
+body.showcase-poster-ready .poster-roster__item strong{color:#fff;font-size:.76rem}
+body.showcase-poster-ready .poster-roster__item small{color:#8da4c1;font-size:.58rem}
+body.showcase-poster-ready .footer{padding-top:12px;border-top:1px solid rgba(154,207,255,.08)}
+@media(max-width:1280px){body.showcase-poster-ready .poster-showcase-grid[data-columns="4"]{grid-template-columns:minmax(260px,.9fr) minmax(300px,1.1fr) minmax(300px,1fr)}body.showcase-poster-ready .poster-showcase-grid[data-columns="4"] .poster-panel--credits{grid-column:1/-1}body.showcase-poster-ready .poster-showcase-grid[data-columns="3"]{grid-template-columns:minmax(280px,.9fr) minmax(340px,1.1fr)}body.showcase-poster-ready .poster-showcase-grid[data-columns="3"] .poster-panel--credits{grid-column:1/-1}body.showcase-poster-ready .poster-roster__list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){body.showcase-poster-ready .scene-opening{min-height:82svh}body.showcase-poster-ready .opening-content{width:min(100% - 38px,1380px);min-height:82svh;padding:152px 0 86px}body.showcase-poster-ready .opening-content:before{width:100%;height:58%;transform:translateY(-35%)}body.showcase-poster-ready .opening-content .scene-index,body.showcase-poster-ready .opening-kicker,body.showcase-poster-ready .opening-content h1,body.showcase-poster-ready .opening-subtitle,body.showcase-poster-ready .opening-ruler{margin-left:18px}body.showcase-poster-ready .poster-opening-topbar{left:18px;right:18px;grid-template-columns:1fr auto}body.showcase-poster-ready .poster-nav{display:none}body.showcase-poster-ready .poster-side-copy,body.showcase-poster-ready .poster-opening-aside{display:none}body.showcase-poster-ready .poster-showcase-board{margin-top:-30px;padding:0 16px 28px}body.showcase-poster-ready .poster-showcase-frame{padding:11px}body.showcase-poster-ready .poster-showcase-grid[data-columns="4"],body.showcase-poster-ready .poster-showcase-grid[data-columns="3"]{grid-template-columns:1fr}body.showcase-poster-ready .poster-showcase-grid[data-columns="4"] .poster-panel--credits,body.showcase-poster-ready .poster-showcase-grid[data-columns="3"] .poster-panel--credits{grid-column:auto}body.showcase-poster-ready .poster-panel--visual .cast-card__image{aspect-ratio:4/5}body.showcase-poster-ready .poster-roster__list{grid-template-columns:1fr 1fr}body.showcase-poster-ready .opening-scroll{right:18px}}
+@media(max-width:560px){body.showcase-poster-ready .poster-brand__logo{font-size:1.55rem}body.showcase-poster-ready .poster-brand__sub{font-size:.48rem}body.showcase-poster-ready .poster-topnote{display:none}body.showcase-poster-ready .opening-content h1{font-size:clamp(2rem,11vw,3.2rem)}body.showcase-poster-ready .opening-subtitle{font-size:.78rem}body.showcase-poster-ready .poster-roster__list{grid-template-columns:1fr}body.showcase-poster-ready .poster-credit-row{grid-template-columns:1fr;gap:4px}}
+@media(prefers-reduced-motion:reduce){body.showcase-poster-ready .poster-showcase-board{opacity:1;transform:none;transition:none}body.showcase-poster-ready .poster-panel--visual:hover .cast-card__image img{transform:scale(var(--tnx-image-scale,1))}}
