@@ -8,8 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css-next/pages/act-showcase.css?v=20260906c">
   <link rel="stylesheet" href="./css-next/pages/act-showcase-adaptive.css?v=20260906c">
-  <link rel="stylesheet" href="./css-next/pages/act-showcase-poster.css?v=20260906a">
-  <link rel="stylesheet" href="./css-next/pages/act-showcase-poster-motion.css?v=20260906a">
+  <link rel="stylesheet" href="./css-next/pages/act-showcase-poster-v2.css?v=20260906a">
 </head>
 <body id="act-showcase-page">
   <div id="cinematic-intro" class="cinematic-intro" aria-hidden="true">
@@ -43,19 +42,14 @@
     <main id="showcase-story" class="showcase-story">
       <section id="scene-opening" class="showcase-scene scene-opening" data-scene="opening" aria-labelledby="opening-act-name">
         <div class="opening-world" aria-hidden="true">
-          <div class="opening-city">
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-          </div>
+          <div class="opening-city"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
           <div class="opening-horizon"></div>
           <div class="opening-floor"></div>
           <div class="opening-door opening-door--left"><i></i></div>
           <div class="opening-door opening-door--right"><i></i></div>
         </div>
         <div class="scene-shell opening-content">
-          <div class="opening-systemline">
-            <span>N◎VA MUNICIPAL DATABASE</span>
-            <span>PUBLIC ACT FILE</span>
-          </div>
+          <div class="opening-systemline"><span>N◎VA MUNICIPAL DATABASE</span><span>PUBLIC ACT FILE</span></div>
           <p class="scene-index">01 // OPENING</p>
           <p id="showcase-kicker" class="opening-kicker">ACT SHOWCASE</p>
           <h1 id="opening-act-name">ACT CAST FILE</h1>
@@ -69,96 +63,36 @@
         <div id="trailer-ghost-title" class="trailer-ghost" aria-hidden="true">TRAILER</div>
         <div class="scene-shell trailer-layout">
           <div class="trailer-copy">
-            <p class="scene-index">02 // ACT TRAILER</p>
-            <p class="scene-eyebrow">ARCHIVE INTRODUCTION</p>
-            <h2 id="trailer-title">ACT TRAILER</h2>
-            <p id="trailer-body" class="trailer-body"></p>
-            <div id="trailer-empty" class="empty-data" hidden>
-              <span>NO TRAILER COPY</span>
-              <strong>INTRODUCTION DATA NOT PUBLISHED</strong>
-            </div>
+            <p class="scene-index">02 // ACT TRAILER</p><p class="scene-eyebrow">ARCHIVE INTRODUCTION</p><h2 id="trailer-title">ACT TRAILER</h2><p id="trailer-body" class="trailer-body"></p>
+            <div id="trailer-empty" class="empty-data" hidden><span>NO TRAILER COPY</span><strong>INTRODUCTION DATA NOT PUBLISHED</strong></div>
           </div>
-          <figure id="trailer-visual" class="trailer-visual" hidden>
-            <img id="trailer-image" alt="">
-            <figcaption>
-              <span>VISUAL FEED</span>
-              <strong id="trailer-cast-name"></strong>
-            </figcaption>
-          </figure>
+          <figure id="trailer-visual" class="trailer-visual" hidden><img id="trailer-image" alt=""><figcaption><span>VISUAL FEED</span><strong id="trailer-cast-name"></strong></figcaption></figure>
         </div>
       </section>
 
       <section id="scene-handout" class="showcase-scene scene-handout" data-scene="handout" aria-labelledby="handout-heading">
-        <div class="scene-shell">
-          <header class="scene-heading">
-            <div>
-              <p class="scene-index">03 // HANDOUT</p>
-              <p class="scene-eyebrow">PLAYER INFORMATION FILE</p>
-              <h2 id="handout-heading">HANDOUT</h2>
-            </div>
-            <p class="scene-heading__note">PUBLIC DATA ONLY</p>
-          </header>
-          <div id="showcase-handouts" class="handout-grid"></div>
-        </div>
+        <div class="scene-shell"><header class="scene-heading"><div><p class="scene-index">03 // HANDOUT</p><p class="scene-eyebrow">PLAYER INFORMATION FILE</p><h2 id="handout-heading">HANDOUT</h2></div><p class="scene-heading__note">PUBLIC DATA ONLY</p></header><div id="showcase-handouts" class="handout-grid"></div></div>
       </section>
 
       <section id="scene-cast" class="showcase-scene scene-cast" data-scene="cast" aria-labelledby="cast-heading">
-        <div class="scene-shell">
-          <header class="scene-heading scene-heading--cast">
-            <div>
-              <p class="scene-index">04 // CAST</p>
-              <p class="scene-eyebrow">ASSIGNED CAST ARCHIVE</p>
-              <h2 id="cast-heading">CAST</h2>
-            </div>
-            <div id="showcase-navigation" class="cast-chips" aria-label="キャスト移動"></div>
-          </header>
-          <div id="showcase-casts" class="cast-stage"></div>
-        </div>
+        <div class="scene-shell"><header class="scene-heading scene-heading--cast"><div><p class="scene-index">04 // CAST</p><p class="scene-eyebrow">ASSIGNED CAST ARCHIVE</p><h2 id="cast-heading">CAST</h2></div><div id="showcase-navigation" class="cast-chips" aria-label="キャスト移動"></div></header><div id="showcase-casts" class="cast-stage"></div></div>
       </section>
 
       <section id="scene-data" class="showcase-scene scene-data" data-scene="data" aria-labelledby="data-heading">
-        <div class="scene-shell data-layout">
-          <header class="scene-heading">
-            <div>
-              <p class="scene-index">05 // ACT DATA</p>
-              <p class="scene-eyebrow">PUBLIC ARCHIVE SUMMARY</p>
-              <h2 id="data-heading">ACT DATA</h2>
-            </div>
-          </header>
-          <div class="data-metrics">
-            <article><span>PUBLIC CAST</span><strong id="metric-cast">0</strong><small>FILES</small></article>
-            <article><span>HANDOUT</span><strong id="metric-handout">0</strong><small>FILES</small></article>
-            <article><span>STYLE TAGS</span><strong id="metric-style">0</strong><small>VISIBLE</small></article>
-          </div>
-          <div class="data-terminal">
-            <div><span>ACT NAME</span><strong id="data-act-name">—</strong></div>
-            <div><span>RULER</span><strong id="data-ruler">—</strong></div>
-            <div><span>PUBLIC STATUS</span><strong>ARCHIVED / OPEN</strong></div>
-          </div>
-        </div>
+        <div class="scene-shell data-layout"><header class="scene-heading"><div><p class="scene-index">05 // ACT DATA</p><p class="scene-eyebrow">PUBLIC ARCHIVE SUMMARY</p><h2 id="data-heading">ACT DATA</h2></div></header><div class="data-metrics"><article><span>PUBLIC CAST</span><strong id="metric-cast">0</strong><small>FILES</small></article><article><span>HANDOUT</span><strong id="metric-handout">0</strong><small>FILES</small></article><article><span>STYLE TAGS</span><strong id="metric-style">0</strong><small>VISIBLE</small></article></div><div class="data-terminal"><div><span>ACT NAME</span><strong id="data-act-name">—</strong></div><div><span>RULER</span><strong id="data-ruler">—</strong></div><div><span>PUBLIC STATUS</span><strong>ARCHIVED / OPEN</strong></div></div></div>
       </section>
 
       <section id="scene-end" class="showcase-scene scene-end" data-scene="end" aria-labelledby="end-title">
-        <div class="scene-shell end-content">
-          <p class="scene-index">06 // END CARD</p>
-          <p class="scene-eyebrow">PUBLIC ACT FILE COMPLETE</p>
-          <div class="end-seal" aria-hidden="true"><span>N◎VA</span><i></i></div>
-          <h2 id="end-title">END OF ACT FILE</h2>
-          <p id="end-act-name"></p>
-          <strong>THE ACT BEGINS NOW</strong>
-        </div>
+        <div class="scene-shell end-content"><p class="scene-index">06 // END CARD</p><p class="scene-eyebrow">PUBLIC ACT FILE COMPLETE</p><div class="end-seal" aria-hidden="true"><span>N◎VA</span><i></i></div><h2 id="end-title">END OF ACT FILE</h2><p id="end-act-name"></p><strong>THE ACT BEGINS NOW</strong></div>
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="scene-shell">「トーキョーN◎VA THE AXLERATION」は有限会社ファーイースト・アミューズメント・リサーチの著作物です。</div>
-    </footer>
+    <footer class="footer"><div class="scene-shell">「トーキョーN◎VA THE AXLERATION」は有限会社ファーイースト・アミューズメント・リサーチの著作物です。</div></footer>
   </div>
 
   <script type="module" src="./js/act-showcase.js?v=20260906d"></script>
   <script type="module" src="./js/act-showcase-adaptive.js?v=20260906c"></script>
-  <script type="module" src="./js/act-showcase-poster.js?v=20260906a"></script>
-  <script type="module" src="./js/act-showcase-poster-bg.js?v=20260906a"></script>
-  <script type="module" src="./js/act-showcase-poster-motion.js?v=20260906a"></script>
+  <script type="module" src="./js/act-showcase-poster-bg.js?v=20260906b"></script>
+  <script type="module" src="./js/act-showcase-poster-v2.js?v=20260906a"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city.webp";
+const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city-v2.svg";
 
 initializePosterBackground();
 
