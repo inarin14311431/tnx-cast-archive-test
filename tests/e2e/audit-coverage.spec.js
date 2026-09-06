@@ -3,6 +3,7 @@ import { getTestCastId, hasAuthCredentials, waitForEditorReady } from './helpers
 import { TEST_OWNER_ID } from './owner-policy.js';
 
 const publicId = 'TNX-000029';
+
 test('認証付きプロキシで所有キャストの登録済み倉庫データを取得できる', async ({page}) => {
   test.skip(!hasAuthCredentials(), '認証必須');
   await page.goto('/index.html');
@@ -21,7 +22,7 @@ test('認証付きプロキシで所有キャストの登録済み倉庫デー�
 test('一覧・PC詳細・モバイル詳細で表示IDが一致する', async ({page}) => {
   await page.goto('/index.html');
   await page.getByRole('searchbox').fill('トリル');
-  const card = page.locator(`.cast-card`).filter({has:page.locator(`a[href*="id=${publicId}"]`)});
+  const card = page.locator('.cast-card').filter({has:page.locator(`a[href*="id=${publicId}"]`)});
   await expect(card).toHaveCount(1);
   const expected = await card.locator('.cast-card__serial').innerText();
   expect(expected).toMatch(/^TNX-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
@@ -47,10 +48,17 @@ for (const mode of ['desktop','mobile']) {
   test(`主要編集画面の入力ラベルとリソース予算 ${mode}`, async ({page}) => {
     test.skip(!hasAuthCredentials(), '認証必須');
     await page.goto(`/${mode==='desktop'?'sheet':'sheet-mobile'}.html?id=${getTestCastId()}`);
-    if (mode==='desktop') await waitForEditorReady(page);
-    else await expect(page.locator('[data-mobile-character-field="character_name"]')).not.toHaveValue('');
-    const selector = mode==='desktop' ? '#character-name' : '[data-mobile-character-field="character_name"]';
-    await expect(page.locator(selector)).toHaveAccessibleName(/キャスト|名前|名称/);
+    let field;
+    if (mode==='desktop') {
+      await waitForEditorReady(page);
+      field = page.locator('#character-name');
+    } else {
+      await expect(page.locator('[data-mobile-character-field="character_name"]')).not.toHaveValue('');
+      await page.locator('[data-mobile-profile-group="identity"]').click();
+      await expect(page.locator('#mobile-profile-dialog')).toBeVisible();
+      field = page.locator('[data-mobile-profile-modal-field="character_name"]');
+    }
+    await expect(field).toHaveAccessibleName(/キャスト|名前|名称/);
     const metrics = await page.evaluate(() => ({
       nodes:document.querySelectorAll('*').length,
       resources:performance.getEntriesByType('resource').length,
@@ -73,4 +81,73 @@ test('取込ダイアログはキーボードで閉じられる', async ({page})
   await expect(page.locator('#character-sheets-import-url')).toHaveAccessibleName('キャラクターシート倉庫URL');
   await page.keyboard.press('Escape');
   await expect(page.locator('#legacy-import-dialog')).toBeHidden();
+});
+
+test('PC編集は所有キャストを保存・再読込し原状復帰できる', async ({page}) => {
+  test.skip(!hasAuthCredentials(), '認証必須');
+  test.setTimeout(60000);
+  const url = `/sheet.html?id=${getTestCastId()}`;
+  await page.goto(url);
+  await waitForEditorReady(page);
+  const field = page.locator('#summary');
+  const original = await field.inputValue();
+  const marker = `${original}${original ? '\n' : ''}[E2E AUDIT ${Date.now()}]`;
+
+  async function save(value) {
+    await field.fill(value);
+    await page.locator('#save-button').click();
+    await expect(page.locator('#save-button')).toHaveAttribute('data-save-state', 'saved', {timeout:20000});
+  }
+
+  try {
+    await save(marker);
+    await page.reload();
+    await waitForEditorReady(page);
+    await expect(page.locator('#summary')).toHaveValue(marker);
+  } finally {
+    if (!page.isClosed()) {
+      await page.goto(url);
+      await waitForEditorReady(page);
+      const restore = page.locator('#summary');
+      await restore.fill(original);
+      await page.locator('#save-button').click();
+      await expect(page.locator('#save-button')).toHaveAttribute('data-save-state', 'saved', {timeout:20000});
+    }
+  }
+});
+
+test('モバイル編集は所有キャストを保存・再読込し原状復帰できる', async ({page}) => {
+  test.skip(!hasAuthCredentials(), '認証必須');
+  test.setTimeout(60000);
+  await page.setViewportSize({width:390, height:844});
+  const url = `/sheet-mobile.html?id=${getTestCastId()}`;
+  await page.goto(url);
+  await expect(page.locator('[data-mobile-character-field="character_name"]')).not.toHaveValue('');
+  const source = page.locator('[data-mobile-character-field="summary"]');
+  const original = await source.inputValue();
+  const marker = `${original}${original ? '\n' : ''}[E2E MOBILE AUDIT ${Date.now()}]`;
+
+  async function editAndSave(value) {
+    await page.locator('[data-mobile-profile-group="summary"]').click();
+    await expect(page.locator('#mobile-profile-dialog')).toBeVisible();
+    await page.locator('[data-mobile-profile-modal-field="summary"]').fill(value);
+    await page.locator('#mobile-profile-dialog-apply').click();
+    const save = page.locator('#mobile-save');
+    await expect(save).toHaveAttribute('data-state', 'dirty');
+    await save.click();
+    await expect(save).toHaveAttribute('data-state', 'saved', {timeout:20000});
+  }
+
+  try {
+    await editAndSave(marker);
+    await page.reload();
+    await expect(page.locator('[data-mobile-character-field="character_name"]')).not.toHaveValue('');
+    await expect(page.locator('[data-mobile-character-field="summary"]')).toHaveValue(marker);
+  } finally {
+    if (!page.isClosed()) {
+      await page.goto(url);
+      await expect(page.locator('[data-mobile-character-field="character_name"]')).not.toHaveValue('');
+      await editAndSave(original);
+    }
+  }
 });
