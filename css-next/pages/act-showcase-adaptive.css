@@ -1,5 +1,5 @@
 body.showcase-adaptive-ready [data-scene][hidden],
-body.showcase-adaptive-ready [data-scene-target][hidden]{display:none!important}
+body.showcase-adaptive-ready [data-scene-target][hidden]{display:none}
 
 body[data-showcase-cast-count="1"] .scene-cast{min-height:auto;padding-block:clamp(54px,7vw,92px)}
 body[data-showcase-cast-count="1"] .scene-heading--cast{margin-bottom:clamp(24px,4vw,42px)}
