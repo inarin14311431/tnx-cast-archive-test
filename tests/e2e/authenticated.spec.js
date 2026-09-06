@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./safe-test.js";
 import { getTestCastId, hasAuthCredentials, waitForEditorReady, watchPageErrors, watchStaticAssetErrors } from "./helpers.js";
 
 test("保存済みログイン状態を再利用できる", async ({ page }) => {

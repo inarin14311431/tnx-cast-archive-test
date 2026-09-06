@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./safe-test.js";
 import { getTestCastId, hasAuthCredentials, waitForEditorReady, watchPageErrors } from "./helpers.js";
 
 test("モバイル編集の消費経験点はPC版の正規計算と一致する", async ({ page }, testInfo) => {
