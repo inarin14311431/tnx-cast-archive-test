@@ -10,8 +10,9 @@ test("モバイル編集の読込はPC版の正規消費経験点を変えない
 
   await page.goto(`/sheet.html?id=${castId}`);
   await waitForEditorReady(page);
+  await page.waitForLoadState("networkidle");
+  await expect(page.locator("#exp-total")).toHaveText(/^-?\d+(?:＋\d+)?$/);
   const before = (await page.locator("#exp-total").textContent())?.trim();
-  expect(before).toMatch(/^-?\d+$/);
 
   await page.goto(`/sheet-mobile.html?id=${castId}`);
   await expect(page.locator('[data-mobile-character-field="character_name"]')).not.toHaveValue("");
@@ -21,6 +22,7 @@ test("モバイル編集の読込はPC版の正規消費経験点を変えない
 
   await page.goto(`/sheet.html?id=${castId}`);
   await waitForEditorReady(page);
+  await page.waitForLoadState("networkidle");
   await expect(page.locator("#exp-total")).toHaveText(before);
 
   assertNoErrors();
