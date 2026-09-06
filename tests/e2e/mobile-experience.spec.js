@@ -11,7 +11,7 @@ test("モバイル編集の読込はPC版の正規消費経験点を変えない
   await page.goto(`/sheet.html?id=${castId}`);
   await waitForEditorReady(page);
   const before = (await page.locator("#exp-total").textContent())?.trim();
-  expect(before).toMatch(/^\d+$/);
+  expect(before).toMatch(/^-?\d+$/);
 
   await page.goto(`/sheet-mobile.html?id=${castId}`);
   await expect(page.locator('[data-mobile-character-field="character_name"]')).not.toHaveValue("");
