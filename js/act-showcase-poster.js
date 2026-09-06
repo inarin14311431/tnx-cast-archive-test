@@ -48,10 +48,10 @@ function buildPosterShowcase(root) {
   const grid = element("div", "poster-showcase-grid");
 
   const leadCard = castCards[0];
+  const creditsPanel = createCreditsPanel(castCards);
   const visualPanel = createVisualPanel(leadCard);
   const profilePanel = createProfilePanel(leadCard);
   const handoutPanel = createHandoutPanel(handoutScene);
-  const creditsPanel = createCreditsPanel(castCards);
 
   grid.append(visualPanel, profilePanel);
   if (handoutPanel) grid.append(handoutPanel);
