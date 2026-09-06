@@ -49,7 +49,7 @@ function initializeMotion(opening, board) {
     const viewport = Math.max(window.innerHeight, 1);
     const pageMax = Math.max(document.documentElement.scrollHeight - viewport, 1);
     const pageProgress = clamp(window.scrollY / pageMax, 0, 1);
-    document.documentElement.style.setProperty("--poster-page-progress", `${(pageProgress * 100).toFixed(2)}%`);
+    document.documentElement.style.setProperty("--poster-page-progress", pageProgress.toFixed(4));
 
     const openingRect = opening.getBoundingClientRect();
     const openingProgress = clamp((-openingRect.top) / Math.max(openingRect.height * 0.82, 1), 0, 1);
@@ -96,7 +96,7 @@ function applyBoardMotion(board, frame, panels, roster, progress) {
     frame.style.setProperty("--poster-frame-opacity", (0.18 + enter * 0.82).toFixed(4));
     frame.style.setProperty("--poster-frame-y", `${((1 - enter) * 54 - settle * 6).toFixed(2)}px`);
     frame.style.setProperty("--poster-frame-scale", (0.975 + enter * 0.025).toFixed(4));
-    frame.style.setProperty("--poster-frame-glow", settle.toFixed(4));
+    frame.style.setProperty("--poster-frame-glow-alpha", (0.025 + settle * 0.105).toFixed(4));
   }
 
   panels.forEach((panel, index) => {
@@ -111,7 +111,9 @@ function applyBoardMotion(board, frame, panels, roster, progress) {
     panel.style.setProperty("--poster-panel-x", `${x.toFixed(2)}px`);
     panel.style.setProperty("--poster-panel-y", `${y.toFixed(2)}px`);
     panel.style.setProperty("--poster-panel-scale", (0.965 + panelIn * 0.035).toFixed(4));
-    panel.style.setProperty("--poster-panel-light", panelIn.toFixed(4));
+    panel.style.setProperty("--poster-panel-border-alpha", (0.13 + panelIn * 0.16).toFixed(4));
+    panel.style.setProperty("--poster-panel-glow-alpha", (0.015 + panelIn * 0.045).toFixed(4));
+    panel.style.setProperty("--poster-image-y", `${((1 - panelIn) * 6).toFixed(2)}px`);
   });
 
   if (roster) {
