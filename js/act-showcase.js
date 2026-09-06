@@ -3,6 +3,10 @@ import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "
 const SUPABASE_URL = "https://koprmbkoftuuffslhsvt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi";
 
+const SHOWCASE_BACKGROUND_SAMPLES = Object.freeze({
+  neotokyo: "./assets/showcase/act-showcase-neotokyo-sample.svg"
+});
+
 const status = document.querySelector("#act-showcase-status");
 const root = document.querySelector("#act-showcase-root");
 const story = document.querySelector("#showcase-story");
@@ -13,7 +17,9 @@ initialize();
 
 async function initialize() {
   try {
-    const slug = normalizeSlug(new URLSearchParams(location.search).get("id"));
+    const searchParams = new URLSearchParams(location.search);
+    const slug = normalizeSlug(searchParams.get("id"));
+    const requestedSampleBackground = normalizeSampleKey(searchParams.get("bgSample"));
     if (!slug) throw new Error("アクト識別名が指定されていません。");
 
     const data = await fetchPublicShowcase(slug);
@@ -21,7 +27,7 @@ async function initialize() {
       throw new Error("指定されたアクト紹介は公開されていません。公開画面から再度『アクト紹介を公開』してください。");
     }
 
-    renderShowcase(data);
+    renderShowcase(data, { requestedSampleBackground });
     status.hidden = true;
     root.hidden = false;
     requestAnimationFrame(() => story?.classList.add("is-ready"));
@@ -65,7 +71,7 @@ async function fetchPublicShowcase(slug) {
   return payload;
 }
 
-function renderShowcase(data) {
+function renderShowcase(data, options = {}) {
   const castList = Array.isArray(data.casts) ? data.casts.slice(0, 6) : [];
   if (!castList.length) throw new Error("このアクト紹介には表示できるキャストがありません。");
 
@@ -101,7 +107,7 @@ function renderShowcase(data) {
   }
   if (trailerEmpty) trailerEmpty.hidden = Boolean(introText);
 
-  const background = safeImageUrl(data.background);
+  const background = resolveShowcaseBackground(data.background, options.requestedSampleBackground);
   if (background) {
     document.body.style.setProperty("--showcase-background", `url("${escapeCssString(background)}")`);
     document.body.classList.add("has-showcase-background");
@@ -377,6 +383,11 @@ function initializeOpeningParallax() {
   }, { passive: true });
 }
 
+function resolveShowcaseBackground(value, sampleKey) {
+  const sample = SHOWCASE_BACKGROUND_SAMPLES[sampleKey];
+  return sample || safeImageUrl(value);
+}
+
 function setText(selector, value) {
   const node = document.querySelector(selector);
   if (node) node.textContent = value;
@@ -428,6 +439,14 @@ function safeColor(value) {
 
 function escapeCssString(value) {
   return String(value).replace(/["\\\n\r]/g, character => ({ '"': '\\"', "\\": "\\\\", "\n": "", "\r": "" }[character]));
+}
+
+function normalizeSampleKey(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "")
+    .slice(0, 32);
 }
 
 function normalizeSlug(value) {
