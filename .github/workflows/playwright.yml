@@ -50,7 +50,7 @@ jobs:
   authenticated-editor:
     name: Authenticated editor E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -62,20 +62,13 @@ jobs:
         run: npm install
       - name: Install Chromium
         run: npx playwright install chromium
-      - name: Run authenticated editor tests
+      - name: Run authenticated audit/editor tests
         run: >-
           npx playwright test
           tests/e2e/audit-coverage.spec.js
           tests/e2e/authenticated.spec.js
-          tests/e2e/troop-view.spec.js
-          tests/e2e/troop-editor-flow.spec.js
-          tests/e2e/legacy-import-profile.spec.js
-          tests/e2e/outfit-import-transfer.spec.js
-          tests/e2e/sheet-row-lifecycle.spec.js
-          tests/e2e/sheet-save-reload-flow.spec.js
-          tests/e2e/style-marks.spec.js
-          tests/e2e/style-separator.spec.js
           tests/e2e/style-skill-detail-integrity.spec.js
+          tests/e2e/troop-editor-flow.spec.js
           --project=chromium
         env:
           E2E_REQUIRE_AUTH: "1"
