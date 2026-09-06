@@ -106,8 +106,8 @@ body.showcase-scroll-motion .scene-end .end-content>strong{letter-spacing:var(--
   body.showcase-adaptive-ready .scene-data .data-metrics{grid-template-columns:1fr}
   body.showcase-adaptive-ready .scene-data .credit-card{min-height:150px}
   body.showcase-scroll-motion .showcase-scene>.scene-shell{transform:translate3d(0,var(--scene-rise,0),0)}
-  body.showcase-scroll-motion[data-showcase-cast-count="1"] .cast-card--lead .cast-card__image{transform:translate3d(0,calc(var(--cast-image-x,0) * .45),0) scale(var(--cast-image-scale,1))}
-  body.showcase-scroll-motion[data-showcase-cast-count="1"] .cast-card--lead .cast-card__body{transform:translate3d(0,calc(var(--cast-copy-x,0) * .45),0)}
+  body.showcase-scroll-motion[data-showcase-cast-count="1"] .cast-card--lead .cast-card__image{transform:translate3d(0,var(--cast-image-x,0),0) scale(var(--cast-image-scale,1))}
+  body.showcase-scroll-motion[data-showcase-cast-count="1"] .cast-card--lead .cast-card__body{transform:translate3d(0,var(--cast-copy-x,0),0)}
 }
 
 @media(prefers-reduced-motion:reduce){
