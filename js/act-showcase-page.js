@@ -1,4 +1,5 @@
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=3";
+import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=1";
 
 const SUPABASE_URL = "https://koprmbkoftuuffslhsvt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi";
@@ -22,6 +23,8 @@ async function initialize() {
     const params = new URLSearchParams(location.search);
     const slug = normalizeSlug(params.get("id"));
     const sample = normalizeSampleKey(params.get("bgSample"));
+    const isNeoTokyo = sample === "neotokyo";
+    if (isNeoTokyo) prepareNeoTokyoLoading(cinematicIntro);
     if (!slug) throw new Error("アクト識別名が指定されていません。");
 
     const data = await fetchPublicShowcase(slug);
@@ -41,7 +44,13 @@ async function initialize() {
       "showcase-scroll-motion"
     );
     requestAnimationFrame(() => story?.classList.add("is-ready"));
-    finishIntro();
+
+    if (isNeoTokyo) {
+      await runNeoTokyoIntro({ intro: cinematicIntro, model });
+      finishIntro(0);
+    } else {
+      finishIntro();
+    }
     initializeMotion(opening, board);
   } catch (error) {
     console.error(error);
@@ -93,6 +102,15 @@ function createShowcaseModel(data) {
   const pageTitle = text(data.pageTitle) || "ACT SHOWCASE";
   const heroTitle = text(data.heroTitle) || pageTitle;
   const actName = text(data.actName) || heroTitle;
+  const trailerSource = data.trailer && typeof data.trailer === "object" && !Array.isArray(data.trailer)
+    ? data.trailer
+    : null;
+  const trailer = trailerSource
+    ? text(trailerSource.body || trailerSource.text)
+    : text(data.trailer || data.actTrailer || data.trailerText || data.trailerBody);
+  const trailerTitle = trailerSource
+    ? text(trailerSource.title)
+    : text(data.trailerTitle);
 
   return {
     pageTitle,
@@ -100,6 +118,8 @@ function createShowcaseModel(data) {
     heroSubTitle: text(data.heroSubTitle) || "CAST SHOWCASE",
     actName,
     rulerName: text(data.rulerName),
+    trailer,
+    trailerTitle,
     background: safeImageUrl(data.background),
     casts
   };
