@@ -160,7 +160,7 @@ async function showOpening(state) {
     sub: "公開アクトファイルへ接続中…",
     status: ["PUBLIC ACT FILE // DETECTED", "SHOWCASE DATA // VERIFIED", "TITLE & CREDITS // READY"]
   });
-  await wait(state, 900);
+  await wait(state, 2900);
 }
 
 async function showActTitle(state, model) {
@@ -186,7 +186,7 @@ async function showActTitle(state, model) {
 
   content.append(textNode("p", "neotokyo-sequence__terminal", "TITLE & CREDITS LOCKED // PREPARING ACT TRAILER"));
   swapScreen(state, content);
-  await wait(state, 1500);
+  await wait(state, 1900);
 }
 
 async function showTrailer(state, model) {
@@ -281,7 +281,7 @@ async function showHandoutAndAssign(state, cast, index, total) {
   phaseLabel.textContent = `04 // HANDOUT ${pcLabel}  →  05 // ASSIGNMENT ${pcLabel}`;
   linkStatus.textContent = "CROSS LINK // ESTABLISHING";
   sequence.classList.add("is-splitting");
-  await wait(state, 420);
+  await wait(state, 780);
   if (state.finished) return;
 
   const search = node("div", "neotokyo-sequence__search neotokyo-sequence__search--linked");
@@ -293,7 +293,7 @@ async function showHandoutAndAssign(state, cast, index, total) {
   assignPanel.replaceChildren(search);
   sequence.classList.add("is-searching");
   linkStatus.textContent = "CAST ARCHIVE // SEARCHING";
-  await wait(state, 620);
+  await wait(state, 850);
   if (state.finished) return;
 
   search.querySelector("strong").textContent = "MATCH FOUND";
@@ -303,7 +303,7 @@ async function showHandoutAndAssign(state, cast, index, total) {
   search.classList.add("is-found");
   linkStatus.textContent = "MATCH FOUND // ROUTING CAST FILE";
   sequence.classList.add("is-found");
-  await wait(state, 360);
+  await wait(state, 560);
   if (state.finished) return;
 
   const castCard = createAssignedCast(cast, pcNumber);
@@ -315,7 +315,7 @@ async function showHandoutAndAssign(state, cast, index, total) {
     ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
     : `PC${pcNumber} // CAST ASSIGNED`;
   setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
-  await wait(state, 520);
+  await wait(state, 700);
   if (state.finished) return;
 
   const nextLabel = pcNumber < total
