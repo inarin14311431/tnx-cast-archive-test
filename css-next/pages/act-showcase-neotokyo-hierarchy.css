@@ -28,8 +28,7 @@
 
 body.showcase-neotokyo #opening-subtitle{position:relative;padding-top:18px}
 body.showcase-neotokyo #opening-subtitle:before{position:absolute;top:0;left:0;content:"ACT OVERVIEW // アクト概要";color:#79dff3;font:700 .48rem/1 Orbitron,sans-serif;letter-spacing:.14em}
-body.showcase-neotokyo #opening-ruler{display:inline-block!important;margin-top:18px;padding:10px 15px;border-left:3px solid #ff79d3;background:linear-gradient(90deg,rgba(255,70,181,.14),transparent);color:#fff;font-size:clamp(.9rem,1.5vw,1.2rem);font-weight:900;letter-spacing:.08em}
-body.showcase-neotokyo #opening-ruler[hidden]{display:none!important}
+body.showcase-neotokyo #opening-ruler{margin-top:18px;padding:10px 15px;border-left:3px solid #ff79d3;background:linear-gradient(90deg,rgba(255,70,181,.14),transparent);color:#fff;font-size:clamp(.9rem,1.5vw,1.2rem);font-weight:900;letter-spacing:.08em}
 body.showcase-neotokyo .scene-opening .scene-index{color:#79dff3}
 
 @media(max-width:760px){
