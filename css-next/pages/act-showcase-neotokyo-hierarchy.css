@@ -26,6 +26,12 @@
 .neotokyo-sequence__overview-intro-label{margin:0 0 4px;color:#71dff4;font:700 .48rem/1 Orbitron,sans-serif;letter-spacing:.12em}
 .neotokyo-sequence__overview-intro{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;margin:0 0 9px;color:#9ebdce;font-size:.6rem;line-height:1.5;white-space:pre-wrap}
 
+body.showcase-neotokyo #opening-subtitle{position:relative;padding-top:18px}
+body.showcase-neotokyo #opening-subtitle:before{position:absolute;top:0;left:0;content:"ACT OVERVIEW // アクト概要";color:#79dff3;font:700 .48rem/1 Orbitron,sans-serif;letter-spacing:.14em}
+body.showcase-neotokyo #opening-ruler{display:inline-block!important;margin-top:18px;padding:10px 15px;border-left:3px solid #ff79d3;background:linear-gradient(90deg,rgba(255,70,181,.14),transparent);color:#fff;font-size:clamp(.9rem,1.5vw,1.2rem);font-weight:900;letter-spacing:.08em}
+body.showcase-neotokyo #opening-ruler[hidden]{display:none!important}
+body.showcase-neotokyo .scene-opening .scene-index{color:#79dff3}
+
 @media(max-width:760px){
   .neotokyo-sequence__ruler-credit{margin-top:17px;padding:11px 12px}.neotokyo-sequence__ruler-name{font-size:1.25rem}.neotokyo-sequence__act-overview{margin-top:13px;padding:10px 12px}.neotokyo-sequence__act-overview-copy{font-size:.7rem;line-height:1.55}.neotokyo-sequence__role-slot{margin-bottom:9px;padding:8px 9px}.neotokyo-sequence__role-slot strong{font-size:1rem}.neotokyo-sequence__summary-ruler{margin:5px 0;padding:5px 7px}.neotokyo-sequence__overview-intro{display:none}.neotokyo-sequence__summary-cast-role{font-size:.47rem}
 }
