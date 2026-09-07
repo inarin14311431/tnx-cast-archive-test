@@ -18,6 +18,12 @@ body::-webkit-scrollbar,
   transition: none;
 }
 
+/* Remote Storage thumbnails are covered by DOM/E2E contracts; keep the
+   operational-page baseline focused on the stable generator layout. */
+.showcase-background-presets {
+  display: none !important;
+}
+
 :root[data-theme="japanese-army"] body,
 :root[data-theme="japanese-army"] button,
 :root[data-theme="japanese-army"] input,
