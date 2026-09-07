@@ -1,5 +1,6 @@
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
+const DEFAULT_OVERVIEW = "CAST SHOWCASE";
 
 export function prepareNeoTokyoLoading(intro) {
   if (!intro) return;
@@ -7,9 +8,9 @@ export function prepareNeoTokyoLoading(intro) {
   const overline = intro.querySelector(".cinematic-intro__overline");
   const title = intro.querySelector(".cinematic-intro__title");
   const sub = intro.querySelector(".cinematic-intro__sub");
-  if (overline) overline.textContent = "N◎VA MUNICIPAL DATABASE // ACT ASSIGNMENT SYSTEM";
-  if (title) title.textContent = "OPENING";
-  if (sub) sub.textContent = "アクト紹介を読み込み中…";
+  if (overline) overline.textContent = "N◎VA MUNICIPAL DATABASE // PUBLIC ACT FILE";
+  if (title) title.textContent = "SYSTEM ACCESS";
+  if (sub) sub.textContent = "公開アクトファイルへ接続中…";
 }
 
 export async function runNeoTokyoIntro({ intro, model }) {
@@ -108,14 +109,14 @@ function createSequenceShell(state) {
     textNode("span", "", "NODE // NEOTOKYO")
   );
 
-  const skip = textNode("button", "neotokyo-sequence__skip", "SKIP INTRO");
+  const skip = textNode("button", "neotokyo-sequence__skip", "SKIP SEQUENCE");
   skip.type = "button";
   skip.setAttribute("aria-label", "アクト紹介の導入演出をスキップ");
   state.skipButton = skip;
   header.append(brand, system, skip);
 
   const rail = node("aside", "neotokyo-sequence__rail");
-  for (const [index, label] of ["OPENING", "ACT", "TRAILER", "HANDOUT", "ASSIGN", "SUMMARY"].entries()) {
+  for (const [index, label] of ["ACCESS", "CREDITS", "TRAILER", "HANDOUT", "ASSIGN", "SUMMARY"].entries()) {
     const item = node("div", "neotokyo-sequence__rail-item");
     item.append(textNode("span", "", String(index + 1).padStart(2, "0")), textNode("strong", "", label));
     state.railItems.push(item);
@@ -152,29 +153,40 @@ function createSequenceShell(state) {
 
 async function showOpening(state) {
   setPhase(state, 0);
-  setProgress(state, 5, "OPENING");
+  setProgress(state, 5, "SYSTEM ACCESS");
   replaceStage(state, {
-    eyebrow: "01 // OPENING",
-    title: "OPENING",
-    sub: "アクト紹介を読み込み中…",
-    status: ["PUBLIC ACT FILE // DETECTED", "SHOWCASE DATA // VERIFIED", "ASSIGNMENT SEQUENCE // READY"]
+    eyebrow: "01 // SYSTEM ACCESS",
+    title: "ACT FILE",
+    sub: "公開アクトファイルへ接続中…",
+    status: ["PUBLIC ACT FILE // DETECTED", "SHOWCASE DATA // VERIFIED", "TITLE & CREDITS // READY"]
   });
   await wait(state, 900);
 }
 
 async function showActTitle(state, model) {
   setPhase(state, 1);
-  setProgress(state, 18, "ACT FILE LOADED");
+  setProgress(state, 18, "TITLE & CREDITS");
   const content = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--title");
   content.append(
-    textNode("p", "neotokyo-sequence__eyebrow", "02 // ACT FILE"),
+    textNode("p", "neotokyo-sequence__eyebrow", "02 // TITLE & CREDITS"),
     textNode("p", "neotokyo-sequence__micro", "ACT TITLE"),
     textNode("h1", "neotokyo-sequence__act-title", model.actName || "ACT SHOWCASE"),
-    textNode("p", "neotokyo-sequence__ruler", model.rulerName ? `RL // ${model.rulerName}` : "RL // UNREGISTERED"),
-    textNode("p", "neotokyo-sequence__terminal", "ACT RECORD ACCEPTED // PREPARING TRAILER STREAM")
+    createRulerCredit(model.rulerName)
   );
+
+  const overview = getActOverview(model);
+  if (overview) {
+    const overviewBox = node("div", "neotokyo-sequence__act-overview");
+    overviewBox.append(
+      textNode("span", "neotokyo-sequence__act-overview-label", "ACT OVERVIEW // アクト概要"),
+      textNode("p", "neotokyo-sequence__act-overview-copy", overview)
+    );
+    content.append(overviewBox);
+  }
+
+  content.append(textNode("p", "neotokyo-sequence__terminal", "TITLE & CREDITS LOCKED // PREPARING ACT TRAILER"));
   swapScreen(state, content);
-  await wait(state, 1300);
+  await wait(state, 1500);
 }
 
 async function showTrailer(state, model) {
@@ -185,12 +197,18 @@ async function showTrailer(state, model) {
   const trailer = model.trailer || SAMPLE_TRAILER_MESSAGE;
   const copy = textNode("p", "neotokyo-sequence__readout", "");
   if (!model.trailer) copy.classList.add("is-placeholder");
+  const definition = node("p", "neotokyo-sequence__trailer-definition");
+  definition.append(
+    textNode("strong", "", "ACT TRAILER"),
+    textNode("span", "", "プレアクトで読み上げるトレーラー")
+  );
   content.append(
     textNode("p", "neotokyo-sequence__eyebrow", "03 // ACT TRAILER"),
-    textNode("p", "neotokyo-sequence__micro", "PUBLIC BROADCAST TEXT"),
+    definition,
+    textNode("p", "neotokyo-sequence__micro", "PRE-ACT READOUT / PUBLIC BROADCAST"),
     textNode("h2", "neotokyo-sequence__section-title", heading),
     copy,
-    textNode("p", "neotokyo-sequence__terminal", "VOICE CHANNEL // TEXT SYNTHESIS")
+    textNode("p", "neotokyo-sequence__terminal", "READOUT CHANNEL // TEXT SYNTHESIS")
   );
   swapScreen(state, content);
   await typeReadout(state, copy, trailer, 2600);
@@ -202,8 +220,9 @@ async function showHandoutAndAssign(state, cast, index, total) {
   const pcNumber = index + 1;
   const pcLabel = String(pcNumber).padStart(2, "0");
   const handout = cast?.handout && typeof cast.handout === "object" ? cast.handout : {};
-  const handoutTitle = clean(handout.title) || clean(cast?.participationRole) || `PC${pcNumber} HANDOUT`;
+  const handoutTitle = clean(handout.title) || `PC${pcNumber} HANDOUT`;
   const handoutBody = clean(handout.body) || "公開用ハンドアウト本文は登録されていません。";
+  const participationRole = getParticipationRole(cast);
   const progressBase = 34 + Math.round((index / Math.max(total, 1)) * 50);
 
   setPhase(state, 3);
@@ -237,7 +256,9 @@ async function showHandoutAndAssign(state, cast, index, total) {
   assignFrame.append(
     textNode("p", "neotokyo-sequence__micro", `05 // ASSIGNMENT ${pcLabel}`),
     textNode("h2", "neotokyo-sequence__assign-word", "ASSIGN"),
-    textNode("p", "neotokyo-sequence__assign-sub", "CAST MATCHING CHANNEL // STANDBY")
+    textNode("p", "neotokyo-sequence__assign-sub", participationRole
+      ? `ASSIGN SLOT // ${participationRole}`
+      : "CAST MATCHING CHANNEL // STANDBY")
   );
   assignPanel.append(assignFrame);
 
@@ -249,7 +270,9 @@ async function showHandoutAndAssign(state, cast, index, total) {
 
   sequence.classList.add("is-read");
   handoutTerminal.textContent = `HANDOUT COMPLETE // PC${pcNumber}`;
-  linkStatus.textContent = "HANDOUT COMPLETE // AWAITING ASSIGN";
+  linkStatus.textContent = participationRole
+    ? `HANDOUT COMPLETE // ASSIGN SLOT ${participationRole}`
+    : "HANDOUT COMPLETE // AWAITING ASSIGN";
   await waitForAdvance(state, `ASSIGN // PC${pcNumber}`);
   if (state.finished) return;
 
@@ -263,7 +286,7 @@ async function showHandoutAndAssign(state, cast, index, total) {
 
   const search = node("div", "neotokyo-sequence__search neotokyo-sequence__search--linked");
   search.append(
-    textNode("span", "", `PC${pcNumber} // ${handoutTitle}`),
+    textNode("span", "", participationRole ? `PC${pcNumber} // SLOT ${participationRole}` : `PC${pcNumber} // ${handoutTitle}`),
     textNode("strong", "", "SEARCHING CAST..."),
     textNode("small", "", "CROSS-REFERENCING PUBLIC CAST ARCHIVE")
   );
@@ -274,7 +297,9 @@ async function showHandoutAndAssign(state, cast, index, total) {
   if (state.finished) return;
 
   search.querySelector("strong").textContent = "MATCH FOUND";
-  search.querySelector("small").textContent = "IDENTITY MATCH // VERIFIED";
+  search.querySelector("small").textContent = participationRole
+    ? `ASSIGN SLOT ${participationRole} // VERIFIED`
+    : "IDENTITY MATCH // VERIFIED";
   search.classList.add("is-found");
   linkStatus.textContent = "MATCH FOUND // ROUTING CAST FILE";
   sequence.classList.add("is-found");
@@ -286,7 +311,9 @@ async function showHandoutAndAssign(state, cast, index, total) {
   assignPanel.replaceChildren(castCard);
   sequence.classList.remove("is-searching");
   sequence.classList.add("is-assigned");
-  linkStatus.textContent = `PC${pcNumber} // CAST ASSIGNED`;
+  linkStatus.textContent = participationRole
+    ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
+    : `PC${pcNumber} // CAST ASSIGNED`;
   setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
   await wait(state, 520);
   if (state.finished) return;
@@ -300,15 +327,15 @@ async function showHandoutAndAssign(state, cast, index, total) {
 function createAssignedCast(cast, pcNumber) {
   const card = node("article", "neotokyo-sequence__cast");
   const imageFrame = node("figure", "neotokyo-sequence__cast-image");
-  const image = createCastImage(cast, `PC${pcNumber} CAST`);
-  imageFrame.append(image);
+  imageFrame.append(createCastImage(cast, `PC${pcNumber} CAST`));
 
   const detail = node("div", "neotokyo-sequence__cast-detail");
-  const styles = getStyleLabels(cast);
-  const styleRow = node("div", "neotokyo-sequence__styles");
-  for (const style of styles) styleRow.append(textNode("span", "", style));
+  const participationRole = getParticipationRole(cast);
+  const roleSlot = createRoleSlot(participationRole);
+  const styleRow = createStyleRow(cast, participationRole);
   detail.append(
     textNode("p", "neotokyo-sequence__micro", `PC${pcNumber} // CAST ASSIGNED`),
+    roleSlot,
     textNode("h3", "", clean(cast?.fullName) || `CAST ${pcNumber}`),
     textNode("p", "neotokyo-sequence__cast-tagline", clean(cast?.tagline) || "PUBLIC CAST ARCHIVE"),
     styleRow,
@@ -316,6 +343,26 @@ function createAssignedCast(cast, pcNumber) {
   );
   card.append(imageFrame, detail);
   return card;
+}
+
+function createRoleSlot(participationRole) {
+  const slot = node("div", "neotokyo-sequence__role-slot");
+  slot.append(
+    textNode("span", "", "ASSIGN SLOT // 参加スタイル枠"),
+    textNode("strong", "", participationRole || "UNREGISTERED"),
+    textNode("small", "", "HANDOUT ROLE")
+  );
+  return slot;
+}
+
+function createStyleRow(cast, participationRole) {
+  const row = node("div", "neotokyo-sequence__styles");
+  for (const style of getStyleLabels(cast)) {
+    const chip = textNode("span", "", style);
+    if (participationRole && roleMatchesStyle(participationRole, style)) chip.classList.add("is-role");
+    row.append(chip);
+  }
+  return row;
 }
 
 async function showSummary(state, model) {
@@ -333,23 +380,32 @@ async function showSummary(state, model) {
   const overview = node("article", "neotokyo-sequence__overview");
   const overviewMeta = node("dl", "neotokyo-sequence__overview-meta");
   overviewMeta.append(
-    textNode("dt", "", "RULER"),
-    textNode("dd", "", model.rulerName || "—"),
     textNode("dt", "", "CAST"),
     textNode("dd", "", String(model.casts.length)),
     textNode("dt", "", "STATUS"),
     textNode("dd", "", "READY")
   );
   overview.append(
-    textNode("p", "neotokyo-sequence__micro", "ACT OVERVIEW"),
+    textNode("p", "neotokyo-sequence__micro", "ACT FILE // FINAL OVERVIEW"),
     textNode("h2", "neotokyo-sequence__summary-title", model.actName || "ACT SHOWCASE"),
-    overviewMeta,
-    textNode("p", "neotokyo-sequence__overview-label", model.trailerTitle || "ACT TRAILER"),
+    createSummaryRuler(model.rulerName),
+    overviewMeta
+  );
+
+  const actOverview = getActOverview(model);
+  if (actOverview) {
+    overview.append(
+      textNode("p", "neotokyo-sequence__overview-intro-label", "ACT OVERVIEW // アクト概要"),
+      textNode("p", "neotokyo-sequence__overview-intro", actOverview)
+    );
+  }
+  overview.append(
+    textNode("p", "neotokyo-sequence__overview-label", `${model.trailerTitle || "ACT TRAILER"} // 読み上げ用トレーラー`),
     textNode("p", "neotokyo-sequence__overview-copy", model.trailer || SAMPLE_TRAILER_MESSAGE)
   );
 
   const castArea = node("section", "neotokyo-sequence__summary-cast-area");
-  castArea.append(textNode("p", "neotokyo-sequence__micro", "CAST FILES"));
+  castArea.append(textNode("p", "neotokyo-sequence__micro", "CAST FILES // ASSIGNMENT ROSTER"));
   const castGrid = node("div", "neotokyo-sequence__summary-casts");
   model.casts.forEach((cast, index) => castGrid.append(createSummaryCast(cast, index + 1)));
   castArea.append(castGrid);
@@ -359,14 +415,25 @@ async function showSummary(state, model) {
   await waitForAdvance(state, "OPEN FULL SHOWCASE");
 }
 
+function createSummaryRuler(rulerName) {
+  const ruler = node("div", "neotokyo-sequence__summary-ruler");
+  ruler.append(
+    textNode("span", "", "RULER // ACT DIRECTION"),
+    textNode("strong", "", clean(rulerName) || "UNREGISTERED")
+  );
+  return ruler;
+}
+
 function createSummaryCast(cast, pcNumber) {
   const card = node("article", "neotokyo-sequence__summary-cast");
   const imageFrame = node("figure", "neotokyo-sequence__summary-cast-image");
   imageFrame.append(createCastImage(cast, `PC${pcNumber} CAST`));
   const body = node("div", "neotokyo-sequence__summary-cast-body");
   const styles = getStyleLabels(cast);
+  const participationRole = getParticipationRole(cast);
   body.append(
-    textNode("p", "neotokyo-sequence__micro", `PC${pcNumber}`),
+    textNode("p", "neotokyo-sequence__micro", `PC${pcNumber} // ASSIGN SLOT`),
+    textNode("p", "neotokyo-sequence__summary-cast-role", participationRole || "UNREGISTERED"),
     textNode("h3", "", clean(cast?.fullName) || `CAST ${pcNumber}`),
     textNode("p", "neotokyo-sequence__summary-cast-styles", styles.join(" / ") || "PUBLIC CAST"),
     textNode("p", "neotokyo-sequence__summary-cast-tagline", clean(cast?.tagline) || "PUBLIC CAST ARCHIVE")
@@ -375,10 +442,20 @@ function createSummaryCast(cast, pcNumber) {
   return card;
 }
 
+function createRulerCredit(rulerName) {
+  const ruler = node("div", "neotokyo-sequence__ruler-credit");
+  ruler.append(
+    textNode("span", "neotokyo-sequence__ruler-label", "RULER"),
+    textNode("strong", "neotokyo-sequence__ruler-name", clean(rulerName) || "UNREGISTERED"),
+    textNode("small", "neotokyo-sequence__ruler-role", "ACT DIRECTION // TITLE CREDIT")
+  );
+  return ruler;
+}
+
 function createCastImage(cast, fallbackAlt) {
   const image = document.createElement("img");
-  image.src = safeImageUrl(cast?.imageUrl) || FALLBACK_IMAGE;
-  image.alt = clean(cast?.imageAlt) || clean(cast?.fullName) || fallbackAlt;
+  image.src = safeImageUrl(cast?.imageUrl || cast?.image_url) || FALLBACK_IMAGE;
+  image.alt = clean(cast?.imageAlt || cast?.image_alt) || clean(cast?.fullName || cast?.full_name) || fallbackAlt;
   image.addEventListener("error", () => {
     if (!image.src.endsWith("scan-failed.webp")) image.src = FALLBACK_IMAGE;
   });
@@ -387,8 +464,31 @@ function createCastImage(cast, fallbackAlt) {
 
 function getStyleLabels(cast) {
   return Array.isArray(cast?.styles)
-    ? cast.styles.map(item => clean(item?.label)).filter(Boolean)
+    ? cast.styles.map(item => clean(item?.label || item?.name || item)).filter(Boolean)
     : [];
+}
+
+function getParticipationRole(cast) {
+  return clean(
+    cast?.participationRole ||
+    cast?.participation_role ||
+    cast?.handoutRole ||
+    cast?.handout_role
+  );
+}
+
+function roleMatchesStyle(role, style) {
+  const normalize = value => clean(value)
+    .replace(/[◎●]/g, "")
+    .replace(/[\s　]+/g, "")
+    .toLocaleLowerCase("ja-JP");
+  return Boolean(role && style && normalize(role) === normalize(style));
+}
+
+function getActOverview(model) {
+  const value = clean(model?.heroSubTitle);
+  if (!value || value.toUpperCase() === DEFAULT_OVERVIEW) return "";
+  return value;
 }
 
 function replaceStage(state, { eyebrow, title, sub, status = [] }) {
