@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 const generatorHtml = readFileSync(new URL("../showcase-generator.html", import.meta.url), "utf8");
 const publicHtml = readFileSync(new URL("../act-showcase.html", import.meta.url), "utf8");
+const entryCss = readFileSync(new URL("../css-next/pages/showcase-entry.css", import.meta.url), "utf8");
 const presets = readFileSync(new URL("../js/showcase-background-presets.js", import.meta.url), "utf8");
 const picker = readFileSync(new URL("../js/showcase-background-preset-picker.js", import.meta.url), "utf8");
 const resolver = readFileSync(new URL("../js/act-showcase-background-resolver.js", import.meta.url), "utf8");
@@ -12,7 +13,8 @@ const css = readFileSync(new URL("../css-next/pages/showcase-background-presets.
 test("generator exposes five named Supabase background presets", () => {
   assert.match(generatorHtml, /id="background-preset-grid"/);
   assert.match(generatorHtml, /showcase-background-preset-picker\.js\?v=1/);
-  assert.match(generatorHtml, /showcase-background-presets\.css\?v=1/);
+  assert.match(entryCss, /showcase-background-presets\.css\?v=1/);
+  assert.doesNotMatch(generatorHtml, /<link[^>]+showcase-background-presets\.css/);
   for (const [key, name] of [
     ["neon-waterfront", "ネオン・ウォーターフロント"],
     ["arcology-lobby", "アーコロジー・ロビー"],
