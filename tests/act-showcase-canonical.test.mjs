@@ -7,6 +7,8 @@ const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 test("act showcase loads one canonical page renderer", async () => {
   const html = await read("act-showcase.html");
   assert.match(html, /js\/act-showcase-page\.js/);
+  assert.match(html, /css-next\/pages\/act-showcase-cast-selector\.css/);
+  assert.match(html, /js\/act-showcase-summary-advance-guard\.js/);
   assert.doesNotMatch(html, /js\/act-showcase-adaptive\.js/);
   assert.doesNotMatch(html, /js\/act-showcase-poster-bg\.js/);
   assert.doesNotMatch(html, /js\/act-showcase-poster-v2\.js/);
@@ -30,6 +32,31 @@ test("canonical renderer consumes public showcase data directly", async () => {
   assert.match(source, /model\.casts/);
   assert.doesNotMatch(source, /MutationObserver/);
   assert.doesNotMatch(source, /querySelectorAll\("#showcase-casts \.cast-card"\)/);
+});
+
+test("canonical renderer keeps every cast selectable while switching detail", async () => {
+  const source = await read("js/act-showcase-page.js");
+  assert.match(source, /createRoster\(model\.casts,/);
+  assert.doesNotMatch(source, /createRoster\(model\.casts\.slice\(1\)\)/);
+  assert.match(source, /activeCastIndex/);
+  assert.match(source, /createCastGrid\(model, model\.casts\[activeCastIndex\]\)/);
+  assert.match(source, /grid\.replaceWith\(nextGrid\)/);
+  assert.match(source, /dataset\.castIndex/);
+  assert.match(source, /aria-pressed/);
+  assert.match(source, /event\.key !== "Enter" && event\.key !== " "/);
+});
+
+test("selected cast handout follows the selected cast instead of a different cast", async () => {
+  const source = await read("js/act-showcase-page.js");
+  assert.match(source, /createHandoutPanel\(\[cast\]\)/);
+});
+
+test("NeoTokyo final summary only exits through the explicit footer action", async () => {
+  const source = await read("js/act-showcase-summary-advance-guard.js");
+  assert.match(source, /neotokyo-sequence__screen--summary/);
+  assert.match(source, /neotokyo-sequence__stage/);
+  assert.match(source, /stopPropagation\(\)/);
+  assert.match(source, /capture: true/);
 });
 
 test("canonical renderer preserves public URL and link safety", async () => {
