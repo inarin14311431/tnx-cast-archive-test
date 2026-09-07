@@ -1,0 +1,74 @@
+name: Approve Visual Baseline PR281 Mobile
+
+on:
+  push:
+    branches:
+      - feat/neotokyo-cinematic-polish
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 15
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v7
+
+      - name: Checkout approved visual reference
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: visual-regression-baseline
+          path: .visual-reference
+
+      - name: Sync visual test contract
+        run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Regenerate approved mobile generator snapshots only
+        run: |
+          CI= npx playwright test \
+            --config=playwright.visual.config.js \
+            --project=visual-mobile \
+            --grep 'アクト紹介生成' \
+            --update-snapshots=all
+
+      - name: Verify only intended baseline files changed
+        working-directory: .visual-reference
+        run: |
+          cp ../tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/showcase-generator-nova-visual-mobile.png \
+             tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/showcase-generator-nova-visual-mobile.png
+          cp ../tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/showcase-generator-spectrum-neon-visual-mobile.png \
+             tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/showcase-generator-spectrum-neon-visual-mobile.png
+          changed="$(git status --short)"
+          echo "$changed"
+          test -n "$changed"
+          test "$(printf '%s\n' "$changed" | wc -l)" -eq 2
+          printf '%s\n' "$changed" | grep -F 'showcase-generator-nova-visual-mobile.png'
+          printf '%s\n' "$changed" | grep -F 'showcase-generator-spectrum-neon-visual-mobile.png'
+
+      - name: Commit approved visual baseline
+        working-directory: .visual-reference
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/showcase-generator-nova-visual-mobile.png
+          git add tests/visual/__screenshots__/visual-mobile/operational-pages.visual.spec.js/showcase-generator-spectrum-neon-visual-mobile.png
+          git commit -m 'Approve ACT TRAILER mobile generator visual baseline'
+          git push origin HEAD:visual-regression-baseline
