@@ -62,7 +62,7 @@ async function publishDynamicShowcase(button) {
     if (error) throw new Error(translateError(error));
     if (!actId) throw new Error("公開したアクト紹介を確認できませんでした。");
 
-    const publicUrl = new URL(`./act-showcase.html?id=${encodeURIComponent(slug)}`, location.href).href;
+    const publicUrl = new URL(`./act-showcase.html?id=${encodeURIComponent(slug)}&bgSample=neotokyo`, location.href).href;
     setStatus(`公開処理が完了しました。参加アクト履歴にも反映しました。 <a href="${escapeAttribute(publicUrl)}" target="_blank" rel="noopener">公開ページを開く</a>`, "success", true);
   } catch (error) {
     console.error(error);
