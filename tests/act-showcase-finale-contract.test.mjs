@@ -33,7 +33,7 @@ test("final summary becomes an ACT READY cast briefing without replacing canonic
   assert.match(enhancer, /FINAL ACT FILE \/\/ CAST ASSEMBLED/);
   assert.match(enhancer, /ACT CORE/);
   assert.match(enhancer, /ASSIGNED/);
-  assert.match(enhancer, /data\.castCount/);
+  assert.match(enhancer, /dataset\.castCount/);
   assert.match(css, /showcase-neotokyo-finale-active/);
   assert.match(css, /ENTER ACT \/\/ /);
   assert.match(css, /neotokyo-finale__cast-card/);
@@ -41,5 +41,6 @@ test("final summary becomes an ACT READY cast briefing without replacing canonic
 
 test("additional motion is disabled for reduced-motion users", () => {
   assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
-  assert.match(css, /animation:none!important/);
+  assert.match(css, /animation:none/);
+  assert.doesNotMatch(css, /!important/);
 });
