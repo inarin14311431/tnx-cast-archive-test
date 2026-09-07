@@ -155,12 +155,45 @@ function renderOpening(model) {
   note.append(textEl("span", "", "PUBLIC ACT ARCHIVE"), textEl("small", "", "NOVA MUNICIPAL DATABASE"));
   topbar.append(brand, nav, note);
   opening.prepend(topbar);
+  opening.append(createPosterOrnament());
   opening.append(
     textEl("div", "poster-v2-sidecopy", "この都市で、まだ見ぬ物語を。"),
     Object.assign(el("div", "poster-v2-aside"), {
       innerHTML: "<strong>CITY LIVES.</strong><span>STORIES REMAIN.</span><small>PUBLIC ARCHIVE</small>"
     })
   );
+}
+
+function createPosterOrnament() {
+  const layer = el("div", "poster-ornament");
+  layer.setAttribute("aria-hidden", "true");
+  const seal = el("div", "poster-ornament__seal");
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 800 800");
+  const shape = (tag, attributes, parent = svg) => {
+    const item = document.createElementNS(ns, tag);
+    for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+    parent.append(item);
+    return item;
+  };
+  const outer = shape("g", { class: "poster-ornament__orbit", fill: "none", stroke: "#70dfee" });
+  for (const [r, dash, opacity] of [[370, "2 12", .55], [351, "130 25 4 25", .45], [325, "1 0", .18]]) {
+    shape("circle", { cx: 400, cy: 400, r, "stroke-dasharray": dash, opacity }, outer);
+  }
+  for (let i = 0; i < 60; i += 1) {
+    shape("path", { d: `M400 30V${i % 5 === 0 ? 56 : 40}`, transform: `rotate(${i * 6} 400 400)`, "stroke-width": i % 5 === 0 ? 3 : 1, opacity: .65 }, outer);
+  }
+  const inner = shape("g", { class: "poster-ornament__orbit poster-ornament__orbit--reverse", fill: "none" });
+  shape("circle", { cx: 400, cy: 400, r: 290, stroke: "#ee83c9", "stroke-width": 2, "stroke-dasharray": "220 80 20 80", opacity: .55 }, inner);
+  shape("path", { d: "M400 137L628 268V532L400 663L172 532V268Z", stroke: "#76def1", opacity: .35 }, inner);
+  shape("circle", { cx: 400, cy: 400, r: 225, stroke: "#76def1", "stroke-dasharray": "3 9", opacity: .45 }, inner);
+  shape("path", { d: "M0 400H160M640 400H800M400 0V150M400 650V800", stroke: "#76def1", opacity: .3 });
+  const core = el("div", "poster-ornament__core");
+  core.append(textEl("span", "", "TOKYO // NEURO AGE"), textEl("strong", "", "N◎VA"), textEl("span", "", "PUBLIC ACT ARCHIVE"));
+  seal.append(svg, core);
+  layer.append(el("div", "poster-ornament__grid"), seal, el("div", "poster-ornament__scan"), el("div", "poster-ornament__ticks"));
+  return layer;
 }
 
 function applyBackground(background, sample) {
