@@ -36,6 +36,29 @@ test("NeoTokyo phases 1 and 2 are automatic while later phases wait for click", 
   assert.match(source, /OPEN FULL SHOWCASE/);
 });
 
+test("NeoTokyo system access, credits and trailer have distinct semantic roles", async () => {
+  const source = await read("js/act-showcase-neotokyo.js");
+  assert.match(source, /01 \/\/ SYSTEM ACCESS/);
+  assert.match(source, /02 \/\/ TITLE & CREDITS/);
+  assert.match(source, /ACT OVERVIEW \/\/ アクト概要/);
+  assert.match(source, /03 \/\/ ACT TRAILER/);
+  assert.match(source, /プレアクトで読み上げるトレーラー/);
+  assert.match(source, /\["ACCESS", "CREDITS", "TRAILER", "HANDOUT", "ASSIGN", "SUMMARY"\]/);
+  assert.doesNotMatch(source, /title: "OPENING"/);
+});
+
+test("NeoTokyo ruler is treated as a title credit and remains prominent in summary", async () => {
+  const source = await read("js/act-showcase-neotokyo.js");
+  const css = await read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
+  assert.match(source, /createRulerCredit\(model\.rulerName\)/);
+  assert.match(source, /RULER/);
+  assert.match(source, /ACT DIRECTION \/\/ TITLE CREDIT/);
+  assert.match(source, /createSummaryRuler\(model\.rulerName\)/);
+  assert.match(css, /neotokyo-sequence__ruler-name/);
+  assert.match(css, /border-left:3px solid #ff79d3/);
+  assert.match(css, /body\.showcase-neotokyo #opening-ruler/);
+});
+
 test("NeoTokyo handout remains visible and shifts left while ASSIGN opens on the right", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   const css = await read("css-next/pages/act-showcase-neotokyo-linked.css");
@@ -56,7 +79,21 @@ test("NeoTokyo handout remains visible and shifts left while ASSIGN opens on the
   assert.match(css, /clip-path:inset\(0 100% 0 0\)/);
 });
 
-test("NeoTokyo assignment still preserves search, match and assigned sequence", async () => {
+test("participation role is an explicit ASSIGN slot, not a fallback handout title", async () => {
+  const source = await read("js/act-showcase-neotokyo.js");
+  const css = await read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
+  const handoutBody = source.slice(source.indexOf("async function showHandoutAndAssign"), source.indexOf("function createAssignedCast"));
+  assert.match(handoutBody, /const handoutTitle = clean\(handout\.title\) \|\| `PC\$\{pcNumber\} HANDOUT`/);
+  assert.doesNotMatch(handoutBody, /handoutTitle = .*participationRole/);
+  assert.match(source, /ASSIGN SLOT \/\/ 参加スタイル枠/);
+  assert.match(source, /getParticipationRole/);
+  assert.match(source, /participation_role/);
+  assert.match(source, /roleMatchesStyle/);
+  assert.match(css, /neotokyo-sequence__role-slot/);
+  assert.match(css, /span\.is-role/);
+});
+
+test("NeoTokyo assignment preserves search, match and assigned sequence", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   assert.match(source, /SEARCHING CAST\.\.\./);
   assert.match(source, /MATCH FOUND/);
@@ -65,17 +102,27 @@ test("NeoTokyo assignment still preserves search, match and assigned sequence", 
   assert.match(source, /ACT READY/);
 });
 
-test("NeoTokyo final phase contains one-screen act overview and cast summary", async () => {
+test("NeoTokyo final phase contains one-screen act overview, ruler, role and cast summary", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   const css = await read("css-next/pages/act-showcase-neotokyo.css");
-  assert.match(source, /ACT OVERVIEW/);
-  assert.match(source, /CAST FILES/);
+  assert.match(source, /ACT FILE \/\/ FINAL OVERVIEW/);
+  assert.match(source, /CAST FILES \/\/ ASSIGNMENT ROSTER/);
   assert.match(source, /createSummaryCast/);
+  assert.match(source, /createSummaryRuler/);
+  assert.match(source, /neotokyo-sequence__summary-cast-role/);
   assert.match(source, /model\.trailer \|\| SAMPLE_TRAILER_MESSAGE/);
   assert.match(css, /neotokyo-sequence__summary-grid/);
   assert.match(css, /neotokyo-sequence__summary-casts/);
-  assert.match(css, /-webkit-line-clamp:9/);
   assert.match(css, /overflow:hidden/);
+});
+
+test("NeoTokyo loader stays hidden after phase 6 exits", async () => {
+  const html = await read("act-showcase.html");
+  const css = await read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
+  const page = await read("js/act-showcase-page.js");
+  assert.match(html, /id="act-showcase-status" class="showcase-loading"/);
+  assert.match(page, /status\.hidden = true/);
+  assert.match(css, /^\.showcase-loading\[hidden\]\{display:none\}/);
 });
 
 test("NeoTokyo intro supports public trailer data and safe missing-data fallback", async () => {
@@ -86,9 +133,9 @@ test("NeoTokyo intro supports public trailer data and safe missing-data fallback
   assert.match(sequence, /公開用アクトトレーラーは未登録です/);
 });
 
-test("NeoTokyo intro has skip, explicit advance control and reduced-motion exit", async () => {
+test("NeoTokyo sequence has skip, explicit advance control and reduced-motion exit", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
-  assert.match(source, /SKIP INTRO/);
+  assert.match(source, /SKIP SEQUENCE/);
   assert.match(source, /CLICK TO CONTINUE/);
   assert.match(source, /requestAdvance/);
   assert.match(source, /prefers-reduced-motion: reduce/);
@@ -100,6 +147,7 @@ test("NeoTokyo assets are explicitly reachable from the showcase page", async ()
   const page = await read("js/act-showcase-page.js");
   assert.match(html, /css-next\/pages\/act-showcase-neotokyo\.css/);
   assert.match(html, /css-next\/pages\/act-showcase-neotokyo-linked\.css/);
+  assert.match(html, /css-next\/pages\/act-showcase-neotokyo-hierarchy\.css/);
   assert.match(page, /act-showcase-neotokyo\.js/);
 });
 
