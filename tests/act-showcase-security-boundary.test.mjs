@@ -6,7 +6,7 @@ const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 const dynamic = await read("supabase/20_dynamic_act_showcase.sql");
 const ownerScope = await read("supabase/30_owner_scoped_act_reads.sql");
-const client = await read("js/act-showcase.js");
+const client = await read("js/act-showcase-page.js");
 
 test("public ACT showcase RPC returns only explicitly published showcase data", () => {
   assert.match(dynamic, /create or replace function public\.get_public_act_showcase\(p_slug text\)/i);
