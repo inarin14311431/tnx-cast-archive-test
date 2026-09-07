@@ -208,48 +208,87 @@ async function showHandoutAndAssign(state, cast, index, total) {
 
   setPhase(state, 3);
   setProgress(state, progressBase, `HANDOUT ${pcLabel}`);
-  const handoutScreen = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--handout");
+
+  const sequence = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--linked");
+  const header = node("header", "neotokyo-sequence__linked-head");
+  const phaseLabel = textNode("p", "neotokyo-sequence__eyebrow", `04 // HANDOUT ${pcLabel} // PC${pcNumber}`);
+  const linkStatus = textNode("span", "neotokyo-sequence__link-status", "HANDOUT CHANNEL // ACTIVE");
+  header.append(phaseLabel, linkStatus);
+
+  const layout = node("div", "neotokyo-sequence__linked-layout");
+  const handoutPanel = node("article", "neotokyo-sequence__handout-panel");
+  const handoutMeta = textNode("p", "neotokyo-sequence__micro", "PLAYER INFORMATION / CAST REQUIREMENT");
+  const handoutHeading = textNode("h2", "neotokyo-sequence__section-title", handoutTitle);
   const copy = textNode("p", "neotokyo-sequence__readout", "");
-  handoutScreen.append(
-    textNode("p", "neotokyo-sequence__eyebrow", `04 // HANDOUT ${pcLabel} // PC${pcNumber}`),
-    textNode("p", "neotokyo-sequence__micro", "PLAYER INFORMATION / CAST REQUIREMENT"),
-    textNode("h2", "neotokyo-sequence__section-title", handoutTitle),
-    copy,
-    textNode("p", "neotokyo-sequence__terminal", `READING HANDOUT // PC${pcNumber}`)
+  const handoutTerminal = textNode("p", "neotokyo-sequence__terminal", `READING HANDOUT // PC${pcNumber}`);
+  handoutPanel.append(handoutMeta, handoutHeading, copy, handoutTerminal);
+
+  const connector = node("div", "neotokyo-sequence__link-bridge");
+  connector.setAttribute("aria-hidden", "true");
+  connector.append(
+    node("i", "neotokyo-sequence__link-line"),
+    textNode("span", "", "LINKING"),
+    node("i", "neotokyo-sequence__link-pulse")
   );
-  swapScreen(state, handoutScreen);
+
+  const assignPanel = node("aside", "neotokyo-sequence__assign-panel");
+  assignPanel.setAttribute("aria-label", `PC${pcNumber} キャスト割り当て`);
+  const assignFrame = node("div", "neotokyo-sequence__assign-frame");
+  assignFrame.append(
+    textNode("p", "neotokyo-sequence__micro", `05 // ASSIGNMENT ${pcLabel}`),
+    textNode("h2", "neotokyo-sequence__assign-word", "ASSIGN"),
+    textNode("p", "neotokyo-sequence__assign-sub", "CAST MATCHING CHANNEL // STANDBY")
+  );
+  assignPanel.append(assignFrame);
+
+  layout.append(handoutPanel, connector, assignPanel);
+  sequence.append(header, layout);
+  swapScreen(state, sequence);
   await typeReadout(state, copy, handoutBody, 2400);
   if (state.finished) return;
+
+  sequence.classList.add("is-read");
+  handoutTerminal.textContent = `HANDOUT COMPLETE // PC${pcNumber}`;
+  linkStatus.textContent = "HANDOUT COMPLETE // AWAITING ASSIGN";
   await waitForAdvance(state, `ASSIGN // PC${pcNumber}`);
   if (state.finished) return;
 
   setPhase(state, 4);
-  const assign = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--assign");
-  const search = node("div", "neotokyo-sequence__search");
+  setProgress(state, progressBase + 5, `SEARCHING CAST // PC${pcNumber}`);
+  phaseLabel.textContent = `04 // HANDOUT ${pcLabel}  →  05 // ASSIGNMENT ${pcLabel}`;
+  linkStatus.textContent = "CROSS LINK // ESTABLISHING";
+  sequence.classList.add("is-splitting");
+  await wait(state, 420);
+  if (state.finished) return;
+
+  const search = node("div", "neotokyo-sequence__search neotokyo-sequence__search--linked");
   search.append(
     textNode("span", "", `PC${pcNumber} // ${handoutTitle}`),
     textNode("strong", "", "SEARCHING CAST..."),
     textNode("small", "", "CROSS-REFERENCING PUBLIC CAST ARCHIVE")
   );
-  assign.append(
-    textNode("p", "neotokyo-sequence__eyebrow", `05 // ASSIGNMENT ${pcLabel}`),
-    textNode("h2", "neotokyo-sequence__assign-title", "ASSIGN"),
-    search
-  );
-  swapScreen(state, assign);
-  setProgress(state, progressBase + 5, `SEARCHING CAST // PC${pcNumber}`);
-  await wait(state, 560);
+  assignPanel.replaceChildren(search);
+  sequence.classList.add("is-searching");
+  linkStatus.textContent = "CAST ARCHIVE // SEARCHING";
+  await wait(state, 620);
   if (state.finished) return;
 
   search.querySelector("strong").textContent = "MATCH FOUND";
+  search.querySelector("small").textContent = "IDENTITY MATCH // VERIFIED";
   search.classList.add("is-found");
-  await wait(state, 340);
+  linkStatus.textContent = "MATCH FOUND // ROUTING CAST FILE";
+  sequence.classList.add("is-found");
+  await wait(state, 360);
   if (state.finished) return;
 
-  assign.append(createAssignedCast(cast, pcNumber));
-  assign.classList.add("is-assigned");
+  const castCard = createAssignedCast(cast, pcNumber);
+  castCard.classList.add("neotokyo-sequence__cast--linked");
+  assignPanel.replaceChildren(castCard);
+  sequence.classList.remove("is-searching");
+  sequence.classList.add("is-assigned");
+  linkStatus.textContent = `PC${pcNumber} // CAST ASSIGNED`;
   setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
-  await wait(state, 420);
+  await wait(state, 520);
   if (state.finished) return;
 
   const nextLabel = pcNumber < total

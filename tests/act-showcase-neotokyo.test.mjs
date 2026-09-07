@@ -36,6 +36,26 @@ test("NeoTokyo phases 1 and 2 are automatic while later phases wait for click", 
   assert.match(source, /OPEN FULL SHOWCASE/);
 });
 
+test("NeoTokyo handout remains visible and shifts left while ASSIGN opens on the right", async () => {
+  const source = await read("js/act-showcase-neotokyo.js");
+  const css = await read("css-next/pages/act-showcase-neotokyo-linked.css");
+  const body = source.slice(source.indexOf("async function showHandoutAndAssign"), source.indexOf("function createAssignedCast"));
+
+  assert.match(body, /neotokyo-sequence__screen--linked/);
+  assert.match(body, /neotokyo-sequence__handout-panel/);
+  assert.match(body, /neotokyo-sequence__assign-panel/);
+  assert.match(body, /neotokyo-sequence__link-bridge/);
+  assert.match(body, /sequence\.classList\.add\("is-splitting"\)/);
+  assert.match(body, /assignPanel\.replaceChildren\(search\)/);
+  assert.match(body, /assignPanel\.replaceChildren\(castCard\)/);
+  assert.doesNotMatch(body, /swapScreen\(state, assign\)/);
+
+  assert.match(css, /is-splitting .*grid-template-columns/s);
+  assert.match(css, /neotokyo-sequence__link-pulse/);
+  assert.match(css, /neotokyo-linked-cast-in/);
+  assert.match(css, /clip-path:inset\(0 100% 0 0\)/);
+});
+
 test("NeoTokyo assignment still preserves search, match and assigned sequence", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   assert.match(source, /SEARCHING CAST\.\.\./);
@@ -79,6 +99,7 @@ test("NeoTokyo assets are explicitly reachable from the showcase page", async ()
   const html = await read("act-showcase.html");
   const page = await read("js/act-showcase-page.js");
   assert.match(html, /css-next\/pages\/act-showcase-neotokyo\.css/);
+  assert.match(html, /css-next\/pages\/act-showcase-neotokyo-linked\.css/);
   assert.match(page, /act-showcase-neotokyo\.js/);
 });
 
