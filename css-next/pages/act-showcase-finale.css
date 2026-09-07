@@ -34,7 +34,7 @@ body.showcase-neotokyo-title-logo-active .neotokyo-sequence__ruler-credit{positi
 .neotokyo-finale__title-lockup small{color:#ff75c9}
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-grid{position:relative;display:grid;grid-template-columns:minmax(245px,.64fr) minmax(0,1.9fr);gap:14px;flex:1;min-height:0;overflow:hidden}
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__overview,.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-cast-area{border-color:rgba(114,220,255,.25);background:linear-gradient(150deg,rgba(7,29,52,.94),rgba(4,10,23,.86));box-shadow:inset 0 0 0 1px rgba(255,255,255,.018),0 16px 42px rgba(0,0,0,.2)}
-.neotokyo-finale__core{position:relative;border-left:2px solid rgba(109,238,255,.62)!important;overflow:hidden!important}
+.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-finale__core{position:relative;border-left:2px solid rgba(109,238,255,.62);overflow:hidden}
 .neotokyo-finale__core:before{position:absolute;right:-56px;top:72px;width:180px;height:180px;content:"";border:1px solid rgba(102,230,255,.12);border-radius:50%;box-shadow:inset 0 0 0 20px rgba(97,230,255,.025),inset 0 0 0 42px rgba(255,76,187,.018);pointer-events:none}
 .neotokyo-finale__core-head{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:4px 10px;align-items:end;margin:-2px 0 12px;padding:0 0 10px;border-bottom:1px solid rgba(113,229,255,.2)}
 .neotokyo-finale__core-head span{grid-row:1/3;color:#83eaff;font:900 .72rem/1 Orbitron,sans-serif;letter-spacing:.14em}
@@ -44,7 +44,7 @@ body.showcase-neotokyo-title-logo-active .neotokyo-sequence__ruler-credit{positi
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-ruler{margin-top:10px;padding:9px 10px;border:1px solid rgba(255,86,190,.18);background:linear-gradient(90deg,rgba(255,75,183,.08),transparent)}
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__overview-intro,.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__overview-copy{font-size:.64rem;line-height:1.55}
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__overview-copy{-webkit-line-clamp:5}
-.neotokyo-finale__cast-bay{position:relative;overflow:hidden!important;border-top:2px solid rgba(255,82,190,.38)!important}
+.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-finale__cast-bay{position:relative;overflow:hidden;border-top:2px solid rgba(255,82,190,.38)}
 .neotokyo-finale__cast-bay:before{position:absolute;left:17px;top:13px;content:"ASSIGNMENT BAY // CAST ASSEMBLY";color:#7594a8;font:700 .43rem/1 "Share Tech Mono",monospace;letter-spacing:.14em;pointer-events:none}
 .neotokyo-finale__links{position:absolute;left:18px;right:18px;top:40px;height:20px;display:flex;justify-content:space-around;z-index:0;opacity:.42;pointer-events:none}
 .neotokyo-finale__links:before{position:absolute;left:3%;right:3%;top:8px;height:1px;content:"";background:linear-gradient(90deg,rgba(91,224,255,.06),rgba(91,224,255,.56) 20%,rgba(255,82,190,.46) 80%,rgba(255,82,190,.05));box-shadow:0 0 10px rgba(76,220,255,.2)}
@@ -56,16 +56,16 @@ body.showcase-neotokyo-title-logo-active .neotokyo-sequence__ruler-credit{positi
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-casts[data-cast-count="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-casts[data-cast-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
 .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-casts[data-cast-count="5"],.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-casts[data-cast-count="6"]{grid-template-columns:repeat(3,minmax(0,1fr))}
-.neotokyo-finale__cast-card{position:relative;grid-template-columns:minmax(82px,34%) minmax(0,1fr)!important;border-color:rgba(105,218,255,.25)!important;background:linear-gradient(135deg,rgba(8,34,59,.95),rgba(6,11,25,.92))!important;box-shadow:inset 0 1px rgba(181,241,255,.035),0 10px 22px rgba(0,0,0,.2);overflow:hidden!important;transition:.2s ease border-color,.2s ease transform,.2s ease box-shadow}
-.neotokyo-finale__cast-card:before{position:absolute;left:7px;top:7px;z-index:3;content:attr(data-pc);padding:3px 6px;border:1px solid rgba(110,230,255,.35);background:rgba(2,12,24,.78);color:#8beeff;font:900 .45rem/1 Orbitron,sans-serif;letter-spacing:.1em;box-shadow:0 0 12px rgba(61,220,255,.1)}
-.neotokyo-finale__cast-card:hover{border-color:rgba(128,240,255,.55)!important;transform:translateY(-2px);box-shadow:0 0 26px rgba(71,218,255,.1),0 14px 28px rgba(0,0,0,.25)}
+.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-finale__cast-card{position:relative;grid-template-columns:minmax(82px,34%) minmax(0,1fr);border-color:rgba(105,218,255,.25);background:linear-gradient(135deg,rgba(8,34,59,.95),rgba(6,11,25,.92));box-shadow:inset 0 1px rgba(181,241,255,.035),0 10px 22px rgba(0,0,0,.2);overflow:hidden;transition:.2s ease border-color,.2s ease transform,.2s ease box-shadow}
+.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-finale__cast-card:before{position:absolute;left:7px;top:7px;z-index:3;content:attr(data-pc);padding:3px 6px;border:1px solid rgba(110,230,255,.35);background:rgba(2,12,24,.78);color:#8beeff;font:900 .45rem/1 Orbitron,sans-serif;letter-spacing:.1em;box-shadow:0 0 12px rgba(61,220,255,.1)}
+.cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-finale__cast-card:hover{border-color:rgba(128,240,255,.55);transform:translateY(-2px);box-shadow:0 0 26px rgba(71,218,255,.1),0 14px 28px rgba(0,0,0,.25)}
 .neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-image{position:relative;min-height:0}
 .neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-image:after{position:absolute;inset:0;content:"";background:linear-gradient(180deg,transparent 55%,rgba(1,8,18,.46)),linear-gradient(90deg,transparent 78%,rgba(3,12,27,.45));pointer-events:none}
 .neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-image img{filter:saturate(.96) contrast(1.1)}
 .neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-body{position:relative;padding:12px 12px 11px}
 .neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-body:after{position:absolute;right:8px;bottom:8px;width:22px;height:1px;content:"";background:#ff68c6;box-shadow:0 0 8px rgba(255,80,187,.36)}
 .neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-body h3{font-size:clamp(.85rem,1.2vw,1.12rem);line-height:1.08}
-.neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-role{color:#80ffd2!important;text-shadow:0 0 9px rgba(67,255,194,.16)}
+.neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-role{color:#80ffd2;text-shadow:0 0 9px rgba(67,255,194,.16)}
 .neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-tagline{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .neotokyo-finale__assigned-badge{position:absolute;right:8px;top:7px;z-index:3;color:#73ffd0;font:900 .42rem/1 Orbitron,sans-serif;letter-spacing:.13em;text-shadow:0 0 10px rgba(79,255,195,.34)}
 body.showcase-neotokyo-finale-active .neotokyo-sequence__advance{border-color:#7aeeff;background:linear-gradient(100deg,rgba(21,74,104,.9),rgba(38,21,75,.88));color:#fff;box-shadow:0 0 24px rgba(73,217,255,.16),inset 0 0 22px rgba(77,223,255,.05);text-shadow:0 0 12px rgba(92,231,255,.2)}
@@ -78,7 +78,7 @@ body.showcase-neotokyo-finale-active .neotokyo-sequence__advance:before{content:
   .cinematic-intro.neotokyo-sequence .neotokyo-sequence__act-title--logo{font-size:clamp(2.7rem,10vw,5.3rem)}
   .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-grid{grid-template-columns:minmax(200px,.75fr) minmax(0,1.5fr)}
   .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-casts[data-cast-count]{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .neotokyo-finale__cast-card{grid-template-columns:72px minmax(0,1fr)!important}
+  .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-finale__cast-card{grid-template-columns:72px minmax(0,1fr)}
 }
 @media(max-width:760px){
   .neotokyo-title-logo__meta .is-live{display:none}.neotokyo-title-logo__meta{grid-template-columns:1fr}
@@ -92,6 +92,6 @@ body.showcase-neotokyo-finale-active .neotokyo-sequence__advance:before{content:
   .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--finale .neotokyo-sequence__summary-casts[data-cast-count]{grid-template-columns:1fr}.neotokyo-finale__links{display:none}
 }
 @media(prefers-reduced-motion:reduce){
-  .cinematic-intro.neotokyo-sequence .neotokyo-sequence__act-title--logo:before,.cinematic-intro.neotokyo-sequence .neotokyo-sequence__act-title--logo:after,.neotokyo-finale__signal i{animation:none!important}
+  .cinematic-intro.neotokyo-sequence .neotokyo-sequence__act-title--logo:before,.cinematic-intro.neotokyo-sequence .neotokyo-sequence__act-title--logo:after,.neotokyo-finale__signal i{animation:none}
   .neotokyo-finale__cast-card{transition:none}
 }
