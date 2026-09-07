@@ -13,22 +13,49 @@ test("NeoTokyo intro is gated by bgSample without replacing the canonical render
   assert.match(source, /get_public_act_showcase/);
 });
 
-test("NeoTokyo intro follows act title, trailer, handout and cast assignment order", async () => {
+test("NeoTokyo phases 1 and 2 are automatic while later phases wait for click", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   const opening = source.indexOf("await showOpening(state)");
   const title = source.indexOf("await showActTitle(state, model)");
   const trailer = source.indexOf("await showTrailer(state, model)");
   const handout = source.indexOf("await showHandoutAndAssign");
-  const ready = source.indexOf("await showReady(state, model)");
+  const summary = source.indexOf("await showSummary(state, model)");
   assert.ok(opening >= 0 && opening < title);
   assert.ok(title < trailer);
   assert.ok(trailer < handout);
-  assert.ok(handout < ready);
+  assert.ok(handout < summary);
+
+  const openingBody = source.slice(source.indexOf("async function showOpening"), source.indexOf("async function showActTitle"));
+  const titleBody = source.slice(source.indexOf("async function showActTitle"), source.indexOf("async function showTrailer"));
+  const trailerBody = source.slice(source.indexOf("async function showTrailer"), source.indexOf("async function showHandoutAndAssign"));
+  assert.doesNotMatch(openingBody, /waitForAdvance/);
+  assert.doesNotMatch(titleBody, /waitForAdvance/);
+  assert.match(trailerBody, /waitForAdvance\(state, "NEXT \/\/ HANDOUT 01"\)/);
+  assert.match(source, /waitForAdvance\(state, `ASSIGN \/\/ PC\$\{pcNumber\}`\)/);
+  assert.match(source, /NEXT \/\/ ACT SUMMARY/);
+  assert.match(source, /OPEN FULL SHOWCASE/);
+});
+
+test("NeoTokyo assignment still preserves search, match and assigned sequence", async () => {
+  const source = await read("js/act-showcase-neotokyo.js");
   assert.match(source, /SEARCHING CAST\.\.\./);
   assert.match(source, /MATCH FOUND/);
   assert.match(source, /CAST ASSIGNED/);
-  assert.match(source, /ALL CASTS\\nASSIGNED/);
+  assert.match(source, /ALL CASTS ASSIGNED/);
   assert.match(source, /ACT READY/);
+});
+
+test("NeoTokyo final phase contains one-screen act overview and cast summary", async () => {
+  const source = await read("js/act-showcase-neotokyo.js");
+  const css = await read("css-next/pages/act-showcase-neotokyo.css");
+  assert.match(source, /ACT OVERVIEW/);
+  assert.match(source, /CAST FILES/);
+  assert.match(source, /createSummaryCast/);
+  assert.match(source, /model\.trailer \|\| SAMPLE_TRAILER_MESSAGE/);
+  assert.match(css, /neotokyo-sequence__summary-grid/);
+  assert.match(css, /neotokyo-sequence__summary-casts/);
+  assert.match(css, /-webkit-line-clamp:9/);
+  assert.match(css, /overflow:hidden/);
 });
 
 test("NeoTokyo intro supports public trailer data and safe missing-data fallback", async () => {
@@ -39,9 +66,11 @@ test("NeoTokyo intro supports public trailer data and safe missing-data fallback
   assert.match(sequence, /公開用アクトトレーラーは未登録です/);
 });
 
-test("NeoTokyo intro has skip and reduced-motion exits", async () => {
+test("NeoTokyo intro has skip, explicit advance control and reduced-motion exit", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   assert.match(source, /SKIP INTRO/);
+  assert.match(source, /CLICK TO CONTINUE/);
+  assert.match(source, /requestAdvance/);
   assert.match(source, /prefers-reduced-motion: reduce/);
   assert.match(source, /state\.skipButton\.addEventListener\("click", finish/);
 });
