@@ -43,7 +43,7 @@ test("NeoTokyo system access, credits and trailer have distinct semantic roles",
   assert.match(source, /ACT OVERVIEW \/\/ アクト概要/);
   assert.match(source, /03 \/\/ ACT TRAILER/);
   assert.match(source, /プレアクトで読み上げるトレーラー/);
-  assert.match(source, /\["ACCESS", "CREDITS", "TRAILER", "HANDOUT", "ASSIGN", "SUMMARY"\]/);
+  assert.doesNotMatch(source, /neotokyo-sequence__rail/);
   assert.doesNotMatch(source, /title: "OPENING"/);
 });
 
@@ -155,4 +155,11 @@ test("NeoTokyo cast images keep protocol validation", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   assert.match(source, /safeImageUrl/);
   assert.match(source, /\["http:", "https:"\]\.includes\(url\.protocol\)/);
+});
+
+test("assigned cast remains visible when reduced motion disables its animation", async () => {
+  const css = await read("css-next/pages/act-showcase-neotokyo.css");
+  const rule = css.match(/\.neotokyo-sequence__cast\{([^}]+)\}/)[1];
+  assert.match(rule, /opacity:1;/);
+  assert.match(rule, /transform:none;/);
 });

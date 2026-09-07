@@ -69,7 +69,6 @@ function createSequenceState() {
     skipButton: null,
     advanceButton: null,
     advanceResolver: null,
-    railItems: [],
     resolveWaiters() {
       for (const resolve of this.waiters) resolve();
       this.waiters.clear();
@@ -115,14 +114,6 @@ function createSequenceShell(state) {
   state.skipButton = skip;
   header.append(brand, system, skip);
 
-  const rail = node("aside", "neotokyo-sequence__rail");
-  for (const [index, label] of ["ACCESS", "CREDITS", "TRAILER", "HANDOUT", "ASSIGN", "SUMMARY"].entries()) {
-    const item = node("div", "neotokyo-sequence__rail-item");
-    item.append(textNode("span", "", String(index + 1).padStart(2, "0")), textNode("strong", "", label));
-    state.railItems.push(item);
-    rail.append(item);
-  }
-
   const stage = node("main", "neotokyo-sequence__stage");
   stage.setAttribute("aria-live", "polite");
   state.stage = stage;
@@ -147,12 +138,11 @@ function createSequenceShell(state) {
   state.advanceButton = advance;
   footer.append(progress, progressLabel, advance, textNode("small", "", "TOKYO N◎VA // PUBLIC ACT ARCHIVE"));
 
-  shell.append(header, rail, stage, footer);
+  shell.append(header, stage, footer);
   return shell;
 }
 
 async function showOpening(state) {
-  setPhase(state, 0);
   setProgress(state, 5, "SYSTEM ACCESS");
   replaceStage(state, {
     eyebrow: "01 // SYSTEM ACCESS",
@@ -164,7 +154,6 @@ async function showOpening(state) {
 }
 
 async function showActTitle(state, model) {
-  setPhase(state, 1);
   setProgress(state, 18, "TITLE & CREDITS");
   const content = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--title");
   content.append(
@@ -190,7 +179,6 @@ async function showActTitle(state, model) {
 }
 
 async function showTrailer(state, model) {
-  setPhase(state, 2);
   setProgress(state, 30, "ACT TRAILER");
   const content = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--trailer");
   const heading = model.trailerTitle || "ACT TRAILER";
@@ -225,7 +213,6 @@ async function showHandoutAndAssign(state, cast, index, total) {
   const participationRole = getParticipationRole(cast);
   const progressBase = 34 + Math.round((index / Math.max(total, 1)) * 50);
 
-  setPhase(state, 3);
   setProgress(state, progressBase, `HANDOUT ${pcLabel}`);
 
   const sequence = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--linked");
@@ -237,7 +224,7 @@ async function showHandoutAndAssign(state, cast, index, total) {
   const layout = node("div", "neotokyo-sequence__linked-layout");
   const handoutPanel = node("article", "neotokyo-sequence__handout-panel");
   const handoutMeta = textNode("p", "neotokyo-sequence__micro", "PLAYER INFORMATION / CAST REQUIREMENT");
-  const handoutHeading = textNode("h2", "neotokyo-sequence__section-title", handoutTitle);
+  const handoutHeading = createHandoutHeading(handoutTitle);
   const copy = textNode("p", "neotokyo-sequence__readout", "");
   const handoutTerminal = textNode("p", "neotokyo-sequence__terminal", `READING HANDOUT // PC${pcNumber}`);
   handoutPanel.append(handoutMeta, handoutHeading, copy, handoutTerminal);
@@ -276,7 +263,6 @@ async function showHandoutAndAssign(state, cast, index, total) {
   await waitForAdvance(state, `ASSIGN // PC${pcNumber}`);
   if (state.finished) return;
 
-  setPhase(state, 4);
   setProgress(state, progressBase + 5, `SEARCHING CAST // PC${pcNumber}`);
   phaseLabel.textContent = `04 // HANDOUT ${pcLabel}  →  05 // ASSIGNMENT ${pcLabel}`;
   linkStatus.textContent = "CROSS LINK // ESTABLISHING";
@@ -324,6 +310,20 @@ async function showHandoutAndAssign(state, cast, index, total) {
   await waitForAdvance(state, nextLabel);
 }
 
+function createHandoutHeading(title) {
+  const heading = node("h2", "neotokyo-sequence__section-title neotokyo-sequence__handout-title");
+  const match = title.match(/^(.*?)用ハンドアウト$/u);
+  if (match && clean(match[1])) {
+    heading.append(
+      textNode("span", "neotokyo-sequence__handout-subject", clean(match[1]).replace(/^[『「](.*)[』」]$/u, "$1")),
+      textNode("span", "neotokyo-sequence__handout-caption", "用ハンドアウト")
+    );
+  } else {
+    heading.append(textNode("span", "neotokyo-sequence__handout-subject", title));
+  }
+  return heading;
+}
+
 function createAssignedCast(cast, pcNumber) {
   const card = node("article", "neotokyo-sequence__cast");
   const imageFrame = node("figure", "neotokyo-sequence__cast-image");
@@ -366,7 +366,6 @@ function createStyleRow(cast, participationRole) {
 }
 
 async function showSummary(state, model) {
-  setPhase(state, 5);
   setProgress(state, 100, "ACT READY");
   const content = node("section", "neotokyo-sequence__screen neotokyo-sequence__screen--summary");
   const heading = node("div", "neotokyo-sequence__summary-head");
@@ -509,10 +508,6 @@ function swapScreen(state, content) {
   if (state.advanceButton) state.advanceButton.hidden = true;
   state.stage.replaceChildren(content);
   requestAnimationFrame(() => content.classList.add("is-visible"));
-}
-
-function setPhase(state, phaseIndex) {
-  state.railItems.forEach((item, index) => item.classList.toggle("is-active", index === phaseIndex));
 }
 
 function setProgress(state, value, label) {
