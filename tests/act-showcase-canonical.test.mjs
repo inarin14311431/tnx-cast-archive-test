@@ -41,7 +41,7 @@ test("canonical renderer keeps every cast selectable while switching detail", as
   assert.match(source, /activeCastIndex/);
   assert.match(source, /createCastGrid\(model, model\.casts\[activeCastIndex\]\)/);
   assert.match(source, /grid\.replaceWith\(nextGrid\)/);
-  assert.match(source, /data\.castIndex/);
+  assert.match(source, /dataset\.castIndex/);
   assert.match(source, /aria-pressed/);
   assert.match(source, /event\.key !== "Enter" && event\.key !== " "/);
 });
