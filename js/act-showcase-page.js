@@ -176,17 +176,23 @@ function renderPoster(model) {
   board.setAttribute("aria-label", "アクト紹介ショーケース");
 
   const frame = el("div", "poster-v2-frame");
-  const lead = model.casts[0];
-  const visual = createVisualPanel(lead);
-  const profile = createProfilePanel(lead);
-  const handout = createHandoutPanel(model.casts);
-  const credits = createCreditsPanel(model);
-  const grid = el("div", `poster-v2-grid ${handout ? "poster-v2-grid--4" : "poster-v2-grid--3"}`);
-  grid.append(visual, profile);
-  if (handout) grid.append(handout);
-  grid.append(credits);
+  let activeCastIndex = 0;
+  let grid = createCastGrid(model, model.casts[activeCastIndex]);
   frame.append(grid);
-  if (model.casts.length > 1) frame.append(createRoster(model.casts.slice(1)));
+
+  let roster = null;
+  if (model.casts.length > 1) {
+    roster = createRoster(model.casts, index => {
+      if (index === activeCastIndex || !model.casts[index]) return;
+      activeCastIndex = index;
+      const nextGrid = createCastGrid(model, model.casts[activeCastIndex]);
+      grid.replaceWith(nextGrid);
+      grid = nextGrid;
+      setActiveRosterItem(roster, activeCastIndex);
+    });
+    frame.append(roster);
+  }
+
   board.append(frame);
   story.append(board);
 
@@ -200,6 +206,18 @@ function renderPoster(model) {
     }));
   }
   return board;
+}
+
+function createCastGrid(model, cast) {
+  const visual = createVisualPanel(cast);
+  const profile = createProfilePanel(cast);
+  const handout = createHandoutPanel([cast]);
+  const credits = createCreditsPanel(model);
+  const grid = el("div", `poster-v2-grid ${handout ? "poster-v2-grid--4" : "poster-v2-grid--3"}`);
+  grid.append(visual, profile);
+  if (handout) grid.append(handout);
+  grid.append(credits);
+  return grid;
 }
 
 function createVisualPanel(cast) {
@@ -308,24 +326,44 @@ function createCreditsPanel(model) {
   return panel;
 }
 
-function createRoster(casts) {
+function createRoster(casts, onSelect) {
   const roster = el("div", "poster-v2-roster");
-  roster.append(textEl("div", "poster-v2-roster__title", "ADDITIONAL CAST FILES"));
+  roster.append(textEl("div", "poster-v2-roster__title", "CAST FILES // SELECT CAST"));
   const list = el("div", "poster-v2-roster__list");
   casts.forEach((cast, index) => {
     const styles = Array.isArray(cast?.styles)
       ? cast.styles.map(item => text(item?.label)).filter(Boolean).join(" / ")
       : "";
     const item = el("article", "poster-v2-roster__item");
+    item.dataset.castIndex = String(index);
+    item.setAttribute("role", "button");
+    item.setAttribute("tabindex", "0");
+    item.setAttribute("aria-pressed", index === 0 ? "true" : "false");
+    item.setAttribute("aria-label", `PC${index + 1} ${text(cast?.fullName) || `CAST ${index + 1}`} を表示`);
+    if (index === 0) item.classList.add("is-active");
     item.append(
-      textEl("span", "", String(index + 2).padStart(2, "0")),
-      textEl("strong", "", text(cast?.fullName) || `CAST ${index + 2}`),
+      textEl("span", "", String(index + 1).padStart(2, "0")),
+      textEl("strong", "", text(cast?.fullName) || `CAST ${index + 1}`),
       textEl("small", "", styles || "PUBLIC CAST")
     );
+    item.addEventListener("click", () => onSelect(index));
+    item.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      onSelect(index);
+    });
     list.append(item);
   });
   roster.append(list);
   return roster;
+}
+
+function setActiveRosterItem(roster, activeIndex) {
+  roster?.querySelectorAll(".poster-v2-roster__item").forEach(item => {
+    const active = Number(item.dataset.castIndex) === activeIndex;
+    item.classList.toggle("is-active", active);
+    item.setAttribute("aria-pressed", active ? "true" : "false");
+  });
 }
 
 function createPanel(slot, title, extraClass) {
