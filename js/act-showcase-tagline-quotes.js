@@ -4,7 +4,6 @@
   const FALLBACKS = new Set(["PUBLIC CAST ARCHIVE", "PUBLIC CAST"]);
   const SELECTORS = [
     ".poster-v2-tagline",
-    ".poster-v2-visual__caption > span",
     ".neotokyo-sequence__cast-tagline",
     ".neotokyo-sequence__summary-cast-tagline"
   ];
