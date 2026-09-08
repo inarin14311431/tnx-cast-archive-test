@@ -31,7 +31,9 @@ async function initializeSupportingCast(showcaseSlug) {
     });
   };
   const observer = new MutationObserver(sync);
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "aria-hidden"] });
+  // Dynamic showcase screens are inserted/replaced as child nodes. Watching class changes here
+  // creates a self-triggering loop because sync() itself updates role-related classes.
+  observer.observe(document.body, { childList: true, subtree: true });
   sync();
 }
 
