@@ -67,18 +67,16 @@
   const observer = new MutationObserver(records => {
     const scopes = new Set();
     for (const record of records) {
-      if (record.type === "attributes") {
-        const grid = record.target instanceof Element ? record.target.closest(".poster-v2-grid") : null;
-        if (grid) scopes.add(grid);
-        continue;
-      }
-      for (const node of record.addedNodes) {
-        if (!(node instanceof Element)) continue;
-        const grid = node.closest?.(".poster-v2-grid") || node.querySelector?.(".poster-v2-grid");
-        scopes.add(grid || node);
+      for (const addedNode of record.addedNodes) {
+        const element = addedNode instanceof Element ? addedNode : addedNode.parentElement;
+        if (!element) continue;
+        const grid = element.closest?.(".poster-v2-grid") || element.querySelector?.(".poster-v2-grid");
+        scopes.add(grid || element);
       }
     }
     for (const scope of scopes) decorate(scope);
   });
-  observer.observe(story, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+  // The decorator owns classes/data attributes inside each caption. Watching those attributes would
+  // feed its own decorations back into the observer. Structural mutations are enough to catch renders.
+  observer.observe(story, { childList: true, subtree: true });
 })();
