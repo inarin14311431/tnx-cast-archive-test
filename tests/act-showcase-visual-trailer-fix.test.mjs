@@ -10,7 +10,7 @@ test("final visual/trailer fix loads after presentation tuning", async () => {
   const tuning = html.indexOf("act-showcase-presentation-tuning.css");
   const fix = html.indexOf("act-showcase-visual-trailer-fix.css");
   assert.ok(tuning >= 0 && fix > tuning);
-  assert.match(html, /act-showcase-visual-caption-code\.js\?v=1/);
+  assert.match(html, /act-showcase-visual-caption-code\.js\?v=2/);
 });
 
 test("trailer frame grows to full text and stage owns overflow", async () => {
@@ -21,10 +21,11 @@ test("trailer frame grows to full text and stage owns overflow", async () => {
   assert.doesNotMatch(css, /max-height:calc\(100svh/);
 });
 
-test("visual caption replaces duplicated cast name with deterministic archive code", async () => {
+test("visual caption replaces duplicated cast content with archive metadata and deterministic code", async () => {
   const js = await read("js/act-showcase-visual-caption-code.js");
   assert.match(js, /VISUAL TRACE \/\/ NX-/);
   assert.match(js, /NODE:PUBLIC/);
+  assert.match(js, /poster-v2-visual__meta/);
   assert.match(js, /poster-v2-visual__code/);
   assert.match(js, /MutationObserver/);
 });
