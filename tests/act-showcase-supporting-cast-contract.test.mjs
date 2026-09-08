@@ -56,6 +56,13 @@ test("assigned style repair prefers the first matching style and preserves dupli
   assert.doesNotMatch(css, /!important/);
 });
 
+test("supporting cast observer does not watch attributes it mutates itself", async () => {
+  const js = await read("js/act-showcase-supporting-cast.js");
+  assert.match(js, /observer\.observe\(document\.body, \{ childList: true, subtree: true \}\)/);
+  assert.doesNotMatch(js, /attributeFilter:\s*\[\s*["']class["']/);
+  assert.doesNotMatch(js, /attributes:\s*true/);
+});
+
 test("final briefing and supporting guests are rendered as separate presentation roles", async () => {
   const js = await read("js/act-showcase-supporting-cast.js");
   assert.match(js, /FINAL BRIEFING/);
