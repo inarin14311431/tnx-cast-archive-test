@@ -1,5 +1,6 @@
 (() => {
-  const root = document.querySelector("#act-showcase-root") || document;
+  const root = document;
+  const observerRoot = document.body || document.documentElement;
   const FALLBACKS = new Set(["PUBLIC CAST ARCHIVE", "PUBLIC CAST"]);
   const SELECTORS = [
     ".poster-v2-tagline",
@@ -58,5 +59,5 @@
       }
     }
   });
-  observer.observe(root, { childList: true, subtree: true });
+  observer.observe(observerRoot, { childList: true, subtree: true });
 })();
