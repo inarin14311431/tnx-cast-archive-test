@@ -8,18 +8,23 @@ const css = readFileSync(new URL("../css-next/pages/act-showcase-cinematic-reada
 
 test("cinematic polish loads after finale decoration and before the showcase module", () => {
   assert.match(html, /act-showcase-cinematic-readability\.css\?v=20260908a/);
-  assert.match(html, /act-showcase-cinematic-polish\.js\?v=20260908a/);
+  assert.match(html, /act-showcase-cinematic-polish\.js\?v=20260908b/);
   assert.ok(html.indexOf("act-showcase-finale.css") < html.indexOf("act-showcase-cinematic-readability.css"));
   assert.ok(html.indexOf("act-showcase-cinematic-polish.js") < html.indexOf("act-showcase-page.js"));
 });
 
-test("title screen pauses on the canonical 1900ms title wait until explicit input", () => {
-  assert.match(polish, /Number\(delay\) !== 1900/);
-  assert.match(polish, /pauseArmed/);
-  assert.match(polish, /ACCESS TRAILER/);
-  assert.match(polish, /is-awaiting-title-access/);
-  assert.match(polish, /stage\?\.addEventListener\("click", onStageClick\)/);
-  assert.match(polish, /60 \* 60 \* 1000/);
+test("title screen keeps native timers and advances without a forced click hold", () => {
+  assert.doesNotMatch(polish, /window\.setTimeout\s*=/);
+  assert.doesNotMatch(polish, /Number\(delay\) !== 1900/);
+  assert.doesNotMatch(polish, /pauseArmed/);
+  assert.doesNotMatch(polish, /ACCESS TRAILER/);
+  assert.doesNotMatch(polish, /is-awaiting-title-access/);
+  assert.doesNotMatch(polish, /60 \* 60 \* 1000/);
+});
+
+test("sequence observer only follows inserted screens and cannot self-trigger on class mutations", () => {
+  assert.match(polish, /sequenceObserver\.observe\(intro, \{ childList: true, subtree: true \}\)/);
+  assert.doesNotMatch(polish, /attributeFilter: \["aria-hidden", "class"\]/);
 });
 
 test("act titles and cast names use length-aware single-line fitting on desktop", () => {
