@@ -20,6 +20,7 @@ async function initializeSupportingCast(showcaseSlug) {
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
+      repairNeoTokyoRoles(casts);
       emphasizePosterRoles(casts);
       emphasizeNeoTokyoRoles();
       removeFinalTitleDuplicate();
@@ -36,37 +37,84 @@ async function initializeSupportingCast(showcaseSlug) {
 
 function normalizeGuest(row) {
   return {
-    sortOrder: Number(row?.sort_order || 0),
-    handle: clean(row?.handle),
-    name: clean(row?.name),
-    personaStyle: clean(row?.persona_style),
-    affiliation: clean(row?.affiliation),
-    gender: clean(row?.gender),
-    age: clean(row?.age),
-    tagline: clean(row?.tagline),
-    summary: clean(row?.summary),
-    imageUrl: safeImageUrl(row?.image_url)
+    sortOrder: Number(row?.sort_order || 0), handle: clean(row?.handle), name: clean(row?.name),
+    personaStyle: clean(row?.persona_style), affiliation: clean(row?.affiliation), gender: clean(row?.gender),
+    age: clean(row?.age), tagline: clean(row?.tagline), summary: clean(row?.summary), imageUrl: safeImageUrl(row?.image_url)
   };
+}
+
+function roleForCast(cast) {
+  const explicit = clean(cast?.participationRole || cast?.participation_role);
+  if (explicit) return explicit;
+  const roleStyle = Array.isArray(cast?.styles) ? cast.styles.find(style => style?.handoutRole || style?.handout_role) : null;
+  return clean(roleStyle?.label);
+}
+
+function findCastByDisplayedName(casts, value) {
+  const target = normalizeName(value);
+  return casts.find(item => normalizeName(item?.fullName || item?.full_name || item?.name) === target);
+}
+
+function repairNeoTokyoRoles(casts) {
+  for (const card of document.querySelectorAll(".neotokyo-sequence__cast--linked")) {
+    const cast = findCastByDisplayedName(casts, card.querySelector("h3")?.textContent);
+    const role = roleForCast(cast);
+    if (!role) continue;
+    const slot = card.querySelector(".neotokyo-sequence__role-slot strong");
+    if (slot) slot.textContent = role;
+    markRoleChips(card.querySelector(".neotokyo-sequence__styles"), role);
+  }
+
+  const summaryCards = [...document.querySelectorAll(".neotokyo-sequence__summary-cast")];
+  summaryCards.forEach((card, index) => {
+    const cast = findCastByDisplayedName(casts, card.querySelector("h3")?.textContent) || casts[index];
+    const role = roleForCast(cast);
+    if (!role) return;
+    const roleLabel = card.querySelector(".neotokyo-sequence__summary-cast-role");
+    if (roleLabel) roleLabel.textContent = role;
+    const styles = card.querySelector(".neotokyo-sequence__summary-cast-styles");
+    if (styles && !styles.querySelector("span")) {
+      const labels = Array.isArray(cast?.styles) ? cast.styles.map(style => clean(style?.label)).filter(Boolean) : [];
+      styles.replaceChildren(...labels.map(label => textNode("span", label)));
+    }
+    markRoleChips(styles, role);
+    const vector = document.querySelectorAll(".neotokyo-story__entry-vector")[index];
+    const vectorRole = vector?.querySelector("b");
+    if (vectorRole) vectorRole.textContent = role;
+  });
+}
+
+function markRoleChips(group, role) {
+  if (!group || !role) return;
+  let found = false;
+  for (const chip of group.querySelectorAll("span")) {
+    chip.classList.remove("is-role", "is-role-primary", "is-role-duplicate");
+    if (normalizeStyle(chip.textContent) !== normalizeStyle(role)) continue;
+    if (!found) {
+      found = true;
+      chip.classList.add("is-role", "is-role-primary");
+    } else chip.classList.add("is-role-duplicate");
+  }
 }
 
 function emphasizePosterRoles(casts) {
   for (const profile of document.querySelectorAll(".poster-v2-panel--profile")) {
     const name = clean(profile.querySelector(".poster-v2-name")?.textContent);
-    const cast = casts.find(item => normalizeName(item?.fullName) === normalizeName(name));
-    const role = clean(cast?.participationRole);
+    const cast = findCastByDisplayedName(casts, name);
+    const role = roleForCast(cast);
     if (!role) continue;
+    const tags = profile.querySelector(".poster-v2-tags");
     let found = false;
-    for (const chip of profile.querySelectorAll(".poster-v2-tags span")) {
+    for (const chip of tags?.querySelectorAll("span") || []) {
       chip.classList.remove("is-assigned-style", "is-assigned-style-duplicate");
       if (normalizeStyle(chip.textContent) !== normalizeStyle(role)) continue;
       if (!found) {
         found = true;
         chip.classList.add("is-assigned-style");
         chip.dataset.assignedLabel = "ASSIGNED";
-      } else {
-        chip.classList.add("is-assigned-style-duplicate");
-      }
+      } else chip.classList.add("is-assigned-style-duplicate");
     }
+    if (found) tags?.classList.add("has-assigned-style");
   }
 }
 
@@ -143,11 +191,7 @@ function createPosterGuestCard(guest, index) {
   visual.append(image, textNode("span", `GUEST ${String(index + 1).padStart(2, "0")}`));
   const body = document.createElement("div");
   body.className = "poster-supporting-card__body";
-  body.append(
-    textNode("small", "SUPPORTING CAST // PERSONA FILE"),
-    textNode("h3", fullGuestName(guest)),
-    textNode("b", guest.personaStyle || "PERSONA UNREGISTERED")
-  );
+  body.append(textNode("small", "SUPPORTING CAST // PERSONA FILE"), textNode("h3", fullGuestName(guest)), textNode("b", guest.personaStyle || "PERSONA UNREGISTERED"));
   const meta = [guest.affiliation, guest.age && `AGE ${guest.age}`, guest.gender].filter(Boolean).join(" / ");
   if (meta) body.append(textNode("p", meta, "poster-supporting-card__meta"));
   if (guest.tagline) body.append(textNode("blockquote", `“${guest.tagline}”`));
@@ -163,11 +207,7 @@ function createSummaryGuestCard(guest, index) {
   image.src = guest.imageUrl || "./assets/placeholders/scan-failed.webp";
   image.alt = "";
   const body = document.createElement("div");
-  body.append(
-    textNode("span", `G${String(index + 1).padStart(2, "0")} // GUEST`),
-    textNode("strong", fullGuestName(guest)),
-    textNode("b", guest.personaStyle || "UNREGISTERED")
-  );
+  body.append(textNode("span", `G${String(index + 1).padStart(2, "0")} // GUEST`), textNode("strong", fullGuestName(guest)), textNode("b", guest.personaStyle || "UNREGISTERED"));
   if (guest.tagline) body.append(textNode("small", `“${guest.tagline}”`));
   card.append(image, body);
   return card;
