@@ -21,15 +21,23 @@ test("title screen stays decorated while targeting about seventy percent of the 
   assert.doesNotMatch(css, /!important/);
 });
 
-test("trailer returns to the original adaptive typography and keeps the full text available", async () => {
+test("trailer keeps adaptive typography and the frame follows content height", async () => {
   const tuning = await read("css-next/pages/act-showcase-presentation-tuning.css");
   const writing = await read("css-next/pages/act-showcase-writing-patterns.css");
-  const story = await read("css-next/pages/act-showcase-story-flow.css");
-  assert.doesNotMatch(tuning, /screen--trailer\s+\.neotokyo-sequence__readout\{/);
   assert.match(writing, /data-trailer-pattern=\"prose\"/);
   assert.match(writing, /font-size:clamp\(\.88rem,1\.12vw,1\.08rem\)/);
   assert.match(writing, /white-space:pre-wrap/);
-  assert.match(story, /screen--trailer \.neotokyo-sequence__readout\{[^}]*overflow:auto/);
+  assert.match(tuning, /screen--trailer\{height:auto;max-height:100%;align-self:center\}/);
+  assert.match(tuning, /screen--trailer \.neotokyo-sequence__readout\{flex:0 1 auto;height:auto;min-height:4\.8em;max-height:calc\(100svh - 390px\);overflow:auto\}/);
+});
+
+test("the selected handout style is enlarged while duplicate matches stay secondary", async () => {
+  const css = await read("css-next/pages/act-showcase-presentation-tuning.css");
+  const supporting = await read("css-next/pages/act-showcase-supporting-cast.css");
+  assert.match(css, /cast--linked \.neotokyo-sequence__styles span\.is-role-primary\{[^}]*font-size:clamp\(\.72rem,1vw,\.96rem\)/);
+  assert.match(css, /transform:translateY\(-2px\) scale\(1\.08\)/);
+  assert.match(css, /poster-v2-tags span\.is-assigned-style\{[^}]*font-size:\.72rem/);
+  assert.match(supporting, /is-assigned-style-duplicate\{opacity:\.45\}/);
 });
 
 test("guest files use a left and right two-column layout on desktop", async () => {
