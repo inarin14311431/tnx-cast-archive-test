@@ -12,25 +12,31 @@ test("presentation tuning loads after supporting cast styling", async () => {
   assert.ok(supporting >= 0 && tuning > supporting);
 });
 
-test("title screen is intentionally oversized and decorated", async () => {
+test("title screen stays decorated while targeting about seventy percent of the viewport", async () => {
   const css = await read("css-next/pages/act-showcase-presentation-tuning.css");
-  assert.match(css, /font-size:clamp\(7\.4rem,11\.5vw,15rem\)/);
-  assert.match(css, /text-shadow:5px 0 0/);
+  assert.match(css, /max-width:70vw;width:70vw/);
+  assert.match(css, /font-size:clamp\(5\.8rem,7vw,9rem\)/);
+  assert.match(css, /text-shadow:4px 0 0/);
   assert.match(css, /repeating-linear-gradient/);
   assert.doesNotMatch(css, /!important/);
 });
 
-test("trailer typography does not shrink after typewriter classification", async () => {
-  const css = await read("css-next/pages/act-showcase-presentation-tuning.css");
-  assert.match(css, /screen--trailer \.neotokyo-sequence__readout\{font-size:clamp\(1\.08rem,1\.42vw,1\.34rem\);transition:none\}/);
-  assert.match(css, /data-trailer-pattern=\"prose\"/);
-  assert.match(css, /font-size:clamp\(1\.08rem,1\.42vw,1\.34rem\)/);
+test("trailer returns to the original adaptive typography and keeps the full text available", async () => {
+  const tuning = await read("css-next/pages/act-showcase-presentation-tuning.css");
+  const writing = await read("css-next/pages/act-showcase-writing-patterns.css");
+  const story = await read("css-next/pages/act-showcase-story-flow.css");
+  assert.doesNotMatch(tuning, /screen--trailer\s+\.neotokyo-sequence__readout\{/);
+  assert.match(writing, /data-trailer-pattern=\"prose\"/);
+  assert.match(writing, /font-size:clamp\(\.88rem,1\.12vw,1\.08rem\)/);
+  assert.match(writing, /white-space:pre-wrap/);
+  assert.match(story, /screen--trailer \.neotokyo-sequence__readout\{[^}]*overflow:auto/);
 });
 
-test("guest files expand to available width", async () => {
+test("guest files use a left and right two-column layout on desktop", async () => {
   const css = await read("css-next/pages/act-showcase-presentation-tuning.css");
-  assert.match(css, /neotokyo-supporting-cast__rail\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(280px,1fr\)\)/);
-  assert.match(css, /poster-supporting-card\{grid-template-columns:150px minmax\(0,1fr\);min-height:232px\}/);
+  assert.match(css, /poster-supporting-cast__grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(css, /neotokyo-supporting-cast__rail\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(css, /@media\(max-width:900px\)/);
 });
 
 test("guest taglines use Japanese corner brackets", async () => {
