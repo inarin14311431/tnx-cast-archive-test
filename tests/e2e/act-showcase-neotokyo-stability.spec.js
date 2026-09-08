@@ -88,7 +88,7 @@ test("NeoTokyo showcase remains responsive through trailer, assignment and ACT R
   await expect(page.locator(".neotokyo-sequence__cast--linked .is-role-primary")).toHaveCount(1);
 
   await advance.click();
-  await expect(advance).toHaveText("ACCESS ACT", { timeout: 12_000 });
+  await expect(advance).toHaveText("OPEN FULL SHOWCASE", { timeout: 12_000 });
   await expect(advance).toBeVisible();
   await advance.click();
 
