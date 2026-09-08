@@ -1,0 +1,30 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const root = new URL("../", import.meta.url);
+const read = path => readFile(new URL(path, root), "utf8");
+
+test("final visual/trailer fix loads after presentation tuning", async () => {
+  const html = await read("act-showcase.html");
+  const tuning = html.indexOf("act-showcase-presentation-tuning.css");
+  const fix = html.indexOf("act-showcase-visual-trailer-fix.css");
+  assert.ok(tuning >= 0 && fix > tuning);
+  assert.match(html, /act-showcase-visual-caption-code\.js\?v=1/);
+});
+
+test("trailer frame grows to full text and stage owns overflow", async () => {
+  const css = await read("css-next/pages/act-showcase-visual-trailer-fix.css");
+  assert.match(css, /stage:has\(> \.neotokyo-sequence__screen--trailer\.is-visible\)/);
+  assert.match(css, /overflow-y:auto/);
+  assert.match(css, /screen--trailer \.neotokyo-sequence__readout\{[\s\S]*max-height:none;[\s\S]*overflow:visible/);
+  assert.doesNotMatch(css, /max-height:calc\(100svh/);
+});
+
+test("visual caption replaces duplicated cast name with deterministic archive code", async () => {
+  const js = await read("js/act-showcase-visual-caption-code.js");
+  assert.match(js, /VISUAL TRACE \/\/ NX-/);
+  assert.match(js, /NODE:PUBLIC/);
+  assert.match(js, /poster-v2-visual__code/);
+  assert.match(js, /MutationObserver/);
+});
