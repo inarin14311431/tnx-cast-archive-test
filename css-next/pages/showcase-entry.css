@@ -4,4 +4,5 @@
 @import url("../index.css?v=64") layer(app);
 @import url("./showcase.css?v=2") layer(showcase-page);
 @import url("./showcase-background-presets.css?v=1") layer(showcase-page);
+@import url("./showcase-guests.css?v=1") layer(showcase-page);
 @import url("./showcase-theme.css?v=1") layer(showcase-theme);
