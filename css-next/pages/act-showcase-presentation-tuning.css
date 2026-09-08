@@ -40,14 +40,14 @@ body#act-showcase-page .neotokyo-supporting-card small{font-size:.46rem;white-sp
 }
 @media(max-width:760px){
   body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{font-size:clamp(2.2rem,10vw,3.7rem);white-space:normal;text-wrap:balance}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer[data-trailer-pattern] .neotokyo-sequence__readout{padding:12px 14px;font-size:clamp(.9rem,3.5vw,1rem);line-height:1.62}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{padding:12px 14px;font-size:clamp(.9rem,3.5vw,1rem);line-height:1.62}
   body#act-showcase-page .poster-supporting-cast__grid{grid-template-columns:1fr}
   body#act-showcase-page .poster-supporting-card{grid-template-columns:108px minmax(0,1fr);min-height:180px}
   body#act-showcase-page .neotokyo-supporting-cast__rail{grid-template-columns:1fr}
 }
 @media(max-height:650px) and (min-width:761px){
   body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{font-size:clamp(4.6rem,8vw,7.6rem)}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer[data-trailer-pattern] .neotokyo-sequence__readout{font-size:1rem;line-height:1.58}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{font-size:1rem;line-height:1.58}
 }
 @media(prefers-reduced-motion:reduce){
   body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{transition:none}
