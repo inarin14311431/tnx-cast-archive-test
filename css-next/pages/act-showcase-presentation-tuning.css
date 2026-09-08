@@ -1,22 +1,18 @@
-/* Presentation tuning from visual review: keep trailer scale, amplify title lockup, and give guest files more space. */
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo{width:min(1720px,calc(100vw - 36px));padding:30px 42px 38px;border-top:1px solid rgba(119,240,255,.48);border-bottom:1px solid rgba(255,91,193,.38);background:linear-gradient(100deg,rgba(7,35,57,.38),rgba(4,9,21,.16) 32%,rgba(4,9,21,.12) 68%,rgba(67,13,57,.32)),repeating-linear-gradient(90deg,rgba(114,231,255,.025) 0 1px,transparent 1px 86px);box-shadow:0 0 0 1px rgba(255,255,255,.02),0 30px 90px rgba(0,0,0,.35),inset 0 0 46px rgba(63,221,255,.035)}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-title-logo__meta{width:min(1180px,92%);margin:0 auto 22px;border-color:rgba(120,235,255,.34);box-shadow:0 0 22px rgba(74,222,255,.05)}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{max-width:none;width:100%;padding:18px 0 22px;font-size:clamp(7.4rem,11.5vw,15rem);line-height:.78;letter-spacing:-.055em;text-align:center;white-space:nowrap;text-wrap:nowrap;-webkit-text-stroke:1px rgba(236,252,255,.4);text-shadow:5px 0 0 rgba(67,225,255,.33),-5px 0 0 rgba(255,69,188,.25),0 0 34px rgba(83,222,255,.2),0 28px 84px rgba(0,0,0,.7)}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="medium"]{font-size:clamp(6.4rem,10vw,13rem);letter-spacing:-.06em}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="long"]{font-size:clamp(5rem,7.8vw,10rem);letter-spacing:-.065em}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="xlong"]{font-size:clamp(3.9rem,6.1vw,7.8rem);letter-spacing:-.07em}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-title-logo__ghost{top:14%;left:50%;max-width:120%;font-size:clamp(10rem,18vw,21rem);letter-spacing:-.065em;opacity:.46;transform:translate(-50%,-14%);-webkit-text-stroke:1px rgba(105,235,255,.17);filter:blur(.35px)}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-title-logo__rule{max-width:1120px;margin:7px auto 20px;grid-template-columns:minmax(120px,1fr) auto minmax(180px,1fr)}
+/* Presentation tuning from visual review: balanced title lockup and two-column guest placement. */
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo{width:min(1540px,calc(100vw - 72px));padding:28px 38px 34px;border-top:1px solid rgba(119,240,255,.48);border-bottom:1px solid rgba(255,91,193,.38);background:linear-gradient(100deg,rgba(7,35,57,.38),rgba(4,9,21,.16) 32%,rgba(4,9,21,.12) 68%,rgba(67,13,57,.32)),repeating-linear-gradient(90deg,rgba(114,231,255,.025) 0 1px,transparent 1px 86px);box-shadow:0 0 0 1px rgba(255,255,255,.02),0 30px 90px rgba(0,0,0,.35),inset 0 0 46px rgba(63,221,255,.035)}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-title-logo__meta{width:min(1080px,88%);margin:0 auto 20px;border-color:rgba(120,235,255,.34);box-shadow:0 0 22px rgba(74,222,255,.05)}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{max-width:70vw;width:70vw;margin-inline:auto;padding:16px 0 20px;font-size:clamp(5.8rem,7vw,9rem);line-height:.82;letter-spacing:-.045em;text-align:center;white-space:nowrap;text-wrap:nowrap;-webkit-text-stroke:1px rgba(236,252,255,.36);text-shadow:4px 0 0 rgba(67,225,255,.3),-4px 0 0 rgba(255,69,188,.22),0 0 30px rgba(83,222,255,.18),0 24px 72px rgba(0,0,0,.68)}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="medium"]{font-size:clamp(5.1rem,6.2vw,8rem);letter-spacing:-.05em}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="long"]{font-size:clamp(4.1rem,5vw,6.5rem);letter-spacing:-.055em}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="xlong"]{font-size:clamp(3.2rem,4vw,5.2rem);letter-spacing:-.06em}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-title-logo__ghost{top:16%;left:50%;max-width:96%;font-size:clamp(8.5rem,14vw,16.5rem);letter-spacing:-.055em;opacity:.4;transform:translate(-50%,-14%);-webkit-text-stroke:1px rgba(105,235,255,.15);filter:blur(.35px)}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-title-logo__rule{max-width:1040px;margin:7px auto 20px;grid-template-columns:minmax(120px,1fr) auto minmax(180px,1fr)}
 body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-title-logo__rule i{height:2px;box-shadow:0 0 14px rgba(74,225,255,.34)}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-sequence__ruler-credit{width:min(1160px,92%);margin-inline:auto;padding:18px 24px;border-top:1px solid rgba(255,91,193,.16);border-bottom:1px solid rgba(255,91,193,.11);background:linear-gradient(90deg,rgba(58,14,51,.48),rgba(6,13,27,.18) 64%,transparent)}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo .neotokyo-sequence__ruler-credit{width:min(1040px,88%);margin-inline:auto;padding:16px 22px;border-top:1px solid rgba(255,91,193,.16);border-bottom:1px solid rgba(255,91,193,.11);background:linear-gradient(90deg,rgba(58,14,51,.48),rgba(6,13,27,.18) 64%,transparent)}
 
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{font-size:clamp(1.08rem,1.42vw,1.34rem);transition:none}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer[data-trailer-pattern="verse"] .neotokyo-sequence__readout{padding:22px 38px 20px;font-size:clamp(1.12rem,1.5vw,1.42rem);line-height:1.82;letter-spacing:.01em}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer[data-trailer-pattern="prose"] .neotokyo-sequence__readout{padding:20px 30px;font-size:clamp(1.08rem,1.42vw,1.34rem);line-height:1.74}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer[data-trailer-pattern="compact"] .neotokyo-sequence__readout{display:grid;align-content:center;padding:28px 46px;font-size:clamp(1.28rem,1.82vw,1.68rem);line-height:1.72;letter-spacing:.015em}
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer[data-trailer-pattern="hybrid"] .neotokyo-sequence__readout{padding:21px 34px;font-size:clamp(1.1rem,1.46vw,1.38rem);line-height:1.76}
+/* Trailer typography returns to the writing-pattern layer so the whole text remains available without post-typewriter enlargement. */
 
-body#act-showcase-page .poster-supporting-cast__grid{grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px}
+body#act-showcase-page .poster-supporting-cast__grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 body#act-showcase-page .poster-supporting-card{grid-template-columns:150px minmax(0,1fr);min-height:232px}
 body#act-showcase-page .poster-supporting-card__body{padding:20px 22px}
 body#act-showcase-page .poster-supporting-card__body h3{font-size:clamp(1.2rem,1.7vw,1.7rem)}
@@ -24,7 +20,7 @@ body#act-showcase-page .poster-supporting-card__meta{font-size:.7rem}
 body#act-showcase-page .poster-supporting-card blockquote{font-size:.9rem;line-height:1.65}
 body#act-showcase-page .poster-supporting-card__summary{-webkit-line-clamp:3;font-size:.76rem;line-height:1.62}
 body#act-showcase-page .neotokyo-supporting-cast{margin-top:11px;padding:11px 12px 12px}
-body#act-showcase-page .neotokyo-supporting-cast__rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;overflow:visible}
+body#act-showcase-page .neotokyo-supporting-cast__rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible}
 body#act-showcase-page .neotokyo-supporting-card{display:grid;grid-template-columns:76px minmax(0,1fr);min-height:94px;width:auto}
 body#act-showcase-page .neotokyo-supporting-card>div{padding:9px 11px}
 body#act-showcase-page .neotokyo-supporting-card strong{font-size:.72rem}
@@ -32,23 +28,20 @@ body#act-showcase-page .neotokyo-supporting-card b{font-size:.46rem}
 body#act-showcase-page .neotokyo-supporting-card small{font-size:.46rem;white-space:normal;line-height:1.35}
 
 @media(max-width:1100px){
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo{width:calc(100vw - 28px);padding:24px 24px 30px}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{font-size:clamp(5.2rem,10.2vw,8rem)}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="medium"]{font-size:clamp(4.6rem,8.9vw,7rem)}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="long"]{font-size:clamp(3.7rem,7vw,5.6rem)}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="xlong"]{font-size:clamp(3rem,5.6vw,4.5rem)}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title-logo{width:calc(100vw - 40px);padding:22px 22px 28px}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{max-width:76vw;width:76vw;font-size:clamp(4.5rem,7.4vw,6.5rem)}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="medium"]{font-size:clamp(4rem,6.6vw,5.8rem)}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="long"]{font-size:clamp(3.3rem,5.3vw,4.7rem)}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title[data-fit="xlong"]{font-size:clamp(2.7rem,4.3vw,3.8rem)}
 }
-@media(max-width:760px){
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{font-size:clamp(2.2rem,10vw,3.7rem);white-space:normal;text-wrap:balance}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{padding:12px 14px;font-size:clamp(.9rem,3.5vw,1rem);line-height:1.62}
+@media(max-width:900px){
   body#act-showcase-page .poster-supporting-cast__grid{grid-template-columns:1fr}
-  body#act-showcase-page .poster-supporting-card{grid-template-columns:108px minmax(0,1fr);min-height:180px}
   body#act-showcase-page .neotokyo-supporting-cast__rail{grid-template-columns:1fr}
 }
-@media(max-height:650px) and (min-width:761px){
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{font-size:clamp(4.6rem,8vw,7.6rem)}
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{font-size:1rem;line-height:1.58}
+@media(max-width:760px){
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{max-width:92vw;width:92vw;font-size:clamp(2rem,9vw,3.4rem);white-space:normal;text-wrap:balance}
+  body#act-showcase-page .poster-supporting-card{grid-template-columns:108px minmax(0,1fr);min-height:180px}
 }
-@media(prefers-reduced-motion:reduce){
-  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{transition:none}
+@media(max-height:650px) and (min-width:761px){
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--title .neotokyo-sequence__act-title--logo.showcase-fit-title{font-size:clamp(4rem,6.8vw,6.2rem)}
 }
