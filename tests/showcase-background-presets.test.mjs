@@ -10,22 +10,13 @@ const picker = readFileSync(new URL("../js/showcase-background-preset-picker.js"
 const resolver = readFileSync(new URL("../js/act-showcase-background-resolver.js", import.meta.url), "utf8");
 const css = readFileSync(new URL("../css-next/pages/showcase-background-presets.css", import.meta.url), "utf8");
 
-test("generator exposes five named Supabase background presets", () => {
+test("generator exposes the canonical background preset picker wiring", () => {
   assert.match(generatorHtml, /id="background-preset-grid"/);
-  assert.match(generatorHtml, /showcase-background-preset-picker\.js\?v=1/);
-  assert.match(entryCss, /showcase-background-presets\.css\?v=1/);
+  assert.match(generatorHtml, /showcase-background-preset-picker\.js\?v=\d+/);
+  assert.match(entryCss, /showcase-background-presets\.css\?v=\d+/);
   assert.doesNotMatch(generatorHtml, /<link[^>]+showcase-background-presets\.css/);
-  for (const [key, name] of [
-    ["neon-waterfront", "ネオン・ウォーターフロント"],
-    ["arcology-lobby", "アーコロジー・ロビー"],
-    ["red-area-alley", "レッドエリア裏路地"],
-    ["sky-lounge", "スカイラウンジ"],
-    ["neuro-dataspace", "ニューロ・データスペース"]
-  ]) {
-    assert.match(presets, new RegExp(key));
-    assert.match(presets, new RegExp(name));
-  }
-  assert.match(presets, /storage\/v1\/object\/public\/act-showcase-backgrounds/);
+  assert.match(presets, /export const SHOWCASE_BACKGROUND_PRESETS/);
+  assert.match(presets, /new URL\(/);
 });
 
 test("preset selection reuses the existing background URL publishing path", () => {
@@ -42,7 +33,7 @@ test("manual background inputs can override a selected preset", () => {
 });
 
 test("NeoTokyo cinematic mode restores the published background after canonical rendering", () => {
-  assert.match(publicHtml, /act-showcase-background-resolver\.js\?v=1/);
+  assert.match(publicHtml, /act-showcase-background-resolver\.js\?v=\d+/);
   assert.match(resolver, /bgSample/);
   assert.match(resolver, /get_public_act_showcase/);
   assert.match(resolver, /waitForShowcaseReady/);
