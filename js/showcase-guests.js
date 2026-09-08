@@ -14,19 +14,9 @@ let dirty = false;
 let replayPublish = false;
 let previewSyncing = false;
 
-injectStylesheet();
 mountGuestPanel();
 bindOutputBridges();
 void loadForCurrentSlug();
-
-function injectStylesheet() {
-  if (document.querySelector('link[data-showcase-guests]')) return;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "./css-next/pages/showcase-guests.css?v=20260908a";
-  link.dataset.showcaseGuests = "1";
-  document.head.append(link);
-}
 
 function mountGuestPanel() {
   if (document.querySelector("#showcase-guest-panel")) return;
