@@ -31,8 +31,8 @@ async function initializeSupportingCast(showcaseSlug) {
     });
   };
   const observer = new MutationObserver(sync);
-  // Dynamic showcase screens are inserted/replaced as child nodes. Watching class changes here
-  // creates a self-triggering loop because sync() itself updates role-related classes.
+  // Dynamic showcase screens are inserted/replaced as child nodes. Keep every sync idempotent:
+  // this observer must never create another child mutation when the visible value is unchanged.
   observer.observe(document.body, { childList: true, subtree: true });
   sync();
 }
@@ -57,13 +57,19 @@ function findCastByDisplayedName(casts, value) {
   return casts.find(item => normalizeName(item?.fullName || item?.full_name || item?.name) === target);
 }
 
+function setTextIfChanged(target, value) {
+  if (!target) return;
+  const next = String(value ?? "");
+  if (target.textContent !== next) target.textContent = next;
+}
+
 function repairNeoTokyoRoles(casts) {
   for (const card of document.querySelectorAll(".neotokyo-sequence__cast--linked")) {
     const cast = findCastByDisplayedName(casts, card.querySelector("h3")?.textContent);
     const role = roleForCast(cast);
     if (!role) continue;
     const slot = card.querySelector(".neotokyo-sequence__role-slot strong");
-    if (slot) slot.textContent = role;
+    setTextIfChanged(slot, role);
     markRoleChips(card.querySelector(".neotokyo-sequence__styles"), role);
   }
 
@@ -73,7 +79,7 @@ function repairNeoTokyoRoles(casts) {
     const role = roleForCast(cast);
     if (!role) return;
     const roleLabel = card.querySelector(".neotokyo-sequence__summary-cast-role");
-    if (roleLabel) roleLabel.textContent = role;
+    setTextIfChanged(roleLabel, role);
     const styles = card.querySelector(".neotokyo-sequence__summary-cast-styles");
     if (styles && !styles.querySelector("span")) {
       const labels = Array.isArray(cast?.styles) ? cast.styles.map(style => clean(style?.label)).filter(Boolean) : [];
@@ -82,7 +88,7 @@ function repairNeoTokyoRoles(casts) {
     markRoleChips(styles, role);
     const vector = document.querySelectorAll(".neotokyo-story__entry-vector")[index];
     const vectorRole = vector?.querySelector("b");
-    if (vectorRole) vectorRole.textContent = role;
+    setTextIfChanged(vectorRole, role);
   });
 }
 
@@ -90,12 +96,13 @@ function markRoleChips(group, role) {
   if (!group || !role) return;
   let found = false;
   for (const chip of group.querySelectorAll("span")) {
-    chip.classList.remove("is-role", "is-role-primary", "is-role-duplicate");
-    if (normalizeStyle(chip.textContent) !== normalizeStyle(role)) continue;
-    if (!found) {
-      found = true;
-      chip.classList.add("is-role", "is-role-primary");
-    } else chip.classList.add("is-role-duplicate");
+    const matches = normalizeStyle(chip.textContent) === normalizeStyle(role);
+    const primary = matches && !found;
+    const duplicate = matches && found;
+    if (matches) found = true;
+    chip.classList.toggle("is-role", primary);
+    chip.classList.toggle("is-role-primary", primary);
+    chip.classList.toggle("is-role-duplicate", duplicate);
   }
 }
 
@@ -108,24 +115,24 @@ function emphasizePosterRoles(casts) {
     const tags = profile.querySelector(".poster-v2-tags");
     let found = false;
     for (const chip of tags?.querySelectorAll("span") || []) {
-      chip.classList.remove("is-assigned-style", "is-assigned-style-duplicate");
-      if (normalizeStyle(chip.textContent) !== normalizeStyle(role)) continue;
-      if (!found) {
-        found = true;
-        chip.classList.add("is-assigned-style");
-        chip.dataset.assignedLabel = "ASSIGNED";
-      } else chip.classList.add("is-assigned-style-duplicate");
+      const matches = normalizeStyle(chip.textContent) === normalizeStyle(role);
+      const primary = matches && !found;
+      const duplicate = matches && found;
+      if (matches) found = true;
+      chip.classList.toggle("is-assigned-style", primary);
+      chip.classList.toggle("is-assigned-style-duplicate", duplicate);
+      if (primary) chip.dataset.assignedLabel = "ASSIGNED";
+      else delete chip.dataset.assignedLabel;
     }
-    if (found) tags?.classList.add("has-assigned-style");
+    tags?.classList.toggle("has-assigned-style", found);
   }
 }
 
 function emphasizeNeoTokyoRoles() {
   for (const group of document.querySelectorAll(".neotokyo-sequence__styles,.neotokyo-sequence__summary-cast-styles")) {
     const selected = group.querySelector(".is-role-primary");
-    if (!selected) continue;
-    group.classList.add("has-assigned-style");
-    selected.dataset.assignedLabel = "ASSIGNED STYLE";
+    group.classList.toggle("has-assigned-style", Boolean(selected));
+    if (selected && selected.dataset.assignedLabel !== "ASSIGNED STYLE") selected.dataset.assignedLabel = "ASSIGNED STYLE";
   }
 }
 
