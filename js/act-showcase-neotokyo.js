@@ -1,6 +1,7 @@
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
 const DEFAULT_OVERVIEW = "CAST SHOWCASE";
+const SHOW_ACT_TITLE_SCREEN = false;
 
 export function prepareNeoTokyoLoading(intro) {
   if (!intro) return;
@@ -42,8 +43,10 @@ export async function runNeoTokyoIntro({ intro, model }) {
   try {
     await showOpening(state);
     if (state.finished) return;
-    await showActTitle(state, model);
-    if (state.finished) return;
+    if (SHOW_ACT_TITLE_SCREEN) {
+      await showActTitle(state, model);
+      if (state.finished) return;
+    }
     await showTrailer(state, model);
     if (state.finished) return;
 
