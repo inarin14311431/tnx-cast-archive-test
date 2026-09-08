@@ -194,7 +194,7 @@ function createPosterGuestCard(guest, index) {
   body.append(textNode("small", "SUPPORTING CAST // PERSONA FILE"), textNode("h3", fullGuestName(guest)), textNode("b", guest.personaStyle || "PERSONA UNREGISTERED"));
   const meta = [guest.affiliation, guest.age && `AGE ${guest.age}`, guest.gender].filter(Boolean).join(" / ");
   if (meta) body.append(textNode("p", meta, "poster-supporting-card__meta"));
-  if (guest.tagline) body.append(textNode("blockquote", `“${guest.tagline}”`));
+  if (guest.tagline) body.append(textNode("blockquote", `「${guest.tagline}」`));
   if (guest.summary) body.append(textNode("p", guest.summary, "poster-supporting-card__summary"));
   card.append(visual, body);
   return card;
@@ -208,7 +208,7 @@ function createSummaryGuestCard(guest, index) {
   image.alt = "";
   const body = document.createElement("div");
   body.append(textNode("span", `G${String(index + 1).padStart(2, "0")} // GUEST`), textNode("strong", fullGuestName(guest)), textNode("b", guest.personaStyle || "UNREGISTERED"));
-  if (guest.tagline) body.append(textNode("small", `“${guest.tagline}”`));
+  if (guest.tagline) body.append(textNode("small", `「${guest.tagline}」`));
   card.append(image, body);
   return card;
 }
