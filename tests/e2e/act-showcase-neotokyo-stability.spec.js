@@ -61,6 +61,11 @@ test("NeoTokyo showcase remains responsive through trailer, assignment and ACT R
   const pageErrors = [];
   page.on("pageerror", error => pageErrors.push(error.message));
 
+  // This test validates sequence/state stability, not decorative motion. Running it
+  // with reduced motion prevents continuously animated CTAs from making Playwright's
+  // actionability check depend on a single animation frame while preserving the full flow.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
   await page.route("**/rest/v1/rpc/get_public_act_showcase", route => mockRpc(route, showcase));
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => mockRpc(route, []));
 
