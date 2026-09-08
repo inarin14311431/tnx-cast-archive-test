@@ -5,10 +5,14 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-test("showcase loads the writing-pattern layer last", async () => {
+test("showcase loads the writing-pattern layer after story-flow", async () => {
   const html = await read("act-showcase.html");
-  assert.match(html, /act-showcase-story-flow\.css[^\n]+act-showcase-writing-patterns\.css/s);
-  assert.match(html, /act-showcase-story-flow\.js[^\n]+act-showcase-writing-patterns\.js/s);
+  const storyCss = html.indexOf("act-showcase-story-flow.css");
+  const patternCss = html.indexOf("act-showcase-writing-patterns.css");
+  const storyJs = html.indexOf("act-showcase-story-flow.js");
+  const patternJs = html.indexOf("act-showcase-writing-patterns.js");
+  assert.ok(storyCss >= 0 && patternCss > storyCss);
+  assert.ok(storyJs >= 0 && patternJs > storyJs);
 });
 
 test("handout parser accepts common N◎VA metadata variants", async () => {
@@ -36,7 +40,7 @@ test("handout parser accepts common N◎VA metadata variants", async () => {
 test("trailer patterns preserve author line breaks and adapt typography", async () => {
   const js = await read("js/act-showcase-writing-patterns.js");
   const css = await read("css-next/pages/act-showcase-writing-patterns.css");
-  assert.match(js, /data.*trailerPattern|dataset\.trailerPattern/);
+  assert.match(js, /dataset\.trailerPattern/);
   for (const pattern of ["verse", "prose", "compact", "hybrid"]) {
     assert.match(js, new RegExp(`\\"${pattern}\\"`));
     assert.match(css, new RegExp(`data-trailer-pattern=\\"${pattern}\\"`));
