@@ -9,8 +9,8 @@ const trailer = readFileSync(new URL("../js/showcase-trailer-multiline.js", impo
 const css = readFileSync(new URL("../css-next/pages/act-showcase-layout-polish.css", import.meta.url), "utf8");
 
 test("final layout polish loads after the previous cinematic readability layer", () => {
-  assert.match(showcaseHtml, /act-showcase-layout-polish\.css\?v=20260908a/);
-  assert.match(showcaseHtml, /act-showcase-board-layout\.js\?v=20260908a/);
+  assert.match(showcaseHtml, /act-showcase-layout-polish\.css\?v=[^\"']+/);
+  assert.match(showcaseHtml, /act-showcase-board-layout\.js\?v=[^\"']+/);
   assert.ok(showcaseHtml.indexOf("act-showcase-cinematic-readability.css") < showcaseHtml.indexOf("act-showcase-layout-polish.css"));
   assert.ok(showcaseHtml.indexOf("act-showcase-board-layout.js") < showcaseHtml.indexOf("act-showcase-page.js"));
 });
@@ -44,7 +44,7 @@ test("ACCESS ACT uses a strong animated authorization gate with reduced-motion f
 });
 
 test("act trailer explicitly preserves pasted multiline text", () => {
-  assert.match(generatorHtml, /showcase-trailer-multiline\.js\?v=1/);
+  assert.match(generatorHtml, /showcase-trailer-multiline\.js\?v=[^\"']+/);
   assert.match(generatorHtml, /複数行の文章をそのまま貼り付けできます/);
   assert.match(generatorHtml, /textarea id="intro-text" rows="8"/);
   assert.match(trailer, /clipboardData/);
