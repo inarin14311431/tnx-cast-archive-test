@@ -48,19 +48,25 @@ test("assigned style repair prefers the first matching style and preserves dupli
   const js = await read("js/act-showcase-supporting-cast.js");
   const css = await read("css-next/pages/act-showcase-supporting-cast.css");
   assert.match(js, /handoutRole \|\| style\?\.handout_role/);
-  assert.match(js, /let found = false/);
-  assert.match(js, /is-role-primary/);
-  assert.match(js, /is-role-duplicate/);
+  assert.match(js, /classList\.toggle\("is-role-primary", primary\)/);
+  assert.match(js, /classList\.toggle\("is-role-duplicate", duplicate\)/);
+  assert.match(js, /classList\.toggle\("is-assigned-style", primary\)/);
+  assert.match(js, /classList\.toggle\("is-assigned-style-duplicate", duplicate\)/);
   assert.match(css, /is-assigned-style/);
   assert.match(css, /ASSIGNED/);
   assert.doesNotMatch(css, /!important/);
 });
 
-test("supporting cast observer does not watch attributes it mutates itself", async () => {
+test("supporting cast observer stays structural and its text writes are idempotent", async () => {
   const js = await read("js/act-showcase-supporting-cast.js");
   assert.match(js, /observer\.observe\(document\.body, \{ childList: true, subtree: true \}\)/);
   assert.doesNotMatch(js, /attributeFilter:\s*\[\s*["']class["']/);
   assert.doesNotMatch(js, /attributes:\s*true/);
+  assert.match(js, /function setTextIfChanged/);
+  assert.match(js, /target\.textContent !== next/);
+  assert.match(js, /setTextIfChanged\(slot, role\)/);
+  assert.match(js, /setTextIfChanged\(roleLabel, role\)/);
+  assert.match(js, /setTextIfChanged\(vectorRole, role\)/);
 });
 
 test("final briefing and supporting guests are rendered as separate presentation roles", async () => {

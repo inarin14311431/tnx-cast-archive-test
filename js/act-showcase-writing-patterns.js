@@ -160,7 +160,7 @@
     const route = sequence.querySelector(".neotokyo-story__assigned-route>strong");
     if (!route) return;
     const value = clean(sequence.dataset.storyConnection) || clean(sequence.dataset.storyPs);
-    if (value) route.textContent = value;
+    if (value && route.textContent !== value) route.textContent = value;
   };
 
   const trailerObservers = new WeakMap();
@@ -197,6 +197,8 @@
   };
 
   const observer = new MutationObserver(sync);
-  observer.observe(intro, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "aria-hidden"] });
+  // Typed text and screen replacement are sufficient to schedule normalization. Watching the
+  // sequence's own class changes makes route decoration observe its own writes and can churn forever.
+  observer.observe(intro, { childList: true, subtree: true });
   sync();
 })();

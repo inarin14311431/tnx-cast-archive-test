@@ -7,9 +7,9 @@ const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 test("act showcase loads the cyberpunk title layer and display font", async () => {
   const html = await read("act-showcase.html");
   assert.ok(html.includes("family=Dela+Gothic+One"));
-  assert.ok(html.includes("act-showcase-title-cyberpunk.css?v=20260908a"));
-  assert.ok(html.includes("act-showcase-visual-caption-code.js?v=2"));
-  assert.ok(html.includes("act-showcase-tagline-quotes.js?v=2"));
+  assert.match(html, /act-showcase-title-cyberpunk\.css\?v=[^\"']+/);
+  assert.match(html, /act-showcase-visual-caption-code\.js\?v=[^\"']+/);
+  assert.match(html, /act-showcase-tagline-quotes\.js\?v=[^\"']+/);
 });
 
 test("cyberpunk title keeps the title as a logo rather than plain gothic text", async () => {

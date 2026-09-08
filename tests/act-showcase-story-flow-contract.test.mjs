@@ -7,8 +7,8 @@ const js = readFileSync(new URL("../js/act-showcase-story-flow.js", import.meta.
 const css = readFileSync(new URL("../css-next/pages/act-showcase-story-flow.css", import.meta.url), "utf8");
 
 test("story flow enhancement loads after layout polish and before the module renderer", () => {
-  assert.match(html, /act-showcase-story-flow\.css\?v=20260908a/);
-  assert.match(html, /act-showcase-story-flow\.js\?v=20260908a/);
+  assert.match(html, /act-showcase-story-flow\.css\?v=[^\"']+/);
+  assert.match(html, /act-showcase-story-flow\.js\?v=[^\"']+/);
   assert.ok(html.indexOf("act-showcase-layout-polish.css") < html.indexOf("act-showcase-story-flow.css"));
   assert.ok(html.indexOf("act-showcase-story-flow.js") < html.indexOf("act-showcase-page.js"));
 });

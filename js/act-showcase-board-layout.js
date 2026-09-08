@@ -4,6 +4,11 @@
   if (!story && !intro) return;
 
   const text = value => String(value ?? "").trim();
+  const setTextIfChanged = (target, value) => {
+    if (!target) return;
+    const next = String(value ?? "");
+    if (target.textContent !== next) target.textContent = next;
+  };
   const node = (tag, className, value = "") => {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -54,12 +59,9 @@
     const ruler = rows.get("RULER") || openingRuler || "—";
     const styles = rows.get("KEY STYLE") || "—";
 
-    const titleNode = bar.querySelector(".poster-v2-act-meta__title");
-    const rulerNode = bar.querySelector(".poster-v2-act-meta__cell.is-ruler strong");
-    const styleNode = bar.querySelector(".poster-v2-act-meta__cell.is-style strong");
-    if (titleNode) titleNode.textContent = actTitle;
-    if (rulerNode) rulerNode.textContent = ruler;
-    if (styleNode) styleNode.textContent = styles;
+    setTextIfChanged(bar.querySelector(".poster-v2-act-meta__title"), actTitle);
+    setTextIfChanged(bar.querySelector(".poster-v2-act-meta__cell.is-ruler strong"), ruler);
+    setTextIfChanged(bar.querySelector(".poster-v2-act-meta__cell.is-style strong"), styles);
   };
 
   const polishBoard = () => {
@@ -81,7 +83,7 @@
     access.dataset.accessPolished = "1";
     access.setAttribute("aria-label", "アクト紹介へアクセス");
     const code = access.querySelector("span");
-    if (code) code.textContent = "CLICK TO ENTER // AUTHORIZED";
+    setTextIfChanged(code, "CLICK TO ENTER // AUTHORIZED");
     const marker = node("b", "neotokyo-finale__access-marker", "ENTER");
     marker.setAttribute("aria-hidden", "true");
     access.append(marker);
