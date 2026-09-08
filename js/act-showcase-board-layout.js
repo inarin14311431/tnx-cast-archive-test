@@ -76,12 +76,12 @@
   };
 
   const polishAccess = () => {
-    const access = intro?.querySelector(".neotokyo-finale__access");
+    const access = intro?.querySelector(".neotokyo-finale__access-button");
     if (!access || access.dataset.accessPolished === "1") return;
     access.dataset.accessPolished = "1";
     access.setAttribute("aria-label", "アクト紹介へアクセス");
-    const sub = access.querySelector("small");
-    if (sub) sub.textContent = "CLICK TO ENTER // AUTHORIZED";
+    const code = access.querySelector("span");
+    if (code) code.textContent = "CLICK TO ENTER // AUTHORIZED";
     const marker = node("b", "neotokyo-finale__access-marker", "ENTER");
     marker.setAttribute("aria-hidden", "true");
     access.append(marker);
