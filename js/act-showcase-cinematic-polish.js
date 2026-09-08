@@ -50,72 +50,6 @@
 
   if (!isNeoTokyo) return;
 
-  const nativeSetTimeout = window.setTimeout.bind(window);
-  let activeTitleCleanup = null;
-
-  window.setTimeout = (callback, delay, ...args) => {
-    const titleScreen = intro.querySelector(".neotokyo-sequence__screen--title");
-    if (Number(delay) !== 1900 || !titleScreen || titleScreen.dataset.pauseArmed === "1") {
-      return nativeSetTimeout(callback, delay, ...args);
-    }
-
-    titleScreen.dataset.pauseArmed = "1";
-    window.setTimeout = nativeSetTimeout;
-
-    const stage = intro.querySelector(".neotokyo-sequence__stage");
-    const advance = intro.querySelector(".neotokyo-sequence__advance");
-    const terminal = titleScreen.querySelector(".neotokyo-sequence__terminal");
-    const originalAdvanceText = advance?.textContent || "CLICK TO CONTINUE";
-    const originalTerminalText = terminal?.textContent || "";
-    let settled = false;
-    let timer = 0;
-
-    const cleanup = () => {
-      if (stage) stage.removeEventListener("click", onStageClick);
-      if (advance) {
-        advance.removeEventListener("click", onAdvanceClick);
-        advance.classList.remove("neotokyo-sequence__advance--title-access");
-        advance.textContent = originalAdvanceText;
-        advance.hidden = true;
-      }
-      if (terminal && intro.getAttribute("aria-hidden") !== "true") terminal.textContent = originalTerminalText;
-      stage?.classList.remove("is-awaiting-title-access", "is-awaiting-advance");
-      document.body.classList.remove("showcase-neotokyo-title-paused");
-      if (activeTitleCleanup === cleanup) activeTitleCleanup = null;
-    };
-
-    const release = () => {
-      if (settled) return;
-      settled = true;
-      nativeSetTimeout(() => cleanup(), 0);
-      callback(...args);
-    };
-
-    function onStageClick(event) {
-      if (event.target.closest("button")) return;
-      release();
-    }
-
-    function onAdvanceClick() {
-      release();
-    }
-
-    stage?.classList.add("is-awaiting-title-access", "is-awaiting-advance");
-    document.body.classList.add("showcase-neotokyo-title-paused");
-    if (terminal) terminal.textContent = "TITLE LOCKED // INPUT REQUIRED // CLICK TO ACCESS TRAILER";
-    if (advance) {
-      advance.textContent = "ACCESS TRAILER";
-      advance.hidden = false;
-      advance.classList.add("neotokyo-sequence__advance--title-access");
-      advance.addEventListener("click", onAdvanceClick);
-    }
-    stage?.addEventListener("click", onStageClick);
-    activeTitleCleanup = cleanup;
-
-    timer = nativeSetTimeout(release, 60 * 60 * 1000);
-    return timer;
-  };
-
   const decorateSummaryAccess = () => {
     const summary = intro.querySelector(".neotokyo-sequence__screen--summary");
     if (!summary) return;
@@ -145,12 +79,6 @@
   const sequenceObserver = new MutationObserver(() => {
     queueTypography();
     decorateSummaryAccess();
-    if (intro.getAttribute("aria-hidden") === "true") activeTitleCleanup?.();
   });
-  sequenceObserver.observe(intro, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["aria-hidden", "class"]
-  });
+  sequenceObserver.observe(intro, { childList: true, subtree: true });
 })();
