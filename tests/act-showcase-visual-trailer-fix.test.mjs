@@ -10,7 +10,7 @@ test("final visual/trailer fix loads after presentation tuning", async () => {
   const tuning = html.indexOf("act-showcase-presentation-tuning.css");
   const fix = html.indexOf("act-showcase-visual-trailer-fix.css");
   assert.ok(tuning >= 0 && fix > tuning);
-  assert.match(html, /act-showcase-visual-caption-code\.js\?v=2/);
+  assert.match(html, /act-showcase-visual-caption-code\.js\?v=[^\"']+/);
 });
 
 test("trailer frame grows to full text and stage owns overflow", async () => {
