@@ -26,7 +26,7 @@
         <label>アクト名／サブタイトル<input id="act-name" type="text" value="トーキョーＮ◎ＶＡ アクト参加キャスト"></label>
         <label>RULER名<input id="ruler-name" type="text" placeholder="例：稲荷秋"></label>
         <label>アクト識別名<input id="publish-slug" type="text" placeholder="自動設定：act-0001"><small>履歴登録とアクト紹介の公開に共通して使用します。同じ識別名は、登録した本人だけが更新できます。</small></label>
-        <label class="form-grid__wide">アクトトレーラー <small>ACT TRAILER // プレアクトで読み上げるトレーラー</small><textarea id="intro-text" rows="6" placeholder="――それは、運命を変える夜。&#10;トーキョーN◎VAに新たなアクトが始まる。"></textarea></label>
+        <label class="form-grid__wide">アクトトレーラー <small>ACT TRAILER // プレアクトで読み上げるトレーラー</small><textarea id="intro-text" rows="8" placeholder="――それは、運命を変える夜。&#10;トーキョーN◎VAに新たなアクトが始まる。"></textarea><small>複数行の文章をそのまま貼り付けできます。入力した改行は公開ページにも保持されます。</small></label>
         <fieldset class="showcase-background-presets form-grid__wide">
           <legend>背景プリセット <small>ACT VISUAL / SUPABASE STORAGE</small></legend>
           <input id="background-preset" type="hidden" value="">
@@ -69,6 +69,7 @@
     </section>
   </main>
   <script src="./js/showcase-handle-normalizer.js?v=1"></script>
+  <script src="./js/showcase-trailer-multiline.js?v=1"></script>
   <script type="module" src="./js/showcase-generator-loader.js?v=24"></script>
   <script type="module" src="./js/showcase-background-preset-picker.js?v=1"></script>
   <script type="module" src="./js/showcase-auto-slug.js?v=2"></script>
