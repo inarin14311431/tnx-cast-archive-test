@@ -20,7 +20,7 @@
     { key: "setting", label: "SETTING", names: ["推奨設定", "設定"] },
     { key: "connection", label: "CONNECTION", names: ["コネ", "コネクション"] },
     { key: "suit", label: "SUIT", names: ["推奨スート", "スート"] },
-    { key: "quick", label: "QUICK START", names: ["クイックスタート", "QS"] },
+    { key: "quick", label: "QUICK START", names: ["クイックスタート", "QS", "ＱＳ"] },
     { key: "condition", label: "CONDITION", names: ["条件", "必須条件"] },
     { key: "castConnection", label: "CAST LINK", names: ["キャスト間コネクション", "キャスト間コネ", "キャストコネ"] },
     { key: "relation", label: "RELATION", names: ["関係"] },
@@ -136,6 +136,7 @@
     const signature = `${text.length}:${text.slice(-20)}`;
     if (context.dataset.writingSignature === signature) return;
     context.dataset.writingSignature = signature;
+    context.dataset.storyFilled = "1";
 
     const analysis = analyzeHandout(text);
     panel.dataset.handoutPattern = analysis.pattern;
