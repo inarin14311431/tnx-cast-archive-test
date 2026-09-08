@@ -69,19 +69,13 @@
     if (!root || !role) return;
     let primaryFound = false;
     for (const chip of root.querySelectorAll(".neotokyo-sequence__styles span")) {
-      chip.classList.remove("is-role-primary", "is-role-duplicate");
       const matches = normalizeStyle(chip.textContent) === normalizeStyle(role);
-      if (!matches) {
-        chip.classList.remove("is-role");
-        continue;
-      }
-      if (!primaryFound) {
-        primaryFound = true;
-        chip.classList.add("is-role", "is-role-primary");
-      } else {
-        chip.classList.remove("is-role");
-        chip.classList.add("is-role-duplicate");
-      }
+      const primary = matches && !primaryFound;
+      const duplicate = matches && primaryFound;
+      if (matches) primaryFound = true;
+      chip.classList.toggle("is-role", primary);
+      chip.classList.toggle("is-role-primary", primary);
+      chip.classList.toggle("is-role-duplicate", duplicate);
     }
   };
 
@@ -251,7 +245,9 @@
   };
 
   const observer = new MutationObserver(sync);
-  if (intro) observer.observe(intro, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "aria-hidden"] });
+  // Screen replacement and typed text already generate child mutations. Observing class changes here
+  // causes decorateLinked() to observe the very role classes it owns and can create an endless rAF loop.
+  if (intro) observer.observe(intro, { childList: true, subtree: true });
   if (story) observer.observe(story, { childList: true, subtree: true });
   sync();
 })();
