@@ -25,7 +25,7 @@ test("guest editor keeps supporting cast separate from participant history", asy
 });
 
 test("guest database API only exposes guests for public showcases", async () => {
-  const sql = await read("supabase/21_act_showcase_guests.sql");
+  const sql = await read("supabase/42_act_showcase_guests.sql");
   assert.match(sql, /alter table public\.act_showcase_guests enable row level security/);
   assert.match(sql, /replace_act_showcase_guests_for_current_user/);
   assert.match(sql, /get_public_act_showcase_guests/);
