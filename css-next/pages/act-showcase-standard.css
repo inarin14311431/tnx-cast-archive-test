@@ -1,5 +1,5 @@
 :root{--cyan:#00efff;--pink:#ff54b5;--green:#61ffb1;--text:#edfbff;--muted:#89afb9;--panel:rgba(1,9,14,.92)}
-*{box-sizing:border-box}html{scroll-behavior:smooth}[hidden]{display:none!important}
+*{box-sizing:border-box}html{scroll-behavior:smooth}[hidden]{display:none}
 body{margin:0;min-height:100vh;overflow-x:hidden;color:var(--text);font-family:"Noto Sans JP","Yu Gothic",sans-serif;background-color:#02080c;background-size:cover;background-position:center top;background-attachment:fixed}
 body:before{position:fixed;inset:0;z-index:-1;content:"";background:radial-gradient(circle at 18% 18%,rgba(0,239,255,.08),transparent 30%),radial-gradient(circle at 82% 36%,rgba(255,84,181,.06),transparent 28%),linear-gradient(rgba(0,239,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,239,255,.035) 1px,transparent 1px);background-size:auto,auto,48px 48px,48px 48px}
 .wrap{width:min(1280px,calc(100% - 28px));margin:auto}.showcase-loading{display:grid;min-height:100vh;place-items:center;padding:24px;color:var(--muted);font:700 .8rem/1.8 "Share Tech Mono",monospace;letter-spacing:.1em;text-align:center}.showcase-loading.is-error{color:#ff8fbf}
