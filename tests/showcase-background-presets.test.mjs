@@ -32,9 +32,9 @@ test("manual background inputs can override a selected preset", () => {
   assert.match(picker, /keyField\.value = ""/);
 });
 
-test("NeoTokyo cinematic mode restores the published background after canonical rendering", () => {
+test("cinematic presentation restores the published background after canonical rendering", () => {
   assert.match(publicHtml, /act-showcase-background-resolver\.js\?v=\d+/);
-  assert.match(resolver, /bgSample/);
+  assert.match(resolver, /params\.get\("id"\) \|\| params\.get\("act"\)/);
   assert.match(resolver, /get_public_act_showcase/);
   assert.match(resolver, /waitForShowcaseReady/);
   assert.match(resolver, /showcase-poster-v2-ready/);
