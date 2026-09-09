@@ -1,0 +1,72 @@
+name: Apply ACT SHOWCASE follow-up patch
+
+on:
+  push:
+    branches: [fix/showcase-delete-title-click-20260909]
+    paths:
+      - .github/workflows/apply-showcase-followup.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/showcase-delete-title-click-20260909
+      - name: Apply scoped source and test changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one match, found {count}: {old!r}")
+              p.write_text(text.replace(old, new, 1))
+
+          manifest_path = Path('supabase/migrations-manifest.json')
+          manifest = json.loads(manifest_path.read_text())
+          migration = '45_act_showcase_delete_guest_columns.sql'
+          if migration not in manifest['files']:
+              manifest['files'].append(migration)
+          manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+
+          replace_once('js/act-showcase-neotokyo.js',
+              'const SHOW_ACT_TITLE_SCREEN = false;',
+              'const SHOW_ACT_TITLE_SCREEN = true;')
+          replace_once('js/act-showcase-neotokyo.js',
+              '  swapScreen(state, content);\n  await wait(state, 1900);\n}\n\nasync function showTrailer',
+              '  swapScreen(state, content);\n  await waitForAdvance(state, "NEXT // ACT TRAILER");\n}\n\nasync function showTrailer')
+          replace_once('js/act-showcase-page.js',
+              './act-showcase-neotokyo.js?v=2',
+              './act-showcase-neotokyo.js?v=3')
+          replace_once('act-showcase.html',
+              './js/act-showcase-page.js?v=20260907h',
+              './js/act-showcase-page.js?v=20260909a')
+          replace_once('js/showcase-generator-loader.js',
+              './showcase-owned-list.js?v=1',
+              './showcase-owned-list.js?v=2')
+
+          Path('js/showcase-owned-list.js').write_text('''const section = document.querySelector("#owned-showcase-restore");\nconst heading = document.querySelector("#owned-showcase-restore-heading");\nconst lead = section?.querySelector(".private-history-selector__lead");\n\nif (section && heading && lead) {\n  heading.innerHTML = `公開済みアクト紹介 <small>PUBLISHED SHOWCASE MANAGEMENT</small>`;\n  lead.textContent = "自分が公開したアクト紹介を選択して読み込み・削除できます。削除してもアクト履歴と参加履歴は残ります。";\n  section.dataset.managementMode = "selector";\n}\n''')
+
+          Path('tests/showcase-owned-list.test.mjs').write_text('''import test from "node:test";\nimport assert from "node:assert/strict";\nimport { readFile } from "node:fs/promises";\n\nconst management = await readFile(new URL("../js/showcase-owned-list.js", import.meta.url), "utf8");\nconst loader = await readFile(new URL("../js/showcase-generator-loader.js", import.meta.url), "utf8");\nconst restore = await readFile(new URL("../js/showcase-edit-restore.js", import.meta.url), "utf8");\nconst deletion = await readFile(new URL("../js/showcase-delete.js", import.meta.url), "utf8");\n\ntest("published showcase management stays selector based without a duplicate list", () => {\n  assert.match(loader, /showcase-owned-list\\.js\\?v=2/);\n  assert.match(management, /公開済みアクト紹介/);\n  assert.match(management, /PUBLISHED SHOWCASE MANAGEMENT/);\n  assert.match(management, /managementMode = "selector"/);\n  assert.doesNotMatch(management, /owned-showcase-list/);\n  assert.doesNotMatch(management, /data-showcase-action/);\n  assert.doesNotMatch(management, /legacyControls\\.hidden/);\n});\n\ntest("one dropdown controls both restore and delete actions", () => {\n  assert.match(restore, /id="owned-showcase-select"/);\n  assert.match(restore, /id="load-owned-showcase"/);\n  assert.match(deletion, /id = "delete-owned-showcase"/);\n  assert.match(deletion, /loadButton\\.insertAdjacentElement\\("afterend", deleteButton\\)/);\n});\n''')
+
+          Path('tests/showcase-delete.test.mjs').write_text('''import test from "node:test";\nimport assert from "node:assert/strict";\nimport { readFile } from "node:fs/promises";\n\nconst guestSchema = await readFile(new URL("../supabase/42_act_showcase_guests.sql", import.meta.url), "utf8");\nconst sql = await readFile(new URL("../supabase/45_act_showcase_delete_guest_columns.sql", import.meta.url), "utf8");\nconst client = await readFile(new URL("../js/showcase-delete.js", import.meta.url), "utf8");\nconst loader = await readFile(new URL("../js/showcase-generator-loader.js", import.meta.url), "utf8");\n\ntest("ACT SHOWCASE deletion follows the canonical guest-table columns", () => {\n  assert.match(guestSchema, /owner_id uuid not null/i);\n  assert.match(guestSchema, /showcase_slug text not null/i);\n  assert.match(sql, /g\\.showcase_slug = v_slug/i);\n  assert.match(sql, /g\\.owner_id = v_user_id/i);\n  assert.doesNotMatch(sql, /g\\.act_slug/i);\n  assert.doesNotMatch(sql, /g\\.published_by/i);\n});\n\ntest("ACT SHOWCASE deletion is owner-scoped and preserves ACT history", () => {\n  assert.match(sql, /where a\\.slug = v_slug\\s+and a\\.published_by = v_user_id\\s+and a\\.showcase_data is not null/i);\n  assert.match(sql, /showcase_data = null/);\n  assert.match(sql, /showcase_public = false/);\n  assert.match(sql, /showcase_updated_at = null/);\n  assert.match(sql, /public_url = null/);\n  assert.doesNotMatch(sql, /delete from public\\.acts/i);\n  assert.doesNotMatch(sql, /delete from public\\.act_participants/i);\n  assert.doesNotMatch(sql, /grant execute[^;]+to anon/i);\n  assert.match(sql, /grant execute on function public\\.delete_owned_act_showcase\\(text\\) to authenticated/i);\n});\n\ntest("editor exposes an explicit confirmed delete action and keeps local form contents", () => {\n  assert.match(loader, /showcase-delete\\.js\\?v=1/);\n  assert.match(client, /id = "delete-owned-showcase"/);\n  assert.match(client, /window\\.confirm/);\n  assert.match(client, /supabase\\.rpc\\("delete_owned_act_showcase", \\{ p_slug: slug \\}\\)/);\n  assert.match(client, /アクト履歴と参加履歴は残ります/);\n  assert.match(client, /現在の編集欄はそのまま残している/);\n});\n''')
+
+          Path('tests/act-showcase-title-screen-pause.test.mjs').write_text('''import test from "node:test";\nimport assert from "node:assert/strict";\nimport { readFile } from "node:fs/promises";\n\nconst source = await readFile(new URL("../js/act-showcase-neotokyo.js", import.meta.url), "utf8");\n\ntest("ACT title screen is restored and waits for an explicit click", () => {\n  assert.match(source, /const SHOW_ACT_TITLE_SCREEN = true;/);\n  assert.match(source, /if \\(SHOW_ACT_TITLE_SCREEN\\) \\{\\s*await showActTitle\\(state, model\\);\\s*if \\(state\\.finished\\) return;\\s*\\}/s);\n  assert.match(source, /async function showActTitle\\(state, model\\)/);\n  assert.match(source, /await waitForAdvance\\(state, "NEXT \\/\\/ ACT TRAILER"\\);/);\n  assert.match(source, /stage\\.addEventListener\\("click"[\\s\\S]+state\\.requestAdvance\\(\\)/);\n  assert.doesNotMatch(source, /swapScreen\\(state, content\\);\\s*await wait\\(state, 1900\\);/);\n});\n''')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- supabase/migrations-manifest.json js/act-showcase-neotokyo.js js/act-showcase-page.js act-showcase.html js/showcase-generator-loader.js js/showcase-owned-list.js tests/showcase-owned-list.test.mjs tests/showcase-delete.test.mjs tests/act-showcase-title-screen-pause.test.mjs
+          git diff --cached --check
+          git commit -m 'fix(showcase): restore title pause and simplify management'
+          git push origin HEAD:fix/showcase-delete-title-click-20260909
