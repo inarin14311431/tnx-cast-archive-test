@@ -1,5 +1,5 @@
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=3";
-import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=3";
+import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=4";
 
 const SUPABASE_URL = "https://koprmbkoftuuffslhsvt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi";
@@ -30,7 +30,7 @@ async function initialize() {
     const data = await fetchPublicShowcase(slug);
     const model = createShowcaseModel(data);
     renderOpening(model);
-    applyBackground(model.background, sample);
+    applyBackground(model.background);
     const board = renderPoster(model);
 
     status.hidden = true;
@@ -196,18 +196,17 @@ function createPosterOrnament() {
   return layer;
 }
 
-function applyBackground(background, sample) {
-  const selected = sample === "neotokyo" ? POSTER_SAMPLE_BACKGROUND : (background || POSTER_SAMPLE_BACKGROUND);
+function applyBackground(background) {
+  const selected = background || POSTER_SAMPLE_BACKGROUND;
   document.body.style.setProperty("--showcase-background", `url("${escapeCssString(selected)}")`);
   document.body.classList.add("has-showcase-background");
-  if (!background || sample === "neotokyo") document.body.classList.add("showcase-poster-sample-background");
+  document.body.classList.toggle("showcase-poster-sample-background", !background);
 }
 
 function renderPoster(model) {
   const board = el("section", "poster-v2-board");
   board.id = "poster-showcase-board-v2";
   board.setAttribute("aria-label", "アクト紹介ショーケース");
-
   const frame = el("div", "poster-v2-frame");
   let activeCastIndex = 0;
   let grid = createCastGrid(model, model.casts[activeCastIndex]);
@@ -479,7 +478,7 @@ function prefersReducedMotion() {
   return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
 }
 
-function el(tag, className = "") {
+function el(tag, className) {
   const node = document.createElement(tag);
   if (className) node.className = className;
   return node;
