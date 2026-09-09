@@ -6,9 +6,9 @@ const sequence = fs.readFileSync('js/act-showcase-neotokyo.js', 'utf8');
 const page = fs.readFileSync('js/act-showcase-page.js', 'utf8');
 const html = fs.readFileSync('act-showcase.html', 'utf8');
 
-test('NeoTokyo automatic cinematic phases are not cut off before their CSS motion completes', () => {
+test('ACT cinematic opening keeps its timed motion while the title waits for explicit advance', () => {
   assert.match(sequence, /await wait\(state, 2900\);/);
-  assert.match(sequence, /await wait\(state, 1900\);/);
+  assert.match(sequence, /await waitForAdvance\(state, "NEXT \/\/ ACT TRAILER"\);/);
 });
 
 test('HANDOUT to ASSIGN linkage keeps split, search, found and cast reveal visible long enough', () => {
@@ -18,7 +18,7 @@ test('HANDOUT to ASSIGN linkage keeps split, search, found and cast reveal visib
   assert.match(sequence, /await wait\(state, 700\);/);
 });
 
-test('NeoTokyo timing fix is cache-busted through the module chain', () => {
-  assert.match(page, /act-showcase-neotokyo\.js\?v=2/);
-  assert.match(html, /act-showcase-page\.js\?v=20260907h/);
+test('ACT cinematic modules remain cache-busted without pinning a specific cache generation', () => {
+  assert.match(page, /act-showcase-neotokyo\.js\?v=[A-Za-z0-9._-]+/);
+  assert.match(html, /act-showcase-page\.js\?v=[A-Za-z0-9._-]+/);
 });

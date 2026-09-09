@@ -56,7 +56,7 @@ async function mockRpc(route, body) {
   await route.fulfill({ status: 200, headers: corsHeaders, body: JSON.stringify(body) });
 }
 
-test("NeoTokyo showcase remains responsive through trailer, assignment and ACT READY", async ({ page }) => {
+test("NeoTokyo showcase remains responsive through title, trailer, assignment and ACT READY", async ({ page }) => {
   test.setTimeout(45_000);
   const pageErrors = [];
   page.on("pageerror", error => pageErrors.push(error.message));
@@ -76,7 +76,11 @@ test("NeoTokyo showcase remains responsive through trailer, assignment and ACT R
   await expect(intro).toHaveAttribute("aria-hidden", "false", { timeout: 8_000 });
 
   await expect(advance).toBeVisible({ timeout: 12_000 });
-  await expect(advance).toHaveText("NEXT // HANDOUT 01");
+  await expect(advance).toHaveText("NEXT // ACT TRAILER");
+  await advance.click();
+
+  await expect(advance).toHaveText("NEXT // HANDOUT 01", { timeout: 12_000 });
+  await expect(advance).toBeVisible();
   await advance.click();
 
   await expect(advance).toHaveText("ASSIGN // PC1", { timeout: 12_000 });

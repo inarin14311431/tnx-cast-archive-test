@@ -13,7 +13,7 @@ test("NeoTokyo intro is gated by bgSample without replacing the canonical render
   assert.match(source, /get_public_act_showcase/);
 });
 
-test("NeoTokyo phases 1 and 2 are automatic while later phases wait for click", async () => {
+test("ACT system access is automatic while title and later narrative phases wait for explicit advance", async () => {
   const source = await read("js/act-showcase-neotokyo.js");
   const opening = source.indexOf("await showOpening(state)");
   const title = source.indexOf("await showActTitle(state, model)");
@@ -29,7 +29,7 @@ test("NeoTokyo phases 1 and 2 are automatic while later phases wait for click", 
   const titleBody = source.slice(source.indexOf("async function showActTitle"), source.indexOf("async function showTrailer"));
   const trailerBody = source.slice(source.indexOf("async function showTrailer"), source.indexOf("async function showHandoutAndAssign"));
   assert.doesNotMatch(openingBody, /waitForAdvance/);
-  assert.doesNotMatch(titleBody, /waitForAdvance/);
+  assert.match(titleBody, /waitForAdvance\(state, "NEXT \/\/ ACT TRAILER"\)/);
   assert.match(trailerBody, /waitForAdvance\(state, "NEXT \/\/ HANDOUT 01"\)/);
   assert.match(source, /waitForAdvance\(state, `ASSIGN \/\/ PC\$\{pcNumber\}`\)/);
   assert.match(source, /NEXT \/\/ ACT SUMMARY/);
