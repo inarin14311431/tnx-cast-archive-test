@@ -21,6 +21,8 @@ test("act showcase exposes exactly seven replacement background presets", async 
   const presetCount = [...presetSection.matchAll(/Object\.freeze\(\{\s*key:/g)].length;
   assert.equal(presetCount, 7);
   assert.match(source, /new URL\("\.\.\/assets\/showcase\/backgrounds\/", import\.meta\.url\)/);
+  assert.match(source, /SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images"/);
+  assert.match(source, /url\.searchParams\.set\("v", SHOWCASE_BACKGROUND_ASSET_VERSION\)/);
 
   for (const [key, name, filename] of expectedPresets) {
     assert.ok(presetSection.includes(`key: "${key}"`), `missing preset key: ${key}`);
@@ -33,12 +35,12 @@ test("act showcase exposes exactly seven replacement background presets", async 
   }
 });
 
-test("all seven showcase backgrounds are valid self-contained passive SVG files", async () => {
+test("all seven showcase backgrounds are self-contained user-selected WebP image SVG files", async () => {
   for (const [, , filename] of expectedPresets) {
     const asset = await read(`assets/showcase/backgrounds/${filename}`);
     assert.match(asset, /^<svg\b/);
     assert.match(asset, /<\/svg>\s*$/);
-    assert.doesNotMatch(asset, /data:image\//i);
+    assert.match(asset, /<image\b[^>]+href="data:image\/webp;base64,/i);
     assert.doesNotMatch(asset, /<script\b/i);
   }
 });
@@ -46,8 +48,8 @@ test("all seven showcase backgrounds are valid self-contained passive SVG files"
 test("generator loads the refreshed preset picker and no longer labels presets as Supabase-only", async () => {
   const html = await read("showcase-generator.html");
   const picker = await read("js/showcase-background-preset-picker.js");
-  assert.match(html, /showcase-background-preset-picker\.js\?v=3/);
+  assert.match(html, /showcase-background-preset-picker\.js\?v=4/);
   assert.match(html, /ACT VISUAL \/ PRESET LIBRARY/);
   assert.ok(!html.includes("ACT VISUAL / SUPABASE STORAGE"));
-  assert.match(picker, /showcase-background-presets\.js\?v=3/);
+  assert.match(picker, /showcase-background-presets\.js\?v=4/);
 });
