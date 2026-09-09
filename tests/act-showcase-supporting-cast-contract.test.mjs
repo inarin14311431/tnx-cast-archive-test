@@ -8,7 +8,7 @@ const read = path => readFile(new URL(path, root), "utf8");
 test("generator loads guest persistence before dynamic publishing", async () => {
   const loader = await read("js/showcase-generator-loader.js");
   const guestIndex = loader.indexOf("showcase-guests.js");
-  const publishIndex = loader.indexOf("showcase-dynamic-publish-v2.js");
+  const publishIndex = loader.indexOf("showcase-dynamic-publish-v3.js");
   assert.ok(guestIndex >= 0 && publishIndex > guestIndex);
   assert.match(loader, /Guest registration is initialized before the dynamic publisher/);
 });
