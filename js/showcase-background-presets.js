@@ -2,7 +2,25 @@ export const SHOWCASE_BACKGROUND_BUCKET = "act-showcase-backgrounds";
 export const SHOWCASE_BACKGROUND_PUBLIC_BASE = "https://koprmbkoftuuffslhsvt.supabase.co/storage/v1/object/public/act-showcase-backgrounds";
 
 const SHOWCASE_BACKGROUND_ASSET_BASE = new URL("../assets/showcase/backgrounds/", import.meta.url);
-const assetUrl = filename => new URL(filename, SHOWCASE_BACKGROUND_ASSET_BASE).href;
+const SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images";
+const rawAssetUrl = filename => new URL(filename, SHOWCASE_BACKGROUND_ASSET_BASE).href;
+const assetUrl = filename => {
+  const url = new URL(filename, SHOWCASE_BACKGROUND_ASSET_BASE);
+  url.searchParams.set("v", SHOWCASE_BACKGROUND_ASSET_VERSION);
+  return url.href;
+};
+const normalizeAssetUrl = value => {
+  const normalized = String(value || "").trim();
+  if (!normalized) return "";
+  try {
+    const url = new URL(normalized, window?.location?.href || import.meta.url);
+    url.search = "";
+    url.hash = "";
+    return url.href;
+  } catch {
+    return normalized.split(/[?#]/, 1)[0];
+  }
+};
 
 export const SHOWCASE_BACKGROUND_PRESETS = Object.freeze([
   Object.freeze({
@@ -53,7 +71,7 @@ const LEGACY_PRESET_KEY_ALIASES = new Map([
   ["neotokyo-bay", "kisarazu-lake-harbor"]
 ]);
 const LEGACY_PRESET_URL_ALIASES = new Map([
-  [assetUrl("neotokyo-bay.svg"), "kisarazu-lake-harbor"]
+  [normalizeAssetUrl(rawAssetUrl("neotokyo-bay.svg")), "kisarazu-lake-harbor"]
 ]);
 
 export function findShowcaseBackgroundPreset(key) {
@@ -63,8 +81,9 @@ export function findShowcaseBackgroundPreset(key) {
 }
 
 export function findShowcaseBackgroundPresetByUrl(url) {
-  const normalized = String(url || "").trim();
-  const direct = SHOWCASE_BACKGROUND_PRESETS.find(preset => preset.url === normalized);
+  const normalized = normalizeAssetUrl(url);
+  if (!normalized) return null;
+  const direct = SHOWCASE_BACKGROUND_PRESETS.find(preset => normalizeAssetUrl(preset.url) === normalized);
   if (direct) return direct;
   const aliasKey = LEGACY_PRESET_URL_ALIASES.get(normalized);
   return aliasKey ? findShowcaseBackgroundPreset(aliasKey) : null;
