@@ -11,6 +11,12 @@ test('ACT cinematic opening keeps its timed motion while the title waits for exp
   assert.match(sequence, /await waitForAdvance\(state, "NEXT \/\/ ACT TRAILER"\);/);
 });
 
+test('ACT TRAILER readout is deliberately slower than the handout readout', () => {
+  assert.match(sequence, /typeReadout\(state, copy, trailer, 4200, 34\)/);
+  assert.match(sequence, /typeReadout\(state, copy, handoutBody, 2400\)/);
+  assert.match(sequence, /maxInterval = 24/);
+});
+
 test('HANDOUT to ASSIGN linkage keeps split, search, found and cast reveal visible long enough', () => {
   assert.match(sequence, /await wait\(state, 780\);/);
   assert.match(sequence, /await wait\(state, 850\);/);

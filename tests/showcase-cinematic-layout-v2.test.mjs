@@ -6,6 +6,7 @@ const html = await readFile(new URL("../act-showcase.html", import.meta.url), "u
 const loader = await readFile(new URL("../js/showcase-generator-loader.js", import.meta.url), "utf8");
 const subtitle = await readFile(new URL("../js/showcase-act-subtitle.js", import.meta.url), "utf8");
 const background = await readFile(new URL("../js/act-showcase-background-resolver.js", import.meta.url), "utf8");
+const page = await readFile(new URL("../js/act-showcase-page.js", import.meta.url), "utf8");
 const cinematic = await readFile(new URL("../js/act-showcase-cinematic-layout-v2.js", import.meta.url), "utf8");
 const css = await readFile(new URL("../css-next/pages/act-showcase-cinematic-v2.css", import.meta.url), "utf8");
 const neotokyoCss = await readFile(new URL("../css-next/pages/act-showcase-neotokyo.css", import.meta.url), "utf8");
@@ -33,6 +34,13 @@ test("published background is restored from showcase data for current and legacy
   assert.match(background, /payload\?\.background/);
   assert.match(background, /showcase-published-background-restored/);
   assert.doesNotMatch(background, /if \(!hasLegacyBackgroundParam\(\)\) return/);
+});
+
+test("NeoTokyo mode keeps the published background instead of forcing the sample background", () => {
+  assert.match(page, /applyBackground\(model\.background\)/);
+  assert.match(page, /const selected = background \|\| POSTER_SAMPLE_BACKGROUND/);
+  assert.match(page, /classList\.toggle\("showcase-poster-sample-background", !background\)/);
+  assert.doesNotMatch(page, /sample === "neotokyo" \? POSTER_SAMPLE_BACKGROUND/);
 });
 
 test("cinematic title is multiline-safe and renders a separate subtitle", () => {
@@ -85,17 +93,13 @@ test("opening and title stages use the published background without forcing a zo
   assert.match(css, /background-size:contain/);
 });
 
-test("finished cinematic sequence starts at the true top then reveals the first cast after two seconds", () => {
-  assert.match(cinematic, /getFinalCastTarget/);
-  assert.match(cinematic, /#poster-showcase-board-v2 \.poster-v2-panel--visual/);
-  assert.match(cinematic, /window\.scrollTo\(\{ top: 0, left: 0, behavior: "auto" \}\)/);
-  assert.match(cinematic, /showcase-cast-entry-pending/);
-  assert.match(cinematic, /showcase-cast-entry-reveal/);
-  assert.match(cinematic, /scrollend/);
-  assert.match(cinematic, /2000/);
-  assert.match(cinematic, /target\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
-  assert.match(css, /#scene-opening\{min-height:100svh\}/);
-  assert.match(css, /showcase-cast-entry-reveal/);
+test("finished cinematic sequence does not schedule an automatic page scroll", () => {
+  assert.doesNotMatch(cinematic, /getFinalCastTarget/);
+  assert.doesNotMatch(cinematic, /scrollIntoView/);
+  assert.doesNotMatch(cinematic, /scrollend/);
+  assert.doesNotMatch(cinematic, /showcase-cast-entry-pending/);
+  assert.doesNotMatch(cinematic, /showcase-cast-entry-reveal/);
+  assert.doesNotMatch(cinematic, /setTimeout\([^\n]*2000/);
 });
 
 test("cinematic v2 presentation assets are wired into the public page", () => {

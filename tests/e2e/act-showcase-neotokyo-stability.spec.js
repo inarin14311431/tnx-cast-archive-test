@@ -109,7 +109,25 @@ test("NeoTokyo showcase remains responsive through title, trailer, assignment an
 
   await expect(intro).toHaveAttribute("aria-hidden", "true", { timeout: 8_000 });
   await expect(page.locator("#act-showcase-root")).toBeVisible();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await page.waitForTimeout(2300);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
   expect(pageErrors).toEqual([]);
+});
+
+test("NeoTokyo mode keeps the published background from the first rendered frame", async ({ page }) => {
+  const background = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+  await registerShowcaseRoutes(page, { ...showcase, background });
+
+  await page.goto("/act-showcase.html?id=e2e-published-background&bgSample=neotokyo", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("body")).toHaveClass(/showcase-poster-v2-ready/, { timeout: 8_000 });
+
+  const state = await page.evaluate(() => ({
+    background: document.body.style.getPropertyValue("--showcase-background"),
+    sample: document.body.classList.contains("showcase-poster-sample-background")
+  }));
+  expect(state.background).toContain("data:image/png;base64");
+  expect(state.sample).toBe(false);
 });
 
 test("ACT TRAILER moves the stage scroll position while typing a long trailer", async ({ page }) => {
@@ -140,7 +158,7 @@ test("ACT TRAILER moves the stage scroll position while typing a long trailer", 
   await expect.poll(async () => stage.evaluate(element => {
     const maxScroll = element.scrollHeight - element.clientHeight;
     return maxScroll > 20 && element.scrollTop > 5;
-  }), { timeout: 8_000, intervals: [150, 250, 400] }).toBe(true);
+  }), { timeout: 10_000, intervals: [150, 250, 400] }).toBe(true);
 
   const ownership = await stage.evaluate(element => {
     const screen = element.querySelector(".neotokyo-sequence__screen--trailer");
