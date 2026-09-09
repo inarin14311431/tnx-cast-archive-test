@@ -36,25 +36,28 @@ test("published background is restored from showcase data for current and legacy
 
 test("cinematic title is multiline-safe and renders a separate subtitle", () => {
   assert.match(cinematic, /neotokyo-sequence__act-subtitle/);
-  assert.match(css, /white-space:normal!important/);
+  assert.match(css, /white-space:normal/);
   assert.match(css, /\.neotokyo-sequence__act-subtitle\s*\{/);
   assert.match(css, /font:700 clamp\(1\.35rem,2\.5vw,2\.85rem\)/);
+  assert.doesNotMatch(css, /white-space:normal!important/);
 });
 
 test("cinematic trailer grows from a compact frame and follows the typewriter", () => {
   assert.match(cinematic, /--showcase-trailer-live-height/);
   assert.match(cinematic, /scrollBy\(\{ top: delta, behavior: "smooth" \}\)/);
   assert.match(cinematic, /new ResizeObserver/);
-  assert.match(css, /height:var\(--showcase-trailer-live-height,94px\)!important/);
-  assert.match(css, /overflow-y:auto!important/);
+  assert.match(css, /height:var\(--showcase-trailer-live-height,94px\)/);
+  assert.match(css, /overflow-y:auto/);
+  assert.doesNotMatch(css, /--showcase-trailer-live-height,94px\)!important/);
 });
 
 test("cinematic presentation removes fake navigation and duplicate trailer labels", () => {
   assert.match(cinematic, /removeFakeNavigation/);
   assert.match(cinematic, /\.poster-v2-nav/);
   assert.match(cinematic, /neotokyo-sequence__trailer-definition,.cinematic-trailer-band/);
-  assert.match(css, /poster-v2-nav\{display:none!important\}/);
-  assert.match(css, /cinematic-trailer-band\{display:none!important\}/);
+  assert.match(css, /poster-v2-nav\{display:none\}/);
+  assert.match(css, /cinematic-trailer-band\{display:none\}/);
+  assert.doesNotMatch(css, /poster-v2-nav\{display:none!important\}/);
 });
 
 test("opening and title stages use the published background without forcing a zoom crop", () => {
