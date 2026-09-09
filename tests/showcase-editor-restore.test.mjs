@@ -41,7 +41,10 @@ test("editor restore RPC exposes participant identifiers only to the authenticat
   assert.match(sql, /grant execute on function public\.get_owned_act_showcase_editor\(text\) to authenticated/);
 });
 
-test("migration manifest tracks editor restore migration", async () => {
+test("migration manifest keeps editor restore before the later showcase-delete migration", async () => {
   const manifest = JSON.parse(await read("supabase/migrations-manifest.json"));
-  assert.equal(manifest.files.at(-1), "43_act_showcase_editor_restore.sql");
+  const restoreIndex = manifest.files.indexOf("43_act_showcase_editor_restore.sql");
+  const deleteIndex = manifest.files.indexOf("44_act_showcase_delete.sql");
+  assert.ok(restoreIndex >= 0, "editor restore migration must stay tracked");
+  assert.ok(deleteIndex > restoreIndex, "delete migration must remain appended after editor restore");
 });
