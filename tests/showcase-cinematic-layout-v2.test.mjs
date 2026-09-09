@@ -37,6 +37,8 @@ test("published background is restored from showcase data for current and legacy
 test("cinematic title is multiline-safe and renders a separate subtitle", () => {
   assert.match(cinematic, /neotokyo-sequence__act-subtitle/);
   assert.match(css, /white-space:normal/);
+  assert.match(css, /act-title--logo\.showcase-fit-title\{[\s\S]*?white-space:normal/);
+  assert.match(css, /act-title--logo\.showcase-fit-title\[data-fit="medium"\]/);
   assert.match(css, /\.neotokyo-sequence__act-subtitle\s*\{/);
   assert.match(css, /font:700 clamp\(1\.35rem,2\.5vw,2\.85rem\)/);
   assert.doesNotMatch(css, /white-space:normal!important/);
@@ -44,7 +46,8 @@ test("cinematic title is multiline-safe and renders a separate subtitle", () => 
 
 test("cinematic trailer grows from a compact frame and follows the typewriter", () => {
   assert.match(cinematic, /--showcase-trailer-live-height/);
-  assert.match(cinematic, /scrollBy\(\{ top: delta, behavior: "smooth" \}\)/);
+  assert.match(cinematic, /readout\.scrollTop = readout\.scrollHeight/);
+  assert.match(cinematic, /screen\.scrollTo\(\{ top: screen\.scrollHeight, behavior: reduced \? "auto" : "smooth" \}\)/);
   assert.match(cinematic, /new ResizeObserver/);
   assert.match(css, /height:var\(--showcase-trailer-live-height,94px\)/);
   assert.match(css, /overflow-y:auto/);
@@ -66,10 +69,13 @@ test("opening and title stages use the published background without forcing a zo
   assert.match(css, /background-size:contain/);
 });
 
-test("finished cinematic sequence pauses briefly before scrolling to the showcase board", () => {
+test("finished cinematic sequence scrolls to the actual first cast card", () => {
+  assert.match(cinematic, /getFinalCastTarget/);
+  assert.match(cinematic, /#poster-showcase-board-v2 \.poster-v2-panel--visual/);
   assert.match(cinematic, /window\.setTimeout/);
-  assert.match(cinematic, /1150/);
+  assert.match(cinematic, /900/);
   assert.match(cinematic, /target\.scrollIntoView\(\{ behavior: reduced \? "auto" : "smooth", block: "start" \}\)/);
+  assert.match(css, /#poster-showcase-board-v2 \.poster-v2-panel--visual/);
 });
 
 test("cinematic v2 presentation assets are wired into the public page", () => {
