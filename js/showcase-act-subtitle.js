@@ -3,19 +3,61 @@ import { supabase } from "./supabase-client.js";
 const GENERIC_SUBTITLE = "CAST SHOWCASE";
 const restoreSlug = normalizeSlug(new URLSearchParams(location.search).get("edit"));
 const actName = document.querySelector("#act-name");
-const subtitle = document.querySelector("#act-subtitle");
+const subtitle = mountSubtitleField(actName);
 const preview = document.querySelector("#showcase-preview");
 const generateButton = document.querySelector("#generate-button");
 const publishButtons = [...document.querySelectorAll("[data-publish-mode]")];
 let restoring = false;
+let syncAttempts = 0;
+
+cleanTrailerFieldWording();
 
 if (actName && subtitle) {
   subtitle.addEventListener("input", markGeneratedOutputStale);
   generateButton?.addEventListener("click", () => {
+    syncAttempts = 0;
     queueMicrotask(syncSubtitleIntoGeneratedHtml);
   });
 
   if (restoreSlug) void restoreSubtitle(restoreSlug);
+}
+
+function mountSubtitleField(input) {
+  if (!input) return null;
+  const label = input.closest("label");
+  if (!label) return null;
+
+  label.childNodes.forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE && String(node.textContent || "").trim()) {
+      node.textContent = "アクトタイトル";
+    }
+  });
+  input.placeholder = "例：NEON AFTERIMAGE";
+
+  const existing = document.querySelector("#act-subtitle");
+  if (existing) return existing;
+
+  const subtitleLabel = document.createElement("label");
+  subtitleLabel.className = "act-subtitle-field";
+  subtitleLabel.append("サブタイトル");
+  const subtitleInput = document.createElement("input");
+  subtitleInput.id = "act-subtitle";
+  subtitleInput.type = "text";
+  subtitleInput.maxLength = 120;
+  subtitleInput.placeholder = "例：ネオンの残像";
+  subtitleInput.autocomplete = "off";
+  subtitleLabel.append(subtitleInput);
+  label.insertAdjacentElement("afterend", subtitleLabel);
+  return subtitleInput;
+}
+
+function cleanTrailerFieldWording() {
+  const trailer = document.querySelector("#intro-text");
+  const label = trailer?.closest("label");
+  const helper = label?.querySelector("small");
+  if (helper && helper.textContent?.includes("プレアクトで読み上げるトレーラー")) {
+    helper.textContent = "ACT TRAILER";
+  }
 }
 
 function markGeneratedOutputStale() {
@@ -33,7 +75,7 @@ function syncSubtitleIntoGeneratedHtml() {
   if (!preview) return;
   const source = String(preview.srcdoc || "").trim();
   if (!source) {
-    requestAnimationFrame(syncSubtitleIntoGeneratedHtml);
+    if (syncAttempts++ < 30) requestAnimationFrame(syncSubtitleIntoGeneratedHtml);
     return;
   }
 
