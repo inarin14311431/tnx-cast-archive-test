@@ -2,7 +2,8 @@ name: Approve PR 310 visual baselines
 
 on:
   push:
-    branches: [fix/showcase-delete-backgrounds-20260909]
+    branches:
+      - fix/showcase-delete-backgrounds-20260909
     paths:
       - .github/workflows/approve-pr310-visuals.yml
 
@@ -11,7 +12,6 @@ permissions:
 
 jobs:
   approve:
-    if: github.event.head_commit.message == 'chore(visual): approve PR 310 generator baselines'
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
