@@ -202,7 +202,7 @@ async function showTrailer(state, model) {
     textNode("p", "neotokyo-sequence__terminal", "READOUT CHANNEL // TEXT SYNTHESIS")
   );
   swapScreen(state, content);
-  await typeReadout(state, copy, trailer, 2600);
+  await typeReadout(state, copy, trailer, 4200, 34);
   if (state.finished) return;
   await waitForAdvance(state, "NEXT // HANDOUT 01");
 }
@@ -530,11 +530,11 @@ function waitForAdvance(state, label) {
   });
 }
 
-async function typeReadout(state, target, value, maxDuration) {
+async function typeReadout(state, target, value, maxDuration, maxInterval = 24) {
   const source = clean(value);
   if (!source || state.finished) return;
   const characters = Array.from(source);
-  const interval = Math.max(6, Math.min(24, Math.floor(maxDuration / Math.max(characters.length, 1))));
+  const interval = Math.max(6, Math.min(maxInterval, Math.floor(maxDuration / Math.max(characters.length, 1))));
   const chunkSize = characters.length > 360 ? 3 : characters.length > 180 ? 2 : 1;
   let index = 0;
   while (index < characters.length && !state.finished) {
