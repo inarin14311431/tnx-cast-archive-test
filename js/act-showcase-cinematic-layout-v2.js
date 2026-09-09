@@ -20,6 +20,7 @@
     attachTrailerFollow(scope);
     polishAssignedPresentation(scope);
     normalizeOpeningSubtitle();
+    syncTrailerScrollSurface();
   };
 
   enhance(document.documentElement);
@@ -36,6 +37,7 @@
         scheduleTrailerFrame(record.target);
       }
     }
+    syncTrailerScrollSurface();
   });
   observer.observe(document.documentElement, {
     subtree: true,
@@ -48,6 +50,8 @@
   window.addEventListener("resize", () => {
     document.querySelectorAll(".neotokyo-sequence__cast--linked .neotokyo-sequence__cast-tagline")
       .forEach(tagline => fitAssignedTagline(tagline));
+    const readout = intro?.querySelector(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout");
+    if (readout) scheduleTrailerFrame(readout);
   }, { passive: true });
 
   handleIntroVisibility();
@@ -96,6 +100,16 @@
     scope.querySelectorAll?.(".neotokyo-sequence__trailer-definition,.cinematic-trailer-band").forEach(node => node.remove());
   }
 
+  function syncTrailerScrollSurface() {
+    const stage = intro?.querySelector(".neotokyo-sequence__stage");
+    if (!stage) return;
+    const active = Boolean(stage.querySelector(".neotokyo-sequence__screen--trailer"));
+    const wasActive = stage.classList.contains("is-trailer-scroll");
+    stage.classList.toggle("is-trailer-scroll", active);
+    if (active && !wasActive) stage.scrollTop = 0;
+    if (!active && wasActive) stage.scrollTop = 0;
+  }
+
   function attachTrailerFollow(scope) {
     const readouts = scope.matches?.(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout")
       ? [scope]
@@ -119,30 +133,20 @@
 
   function updateTrailerFrame(readout) {
     if (!readout?.isConnected) return;
-    const terminal = readout.closest(".neotokyo-sequence__trailer-terminal") || readout.parentElement;
     const screen = readout.closest(".neotokyo-sequence__screen--trailer");
-    if (!terminal || !screen) return;
+    const stage = screen?.closest(".neotokyo-sequence__stage");
+    if (!screen || !stage) return;
 
-    const bar = terminal.querySelector(".neotokyo-sequence__terminal-bar");
-    const terminalStyles = getComputedStyle(terminal);
-    const verticalPadding = parseFloat(terminalStyles.paddingTop || "0") + parseFloat(terminalStyles.paddingBottom || "0");
-    const targetHeight = Math.max(94, Math.ceil(readout.scrollHeight + (bar?.offsetHeight || 0) + verticalPadding + 30));
-    terminal.style.setProperty("--showcase-trailer-live-height", `${targetHeight}px`);
+    stage.classList.add("is-trailer-scroll");
+    const targetTop = Math.max(0, stage.scrollHeight - stage.clientHeight);
+    if (targetTop <= stage.scrollTop + 1) return;
 
-    if (readout.scrollHeight > readout.clientHeight + 2) {
-      readout.scrollTop = readout.scrollHeight;
-    }
-
-    if (screen.scrollHeight > screen.clientHeight + 2) {
-      screen.scrollTop = screen.scrollHeight;
-      return;
-    }
-
-    const terminalBottom = terminal.getBoundingClientRect().bottom;
-    const viewportLimit = window.innerHeight - 116;
-    if (terminalBottom > viewportLimit) {
-      window.scrollBy({ top: Math.min(180, terminalBottom - viewportLimit + 42), behavior: "auto" });
-    }
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    stage.scrollTo({
+      top: targetTop,
+      left: 0,
+      behavior: reduced ? "auto" : "smooth"
+    });
   }
 
   function polishAssignedPresentation(scope) {
@@ -253,6 +257,6 @@
         return;
       }
       scrollToFinalCast(target, reduced);
-    }, reduced ? 0 : 1000);
+    }, reduced ? 0 : 2000);
   }
 })();

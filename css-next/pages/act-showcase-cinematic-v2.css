@@ -105,26 +105,26 @@ body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__sc
   text-shadow:0 4px 24px rgba(0,0,0,.72),0 0 18px rgba(255,98,208,.24);
 }
 
-/* Trailer is one scroll surface: the full screen follows the typewriter instead of trapping the text in a nested box. */
-body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer{
-  height:100%;
-  max-height:100%;
-  align-self:stretch;
+/* The body stays locked during the cinematic intro, so ACT TRAILER must scroll inside the stage. The stage is the only scroll owner; the screen and readout stay overflow-visible. */
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll{
+  place-items:start center;
+  overflow-x:hidden;
   overflow-y:auto;
-  overscroll-behavior:contain;
-  scroll-behavior:auto;
+  overscroll-behavior-y:contain;
+  scroll-behavior:smooth;
   scrollbar-gutter:stable;
+  scroll-padding-bottom:clamp(60px,9vh,110px);
+}
+body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll .neotokyo-sequence__screen--trailer{
+  height:auto;
+  min-height:100%;
+  max-height:none;
+  align-self:start;
+  overflow:visible;
   padding-bottom:clamp(80px,12vh,150px);
 }
 .neotokyo-sequence__trailer-definition,
 .cinematic-trailer-band{display:none}
-.neotokyo-sequence__screen--trailer .neotokyo-sequence__trailer-terminal{
-  min-height:94px;
-  height:var(--showcase-trailer-live-height,94px);
-  max-height:none;
-  overflow:visible;
-  transition:height .12s ease-out;
-}
 body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer .neotokyo-sequence__readout{
   flex:0 0 auto;
   min-height:1.8em;
@@ -262,7 +262,6 @@ body.showcase-poster-v2-ready .poster-v2-credit-note{font-size:clamp(.8rem,.86vw
 }
 
 @media (prefers-reduced-motion:reduce){
-  .neotokyo-sequence__screen--trailer .neotokyo-sequence__trailer-terminal{transition:none}
-  .neotokyo-sequence__screen--trailer{scroll-behavior:auto}
+  body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll{scroll-behavior:auto}
   body.showcase-cast-entry-reveal #poster-showcase-board-v2 .poster-v2-grid{animation:none}
 }

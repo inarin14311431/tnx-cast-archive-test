@@ -8,6 +8,7 @@ const subtitle = await readFile(new URL("../js/showcase-act-subtitle.js", import
 const background = await readFile(new URL("../js/act-showcase-background-resolver.js", import.meta.url), "utf8");
 const cinematic = await readFile(new URL("../js/act-showcase-cinematic-layout-v2.js", import.meta.url), "utf8");
 const css = await readFile(new URL("../css-next/pages/act-showcase-cinematic-v2.css", import.meta.url), "utf8");
+const neotokyoCss = await readFile(new URL("../css-next/pages/act-showcase-neotokyo.css", import.meta.url), "utf8");
 
 test("generator separates ACT title and subtitle before dynamic publishing", () => {
   const subtitleImport = loader.search(/import\("\.\/showcase-act-subtitle\.js\?v=\d+"\)/);
@@ -44,15 +45,19 @@ test("cinematic title is multiline-safe and renders a separate subtitle", () => 
   assert.doesNotMatch(css, /white-space:normal!important/);
 });
 
-test("cinematic trailer uses the screen as the scrolling surface and follows the typewriter", () => {
-  assert.match(cinematic, /--showcase-trailer-live-height/);
-  assert.match(cinematic, /readout\.scrollTop = readout\.scrollHeight/);
-  assert.match(cinematic, /screen\.scrollTop = screen\.scrollHeight/);
+test("cinematic trailer uses the stage as the single scroll owner while the body remains locked", () => {
+  assert.match(neotokyoCss, /body\.showcase-neotokyo-intro-active\{overflow:hidden\}/);
+  assert.match(cinematic, /syncTrailerScrollSurface/);
+  assert.match(cinematic, /stage\.classList\.toggle\("is-trailer-scroll", active\)/);
+  assert.match(cinematic, /stage\.scrollHeight - stage\.clientHeight/);
+  assert.match(cinematic, /stage\.scrollTo\(\{/);
+  assert.match(cinematic, /behavior: reduced \? "auto" : "smooth"/);
   assert.match(cinematic, /new ResizeObserver/);
-  assert.match(css, /height:var\(--showcase-trailer-live-height,94px\)/);
-  assert.match(css, /scrollbar-gutter:stable/);
+  assert.match(css, /neotokyo-sequence__stage\.is-trailer-scroll\{[\s\S]*?overflow-y:auto/);
+  assert.match(css, /neotokyo-sequence__stage\.is-trailer-scroll \.neotokyo-sequence__screen--trailer\{[\s\S]*?overflow:visible/);
   assert.match(css, /screen--trailer \.neotokyo-sequence__readout\{[\s\S]*?max-height:none;[\s\S]*?overflow:visible/);
-  assert.doesNotMatch(css, /--showcase-trailer-live-height,94px\)!important/);
+  assert.doesNotMatch(cinematic, /window\.scrollBy\(/);
+  assert.doesNotMatch(cinematic, /screen\.scrollTop = screen\.scrollHeight/);
 });
 
 test("assigned cast removes suit marks only from the participation slot and keeps three full style cards", () => {
@@ -80,14 +85,14 @@ test("opening and title stages use the published background without forcing a zo
   assert.match(css, /background-size:contain/);
 });
 
-test("finished cinematic sequence starts at the true top then reveals the first cast after one second", () => {
+test("finished cinematic sequence starts at the true top then reveals the first cast after two seconds", () => {
   assert.match(cinematic, /getFinalCastTarget/);
   assert.match(cinematic, /#poster-showcase-board-v2 \.poster-v2-panel--visual/);
   assert.match(cinematic, /window\.scrollTo\(\{ top: 0, left: 0, behavior: "auto" \}\)/);
   assert.match(cinematic, /showcase-cast-entry-pending/);
   assert.match(cinematic, /showcase-cast-entry-reveal/);
   assert.match(cinematic, /scrollend/);
-  assert.match(cinematic, /1000/);
+  assert.match(cinematic, /2000/);
   assert.match(cinematic, /target\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
   assert.match(css, /#scene-opening\{min-height:100svh\}/);
   assert.match(css, /showcase-cast-entry-reveal/);
