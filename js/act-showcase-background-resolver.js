@@ -5,8 +5,7 @@ void restorePublishedBackground();
 
 async function restorePublishedBackground() {
   const params = new URLSearchParams(location.search);
-  if (String(params.get("bgSample") || "").trim().toLowerCase() !== "neotokyo") return;
-  const slug = normalizeSlug(params.get("id"));
+  const slug = normalizeSlug(params.get("id") || params.get("act"));
   if (!slug) return;
 
   try {
@@ -15,9 +14,13 @@ async function restorePublishedBackground() {
       waitForShowcaseReady()
     ]);
     if (!background) return;
+
     document.body.style.setProperty("--showcase-background", `url("${escapeCssString(background)}")`);
     document.body.classList.remove("showcase-poster-sample-background");
-    document.body.classList.add("has-showcase-background", "showcase-published-background-restored");
+    document.body.classList.add(
+      "has-showcase-background",
+      "showcase-published-background-restored"
+    );
   } catch (error) {
     console.warn("Published showcase background could not be restored.", error);
   }
@@ -65,7 +68,12 @@ function safeBackgroundUrl(value) {
 }
 
 function normalizeSlug(value) {
-  return String(value || "").normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64);
+  return String(value || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
 }
 
 function escapeCssString(value) {
