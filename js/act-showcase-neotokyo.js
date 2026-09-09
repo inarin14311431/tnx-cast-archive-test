@@ -1,7 +1,7 @@
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
 const DEFAULT_OVERVIEW = "CAST SHOWCASE";
-const SHOW_ACT_TITLE_SCREEN = false;
+const SHOW_ACT_TITLE_SCREEN = true;
 
 export function prepareNeoTokyoLoading(intro) {
   if (!intro) return;
@@ -178,7 +178,7 @@ async function showActTitle(state, model) {
 
   content.append(textNode("p", "neotokyo-sequence__terminal", "TITLE & CREDITS LOCKED // PREPARING ACT TRAILER"));
   swapScreen(state, content);
-  await wait(state, 1900);
+  await waitForAdvance(state, "NEXT // ACT TRAILER");
 }
 
 async function showTrailer(state, model) {

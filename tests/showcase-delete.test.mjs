@@ -2,13 +2,22 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const sql = await readFile(new URL("../supabase/44_act_showcase_delete.sql", import.meta.url), "utf8");
+const guestSchema = await readFile(new URL("../supabase/42_act_showcase_guests.sql", import.meta.url), "utf8");
+const sql = await readFile(new URL("../supabase/45_act_showcase_delete_guest_columns.sql", import.meta.url), "utf8");
 const client = await readFile(new URL("../js/showcase-delete.js", import.meta.url), "utf8");
 const loader = await readFile(new URL("../js/showcase-generator-loader.js", import.meta.url), "utf8");
 
-test("ACT SHOWCASE deletion is owner-scoped and removes only showcase publication data", () => {
+test("ACT SHOWCASE deletion follows the canonical guest-table columns", () => {
+  assert.match(guestSchema, /owner_id uuid not null/i);
+  assert.match(guestSchema, /showcase_slug text not null/i);
+  assert.match(sql, /g\.showcase_slug = v_slug/i);
+  assert.match(sql, /g\.owner_id = v_user_id/i);
+  assert.doesNotMatch(sql, /g\.act_slug/i);
+  assert.doesNotMatch(sql, /g\.published_by/i);
+});
+
+test("ACT SHOWCASE deletion is owner-scoped and preserves ACT history", () => {
   assert.match(sql, /where a\.slug = v_slug\s+and a\.published_by = v_user_id\s+and a\.showcase_data is not null/i);
-  assert.match(sql, /delete from public\.act_showcase_guests[\s\S]+g\.published_by = v_user_id/i);
   assert.match(sql, /showcase_data = null/);
   assert.match(sql, /showcase_public = false/);
   assert.match(sql, /showcase_updated_at = null/);

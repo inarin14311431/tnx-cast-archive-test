@@ -4,9 +4,11 @@ import { readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../js/act-showcase-neotokyo.js", import.meta.url), "utf8");
 
-test("NeoTokyo act title screen is paused without deleting its implementation", () => {
-  assert.match(source, /const SHOW_ACT_TITLE_SCREEN = false;/);
+test("ACT title screen is restored and waits for an explicit click", () => {
+  assert.match(source, /const SHOW_ACT_TITLE_SCREEN = true;/);
   assert.match(source, /if \(SHOW_ACT_TITLE_SCREEN\) \{\s*await showActTitle\(state, model\);\s*if \(state\.finished\) return;\s*\}/s);
   assert.match(source, /async function showActTitle\(state, model\)/);
-  assert.match(source, /await showTrailer\(state, model\);/);
+  assert.match(source, /await waitForAdvance\(state, "NEXT \/\/ ACT TRAILER"\);/);
+  assert.match(source, /stage\.addEventListener\("click"[\s\S]+state\.requestAdvance\(\)/);
+  assert.doesNotMatch(source, /swapScreen\(state, content\);\s*await wait\(state, 1900\);/);
 });
