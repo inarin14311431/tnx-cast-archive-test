@@ -40,8 +40,10 @@ jobs:
           neon='report/test-results/visual/operational-pages.visual-アクト紹介生成-spectrum-neon-visual-desktop/showcase-generator-spectrum-neon-visual-desktop-actual.png'
           test -f "$nova"
           test -f "$neon"
-          echo 'ba449cb3d73038710f525ce0b66973b0611064fc1b9d8be7d148a17b1938932  '"$nova" | sha256sum -c -
-          echo '5b7bb043000b47295f8ca0ae906ceae3b0216dfdc7dd75a134622edb56422405  '"$neon" | sha256sum -c -
+          nova_hash="$(sha256sum "$nova" | awk '{print $1}')"
+          neon_hash="$(sha256sum "$neon" | awk '{print $1}')"
+          test "$nova_hash" = 'ba449cb3d73038710f525ce0b66973b0611064fc1b9d8be7d148a17b1938932'
+          test "$neon_hash" = '5b7bb043000b47295f8ca0ae906ceae3b0216dfdc7dd75a134622edb56422405'
 
       - name: Replace only the two approved baseline images
         shell: bash
