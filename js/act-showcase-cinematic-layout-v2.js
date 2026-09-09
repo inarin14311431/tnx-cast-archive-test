@@ -6,7 +6,6 @@
 
   const intro = document.querySelector("#cinematic-intro");
   const openingSubtitle = document.querySelector("#opening-subtitle");
-  const board = document.querySelector("#showcase-board");
   let sawSequenceActive = intro?.getAttribute("aria-hidden") === "false";
   let boardScrollScheduled = false;
   let trailerFrame = 0;
@@ -25,16 +24,15 @@
 
   const observer = new MutationObserver(records => {
     for (const record of records) {
-      if (record.type === "attributes" && record.target === intro) {
-        handleIntroVisibility();
-      }
-      if (record.type === "characterData") {
-        scheduleTrailerFrame(record.target.parentElement);
-      }
+      if (record.type === "attributes" && record.target === intro) handleIntroVisibility();
+      if (record.type === "characterData") scheduleTrailerFrame(record.target.parentElement);
       for (const node of record.addedNodes || []) {
         if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
       }
-      if (record.target instanceof Element) scheduleTrailerFrame(record.target);
+      if (record.target instanceof Element) {
+        if (record.target.matches?.(".neotokyo-sequence__act-title")) resetSingleLineTitleStyles(record.target);
+        scheduleTrailerFrame(record.target);
+      }
     }
   });
   observer.observe(document.documentElement, {
@@ -68,9 +66,7 @@
     for (const screen of screens) {
       const title = screen.querySelector(".neotokyo-sequence__act-title");
       if (!title) continue;
-      title.style.removeProperty("font-size");
-      title.style.removeProperty("white-space");
-      title.style.setProperty("--cinematic-fit-scale", "1");
+      resetSingleLineTitleStyles(title);
       if (screen.querySelector(".neotokyo-sequence__act-subtitle")) continue;
       const text = getMeaningfulSubtitle();
       if (!text) continue;
@@ -79,6 +75,13 @@
       subtitle.textContent = text;
       title.insertAdjacentElement("afterend", subtitle);
     }
+  }
+
+  function resetSingleLineTitleStyles(title) {
+    for (const property of ["font-size", "white-space", "width", "max-width", "transform", "line-height", "margin-inline"]) {
+      if (title.style.getPropertyValue(property)) title.style.removeProperty(property);
+    }
+    if (title.style.getPropertyValue("--cinematic-fit-scale")) title.style.removeProperty("--cinematic-fit-scale");
   }
 
   function simplifyTrailer(scope) {
@@ -116,21 +119,15 @@
     const bar = terminal.querySelector(".neotokyo-sequence__terminal-bar");
     const terminalStyles = getComputedStyle(terminal);
     const verticalPadding = parseFloat(terminalStyles.paddingTop || "0") + parseFloat(terminalStyles.paddingBottom || "0");
-    const targetHeight = Math.max(
-      94,
-      Math.ceil(readout.scrollHeight + (bar?.offsetHeight || 0) + verticalPadding + 30)
-    );
+    const targetHeight = Math.max(94, Math.ceil(readout.scrollHeight + (bar?.offsetHeight || 0) + verticalPadding + 30));
     terminal.style.setProperty("--showcase-trailer-live-height", `${targetHeight}px`);
 
     const bottom = readout.getBoundingClientRect().bottom;
     const viewportLimit = window.innerHeight - 116;
     if (bottom <= viewportLimit) return;
     const delta = Math.min(180, Math.max(42, bottom - viewportLimit + 52));
-    if (screen.scrollHeight > screen.clientHeight + 4) {
-      screen.scrollBy({ top: delta, behavior: "smooth" });
-    } else {
-      window.scrollBy({ top: delta, behavior: "smooth" });
-    }
+    if (screen.scrollHeight > screen.clientHeight + 4) screen.scrollBy({ top: delta, behavior: "smooth" });
+    else window.scrollBy({ top: delta, behavior: "smooth" });
   }
 
   function normalizeOpeningSubtitle() {
