@@ -13,7 +13,8 @@ const normalizeAssetUrl = value => {
   const normalized = String(value || "").trim();
   if (!normalized) return "";
   try {
-    const url = new URL(normalized, window?.location?.href || import.meta.url);
+    const base = typeof window !== "undefined" && window.location?.href ? window.location.href : import.meta.url;
+    const url = new URL(normalized, base);
     url.search = "";
     url.hash = "";
     return url.href;
