@@ -70,6 +70,7 @@ jobs:
           tests/e2e/authenticated.spec.js
           tests/e2e/style-skill-detail-integrity.spec.js
           tests/e2e/troop-editor-flow.spec.js
+          tests/e2e/showcase-editor-restore.spec.js
           --project=chromium
         env:
           E2E_REQUIRE_AUTH: "1"
