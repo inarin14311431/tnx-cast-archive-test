@@ -62,16 +62,24 @@
     <section class="showcase-panel">
       <header class="showcase-panel__header"><div><span>04</span><h2>生成・公開 <small>GENERATE / PUBLISH</small></h2></div><p>ACT OUTPUT / HISTORY</p></header>
       <div class="showcase-panel__body">
-        <div class="generator-actions"><button id="generate-button" type="button">HTML生成 <small>GENERATE</small></button><button id="download-button" type="button" disabled>ダウンロード <small>DOWNLOAD</small></button><button id="copy-button" type="button" disabled>HTMLコピー <small>COPY</small></button><button id="history-button" class="is-history" type="button">履歴のみ登録 <small>HISTORY ONLY</small></button><button id="publish-button" class="is-publish" type="button" disabled>アクト紹介を公開 <small>PUBLISH SHOWCASE</small></button></div>
-        <p class="generator-action-note">HTML出力は従来どおりダウンロード・コピーできます。「アクト紹介を公開」ではHTMLファイルを配置せず、紹介データを保存し、閲覧時に共通テンプレートから都度生成します。参加履歴と経験点の対象になるのは自分が所有する登録済みキャストだけです。非公開キャストを含む場合は公開できません。</p>
+        <div class="generator-actions">
+          <button id="generate-button" type="button">HTML生成 <small>GENERATE</small></button>
+          <button id="download-button" type="button" disabled>ダウンロード <small>DOWNLOAD</small></button>
+          <button id="copy-button" type="button" disabled>HTMLコピー <small>COPY</small></button>
+          <button id="history-button" class="is-history" type="button">履歴のみ登録 <small>HISTORY ONLY</small></button>
+          <button id="publish-button" class="is-publish" type="button" disabled hidden aria-hidden="true" tabindex="-1">アクト紹介を公開 <small>PUBLISH SHOWCASE</small></button>
+          <button id="publish-standard-button" class="is-publish" type="button" data-publish-mode="standard" disabled>従来版で公開 <small>STANDARD SHOWCASE</small></button>
+          <button id="publish-cinematic-button" class="is-publish" type="button" data-publish-mode="cinematic" disabled>豪華版で公開 <small>CINEMATIC SHOWCASE</small></button>
+        </div>
+        <p class="generator-action-note">HTML出力は従来どおりダウンロード・コピーできます。公開は同じアクト紹介データを使い、「従来版」と「豪華版」のどちらの表示で開くかを選べます。どちらも同じ公開状態を共有するため、公開データを削除すると両方のURLから閲覧できなくなります。参加履歴と経験点の対象になるのは自分が所有する登録済みキャストだけです。非公開キャストを含む場合は公開できません。</p>
         <p id="generator-status" class="generator-status">待機中</p><iframe id="showcase-preview" class="showcase-preview" title="生成HTMLプレビュー"></iframe>
       </div>
     </section>
   </main>
   <script src="./js/showcase-handle-normalizer.js?v=1"></script>
   <script src="./js/showcase-trailer-multiline.js?v=1"></script>
-  <script type="module" src="./js/showcase-generator-loader.js?v=25"></script>
-  <script type="module" src="./js/showcase-background-preset-picker.js?v=2"></script>
+  <script type="module" src="./js/showcase-generator-loader.js?v=26"></script>
+  <script type="module" src="./js/showcase-background-preset-picker.js?v=3"></script>
   <script type="module" src="./js/showcase-auto-slug.js?v=2"></script>
   <script src="./js/showcase-remove-label.js?v=2"></script>
   <script src="./js/showcase-wording.js?v=4"></script>
