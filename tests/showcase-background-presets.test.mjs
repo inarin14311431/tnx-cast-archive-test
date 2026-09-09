@@ -9,6 +9,15 @@ const presets = readFileSync(new URL("../js/showcase-background-presets.js", imp
 const picker = readFileSync(new URL("../js/showcase-background-preset-picker.js", import.meta.url), "utf8");
 const resolver = readFileSync(new URL("../js/act-showcase-background-resolver.js", import.meta.url), "utf8");
 const css = readFileSync(new URL("../css-next/pages/showcase-background-presets.css", import.meta.url), "utf8");
+const presetAssetFiles = [
+  "nova-central-ring.svg",
+  "kisarazu-lake-harbor.svg",
+  "sunrise-megacity.svg",
+  "neon-market.svg",
+  "industrial-port.svg",
+  "executive-lounge.svg",
+  "incident-blockade.svg"
+];
 
 test("generator exposes the canonical background preset picker wiring", () => {
   assert.match(generatorHtml, /id="background-preset-grid"/);
@@ -17,6 +26,15 @@ test("generator exposes the canonical background preset picker wiring", () => {
   assert.doesNotMatch(generatorHtml, /<link[^>]+showcase-background-presets\.css/);
   assert.match(presets, /export const SHOWCASE_BACKGROUND_PRESETS/);
   assert.match(presets, /new URL\(/);
+});
+
+test("the seven canonical presets use the user-selected image assets", () => {
+  for (const filename of presetAssetFiles) {
+    const svg = readFileSync(new URL(`../assets/showcase/backgrounds/${filename}`, import.meta.url), "utf8");
+    assert.match(svg, /<image\b[^>]+href="data:image\/webp;base64,/i, `${filename} must embed the selected raster background`);
+  }
+  assert.match(presets, /SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images"/);
+  assert.match(picker, /showcase-background-presets\.js\?v=4/);
 });
 
 test("preset selection reuses the existing background URL publishing path", () => {
