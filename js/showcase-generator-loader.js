@@ -51,8 +51,9 @@ async function initializeShowcaseGenerator() {
 
   try {
     await import("./showcase-edit-restore.js?v=1");
+    await import("./showcase-delete.js?v=1");
   } catch (error) {
-    reportOptionalModuleError("edit-restore", error);
+    reportOptionalModuleError("edit-management", error);
   }
 }
 
