@@ -2,8 +2,7 @@
   const params = new URLSearchParams(location.search);
   const showcaseMode = String(params.get("showcaseMode") || "").trim().toLowerCase();
   const legacySample = String(params.get("bgSample") || "").trim().toLowerCase();
-  const isCinematic = showcaseMode === "cinematic" || legacySample === "neotokyo";
-  if (!isCinematic) return;
+  if (showcaseMode !== "cinematic" && legacySample !== "neotokyo") return;
 
   document.documentElement.classList.add("showcase-cinematic-enhancer");
   bridgeLegacyTrailerData();
@@ -81,82 +80,128 @@
 
   function enhanceTrailer(screen) {
     const copy = screen.querySelector(".neotokyo-sequence__readout");
-    if (!copy) return;
-    screen.classList.add("is-terminal-readout");
-    const label = screen.querySelector(".neotokyo-sequence__eyebrow");
-    if (label) label.textContent = "ACT_TRAILER.TXT";
-    if (!screen.querySelector(".neotokyo-sequence__terminal-status")) {
-      const status = document.createElement("div");
-      status.className = "neotokyo-sequence__terminal-status";
-      status.textContent = "INPUT MODE // REC";
-      copy.before(status);
-    }
+    if (!copy || copy.closest(".neotokyo-sequence__trailer-terminal")) return;
+    copy.classList.add("is-terminal-readout");
+    const terminal = document.createElement("div");
+    terminal.className = "neotokyo-sequence__trailer-terminal";
+    const bar = document.createElement("div");
+    bar.className = "neotokyo-sequence__terminal-bar";
+    bar.append(
+      createText("strong", "ACT_TRAILER.TXT"),
+      createText("small", "N◎VA MUNICIPAL DATABASE / PRE-ACT"),
+      createText("span", "INPUT MODE // REC")
+    );
+    copy.parentNode.insertBefore(terminal, copy);
+    terminal.append(bar, copy);
   }
 
   function fitSingleLineTitle(title) {
+    if (!title?.isConnected) return;
     title.style.whiteSpace = "nowrap";
-    title.style.removeProperty("font-size");
+    title.style.fontSize = "";
     const parent = title.parentElement;
     if (!parent) return;
-    const available = Math.max(120, parent.clientWidth - 24);
-    let size = Number.parseFloat(getComputedStyle(title).fontSize) || 64;
-    while (title.scrollWidth > available && size > 28) {
-      size -= 2;
+    const available = Math.max(220, parent.clientWidth - (innerWidth <= 760 ? 24 : 80));
+    let size = parseFloat(getComputedStyle(title).fontSize) || 48;
+    const minimum = innerWidth <= 760 ? 17 : 22;
+    title.style.fontSize = `${size}px`;
+    for (let count = 0; count < 90 && title.scrollWidth > available && size > minimum; count += 1) {
+      size = Math.max(minimum, size - 1.5);
       title.style.fontSize = `${size}px`;
     }
-  }
-
-  function pulseTyping(target) {
-    const readout = target?.closest?.(".neotokyo-sequence__readout");
-    if (!readout) return;
-    readout.classList.remove("is-typing-pulse");
-    requestAnimationFrame(() => readout.classList.add("is-typing-pulse"));
+    if (title.scrollWidth > available) {
+      const scale = Math.max(.68, available / title.scrollWidth);
+      title.style.transformOrigin = "center";
+      title.style.setProperty("--cinematic-fit-scale", String(scale));
+    } else {
+      title.style.setProperty("--cinematic-fit-scale", "1");
+    }
   }
 
   function normalizeVisibleQuotes(root) {
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const textNodes = [];
-    while (walker.nextNode()) textNodes.push(walker.currentNode);
-    for (const node of textNodes) {
-      const next = String(node.nodeValue || "")
-        .replace(/“\s*[“"「『‘']+/g, "“")
-        .replace(/[”"」』’']+\s*”/g, "”")
-        .replace(/“{2,}/g, "“")
-        .replace(/”{2,}/g, "”");
-      if (next !== node.nodeValue) node.nodeValue = next;
+    const selectors = [
+      ".neotokyo-sequence__cast-detail h3",
+      ".neotokyo-sequence__summary-cast-body h3",
+      ".poster-v2-name",
+      ".poster-v2-visual__caption strong",
+      ".poster-v2-roster__name"
+    ];
+    const nodes = root.matches?.(selectors.join(",")) ? [root] : [...root.querySelectorAll?.(selectors.join(",")) || []];
+    for (const node of nodes) {
+      const normalized = normalizeDuplicateHandleQuotes(node.textContent);
+      if (normalized !== node.textContent) node.textContent = normalized;
     }
   }
 
-  async function bridgeLegacyTrailerData() {
-    const slug = String(params.get("id") || "").normalize("NFKC").toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "").slice(0, 64);
-    if (!slug) return;
-    try {
-      const response = await fetch("https://koprmbkoftuuffslhsvt.supabase.co/rest/v1/rpc/get_public_act_showcase", {
-        method: "POST",
-        headers: {
-          apikey: "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi",
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: JSON.stringify({ p_slug: slug }),
-        cache: "no-store"
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      if (!data || typeof data !== "object" || Array.isArray(data)) return;
-      if (!data.trailer && typeof data.intro === "string" && data.intro.trim()) {
-        data.trailer = { title: "ACT TRAILER", body: data.intro.trim() };
+  function normalizeDuplicateHandleQuotes(value) {
+    return String(value ?? "")
+      .replace(/“\s*[“"「『‘']+/g, "“")
+      .replace(/[”"」』’']+\s*”/g, "”")
+      .replace(/“{2,}/g, "“")
+      .replace(/”{2,}/g, "”")
+      .replace(/"{2,}/g, '"');
+  }
+
+  function pulseTyping(target) {
+    const readout = target?.closest?.(".is-terminal-readout") || (target?.matches?.(".is-terminal-readout") ? target : null);
+    const terminal = readout?.closest(".neotokyo-sequence__trailer-terminal");
+    if (!terminal) return;
+    terminal.classList.remove("is-inputting");
+    requestAnimationFrame(() => terminal.classList.add("is-inputting"));
+  }
+
+  function bridgeLegacyTrailerData() {
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async (...args) => {
+      const response = await nativeFetch(...args);
+      const requestUrl = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
+      if (!String(requestUrl).includes("/rest/v1/rpc/get_public_act_showcase")) return response;
+      try {
+        const text = await response.clone().text();
+        if (!text) return response;
+        const data = JSON.parse(text);
+        if (!data || typeof data !== "object" || Array.isArray(data)) return response;
+
+        const explicitTrailer = data.trailer || data.actTrailer || data.trailerText || data.trailerBody;
+        if (!explicitTrailer && typeof data.intro === "string" && data.intro.trim()) {
+          data.trailer = { title: "ACT TRAILER", body: data.intro.trim() };
+          data.intro = "";
+        }
+        if (Array.isArray(data.casts)) {
+          data.casts = data.casts.map(cast => ({
+            ...cast,
+            fullName: normalizeDuplicateHandleQuotes(cast?.fullName || cast?.full_name || ""),
+            full_name: normalizeDuplicateHandleQuotes(cast?.full_name || cast?.fullName || ""),
+            reading: normalizeDuplicateHandleQuotes(cast?.reading || "")
+          }));
+        }
+
+        const headers = new Headers(response.headers);
+        headers.delete("content-length");
+        headers.delete("content-encoding");
+        return new Response(JSON.stringify(data), {
+          status: response.status,
+          statusText: response.statusText,
+          headers
+        });
+      } catch (error) {
+        console.warn("Legacy act trailer compatibility bridge skipped.", error);
+        return response;
       }
-    } catch {
-      // The canonical page loader remains authoritative when the compatibility read fails.
-    }
+    };
   }
 
-  function debounce(fn, wait) {
+  function createText(tag, value) {
+    const element = document.createElement(tag);
+    element.textContent = value;
+    return element;
+  }
+
+  function debounce(callback, wait) {
     let timer = 0;
     return (...args) => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => fn(...args), wait);
+      clearTimeout(timer);
+      timer = window.setTimeout(() => callback(...args), wait);
     };
   }
 })();
