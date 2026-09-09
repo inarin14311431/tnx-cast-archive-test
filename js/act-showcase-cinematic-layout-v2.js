@@ -122,12 +122,22 @@
     const targetHeight = Math.max(94, Math.ceil(readout.scrollHeight + (bar?.offsetHeight || 0) + verticalPadding + 30));
     terminal.style.setProperty("--showcase-trailer-live-height", `${targetHeight}px`);
 
-    const bottom = readout.getBoundingClientRect().bottom;
-    const viewportLimit = window.innerHeight - 116;
-    if (bottom <= viewportLimit) return;
-    const delta = Math.min(180, Math.max(42, bottom - viewportLimit + 52));
-    if (screen.scrollHeight > screen.clientHeight + 4) screen.scrollBy({ top: delta, behavior: "smooth" });
-    else window.scrollBy({ top: delta, behavior: "smooth" });
+    if (readout.scrollHeight > readout.clientHeight + 2) {
+      readout.scrollTop = readout.scrollHeight;
+    }
+
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const screenRect = screen.getBoundingClientRect();
+    const terminalBottom = terminal.getBoundingClientRect().bottom;
+    const viewportLimit = Math.min(window.innerHeight - 116, screenRect.bottom - 42);
+    if (terminalBottom <= viewportLimit) return;
+
+    const delta = Math.min(180, Math.max(42, terminalBottom - viewportLimit + 52));
+    if (screen.scrollHeight > screen.clientHeight + 4) {
+      screen.scrollTo({ top: screen.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+    } else {
+      window.scrollBy({ top: delta, behavior: reduced ? "auto" : "smooth" });
+    }
   }
 
   function normalizeOpeningSubtitle() {
@@ -142,6 +152,13 @@
     return text;
   }
 
+  function getFinalCastTarget() {
+    return document.querySelector("#poster-showcase-board-v2 .poster-v2-panel--visual")
+      || document.querySelector("#poster-showcase-board-v2 .poster-v2-grid")
+      || document.querySelector("#poster-showcase-board-v2")
+      || document.querySelector("#showcase-board");
+  }
+
   function handleIntroVisibility() {
     if (!intro) return;
     const active = intro.getAttribute("aria-hidden") === "false";
@@ -153,12 +170,12 @@
     boardScrollScheduled = true;
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.setTimeout(() => {
-      const target = document.querySelector("#showcase-board");
+      const target = getFinalCastTarget();
       if (!target || document.body.classList.contains("showcase-neotokyo-intro-active")) {
         boardScrollScheduled = false;
         return;
       }
       target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-    }, reduced ? 0 : 1150);
+    }, reduced ? 0 : 900);
   }
 })();
