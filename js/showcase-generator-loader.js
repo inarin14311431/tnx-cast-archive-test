@@ -26,6 +26,7 @@ async function initializeShowcaseGenerator() {
     // Guest registration is initialized before the dynamic publisher so it can
     // persist supporting-cast data before the showcase publish click continues.
     await import("./showcase-generator-v3.js?v=8");
+    await import("./showcase-act-subtitle.js?v=1");
     await import("./showcase-guests.js?v=1");
     await import("./showcase-dynamic-publish-v3.js?v=1");
     document.documentElement.dataset.showcaseGeneratorState = "ready";
