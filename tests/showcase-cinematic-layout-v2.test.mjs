@@ -44,14 +44,25 @@ test("cinematic title is multiline-safe and renders a separate subtitle", () => 
   assert.doesNotMatch(css, /white-space:normal!important/);
 });
 
-test("cinematic trailer grows from a compact frame and follows the typewriter", () => {
+test("cinematic trailer uses the screen as the scrolling surface and follows the typewriter", () => {
   assert.match(cinematic, /--showcase-trailer-live-height/);
   assert.match(cinematic, /readout\.scrollTop = readout\.scrollHeight/);
-  assert.match(cinematic, /screen\.scrollTo\(\{ top: screen\.scrollHeight, behavior: reduced \? "auto" : "smooth" \}\)/);
+  assert.match(cinematic, /screen\.scrollTop = screen\.scrollHeight/);
   assert.match(cinematic, /new ResizeObserver/);
   assert.match(css, /height:var\(--showcase-trailer-live-height,94px\)/);
-  assert.match(css, /overflow-y:auto/);
+  assert.match(css, /scrollbar-gutter:stable/);
+  assert.match(css, /screen--trailer \.neotokyo-sequence__readout\{[\s\S]*?max-height:none;[\s\S]*?overflow:visible/);
   assert.doesNotMatch(css, /--showcase-trailer-live-height,94px\)!important/);
+});
+
+test("assigned cast removes suit marks only from the participation slot and keeps three full style cards", () => {
+  assert.match(cinematic, /neotokyo-sequence__role-slot strong/);
+  assert.match(cinematic, /replace\(\/\[◎●\]\/g, ""\)/);
+  assert.match(cinematic, /fitAssignedTagline/);
+  assert.match(css, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(css, /min-height:46px/);
+  assert.match(css, /span\.is-role-primary/);
+  assert.match(css, /white-space:nowrap/);
 });
 
 test("cinematic presentation removes fake navigation and duplicate trailer labels", () => {
@@ -69,13 +80,17 @@ test("opening and title stages use the published background without forcing a zo
   assert.match(css, /background-size:contain/);
 });
 
-test("finished cinematic sequence scrolls to the actual first cast card", () => {
+test("finished cinematic sequence starts at the true top then reveals the first cast after one second", () => {
   assert.match(cinematic, /getFinalCastTarget/);
   assert.match(cinematic, /#poster-showcase-board-v2 \.poster-v2-panel--visual/);
-  assert.match(cinematic, /window\.setTimeout/);
-  assert.match(cinematic, /900/);
-  assert.match(cinematic, /target\.scrollIntoView\(\{ behavior: reduced \? "auto" : "smooth", block: "start" \}\)/);
-  assert.match(css, /#poster-showcase-board-v2 \.poster-v2-panel--visual/);
+  assert.match(cinematic, /window\.scrollTo\(\{ top: 0, left: 0, behavior: "auto" \}\)/);
+  assert.match(cinematic, /showcase-cast-entry-pending/);
+  assert.match(cinematic, /showcase-cast-entry-reveal/);
+  assert.match(cinematic, /scrollend/);
+  assert.match(cinematic, /1000/);
+  assert.match(cinematic, /target\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
+  assert.match(css, /#scene-opening\{min-height:100svh\}/);
+  assert.match(css, /showcase-cast-entry-reveal/);
 });
 
 test("cinematic v2 presentation assets are wired into the public page", () => {
