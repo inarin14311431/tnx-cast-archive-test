@@ -6,20 +6,37 @@ const status = document.querySelector("#generator-status");
 const slugField = document.querySelector("#publish-slug");
 const actNameField = document.querySelector("#act-name");
 const rulerField = document.querySelector("#ruler-name");
+const legacyPublishButton = document.querySelector("#publish-button");
+const publishButtons = [...document.querySelectorAll("[data-publish-mode]")];
 const MAX_SHOWCASE_BYTES = 500 * 1024;
 const TARGET_BACKGROUND_BYTES = 300 * 1024;
 let publishing = false;
 
+if (legacyPublishButton) {
+  new MutationObserver(syncPublishButtons).observe(legacyPublishButton, {
+    attributes: true,
+    attributeFilter: ["disabled"]
+  });
+}
+preview?.addEventListener("load", syncPublishButtons);
+syncPublishButtons();
+
 document.addEventListener("click", event => {
-  const button = event.target.closest?.("#publish-button");
+  const button = event.target.closest?.("[data-publish-mode]");
   if (!button) return;
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
-  publishDynamicShowcase(button);
+  const mode = button.dataset.publishMode === "standard" ? "standard" : "cinematic";
+  void publishDynamicShowcase(button, mode);
 }, true);
 
-async function publishDynamicShowcase(button) {
+function syncPublishButtons() {
+  const unavailable = publishing || Boolean(legacyPublishButton?.disabled) || !String(preview?.srcdoc || "").trim();
+  publishButtons.forEach(button => { button.disabled = unavailable; });
+}
+
+async function publishDynamicShowcase(button, mode) {
   if (publishing) return;
   try {
     const source = String(preview?.srcdoc || "").trim();
@@ -39,8 +56,8 @@ async function publishDynamicShowcase(button) {
     if (!slug) throw new Error("アクト識別名を半角英数字とハイフンで入力してください。");
 
     publishing = true;
-    button.disabled = true;
-    setStatus("公開用データを準備中…");
+    syncPublishButtons();
+    setStatus(`${mode === "standard" ? "従来版" : "豪華版"}の公開用データを準備中…`);
 
     const showcaseData = await extractShowcaseData(source);
     const actName = String(actNameField?.value || showcaseData.actName || slug).trim();
@@ -62,15 +79,18 @@ async function publishDynamicShowcase(button) {
     if (error) throw new Error(translateError(error));
     if (!actId) throw new Error("公開したアクト紹介を確認できませんでした。");
 
-    const publicUrl = new URL(`./act-showcase.html?id=${encodeURIComponent(slug)}&bgSample=neotokyo`, location.href).href;
-    setStatus(`公開処理が完了しました。参加アクト履歴にも反映しました。 <a href="${escapeAttribute(publicUrl)}" target="_blank" rel="noopener">公開ページを開く</a>`, "success", true);
+    const publicPath = mode === "standard"
+      ? `./act-showcase-standard.html?id=${encodeURIComponent(slug)}`
+      : `./act-showcase.html?id=${encodeURIComponent(slug)}&showcaseMode=cinematic`;
+    const publicUrl = new URL(publicPath, location.href).href;
+    const modeLabel = mode === "standard" ? "従来版" : "豪華版";
+    setStatus(`${modeLabel}の公開処理が完了しました。参加アクト履歴にも反映しました。 <a href="${escapeAttribute(publicUrl)}" target="_blank" rel="noopener">${modeLabel}の公開ページを開く</a>`, "success", true);
   } catch (error) {
     console.error(error);
     setStatus(error?.message || "アクト紹介の公開に失敗しました。", "error");
   } finally {
     publishing = false;
-    const currentButton = document.querySelector("#publish-button");
-    if (currentButton) currentButton.disabled = !String(preview?.srcdoc || "").trim();
+    syncPublishButtons();
   }
 }
 

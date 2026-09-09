@@ -12,17 +12,17 @@ test("showcase generator exposes ACT TRAILER instead of intro wording", async ()
   assert.doesNotMatch(html, />イントロ文</);
 });
 
-test("dynamic publish version 2 stores trailer and not legacy intro", async () => {
+test("current dynamic publisher stores trailer and not legacy intro", async () => {
   const loader = await read("js/showcase-generator-loader.js");
-  const publisher = await read("js/showcase-dynamic-publish-v2.js");
-  assert.match(loader, /showcase-dynamic-publish-v2\.js\?v=2/);
+  const publisher = await read("js/showcase-dynamic-publish-v3.js");
+  assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=1/);
   assert.match(publisher, /version: 2/);
   assert.match(publisher, /trailer: trailerBody \? \{ title: "ACT TRAILER", body: trailerBody \} : null/);
   assert.doesNotMatch(publisher, /\n\s*intro:/);
 });
 
 test("showcase publish normalizes nested handle quotation marks without changing stored character data", async () => {
-  const publisher = await read("js/showcase-dynamic-publish-v2.js");
+  const publisher = await read("js/showcase-dynamic-publish-v3.js");
   const normalizer = await read("js/showcase-handle-normalizer.js");
   assert.match(publisher, /normalizeDisplayQuotes/);
   assert.match(publisher, /fullName: normalizeDisplayQuotes/);
@@ -32,7 +32,7 @@ test("showcase publish normalizes nested handle quotation marks without changing
   assert.doesNotMatch(normalizer, /supabase|\.update\(|\.insert\(|\.upsert\(/i);
 });
 
-test("NeoTokyo cinematic enhancer is loaded before the canonical page module", async () => {
+test("cinematic enhancer is loaded before the canonical page module", async () => {
   const html = await read("act-showcase.html");
   const enhancerIndex = html.indexOf("act-showcase-cinematic-enhancer.js");
   const pageIndex = html.indexOf("act-showcase-page.js");
@@ -41,8 +41,9 @@ test("NeoTokyo cinematic enhancer is loaded before the canonical page module", a
   assert.match(html, /act-showcase-cinematic\.css/);
 });
 
-test("legacy intro data is bridged to ACT TRAILER only for NeoTokyo presentation", async () => {
+test("legacy intro data is bridged to ACT TRAILER for cinematic presentation", async () => {
   const enhancer = await read("js/act-showcase-cinematic-enhancer.js");
+  assert.match(enhancer, /showcaseMode/);
   assert.match(enhancer, /bgSample/);
   assert.match(enhancer, /data\.intro/);
   assert.match(enhancer, /data\.trailer = \{ title: "ACT TRAILER", body: data\.intro\.trim\(\) \}/);

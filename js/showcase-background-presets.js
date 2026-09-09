@@ -12,10 +12,10 @@ export const SHOWCASE_BACKGROUND_PRESETS = Object.freeze([
     url: assetUrl("nova-central-ring.svg")
   }),
   Object.freeze({
-    key: "neotokyo-bay",
+    key: "kisarazu-lake-harbor",
     name: "木更津湖港湾",
     description: "高層建築と港湾施設の灯りが水面に映る木更津湖沿岸エリア",
-    url: assetUrl("neotokyo-bay.svg")
+    url: assetUrl("kisarazu-lake-harbor.svg")
   }),
   Object.freeze({
     key: "sunrise-megacity",
@@ -49,12 +49,23 @@ export const SHOWCASE_BACKGROUND_PRESETS = Object.freeze([
   })
 ]);
 
+const LEGACY_PRESET_KEY_ALIASES = new Map([
+  ["neotokyo-bay", "kisarazu-lake-harbor"]
+]);
+const LEGACY_PRESET_URL_ALIASES = new Map([
+  [assetUrl("neotokyo-bay.svg"), "kisarazu-lake-harbor"]
+]);
+
 export function findShowcaseBackgroundPreset(key) {
   const normalized = String(key || "").trim().toLowerCase();
-  return SHOWCASE_BACKGROUND_PRESETS.find(preset => preset.key === normalized) || null;
+  const canonical = LEGACY_PRESET_KEY_ALIASES.get(normalized) || normalized;
+  return SHOWCASE_BACKGROUND_PRESETS.find(preset => preset.key === canonical) || null;
 }
 
 export function findShowcaseBackgroundPresetByUrl(url) {
   const normalized = String(url || "").trim();
-  return SHOWCASE_BACKGROUND_PRESETS.find(preset => preset.url === normalized) || null;
+  const direct = SHOWCASE_BACKGROUND_PRESETS.find(preset => preset.url === normalized);
+  if (direct) return direct;
+  const aliasKey = LEGACY_PRESET_URL_ALIASES.get(normalized);
+  return aliasKey ? findShowcaseBackgroundPreset(aliasKey) : null;
 }

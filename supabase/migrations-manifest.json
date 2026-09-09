@@ -48,6 +48,7 @@
     "40_drop_legacy_outfit_defense_fields.sql",
     "41_reconcile_compatibility_rpc_access.sql",
     "42_act_showcase_guests.sql",
-    "43_act_showcase_editor_restore.sql"
+    "43_act_showcase_editor_restore.sql",
+    "44_act_showcase_delete.sql"
   ]
 }

@@ -27,7 +27,7 @@ async function initializeShowcaseGenerator() {
     // persist supporting-cast data before the showcase publish click continues.
     await import("./showcase-generator-v3.js?v=8");
     await import("./showcase-guests.js?v=1");
-    await import("./showcase-dynamic-publish-v2.js?v=2");
+    await import("./showcase-dynamic-publish-v3.js?v=1");
     document.documentElement.dataset.showcaseGeneratorState = "ready";
   } catch (error) {
     console.error("Showcase generator core could not be initialized.", error);
@@ -51,8 +51,10 @@ async function initializeShowcaseGenerator() {
 
   try {
     await import("./showcase-edit-restore.js?v=1");
+    await import("./showcase-delete.js?v=1");
+    await import("./showcase-owned-list.js?v=1");
   } catch (error) {
-    reportOptionalModuleError("edit-restore", error);
+    reportOptionalModuleError("edit-management", error);
   }
 }
 

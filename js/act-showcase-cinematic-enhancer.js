@@ -1,6 +1,8 @@
 (() => {
   const params = new URLSearchParams(location.search);
-  if (String(params.get("bgSample") || "").trim().toLowerCase() !== "neotokyo") return;
+  const showcaseMode = String(params.get("showcaseMode") || "").trim().toLowerCase();
+  const legacySample = String(params.get("bgSample") || "").trim().toLowerCase();
+  if (showcaseMode !== "cinematic" && legacySample !== "neotokyo") return;
 
   document.documentElement.classList.add("showcase-cinematic-enhancer");
   bridgeLegacyTrailerData();
