@@ -67,3 +67,34 @@ test("owned showcase can be restored into generator fields", async ({ page }) =>
   await expect(restored.locator('[data-field="tagline"]')).toHaveValue("保存済みの一言");
   await expect(page).not.toHaveURL(/\?edit=/);
 });
+
+test("owned showcase can be deleted while the current editor contents remain", async ({ page }) => {
+  await page.route("**/rest/v1/acts?**", route => fulfillJson(route, [{
+    slug: ownedShowcase.slug,
+    act_name: ownedShowcase.actName,
+    ruler_name: ownedShowcase.rulerName,
+    showcase_public: true,
+    showcase_updated_at: ownedShowcase.showcaseUpdatedAt,
+    updated_at: ownedShowcase.showcaseUpdatedAt
+  }]));
+
+  let deleteSlug = "";
+  await page.route("**/rest/v1/rpc/delete_owned_act_showcase", async route => {
+    deleteSlug = JSON.parse(route.request().postData() || "{}").p_slug || "";
+    await fulfillJson(route, { deleted: true, slug: deleteSlug, deletedGuestCount: 2 });
+  });
+
+  await page.goto("/showcase-generator.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#delete-owned-showcase")).toBeVisible({ timeout: 12_000 });
+  await page.locator("#act-name").fill("削除後も残す編集中データ");
+  await page.locator("#owned-showcase-select").selectOption(ownedShowcase.slug);
+  await expect(page.locator("#delete-owned-showcase")).toBeEnabled();
+
+  page.once("dialog", dialog => dialog.accept());
+  await page.locator("#delete-owned-showcase").click();
+
+  await expect.poll(() => deleteSlug).toBe(ownedShowcase.slug);
+  await expect(page.locator("#owned-showcase-status")).toContainText("アクト紹介を削除しました。");
+  await expect(page.locator("#owned-showcase-select")).toHaveValue("");
+  await expect(page.locator("#act-name")).toHaveValue("削除後も残す編集中データ");
+});
