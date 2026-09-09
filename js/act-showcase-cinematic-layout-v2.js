@@ -6,10 +6,7 @@
 
   const intro = document.querySelector("#cinematic-intro");
   const openingSubtitle = document.querySelector("#opening-subtitle");
-  let sawSequenceActive = intro?.getAttribute("aria-hidden") === "false";
-  let boardScrollScheduled = false;
   let trailerFrame = 0;
-  let revealFallbackTimer = 0;
 
   const enhance = root => {
     const scope = root instanceof Element ? root : document.documentElement;
@@ -27,7 +24,6 @@
 
   const observer = new MutationObserver(records => {
     for (const record of records) {
-      if (record.type === "attributes" && record.target === intro) handleIntroVisibility();
       if (record.type === "characterData") scheduleTrailerFrame(record.target.parentElement);
       for (const node of record.addedNodes || []) {
         if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
@@ -53,8 +49,6 @@
     const readout = intro?.querySelector(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout");
     if (readout) scheduleTrailerFrame(readout);
   }, { passive: true });
-
-  handleIntroVisibility();
 
   function removeFakeNavigation(scope) {
     if (scope.matches?.(".poster-v2-nav")) scope.remove();
@@ -193,70 +187,5 @@
     const text = String(openingSubtitle?.textContent || "").trim();
     if (!text || text.toUpperCase() === "CAST SHOWCASE") return "";
     return text;
-  }
-
-  function getFinalCastTarget() {
-    return document.querySelector("#poster-showcase-board-v2 .poster-v2-panel--visual")
-      || document.querySelector("#poster-showcase-board-v2 .poster-v2-grid")
-      || document.querySelector("#poster-showcase-board-v2")
-      || document.querySelector("#showcase-board");
-  }
-
-  function markCastRevealPending() {
-    document.body.classList.add("showcase-cast-entry-pending");
-    document.body.classList.remove("showcase-cast-entry-reveal");
-  }
-
-  function revealCastTarget(target, reduced) {
-    clearTimeout(revealFallbackTimer);
-    document.body.classList.remove("showcase-cast-entry-pending");
-    if (reduced) return;
-    document.body.classList.add("showcase-cast-entry-reveal");
-    window.setTimeout(() => document.body.classList.remove("showcase-cast-entry-reveal"), 1100);
-    target?.querySelector?.("img")?.decode?.().catch?.(() => {});
-  }
-
-  function scrollToFinalCast(target, reduced) {
-    if (!target) return;
-    if (reduced) {
-      target.scrollIntoView({ behavior: "auto", block: "start" });
-      revealCastTarget(target, true);
-      return;
-    }
-
-    let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      window.removeEventListener("scrollend", finish);
-      revealCastTarget(target, false);
-    };
-    window.addEventListener("scrollend", finish, { once: true });
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-    revealFallbackTimer = window.setTimeout(finish, 900);
-  }
-
-  function handleIntroVisibility() {
-    if (!intro) return;
-    const active = intro.getAttribute("aria-hidden") === "false";
-    if (active) {
-      sawSequenceActive = true;
-      markCastRevealPending();
-      return;
-    }
-    if (!sawSequenceActive || boardScrollScheduled) return;
-    boardScrollScheduled = true;
-    markCastRevealPending();
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.setTimeout(() => {
-      const target = getFinalCastTarget();
-      if (!target || document.body.classList.contains("showcase-neotokyo-intro-active")) {
-        boardScrollScheduled = false;
-        return;
-      }
-      scrollToFinalCast(target, reduced);
-    }, reduced ? 0 : 2000);
   }
 })();
