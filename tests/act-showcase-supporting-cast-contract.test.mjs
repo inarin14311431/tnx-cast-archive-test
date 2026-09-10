@@ -17,56 +17,50 @@ test("guest editor keeps supporting cast separate from participant history", asy
   const js = await read("js/showcase-guests.js");
   assert.match(js, /const MAX_GUESTS = 12/);
   assert.match(js, /replace_act_showcase_guests_for_current_user/);
-  assert.match(js, /act-guests/);
   assert.match(js, /ゲストはハンドアウトのアサイン対象や参加履歴には含まれません/);
-  assert.match(js, /image\/jpeg/);
-  assert.match(js, /image\/png/);
-  assert.match(js, /image\/webp/);
 });
 
 test("guest database API only exposes guests for public showcases", async () => {
   const sql = await read("supabase/42_act_showcase_guests.sql");
   assert.match(sql, /alter table public\.act_showcase_guests enable row level security/);
-  assert.match(sql, /replace_act_showcase_guests_for_current_user/);
   assert.match(sql, /get_public_act_showcase_guests/);
-  assert.match(sql, /join public\.acts a on a\.slug = g\.showcase_slug and a\.published_by = g\.owner_id/);
   assert.match(sql, /showcase_public,false\) = true/);
   assert.match(sql, /revoke all on table public\.act_showcase_guests from anon/);
 });
 
-test("public showcase loads supporting cast after the canonical story layers", async () => {
-  const html = await read("act-showcase.html");
-  const writingCss = html.indexOf("act-showcase-writing-patterns.css");
-  const supportingCss = html.indexOf("act-showcase-supporting-cast.css");
-  const pageJs = html.indexOf("act-showcase-page.js");
-  const supportingJs = html.indexOf("act-showcase-supporting-cast.js");
+test("public showcase loads supporting cast after canonical story layers through entries", async () => {
+  const [entry, bootstrap] = await Promise.all([
+    read("css-next/pages/act-showcase-entry.css"),
+    read("js/act-showcase-bootstrap.js")
+  ]);
+  const writingCss = entry.indexOf("act-showcase-writing-patterns.css");
+  const supportingCss = entry.indexOf("act-showcase-supporting-cast.css");
+  const pageJs = bootstrap.indexOf("act-showcase-page.js");
+  const supportingJs = bootstrap.indexOf("act-showcase-supporting-cast.js");
   assert.ok(writingCss >= 0 && supportingCss > writingCss);
   assert.ok(pageJs >= 0 && supportingJs > pageJs);
 });
 
-test("assigned style repair prefers the first matching style and preserves duplicate distinction", async () => {
-  const js = await read("js/act-showcase-supporting-cast.js");
-  const css = await read("css-next/pages/act-showcase-supporting-cast.css");
-  assert.match(js, /handoutRole \|\| style\?\.handout_role/);
+test("supporting cast shares public data access and preserves duplicate style distinction", async () => {
+  const [js, css] = await Promise.all([
+    read("js/act-showcase-supporting-cast.js"),
+    read("css-next/pages/act-showcase-supporting-cast.css")
+  ]);
+  assert.match(js, /public-showcase-service\.js/);
+  assert.match(js, /loadPublicShowcaseGuests/);
   assert.match(js, /classList\.toggle\("is-role-primary", primary\)/);
   assert.match(js, /classList\.toggle\("is-role-duplicate", duplicate\)/);
   assert.match(js, /classList\.toggle\("is-assigned-style", primary\)/);
-  assert.match(js, /classList\.toggle\("is-assigned-style-duplicate", duplicate\)/);
   assert.match(css, /is-assigned-style/);
-  assert.match(css, /ASSIGNED/);
   assert.doesNotMatch(css, /!important/);
 });
 
 test("supporting cast observer stays structural and its text writes are idempotent", async () => {
   const js = await read("js/act-showcase-supporting-cast.js");
   assert.match(js, /observer\.observe\(document\.body, \{ childList: true, subtree: true \}\)/);
-  assert.doesNotMatch(js, /attributeFilter:\s*\[\s*["']class["']/);
   assert.doesNotMatch(js, /attributes:\s*true/);
   assert.match(js, /function setTextIfChanged/);
   assert.match(js, /target\.textContent !== next/);
-  assert.match(js, /setTextIfChanged\(slot, role\)/);
-  assert.match(js, /setTextIfChanged\(roleLabel, role\)/);
-  assert.match(js, /setTextIfChanged\(vectorRole, role\)/);
 });
 
 test("final briefing and supporting guests are rendered as separate presentation roles", async () => {

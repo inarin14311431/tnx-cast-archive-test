@@ -5,12 +5,15 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-test("final visual/trailer fix loads after presentation tuning", async () => {
-  const html = await read("act-showcase.html");
-  const tuning = html.indexOf("act-showcase-presentation-tuning.css");
-  const fix = html.indexOf("act-showcase-visual-trailer-fix.css");
+test("final visual/trailer fix loads after presentation tuning through the page entries", async () => {
+  const [entry, bootstrap] = await Promise.all([
+    read("css-next/pages/act-showcase-entry.css"),
+    read("js/act-showcase-bootstrap.js")
+  ]);
+  const tuning = entry.indexOf("act-showcase-presentation-tuning.css");
+  const fix = entry.indexOf("act-showcase-visual-trailer-fix.css");
   assert.ok(tuning >= 0 && fix > tuning);
-  assert.match(html, /act-showcase-visual-caption-code\.js\?v=[^\"']+/);
+  assert.match(bootstrap, /act-showcase-visual-caption-code\.js\?v=[^\"']+/);
 });
 
 test("trailer frame grows to full text and stage owns overflow", async () => {

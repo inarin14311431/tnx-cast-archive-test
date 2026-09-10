@@ -2,15 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const html = readFileSync(new URL("../act-showcase.html", import.meta.url), "utf8");
+const entry = readFileSync(new URL("../css-next/pages/act-showcase-entry.css", import.meta.url), "utf8");
+const bootstrap = readFileSync(new URL("../js/act-showcase-bootstrap.js", import.meta.url), "utf8");
 const js = readFileSync(new URL("../js/act-showcase-story-flow.js", import.meta.url), "utf8");
 const css = readFileSync(new URL("../css-next/pages/act-showcase-story-flow.css", import.meta.url), "utf8");
 
 test("story flow enhancement loads after layout polish and before the module renderer", () => {
-  assert.match(html, /act-showcase-story-flow\.css\?v=[^\"']+/);
-  assert.match(html, /act-showcase-story-flow\.js\?v=[^\"']+/);
-  assert.ok(html.indexOf("act-showcase-layout-polish.css") < html.indexOf("act-showcase-story-flow.css"));
-  assert.ok(html.indexOf("act-showcase-story-flow.js") < html.indexOf("act-showcase-page.js"));
+  assert.match(entry, /act-showcase-story-flow\.css\?v=[^\"']+/);
+  assert.match(bootstrap, /act-showcase-story-flow\.js\?v=[^\"']+/);
+  assert.ok(entry.indexOf("act-showcase-layout-polish.css") < entry.indexOf("act-showcase-story-flow.css"));
+  assert.ok(bootstrap.indexOf("act-showcase-story-flow.js") < bootstrap.indexOf("act-showcase-page.js"));
 });
 
 test("handout context is derived from registered source text instead of invented metadata", () => {
