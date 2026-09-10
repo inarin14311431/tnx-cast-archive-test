@@ -1,14 +1,14 @@
 /* Follow-up fixes for the cinematic ACT SHOWCASE. */
 
 /* The selected ACT background belongs to the opening hero only. */
-body.showcase-poster-v2-ready .ambient-stage::before,
-body.showcase-poster-v2-ready .poster-v2-board::before{
-  display:none!important;
-  content:none!important;
-  background:none!important;
-  background-image:none!important;
+body#act-showcase-page.showcase-poster-v2-ready .ambient-stage::before,
+body#act-showcase-page.showcase-poster-v2-ready .poster-v2-board::before{
+  display:none;
+  content:none;
+  background:none;
+  background-image:none;
 }
-body.showcase-poster-v2-ready .poster-v2-board{
+body#act-showcase-page.showcase-poster-v2-ready .poster-v2-board{
   background:#030813;
 }
 
@@ -115,20 +115,20 @@ body.showcase-poster-v2-ready .poster-v2-board{
 }
 
 /* Guest summaries are archive text: never clamp or ellipsize them. */
-.poster-supporting-cast__grid{align-items:start}
-.poster-supporting-card{height:auto;min-height:190px;align-items:stretch}
-.poster-supporting-card__body{align-content:start}
-.poster-supporting-card__summary{
-  display:block!important;
+body#act-showcase-page .poster-supporting-cast__grid{align-items:start}
+body#act-showcase-page .poster-supporting-card{height:auto;min-height:190px;align-items:stretch}
+body#act-showcase-page .poster-supporting-card__body{align-content:start}
+body#act-showcase-page .poster-supporting-card__summary{
+  display:block;
   margin:10px 0 0;
-  overflow:visible!important;
+  overflow:visible;
   color:#abc4cf;
   font-size:.7rem;
   line-height:1.65;
   white-space:pre-wrap;
   overflow-wrap:anywhere;
-  -webkit-line-clamp:unset!important;
-  -webkit-box-orient:initial!important;
+  -webkit-line-clamp:unset;
+  -webkit-box-orient:initial;
 }
 
 @keyframes showcase-match-sweep{to{transform:rotate(360deg)}}
@@ -140,5 +140,5 @@ body.showcase-poster-v2-ready .poster-v2-board{
   .cinematic-intro.neotokyo-sequence .neotokyo-sequence__search--linked::before,
   .cinematic-intro.neotokyo-sequence .neotokyo-sequence__search--linked>strong,
   .cinematic-intro.neotokyo-sequence .neotokyo-sequence__search--linked>strong::before,
-  .cinematic-intro.neotokyo-sequence .neotokyo-sequence__search--linked.is-found{animation:none!important}
+  .cinematic-intro.neotokyo-sequence .neotokyo-sequence__search--linked.is-found{animation:none}
 }
