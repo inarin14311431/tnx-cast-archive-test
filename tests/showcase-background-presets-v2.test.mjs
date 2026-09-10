@@ -12,14 +12,17 @@ const expectedPresets = [
   ["neon-market", "イエローエリア", "neon-market.svg"],
   ["industrial-port", "工業港湾地区", "industrial-port.svg"],
   ["executive-lounge", "ホワイトエリア", "executive-lounge.svg"],
-  ["incident-blockade", "封鎖区域", "incident-blockade.svg"]
+  ["incident-blockade", "封鎖区域", "incident-blockade.svg"],
+  ["orbital-habitat", "軌道", "orbital-habitat.svg"],
+  ["prison-block", "牢獄", "prison-block.svg"],
+  ["slum-district", "スラム街", "slum-district.svg"]
 ];
 
-test("act showcase exposes exactly seven replacement background presets", async () => {
+test("act showcase exposes exactly ten background presets", async () => {
   const source = await read("js/showcase-background-presets.js");
   const presetSection = source.slice(source.indexOf("SHOWCASE_BACKGROUND_PRESETS"), source.indexOf("LEGACY_PRESET_KEY_ALIASES"));
   const presetCount = [...presetSection.matchAll(/Object\.freeze\(\{\s*key:/g)].length;
-  assert.equal(presetCount, 7);
+  assert.equal(presetCount, 10);
   assert.match(source, /new URL\("\.\.\/assets\/showcase\/backgrounds\/", import\.meta\.url\)/);
   assert.match(source, /SHOWCASE_BACKGROUND_ASSET_VERSION = "[^"]+"/);
   assert.match(source, /url\.searchParams\.set\("v", SHOWCASE_BACKGROUND_ASSET_VERSION\)/);
