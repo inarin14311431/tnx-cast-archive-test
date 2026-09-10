@@ -6,37 +6,43 @@ const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
 test("presentation tuning loads after supporting cast styling", async () => {
-  const html = await read("act-showcase.html");
-  const supporting = html.indexOf("act-showcase-supporting-cast.css");
-  const tuning = html.indexOf("act-showcase-presentation-tuning.css");
+  const entry = await read("css-next/pages/act-showcase-entry.css");
+  const supporting = entry.indexOf("act-showcase-supporting-cast.css");
+  const tuning = entry.indexOf("act-showcase-presentation-tuning.css");
   assert.ok(supporting >= 0 && tuning > supporting);
 });
 
-test("title screen stays decorated while targeting about seventy percent of the viewport", async () => {
-  const css = await read("css-next/pages/act-showcase-presentation-tuning.css");
-  assert.match(css, /max-width:70vw;width:70vw/);
-  assert.match(css, /font-size:clamp\(5\.8rem,7vw,9rem\)/);
-  assert.match(css, /text-shadow:4px 0 0/);
-  assert.match(css, /repeating-linear-gradient/);
-  assert.doesNotMatch(css, /!important/);
+test("multiline-safe title sizing is owned by cinematic-v2 rather than presentation tuning", async () => {
+  const [tuning, cinematic] = await Promise.all([
+    read("css-next/pages/act-showcase-presentation-tuning.css"),
+    read("css-next/pages/act-showcase-cinematic-v2.css")
+  ]);
+  assert.doesNotMatch(tuning, /white-space\s*:\s*nowrap/);
+  assert.match(cinematic, /act-title--logo\.showcase-fit-title\{[\s\S]*white-space:normal/);
+  assert.match(cinematic, /font-size:clamp\(2\.7rem,5vw,6\.2rem\)/);
+  assert.doesNotMatch(cinematic, /!important/);
 });
 
-test("trailer keeps adaptive typography and the frame follows content height", async () => {
-  const tuning = await read("css-next/pages/act-showcase-presentation-tuning.css");
-  const writing = await read("css-next/pages/act-showcase-writing-patterns.css");
+test("trailer stage owns adaptive scrolling and the readout remains overflow-visible", async () => {
+  const [tuning, cinematic, writing] = await Promise.all([
+    read("css-next/pages/act-showcase-presentation-tuning.css"),
+    read("css-next/pages/act-showcase-cinematic-v2.css"),
+    read("css-next/pages/act-showcase-writing-patterns.css")
+  ]);
   assert.match(writing, /data-trailer-pattern=\"prose\"/);
-  assert.match(writing, /font-size:clamp\(\.88rem,1\.12vw,1\.08rem\)/);
   assert.match(writing, /white-space:pre-wrap/);
-  assert.match(tuning, /screen--trailer\{height:auto;max-height:100%;align-self:center\}/);
-  assert.match(tuning, /screen--trailer \.neotokyo-sequence__readout\{flex:0 1 auto;height:auto;min-height:4\.8em;max-height:calc\(100svh - 390px\);overflow:auto\}/);
+  assert.doesNotMatch(tuning, /neotokyo-sequence__screen--trailer/);
+  assert.match(cinematic, /neotokyo-sequence__stage\.is-trailer-scroll\{[\s\S]*overflow-y:auto/);
+  assert.match(cinematic, /screen--trailer \.neotokyo-sequence__readout\{[\s\S]*max-height:none;[\s\S]*overflow:visible/);
 });
 
-test("the selected handout style is enlarged while duplicate matches stay secondary", async () => {
-  const css = await read("css-next/pages/act-showcase-presentation-tuning.css");
-  const supporting = await read("css-next/pages/act-showcase-supporting-cast.css");
-  assert.match(css, /cast--linked \.neotokyo-sequence__styles span\.is-role-primary\{[^}]*font-size:clamp\(\.72rem,1vw,\.96rem\)/);
-  assert.match(css, /transform:translateY\(-2px\) scale\(1\.08\)/);
-  assert.match(css, /poster-v2-tags span\.is-assigned-style\{[^}]*font-size:\.72rem/);
+test("the selected handout style is highlighted while duplicate matches stay secondary", async () => {
+  const [cinematic, supporting] = await Promise.all([
+    read("css-next/pages/act-showcase-cinematic-v2.css"),
+    read("css-next/pages/act-showcase-supporting-cast.css")
+  ]);
+  assert.match(cinematic, /styles span\.is-role-primary\{[\s\S]*border-color:#77ffd1/);
+  assert.match(cinematic, /transform:translateY\(-1px\)/);
   assert.match(supporting, /is-assigned-style-duplicate\{opacity:\.45\}/);
 });
 

@@ -5,11 +5,10 @@ import { readFile } from "node:fs/promises";
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("act showcase loads the dense PC ornament layer after the base ornament", async () => {
-  const html = await read("act-showcase.html");
-  const base = html.indexOf("act-showcase-ornament.css");
-  const plus = html.indexOf("act-showcase-ornament-plus.css");
-  assert.ok(base >= 0);
-  assert.ok(plus > base);
+  const entry = await read("css-next/pages/act-showcase-entry.css");
+  const base = entry.indexOf("act-showcase-ornament.css");
+  const plus = entry.indexOf("act-showcase-ornament-plus.css");
+  assert.ok(base >= 0 && plus > base);
 });
 
 test("dense ornament layer stays PC-focused and covers all major poster regions", async () => {

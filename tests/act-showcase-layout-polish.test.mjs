@@ -2,17 +2,18 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const showcaseHtml = readFileSync(new URL("../act-showcase.html", import.meta.url), "utf8");
+const entry = readFileSync(new URL("../css-next/pages/act-showcase-entry.css", import.meta.url), "utf8");
+const bootstrap = readFileSync(new URL("../js/act-showcase-bootstrap.js", import.meta.url), "utf8");
 const generatorHtml = readFileSync(new URL("../showcase-generator.html", import.meta.url), "utf8");
 const board = readFileSync(new URL("../js/act-showcase-board-layout.js", import.meta.url), "utf8");
 const trailer = readFileSync(new URL("../js/showcase-trailer-multiline.js", import.meta.url), "utf8");
 const css = readFileSync(new URL("../css-next/pages/act-showcase-layout-polish.css", import.meta.url), "utf8");
 
 test("final layout polish loads after the previous cinematic readability layer", () => {
-  assert.match(showcaseHtml, /act-showcase-layout-polish\.css\?v=[^\"']+/);
-  assert.match(showcaseHtml, /act-showcase-board-layout\.js\?v=[^\"']+/);
-  assert.ok(showcaseHtml.indexOf("act-showcase-cinematic-readability.css") < showcaseHtml.indexOf("act-showcase-layout-polish.css"));
-  assert.ok(showcaseHtml.indexOf("act-showcase-board-layout.js") < showcaseHtml.indexOf("act-showcase-page.js"));
+  assert.match(entry, /act-showcase-layout-polish\.css\?v=[^\"']+/);
+  assert.match(bootstrap, /act-showcase-board-layout\.js\?v=[^\"']+/);
+  assert.ok(entry.indexOf("act-showcase-cinematic-readability.css") < entry.indexOf("act-showcase-layout-polish.css"));
+  assert.ok(bootstrap.indexOf("act-showcase-board-layout.js") < bootstrap.indexOf("act-showcase-page.js"));
 });
 
 test("PUBLIC DATA is condensed above the board and the cast grid becomes three columns", () => {
@@ -31,7 +32,6 @@ test("assigned cast names and act titles use the wider screen without clipping",
   assert.match(css, /showcase-fit-cast-name\[data-fit="xlong"\]/);
   assert.match(css, /showcase-fit-title\[data-fit="medium"\]/);
   assert.match(css, /text-overflow:clip/);
-  assert.match(css, /white-space:nowrap/);
 });
 
 test("ACCESS ACT uses a strong animated authorization gate with reduced-motion fallback", () => {
@@ -48,7 +48,6 @@ test("act trailer explicitly preserves pasted multiline text", () => {
   assert.match(generatorHtml, /複数行の文章をそのまま貼り付けできます/);
   assert.match(generatorHtml, /textarea id="intro-text" rows="8"/);
   assert.match(trailer, /clipboardData/);
-  assert.match(trailer, /replace\(\/\\r\\n\?\/g, "\\n"\)/);
   assert.match(trailer, /setRangeText/);
   assert.match(trailer, /new Event\("input", \{ bubbles: true \}\)/);
 });

@@ -1,8 +1,7 @@
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=3";
 import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=4";
+import { loadPublicShowcase, normalizeShowcaseSlug } from "./public-showcase-service.js?v=1";
 
-const SUPABASE_URL = "https://koprmbkoftuuffslhsvt.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi";
 const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city-v2.svg";
 const HANDOUT_PLACEHOLDERS = new Set([
   "ハンドアウト詳細は未登録です。",
@@ -21,13 +20,12 @@ initialize();
 async function initialize() {
   try {
     const params = new URLSearchParams(location.search);
-    const slug = normalizeSlug(params.get("id"));
-    const sample = normalizeSampleKey(params.get("bgSample"));
-    const isNeoTokyo = sample === "neotokyo";
+    const slug = normalizeShowcaseSlug(params.get("id"));
+    const isNeoTokyo = document.body?.id === "act-showcase-page";
     if (isNeoTokyo) prepareNeoTokyoLoading(cinematicIntro);
     if (!slug) throw new Error("アクト識別名が指定されていません。");
 
-    const data = await fetchPublicShowcase(slug);
+    const data = await loadPublicShowcase(slug);
     const model = createShowcaseModel(data);
     renderOpening(model);
     applyBackground(model.background);
@@ -60,43 +58,18 @@ async function initialize() {
   }
 }
 
-async function fetchPublicShowcase(slug) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_act_showcase`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_PUBLISHABLE_KEY,
-      "Content-Type": "application/json",
-      Accept: "application/json"
-    },
-    body: JSON.stringify({ p_slug: slug }),
-    cache: "no-store"
-  });
-
-  const responseText = await response.text();
-  let payload = null;
-  if (responseText) {
-    try {
-      payload = JSON.parse(responseText);
-    } catch {
-      payload = responseText;
-    }
-  }
-
-  if (!response.ok) {
-    const detail = typeof payload === "object" && payload
-      ? [payload.message, payload.hint, payload.details, payload.code].filter(Boolean).join(" / ")
-      : String(payload || "");
-    throw new Error(translateError({ message: detail, status: response.status }));
-  }
-  return payload;
-}
-
 function createShowcaseModel(data) {
   if (!data || typeof data !== "object" || Array.isArray(data)) {
     throw new Error("指定されたアクト紹介は公開されていません。公開画面から再度『アクト紹介を公開』してください。");
   }
 
-  const casts = Array.isArray(data.casts) ? data.casts.slice(0, 6) : [];
+  const casts = Array.isArray(data.casts)
+    ? data.casts.slice(0, 6).map(cast => ({
+        ...cast,
+        fullName: normalizeDisplayQuotes(cast?.fullName || cast?.full_name || cast?.name),
+        reading: normalizeDisplayQuotes(cast?.reading)
+      }))
+    : [];
   if (!casts.length) throw new Error("このアクト紹介には表示できるキャストがありません。");
 
   const pageTitle = text(data.pageTitle) || "ACT SHOWCASE";
@@ -107,7 +80,7 @@ function createShowcaseModel(data) {
     : null;
   const trailer = trailerSource
     ? text(trailerSource.body || trailerSource.text)
-    : text(data.trailer || data.actTrailer || data.trailerText || data.trailerBody);
+    : text(data.trailer || data.actTrailer || data.trailerText || data.trailerBody || data.intro);
   const trailerTitle = trailerSource
     ? text(trailerSource.title)
     : text(data.trailerTitle);
@@ -144,16 +117,9 @@ function renderOpening(model) {
     textEl("span", "poster-v2-brand__sub", "TRPG\nACT SHOWCASE")
   );
 
-  const nav = el("div", "poster-v2-nav");
-  for (const label of ["ACT SHOWCASE", "WORLD", "CHARACTERS", "ARCHIVE", "EXTRA"]) {
-    const item = textEl("span", "poster-v2-nav__item", label);
-    if (label === "ACT SHOWCASE") item.classList.add("is-active");
-    nav.append(item);
-  }
-
   const note = el("div", "poster-v2-topnote");
   note.append(textEl("span", "", "PUBLIC ACT ARCHIVE"), textEl("small", "", "NOVA MUNICIPAL DATABASE"));
-  topbar.append(brand, nav, note);
+  topbar.append(brand, note);
   opening.prepend(topbar);
   opening.append(createPosterOrnament());
   opening.append(
@@ -527,38 +493,14 @@ function escapeCssString(value) {
   }[character]));
 }
 
-function normalizeSampleKey(value) {
-  return String(value || "")
-    .normalize("NFKC")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "")
-    .slice(0, 32);
-}
-
-function normalizeSlug(value) {
-  return String(value || "")
-    .normalize("NFKC")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 64);
-}
-
-function translateError(error) {
-  const message = String(error?.message || "");
-  if (/invalid jwt|jwt.*invalid|expected 3 parts/i.test(message)) {
-    return "公開データ取得用の認証ヘッダーが不正でした。ページを再読み込みしてください。";
-  }
-  if (/get_public_act_showcase|function.*does not exist|schema cache|PGRST202/i.test(message)) {
-    return "動的公開機能が未設定です。管理者がSupabaseの設定を確認してください。";
-  }
-  if (/permission denied|not authorized|401|403/i.test(`${error?.status || ""} ${message}`)) {
-    return "公開アクト紹介の参照権限がありません。Supabaseの公開RPC権限を確認してください。";
-  }
-  if (/failed to fetch|networkerror|load failed/i.test(message)) {
-    return "公開データの取得に失敗しました。通信状態を確認して再読み込みしてください。";
-  }
-  return message || "アクト紹介を読み込めませんでした。";
+function normalizeDisplayQuotes(value) {
+  return String(value ?? "")
+    .replace(/“\s*[“"「『‘']+/g, "“")
+    .replace(/[”"」』’']+\s*”/g, "”")
+    .replace(/“{2,}/g, "“")
+    .replace(/”{2,}/g, "”")
+    .replace(/"{2,}/g, '"')
+    .trim();
 }
 
 function smoothstep(a, b, value) {

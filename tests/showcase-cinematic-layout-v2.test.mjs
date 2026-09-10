@@ -3,13 +3,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../act-showcase.html", import.meta.url), "utf8");
+const bootstrap = await readFile(new URL("../js/act-showcase-bootstrap.js", import.meta.url), "utf8");
+const entryCss = await readFile(new URL("../css-next/pages/act-showcase-entry.css", import.meta.url), "utf8");
 const loader = await readFile(new URL("../js/showcase-generator-loader.js", import.meta.url), "utf8");
 const subtitle = await readFile(new URL("../js/showcase-act-subtitle.js", import.meta.url), "utf8");
-const background = await readFile(new URL("../js/act-showcase-background-resolver.js", import.meta.url), "utf8");
 const page = await readFile(new URL("../js/act-showcase-page.js", import.meta.url), "utf8");
 const cinematic = await readFile(new URL("../js/act-showcase-cinematic-layout-v2.js", import.meta.url), "utf8");
 const css = await readFile(new URL("../css-next/pages/act-showcase-cinematic-v2.css", import.meta.url), "utf8");
 const neotokyoCss = await readFile(new URL("../css-next/pages/act-showcase-neotokyo.css", import.meta.url), "utf8");
+const presentation = await readFile(new URL("../css-next/pages/act-showcase-presentation-tuning.css", import.meta.url), "utf8");
 
 test("generator separates ACT title and subtitle before dynamic publishing", () => {
   const subtitleImport = loader.search(/import\("\.\/showcase-act-subtitle\.js\?v=\d+"\)/);
@@ -28,19 +30,13 @@ test("legacy trailer helper wording is no longer presented in the generator", ()
   assert.doesNotMatch(subtitle, /helper\.textContent = "プレアクトで読み上げるトレーラー"/);
 });
 
-test("published background is restored from showcase data for current and legacy cinematic URLs", () => {
-  assert.match(background, /params\.get\("id"\) \|\| params\.get\("act"\)/);
-  assert.match(background, /get_public_act_showcase/);
-  assert.match(background, /payload\?\.background/);
-  assert.match(background, /showcase-published-background-restored/);
-  assert.doesNotMatch(background, /if \(!hasLegacyBackgroundParam\(\)\) return/);
-});
-
-test("NeoTokyo mode keeps the published background instead of forcing the sample background", () => {
+test("published background is owned by the primary showcase model and renderer", () => {
+  assert.match(page, /loadPublicShowcase\(slug\)/);
+  assert.match(page, /background: safeImageUrl\(data\.background\)/);
   assert.match(page, /applyBackground\(model\.background\)/);
   assert.match(page, /const selected = background \|\| POSTER_SAMPLE_BACKGROUND/);
   assert.match(page, /classList\.toggle\("showcase-poster-sample-background", !background\)/);
-  assert.doesNotMatch(page, /sample === "neotokyo" \? POSTER_SAMPLE_BACKGROUND/);
+  assert.doesNotMatch(bootstrap, /act-showcase-background-resolver/);
 });
 
 test("cinematic title is multiline-safe and renders a separate subtitle", () => {
@@ -50,7 +46,7 @@ test("cinematic title is multiline-safe and renders a separate subtitle", () => 
   assert.match(css, /act-title--logo\.showcase-fit-title\[data-fit="medium"\]/);
   assert.match(css, /\.neotokyo-sequence__act-subtitle\s*\{/);
   assert.match(css, /font:700 clamp\(1\.35rem,2\.5vw,2\.85rem\)/);
-  assert.doesNotMatch(css, /white-space:normal!important/);
+  assert.doesNotMatch(presentation, /white-space\s*:\s*nowrap/);
 });
 
 test("cinematic trailer uses the stage as the single scroll owner while the body remains locked", () => {
@@ -64,6 +60,7 @@ test("cinematic trailer uses the stage as the single scroll owner while the body
   assert.match(css, /neotokyo-sequence__stage\.is-trailer-scroll\{[\s\S]*?overflow-y:auto/);
   assert.match(css, /neotokyo-sequence__stage\.is-trailer-scroll \.neotokyo-sequence__screen--trailer\{[\s\S]*?overflow:visible/);
   assert.match(css, /screen--trailer \.neotokyo-sequence__readout\{[\s\S]*?max-height:none;[\s\S]*?overflow:visible/);
+  assert.doesNotMatch(presentation, /neotokyo-sequence__screen--trailer/);
   assert.doesNotMatch(cinematic, /window\.scrollBy\(/);
   assert.doesNotMatch(cinematic, /screen\.scrollTop = screen\.scrollHeight/);
 });
@@ -78,11 +75,9 @@ test("assigned cast removes suit marks only from the participation slot and keep
   assert.match(css, /white-space:nowrap/);
 });
 
-test("cinematic presentation removes fake navigation and duplicate trailer labels", () => {
-  assert.match(cinematic, /removeFakeNavigation/);
-  assert.match(cinematic, /\.poster-v2-nav/);
+test("cinematic presentation does not render fake navigation and removes duplicate trailer labels", () => {
+  assert.doesNotMatch(page, /poster-v2-nav/);
   assert.match(cinematic, /neotokyo-sequence__trailer-definition,.cinematic-trailer-band/);
-  assert.match(css, /poster-v2-nav\{display:none\}/);
   assert.match(css, /cinematic-trailer-band\{display:none\}/);
   assert.doesNotMatch(css, /poster-v2-nav\{display:none!important\}/);
 });
@@ -102,8 +97,15 @@ test("finished cinematic sequence does not schedule an automatic page scroll", (
   assert.doesNotMatch(cinematic, /setTimeout\([^\n]*2000/);
 });
 
-test("cinematic v2 presentation assets are wired into the public page", () => {
-  assert.match(html, /act-showcase-cinematic-v2\.css\?v=\d+/);
-  assert.match(html, /act-showcase-cinematic-layout-v2\.js\?v=\d+/);
-  assert.match(html, /act-showcase-background-resolver\.js\?v=\d+/);
+test("cinematic presentation is wired through one CSS entry and one module bootstrap", () => {
+  const localCss = [...html.matchAll(/href="(\.\/css-next\/[^"]+)"/g)].map(match => match[1]);
+  const localScripts = [...html.matchAll(/src="(\.\/js\/[^"]+)"/g)].map(match => match[1]);
+  assert.deepEqual(localCss, ["./css-next/pages/act-showcase-entry.css?v=1"]);
+  assert.deepEqual(localScripts, ["./js/act-showcase-bootstrap.js?v=1"]);
+  assert.match(entryCss, /act-showcase-cinematic-v2\.css\?v=\d+/);
+  assert.match(bootstrap, /act-showcase-cinematic-layout-v2\.js\?v=\d+/);
+  assert.match(bootstrap, /act-showcase-page\.js\?v=/);
+  assert.doesNotMatch(bootstrap, /showcase-mode-compat/);
+  assert.doesNotMatch(bootstrap, /act-showcase-background-resolver/);
+  assert.doesNotMatch(bootstrap, /reduced-motion-sequence-bridge/);
 });

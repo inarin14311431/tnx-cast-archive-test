@@ -2,21 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const html = readFileSync(new URL("../act-showcase.html", import.meta.url), "utf8");
+const entry = readFileSync(new URL("../css-next/pages/act-showcase-entry.css", import.meta.url), "utf8");
+const bootstrap = readFileSync(new URL("../js/act-showcase-bootstrap.js", import.meta.url), "utf8");
 const enhancer = readFileSync(new URL("../js/act-showcase-finale-enhancer.js", import.meta.url), "utf8");
 const css = readFileSync(new URL("../css-next/pages/act-showcase-finale.css", import.meta.url), "utf8");
 
 test("act showcase loads the finale enhancement after existing NeoTokyo layers", () => {
-  assert.match(html, /act-showcase-finale\.css\?v=20260907a/);
-  assert.match(html, /act-showcase-finale-enhancer\.js\?v=1/);
-  assert.ok(
-    html.indexOf("act-showcase-ornament-plus.css") < html.indexOf("act-showcase-finale.css"),
-    "finale CSS must be the last showcase decoration layer"
-  );
-  assert.ok(
-    html.indexOf("act-showcase-finale-enhancer.js") < html.indexOf("act-showcase-page.js"),
-    "enhancer must observe the sequence before the module starts rendering it"
-  );
+  assert.match(entry, /act-showcase-finale\.css\?v=20260907a/);
+  assert.match(bootstrap, /act-showcase-finale-enhancer\.js\?v=1/);
+  assert.ok(entry.indexOf("act-showcase-ornament-plus.css") < entry.indexOf("act-showcase-finale.css"));
+  assert.ok(bootstrap.indexOf("act-showcase-finale-enhancer.js") < bootstrap.indexOf("act-showcase-page.js"));
 });
 
 test("title enhancer turns the generated act title into a logo lockup", () => {

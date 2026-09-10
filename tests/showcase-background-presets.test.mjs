@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const generatorHtml = readFileSync(new URL("../showcase-generator.html", import.meta.url), "utf8");
-const publicHtml = readFileSync(new URL("../act-showcase.html", import.meta.url), "utf8");
 const entryCss = readFileSync(new URL("../css-next/pages/showcase-entry.css", import.meta.url), "utf8");
 const presets = readFileSync(new URL("../js/showcase-background-presets.js", import.meta.url), "utf8");
 const picker = readFileSync(new URL("../js/showcase-background-preset-picker.js", import.meta.url), "utf8");
-const resolver = readFileSync(new URL("../js/act-showcase-background-resolver.js", import.meta.url), "utf8");
+const page = readFileSync(new URL("../js/act-showcase-page.js", import.meta.url), "utf8");
+const showcaseEntry = readFileSync(new URL("../css-next/pages/act-showcase-entry.css", import.meta.url), "utf8");
 const css = readFileSync(new URL("../css-next/pages/showcase-background-presets.css", import.meta.url), "utf8");
 
 test("generator exposes the canonical background preset picker wiring", () => {
@@ -34,14 +34,13 @@ test("manual background inputs can override a selected preset", () => {
   assert.match(picker, /keyField\.value = ""/);
 });
 
-test("cinematic presentation restores the published background after canonical rendering", () => {
-  assert.match(publicHtml, /act-showcase-background-resolver\.js\?v=\d+/);
-  assert.match(resolver, /params\.get\("id"\) \|\| params\.get\("act"\)/);
-  assert.match(resolver, /get_public_act_showcase/);
-  assert.match(resolver, /waitForShowcaseReady/);
-  assert.match(resolver, /showcase-poster-v2-ready/);
-  assert.match(resolver, /--showcase-background/);
-  assert.match(resolver, /classList\.remove\("showcase-poster-sample-background"\)/);
+test("cinematic presentation applies published background from the canonical showcase model", () => {
+  assert.match(page, /const data = await loadPublicShowcase\(slug\)/);
+  assert.match(page, /background: safeImageUrl\(data\.background\)/);
+  assert.match(page, /applyBackground\(model\.background\)/);
+  assert.match(page, /--showcase-background/);
+  assert.match(showcaseEntry, /act-showcase-top-background-only\.css\?v=\d+/);
+  assert.doesNotMatch(page, /act-showcase-background-resolver/);
 });
 
 test("preset UI remains usable without motion", () => {

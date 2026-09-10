@@ -1,11 +1,7 @@
 (() => {
-  const params = new URLSearchParams(location.search);
-  const showcaseMode = String(params.get("showcaseMode") || "").trim().toLowerCase();
-  const legacySample = String(params.get("bgSample") || "").trim().toLowerCase();
-  if (showcaseMode !== "cinematic" && legacySample !== "neotokyo") return;
+  if (document.body?.id !== "act-showcase-page") return;
 
   document.documentElement.classList.add("showcase-cinematic-enhancer");
-  bridgeLegacyTrailerData();
 
   const ready = () => {
     const intro = document.querySelector("#cinematic-intro");
@@ -24,9 +20,6 @@
       }
     });
     observer.observe(intro, { subtree: true, childList: true, characterData: true });
-    window.addEventListener("resize", debounce(() => {
-      document.querySelectorAll(".neotokyo-sequence__act-title").forEach(fitSingleLineTitle);
-    }, 90), { passive: true });
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ready, { once: true });
@@ -72,10 +65,7 @@
     screen.querySelectorAll(".neotokyo-sequence__act-overview").forEach(node => node.remove());
     const title = screen.querySelector(".neotokyo-sequence__act-title");
     if (!title) return;
-    requestAnimationFrame(() => {
-      fitSingleLineTitle(title);
-      requestAnimationFrame(() => title.classList.add("is-cinematic-title"));
-    });
+    requestAnimationFrame(() => title.classList.add("is-cinematic-title"));
   }
 
   function enhanceTrailer(screen) {
@@ -93,29 +83,6 @@
     );
     copy.parentNode.insertBefore(terminal, copy);
     terminal.append(bar, copy);
-  }
-
-  function fitSingleLineTitle(title) {
-    if (!title?.isConnected) return;
-    title.style.whiteSpace = "nowrap";
-    title.style.fontSize = "";
-    const parent = title.parentElement;
-    if (!parent) return;
-    const available = Math.max(220, parent.clientWidth - (innerWidth <= 760 ? 24 : 80));
-    let size = parseFloat(getComputedStyle(title).fontSize) || 48;
-    const minimum = innerWidth <= 760 ? 17 : 22;
-    title.style.fontSize = `${size}px`;
-    for (let count = 0; count < 90 && title.scrollWidth > available && size > minimum; count += 1) {
-      size = Math.max(minimum, size - 1.5);
-      title.style.fontSize = `${size}px`;
-    }
-    if (title.scrollWidth > available) {
-      const scale = Math.max(.68, available / title.scrollWidth);
-      title.style.transformOrigin = "center";
-      title.style.setProperty("--cinematic-fit-scale", String(scale));
-    } else {
-      title.style.setProperty("--cinematic-fit-scale", "1");
-    }
   }
 
   function normalizeVisibleQuotes(root) {
@@ -150,58 +117,9 @@
     requestAnimationFrame(() => terminal.classList.add("is-inputting"));
   }
 
-  function bridgeLegacyTrailerData() {
-    const nativeFetch = window.fetch.bind(window);
-    window.fetch = async (...args) => {
-      const response = await nativeFetch(...args);
-      const requestUrl = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
-      if (!String(requestUrl).includes("/rest/v1/rpc/get_public_act_showcase")) return response;
-      try {
-        const text = await response.clone().text();
-        if (!text) return response;
-        const data = JSON.parse(text);
-        if (!data || typeof data !== "object" || Array.isArray(data)) return response;
-
-        const explicitTrailer = data.trailer || data.actTrailer || data.trailerText || data.trailerBody;
-        if (!explicitTrailer && typeof data.intro === "string" && data.intro.trim()) {
-          data.trailer = { title: "ACT TRAILER", body: data.intro.trim() };
-          data.intro = "";
-        }
-        if (Array.isArray(data.casts)) {
-          data.casts = data.casts.map(cast => ({
-            ...cast,
-            fullName: normalizeDuplicateHandleQuotes(cast?.fullName || cast?.full_name || ""),
-            full_name: normalizeDuplicateHandleQuotes(cast?.full_name || cast?.fullName || ""),
-            reading: normalizeDuplicateHandleQuotes(cast?.reading || "")
-          }));
-        }
-
-        const headers = new Headers(response.headers);
-        headers.delete("content-length");
-        headers.delete("content-encoding");
-        return new Response(JSON.stringify(data), {
-          status: response.status,
-          statusText: response.statusText,
-          headers
-        });
-      } catch (error) {
-        console.warn("Legacy act trailer compatibility bridge skipped.", error);
-        return response;
-      }
-    };
-  }
-
   function createText(tag, value) {
     const element = document.createElement(tag);
     element.textContent = value;
     return element;
-  }
-
-  function debounce(callback, wait) {
-    let timer = 0;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = window.setTimeout(() => callback(...args), wait);
-    };
   }
 })();

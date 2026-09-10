@@ -5,6 +5,7 @@ import fs from 'node:fs';
 const sequence = fs.readFileSync('js/act-showcase-neotokyo.js', 'utf8');
 const page = fs.readFileSync('js/act-showcase-page.js', 'utf8');
 const html = fs.readFileSync('act-showcase.html', 'utf8');
+const bootstrap = fs.readFileSync('js/act-showcase-bootstrap.js', 'utf8');
 
 test('ACT cinematic opening keeps its timed motion while the title waits for explicit advance', () => {
   assert.match(sequence, /await wait\(state, 2900\);/);
@@ -24,7 +25,8 @@ test('HANDOUT to ASSIGN linkage keeps split, search, found and cast reveal visib
   assert.match(sequence, /await wait\(state, 700\);/);
 });
 
-test('ACT cinematic modules remain cache-busted without pinning a specific cache generation', () => {
+test('ACT cinematic modules remain cache-busted through the explicit bootstrap', () => {
   assert.match(page, /act-showcase-neotokyo\.js\?v=[A-Za-z0-9._-]+/);
-  assert.match(html, /act-showcase-page\.js\?v=[A-Za-z0-9._-]+/);
+  assert.match(html, /act-showcase-bootstrap\.js\?v=[A-Za-z0-9._-]+/);
+  assert.match(bootstrap, /act-showcase-page\.js\?v=[A-Za-z0-9._-]+/);
 });

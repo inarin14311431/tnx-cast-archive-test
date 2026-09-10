@@ -1,16 +1,18 @@
-import { supabase } from "./supabase-client.js";
+import { loadPublicShowcase, loadPublicShowcaseGuests, normalizeShowcaseSlug } from "./public-showcase-service.js?v=1";
 
 const params = new URLSearchParams(location.search);
-const slug = normalizeSlug(params.get("id"));
+const slug = normalizeShowcaseSlug(params.get("id"));
 if (slug) void initializeSupportingCast(slug);
 
 async function initializeSupportingCast(showcaseSlug) {
-  const [{ data: showcase, error: showcaseError }, { data: guestRows, error: guestError }] = await Promise.all([
-    supabase.rpc("get_public_act_showcase", { p_slug: showcaseSlug }),
-    supabase.rpc("get_public_act_showcase_guests", { p_slug: showcaseSlug })
+  const [showcaseResult, guestResult] = await Promise.allSettled([
+    loadPublicShowcase(showcaseSlug),
+    loadPublicShowcaseGuests(showcaseSlug)
   ]);
-  if (showcaseError) console.warn("Showcase role map could not be loaded.", showcaseError);
-  if (guestError) console.warn("Guest cast could not be loaded.", guestError);
+  if (showcaseResult.status === "rejected") console.warn("Showcase role map could not be loaded.", showcaseResult.reason);
+  if (guestResult.status === "rejected") console.warn("Guest cast could not be loaded.", guestResult.reason);
+  const showcase = showcaseResult.status === "fulfilled" ? showcaseResult.value : null;
+  const guestRows = guestResult.status === "fulfilled" ? guestResult.value : [];
   const casts = Array.isArray(showcase?.casts) ? showcase.casts : [];
   const guests = Array.isArray(guestRows) ? guestRows.map(normalizeGuest).filter(item => item.name) : [];
 
@@ -227,5 +229,4 @@ function textNode(tag, value, className = "") { const node = document.createElem
 function normalizeStyle(value) { return clean(value).replace(/[◎●]/g, "").replace(/[\s　]+/g, "").toLocaleLowerCase("ja-JP"); }
 function normalizeName(value) { return clean(value).replace(/[“”"「」『』\s　]+/g, "").toLocaleLowerCase("ja-JP"); }
 function clean(value) { return String(value ?? "").trim(); }
-function normalizeSlug(value) { return clean(value).normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64); }
 function safeImageUrl(value) { const source = clean(value); if (!source) return ""; if (/^(?:https?:|data:image\/|\.\/|\/)/i.test(source)) return source; return ""; }

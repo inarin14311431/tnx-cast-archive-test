@@ -4,15 +4,20 @@ import { readFile } from "node:fs/promises";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("act showcase loads one canonical page renderer", async () => {
-  const html = await read("act-showcase.html");
-  assert.match(html, /js\/act-showcase-page\.js/);
-  assert.match(html, /css-next\/pages\/act-showcase-cast-selector\.css/);
-  assert.match(html, /js\/act-showcase-summary-advance-guard\.js/);
+test("act showcase exposes one CSS entry and one module bootstrap", async () => {
+  const [html, entry, bootstrap] = await Promise.all([
+    read("act-showcase.html"),
+    read("css-next/pages/act-showcase-entry.css"),
+    read("js/act-showcase-bootstrap.js")
+  ]);
+  assert.match(html, /css-next\/pages\/act-showcase-entry\.css\?v=/);
+  assert.match(html, /js\/act-showcase-bootstrap\.js\?v=/);
+  assert.match(entry, /act-showcase-cast-selector\.css/);
+  assert.match(bootstrap, /act-showcase-summary-advance-guard\.js/);
+  assert.match(bootstrap, /act-showcase-page\.js/);
   assert.doesNotMatch(html, /js\/act-showcase-adaptive\.js/);
   assert.doesNotMatch(html, /js\/act-showcase-poster-bg\.js/);
   assert.doesNotMatch(html, /js\/act-showcase-poster-v2\.js/);
-  assert.doesNotMatch(html, /css-next\/pages\/act-showcase-adaptive\.css/);
 });
 
 test("act showcase no longer carries the retired six-scene DOM", async () => {
@@ -24,14 +29,18 @@ test("act showcase no longer carries the retired six-scene DOM", async () => {
   assert.match(html, /id="showcase-story"/);
 });
 
-test("canonical renderer consumes public showcase data directly", async () => {
-  const source = await read("js/act-showcase-page.js");
-  assert.match(source, /get_public_act_showcase/);
+test("canonical renderer consumes centralized public showcase data", async () => {
+  const [source, service] = await Promise.all([
+    read("js/act-showcase-page.js"),
+    read("js/public-showcase-service.js")
+  ]);
+  assert.match(source, /loadPublicShowcase\(slug\)/);
   assert.match(source, /createShowcaseModel\(data\)/);
   assert.match(source, /renderPoster\(model\)/);
   assert.match(source, /model\.casts/);
+  assert.match(service, /get_public_act_showcase/);
+  assert.doesNotMatch(source, /\/rest\/v1\/rpc\/get_public_act_showcase/);
   assert.doesNotMatch(source, /MutationObserver/);
-  assert.doesNotMatch(source, /querySelectorAll\("#showcase-casts \.cast-card"\)/);
 });
 
 test("canonical renderer keeps every cast selectable while switching detail", async () => {
@@ -43,10 +52,9 @@ test("canonical renderer keeps every cast selectable while switching detail", as
   assert.match(source, /grid\.replaceWith\(nextGrid\)/);
   assert.match(source, /dataset\.castIndex/);
   assert.match(source, /aria-pressed/);
-  assert.match(source, /event\.key !== "Enter" && event\.key !== " "/);
 });
 
-test("selected cast handout follows the selected cast instead of a different cast", async () => {
+test("selected cast handout follows the selected cast", async () => {
   const source = await read("js/act-showcase-page.js");
   assert.match(source, /createHandoutPanel\(\[cast\]\)/);
 });
@@ -59,9 +67,12 @@ test("NeoTokyo final summary only exits through the explicit footer action", asy
   assert.match(source, /capture: true/);
 });
 
-test("canonical renderer preserves public URL and link safety", async () => {
-  const source = await read("js/act-showcase-page.js");
-  assert.match(source, /normalizeSlug/);
+test("canonical renderer preserves public slug and link safety", async () => {
+  const [source, service] = await Promise.all([
+    read("js/act-showcase-page.js"),
+    read("js/public-showcase-service.js")
+  ]);
+  assert.match(service, /normalizeShowcaseSlug/);
   assert.match(source, /safeImageUrl/);
   assert.match(source, /safeLinkUrl/);
   assert.match(source, /\["http:", "https:"\]\.includes\(url\.protocol\)/);

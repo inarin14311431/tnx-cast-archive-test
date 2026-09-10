@@ -1,7 +1,5 @@
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=3";
-
-const SUPABASE_URL = "https://koprmbkoftuuffslhsvt.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Dsb9Boo4aP3c_v-Iaam4mw_F1szMdUi";
+import { loadPublicShowcase, normalizeShowcaseSlug } from "./public-showcase-service.js?v=1";
 
 const status = document.querySelector("#act-showcase-standard-status");
 const root = document.querySelector("#act-showcase-standard-root");
@@ -17,9 +15,9 @@ void initialize();
 
 async function initialize() {
   try {
-    const slug = normalizeSlug(new URLSearchParams(location.search).get("id"));
+    const slug = normalizeShowcaseSlug(new URLSearchParams(location.search).get("id"));
     if (!slug) throw new Error("アクト識別名が指定されていません。");
-    const data = await fetchPublicShowcase(slug);
+    const data = await loadPublicShowcase(slug);
     if (!data || typeof data !== "object" || Array.isArray(data)) {
       throw new Error("指定されたアクト紹介は公開されていません。公開画面から再度公開してください。");
     }
@@ -31,31 +29,6 @@ async function initialize() {
     status.textContent = error?.message || "アクト紹介を読み込めませんでした。";
     status.classList.add("is-error");
   }
-}
-
-async function fetchPublicShowcase(slug) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_public_act_showcase`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_PUBLISHABLE_KEY,
-      "Content-Type": "application/json",
-      Accept: "application/json"
-    },
-    body: JSON.stringify({ p_slug: slug }),
-    cache: "no-store"
-  });
-  const responseText = await response.text();
-  let payload = null;
-  if (responseText) {
-    try { payload = JSON.parse(responseText); } catch { payload = responseText; }
-  }
-  if (!response.ok) {
-    const detail = typeof payload === "object" && payload
-      ? [payload.message, payload.hint, payload.details, payload.code].filter(Boolean).join(" / ")
-      : String(payload || "");
-    throw new Error(translateError({ message: detail, status: response.status }));
-  }
-  return payload;
 }
 
 function renderShowcase(data) {
@@ -222,13 +195,4 @@ function safeColor(value) {
 }
 function escapeCssString(value) {
   return String(value).replace(/["\\\n\r]/g, character => ({ '"': '\\"', "\\": "\\\\", "\n": "", "\r": "" }[character]));
-}
-function normalizeSlug(value) {
-  return String(value || "").normalize("NFKC").toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "").slice(0, 64);
-}
-function translateError(error) {
-  const message = String(error?.message || "");
-  if (/get_public_act_showcase|function.*does not exist|schema cache|PGRST202/i.test(message)) return "動的公開機能が未設定です。管理者がSupabaseの設定を確認してください。";
-  if (/permission denied|not authorized|401|403/i.test(`${error?.status || ""} ${message}`)) return "公開アクト紹介を取得する権限がありません。";
-  return message || "公開アクト紹介を取得できませんでした。";
 }
