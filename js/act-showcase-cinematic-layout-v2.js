@@ -1,16 +1,13 @@
 (() => {
-  const params = new URLSearchParams(location.search);
-  const cinematic = String(params.get("showcaseMode") || "").toLowerCase() === "cinematic"
-    || String(params.get("bgSample") || "").toLowerCase() === "neotokyo";
-  if (!cinematic) return;
+  if (document.body?.id !== "act-showcase-page") return;
 
   const intro = document.querySelector("#cinematic-intro");
   const openingSubtitle = document.querySelector("#opening-subtitle");
   let trailerFrame = 0;
 
   const enhance = root => {
-    const scope = root instanceof Element ? root : document.documentElement;
-    removeFakeNavigation(scope);
+    const scope = root instanceof Element ? root : intro;
+    if (!scope) return;
     normalizeNodeLabel(scope);
     enhanceTitleScreen(scope);
     simplifyTrailer(scope);
@@ -20,40 +17,32 @@
     syncTrailerScrollSurface();
   };
 
-  enhance(document.documentElement);
+  enhance(intro);
 
-  const observer = new MutationObserver(records => {
-    for (const record of records) {
-      if (record.type === "characterData") scheduleTrailerFrame(record.target.parentElement);
-      for (const node of record.addedNodes || []) {
-        if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
+  if (intro) {
+    const observer = new MutationObserver(records => {
+      for (const record of records) {
+        if (record.type === "characterData") scheduleTrailerFrame(record.target.parentElement);
+        for (const node of record.addedNodes || []) {
+          if (node.nodeType === Node.ELEMENT_NODE) enhance(node);
+        }
+        if (record.target instanceof Element) scheduleTrailerFrame(record.target);
       }
-      if (record.target instanceof Element) {
-        if (record.target.matches?.(".neotokyo-sequence__act-title")) resetSingleLineTitleStyles(record.target);
-        scheduleTrailerFrame(record.target);
-      }
-    }
-    syncTrailerScrollSurface();
-  });
-  observer.observe(document.documentElement, {
-    subtree: true,
-    childList: true,
-    characterData: true,
-    attributes: true,
-    attributeFilter: ["aria-hidden", "class", "style"]
-  });
+      syncTrailerScrollSurface();
+    });
+    observer.observe(intro, {
+      subtree: true,
+      childList: true,
+      characterData: true
+    });
+  }
 
   window.addEventListener("resize", () => {
-    document.querySelectorAll(".neotokyo-sequence__cast--linked .neotokyo-sequence__cast-tagline")
+    intro?.querySelectorAll(".neotokyo-sequence__cast--linked .neotokyo-sequence__cast-tagline")
       .forEach(tagline => fitAssignedTagline(tagline));
     const readout = intro?.querySelector(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout");
     if (readout) scheduleTrailerFrame(readout);
   }, { passive: true });
-
-  function removeFakeNavigation(scope) {
-    if (scope.matches?.(".poster-v2-nav")) scope.remove();
-    scope.querySelectorAll?.(".poster-v2-nav").forEach(node => node.remove());
-  }
 
   function normalizeNodeLabel(scope) {
     const nodes = scope.matches?.(".neotokyo-sequence__system span")
@@ -70,9 +59,7 @@
       : [...(scope.querySelectorAll?.(".neotokyo-sequence__screen--title") || [])];
     for (const screen of screens) {
       const title = screen.querySelector(".neotokyo-sequence__act-title");
-      if (!title) continue;
-      resetSingleLineTitleStyles(title);
-      if (screen.querySelector(".neotokyo-sequence__act-subtitle")) continue;
+      if (!title || screen.querySelector(".neotokyo-sequence__act-subtitle")) continue;
       const text = getMeaningfulSubtitle();
       if (!text) continue;
       const subtitle = document.createElement("p");
@@ -80,13 +67,6 @@
       subtitle.textContent = text;
       title.insertAdjacentElement("afterend", subtitle);
     }
-  }
-
-  function resetSingleLineTitleStyles(title) {
-    for (const property of ["font-size", "white-space", "width", "max-width", "transform", "line-height", "margin-inline"]) {
-      if (title.style.getPropertyValue(property)) title.style.removeProperty(property);
-    }
-    if (title.style.getPropertyValue("--cinematic-fit-scale")) title.style.removeProperty("--cinematic-fit-scale");
   }
 
   function simplifyTrailer(scope) {
@@ -100,8 +80,7 @@
     const active = Boolean(stage.querySelector(".neotokyo-sequence__screen--trailer"));
     const wasActive = stage.classList.contains("is-trailer-scroll");
     stage.classList.toggle("is-trailer-scroll", active);
-    if (active && !wasActive) stage.scrollTop = 0;
-    if (!active && wasActive) stage.scrollTop = 0;
+    if (active !== wasActive) stage.scrollTop = 0;
   }
 
   function attachTrailerFollow(scope) {
