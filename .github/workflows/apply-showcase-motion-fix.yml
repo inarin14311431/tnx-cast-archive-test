@@ -1,0 +1,49 @@
+name: Apply showcase motion fix
+
+on:
+  push:
+    branches: [fix/showcase-cinematic-motion-20260910]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/showcase-cinematic-motion-20260910
+          fetch-depth: 0
+      - name: Patch cinematic reduced-motion behavior
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('js/act-showcase-neotokyo.js')
+          source = path.read_text(encoding='utf-8')
+          old = '''  if (prefersReducedMotion()) {
+            document.body.classList.add("showcase-neotokyo-reduced");
+            return;
+          }
+          '''
+          new = '''  if (prefersReducedMotion()) {
+            document.body.classList.add("showcase-neotokyo-reduced");
+          }
+          '''
+          if source.count(old) != 1:
+              raise SystemExit(f'unexpected reduced-motion block count: {source.count(old)}')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+
+          workflow = Path('.github/workflows/apply-showcase-motion-fix.yml')
+          workflow.unlink()
+          PY
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/act-showcase-neotokyo.js .github/workflows/apply-showcase-motion-fix.yml
+          git commit -m "reduced-motionでも豪華版ACTシーケンスを維持"
+          git push origin HEAD:fix/showcase-cinematic-motion-20260910
