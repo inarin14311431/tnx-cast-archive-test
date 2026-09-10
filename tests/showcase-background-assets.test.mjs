@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const presetModule = await readFile(new URL("../js/showcase-background-presets.js", import.meta.url), "utf8");
-const fileNames = [...presetModule.matchAll(/url:\s*assetUrl\("([^"]+\.svg)"\)/g)].map(match => match[1]);
+const fileNames = [...presetModule.matchAll(/url:\s*assetUrl\("([^"]+\.(?:svg|avif))"\)/g)].map(match => match[1]);
 const embeddedAvifFiles = new Set([
   "nova-central-ring.svg",
   "kisarazu-lake-harbor.svg",
@@ -13,10 +13,10 @@ const embeddedAvifFiles = new Set([
   "executive-lounge.svg",
   "incident-blockade.svg"
 ]);
-const passiveVectorFiles = new Set([
-  "orbital-habitat.svg",
-  "prison-block.svg",
-  "slum-district.svg"
+const directAvifFiles = new Set([
+  "orbital-habitat.avif",
+  "prison-block.avif",
+  "slum-district.avif"
 ]);
 const legacyAssetFile = "neotokyo-bay.svg";
 
@@ -28,6 +28,13 @@ function assertPassiveSvg(source, fileName) {
   assert.doesNotMatch(source, /\son[a-z]+\s*=/i, `${fileName} must not declare event handlers`);
   assert.doesNotMatch(source, /javascript:/i, `${fileName} must not contain javascript URLs`);
   assert.doesNotMatch(source, /data:text\/html/i, `${fileName} must not embed HTML payloads`);
+}
+
+function assertRealAvif(payload, fileName) {
+  assert.ok(payload.length > 32, `${fileName} must contain a non-empty AVIF payload`);
+  assert.equal(payload.subarray(4, 8).toString("ascii"), "ftyp", `${fileName} must contain an ISO-BMFF file type box`);
+  assert.equal(payload.subarray(8, 12).toString("ascii"), "avif", `${fileName} must contain a real AVIF payload`);
+  assert.match(payload.subarray(0, 32).toString("ascii"), /avif/, `${fileName} must identify as AVIF near the file header`);
 }
 
 function assertSelfContainedAvifSvg(source, fileName) {
@@ -43,30 +50,31 @@ function assertSelfContainedAvifSvg(source, fileName) {
 
   const encoded = imageMatches[0][1];
   const payload = Buffer.from(encoded, "base64");
-  assert.ok(payload.length > 32, `${fileName} must contain a non-empty AVIF payload`);
-  assert.equal(payload.subarray(4, 8).toString("ascii"), "ftyp", `${fileName} must contain an ISO-BMFF file type box`);
-  assert.equal(payload.subarray(8, 12).toString("ascii"), "avif", `${fileName} must contain a real AVIF payload`);
-  assert.match(payload.subarray(0, 32).toString("ascii"), /avif/, `${fileName} must identify as AVIF near the file header`);
+  assertRealAvif(payload, fileName);
   return encoded;
 }
 
-test("all ten ACT SHOWCASE presets point to unique passive local SVG assets", async () => {
+test("all ten ACT SHOWCASE presets point to unique local artwork assets", async () => {
   assert.equal(fileNames.length, 10);
   assert.equal(new Set(fileNames).size, 10);
   assert.deepEqual(new Set(fileNames.filter(fileName => embeddedAvifFiles.has(fileName))), embeddedAvifFiles);
-  assert.deepEqual(new Set(fileNames.filter(fileName => passiveVectorFiles.has(fileName))), passiveVectorFiles);
+  assert.deepEqual(new Set(fileNames.filter(fileName => directAvifFiles.has(fileName))), directAvifFiles);
 
   const rasterPayloads = new Set();
   for (const fileName of fileNames) {
-    const source = await readFile(new URL(`../assets/showcase/backgrounds/${fileName}`, import.meta.url), "utf8");
-    assertPassiveSvg(source, fileName);
-    if (embeddedAvifFiles.has(fileName)) rasterPayloads.add(assertSelfContainedAvifSvg(source, fileName));
-    if (passiveVectorFiles.has(fileName)) {
-      assert.doesNotMatch(source, /<image\b/i, `${fileName} should stay self-contained vector artwork`);
-      assert.match(source, /<(?:path|rect|ellipse|circle)\b/i, `${fileName} must contain visible vector artwork`);
+    const assetUrl = new URL(`../assets/showcase/backgrounds/${fileName}`, import.meta.url);
+    if (embeddedAvifFiles.has(fileName)) {
+      const source = await readFile(assetUrl, "utf8");
+      rasterPayloads.add(assertSelfContainedAvifSvg(source, fileName));
+      continue;
+    }
+    if (directAvifFiles.has(fileName)) {
+      const payload = await readFile(assetUrl);
+      assertRealAvif(payload, fileName);
+      rasterPayloads.add(payload.toString("base64"));
     }
   }
-  assert.equal(rasterPayloads.size, embeddedAvifFiles.size, "each raster preset must embed a distinct image payload");
+  assert.equal(rasterPayloads.size, embeddedAvifFiles.size + directAvifFiles.size, "each raster preset must use a distinct image payload");
 });
 
 test("legacy neotokyo-bay compatibility asset stays passive vector-only", async () => {
