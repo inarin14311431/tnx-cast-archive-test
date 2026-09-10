@@ -31,10 +31,10 @@ test("generator exposes the canonical background preset picker wiring", () => {
 test("the seven canonical presets use the user-selected image assets", () => {
   for (const filename of presetAssetFiles) {
     const svg = readFileSync(new URL(`../assets/showcase/backgrounds/${filename}`, import.meta.url), "utf8");
-    assert.match(svg, /<image\b[^>]+href="data:image\/webp;base64,/i, `${filename} must embed the selected raster background`);
+    assert.match(svg, /<image\b[^>]+href="data:image\/avif;base64,/i, `${filename} must embed the selected raster background`);
   }
-  assert.match(presets, /SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images"/);
-  assert.match(picker, /showcase-background-presets\.js\?v=4/);
+  assert.match(presets, /SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images-avif-v2"/);
+  assert.match(picker, /showcase-background-presets\.js\?v=5/);
 });
 
 test("preset selection reuses the existing background URL publishing path", () => {
