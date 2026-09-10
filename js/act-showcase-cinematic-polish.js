@@ -1,10 +1,7 @@
 (() => {
   const intro = document.querySelector("#cinematic-intro");
   const pageRoot = document.querySelector("#act-showcase-root");
-  if (!intro || !pageRoot) return;
-
-  const params = new URLSearchParams(location.search);
-  const isNeoTokyo = String(params.get("bgSample") || "").trim().toLowerCase() === "neotokyo";
+  if (document.body?.id !== "act-showcase-page" || !intro || !pageRoot) return;
 
   const classify = (text, kind) => {
     const length = Array.from(String(text || "").replace(/[\s　]+/g, "")).length;
@@ -34,7 +31,7 @@
   const syncTypography = () => {
     typographyFrame = 0;
     fit(document.querySelector("#opening-act-name"), "title");
-    for (const element of document.querySelectorAll(".poster-v2-name")) fit(element, "cast");
+    for (const element of pageRoot.querySelectorAll(".poster-v2-name")) fit(element, "cast");
     for (const element of intro.querySelectorAll(".neotokyo-sequence__act-title")) fit(element, "title");
     for (const element of intro.querySelectorAll(".neotokyo-sequence__cast-detail h3,.neotokyo-sequence__summary-cast-body h3")) fit(element, "cast");
   };
@@ -45,10 +42,9 @@
   };
 
   const typographyObserver = new MutationObserver(queueTypography);
-  typographyObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+  typographyObserver.observe(pageRoot, { childList: true, subtree: true, characterData: true });
+  typographyObserver.observe(intro, { childList: true, subtree: true, characterData: true });
   queueTypography();
-
-  if (!isNeoTokyo) return;
 
   const decorateSummaryAccess = () => {
     const summary = intro.querySelector(".neotokyo-sequence__screen--summary");
