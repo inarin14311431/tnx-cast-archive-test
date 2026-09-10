@@ -15,13 +15,16 @@ test("new showcase links expose standard and cinematic modes without the retired
   );
   assert.match(
     publisher,
-    /act-showcase\.html\?id=\$\{encodeURIComponent\(slug\)\}&showcaseMode=cinematic/
+    /act-showcase\.html\?id=\$\{encodeURIComponent\(slug\)\}/
   );
+  assert.doesNotMatch(publisher, /showcaseMode=cinematic/);
   assert.doesNotMatch(publisher, /bgSample=neotokyo/);
   assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=1/);
 
-  // Existing shared links remain readable through an internal compatibility bridge.
+  // Existing shared links remain readable through an internal compatibility bridge,
+  // while the visible URL is normalized back to the filename-defined mode.
   assert.match(compat, /showcaseMode/);
   assert.match(compat, /bgSample/);
-  assert.match(compat, /mode === "cinematic"/);
+  assert.match(compat, /isCinematicPage/);
+  assert.match(compat, /current\.searchParams\.delete\("showcaseMode"\)/);
 });

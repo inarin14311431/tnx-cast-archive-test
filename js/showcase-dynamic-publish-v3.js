@@ -81,7 +81,7 @@ async function publishDynamicShowcase(button, mode) {
 
     const publicPath = mode === "standard"
       ? `./act-showcase-standard.html?id=${encodeURIComponent(slug)}`
-      : `./act-showcase.html?id=${encodeURIComponent(slug)}&showcaseMode=cinematic`;
+      : `./act-showcase.html?id=${encodeURIComponent(slug)}`;
     const publicUrl = new URL(publicPath, location.href).href;
     const modeLabel = mode === "standard" ? "従来版" : "豪華版";
     setStatus(`${modeLabel}の公開処理が完了しました。参加アクト履歴にも反映しました。 <a href="${escapeAttribute(publicUrl)}" target="_blank" rel="noopener">${modeLabel}の公開ページを開く</a>`, "success", true);

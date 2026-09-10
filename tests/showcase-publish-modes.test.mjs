@@ -14,13 +14,14 @@ test("generator exposes separate standard and cinematic publication actions", as
   assert.match(html, /id="publish-button"[^>]*hidden/);
 });
 
-test("dynamic publisher emits current publication URLs without the retired sample query", async () => {
+test("dynamic publisher emits current publication URLs without retired mode/sample queries", async () => {
   const loader = await read("js/showcase-generator-loader.js");
   const publisher = await read("js/showcase-dynamic-publish-v3.js");
   assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=1/);
   assert.doesNotMatch(loader, /showcase-dynamic-publish-v2\.js/);
   assert.match(publisher, /act-showcase-standard\.html\?id=/);
-  assert.match(publisher, /showcaseMode=cinematic/);
+  assert.match(publisher, /act-showcase\.html\?id=/);
+  assert.doesNotMatch(publisher, /showcaseMode=cinematic/);
   assert.doesNotMatch(publisher, /bgSample=neotokyo/);
 });
 
