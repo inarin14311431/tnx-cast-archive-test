@@ -15,8 +15,9 @@ test("new showcase links expose standard and cinematic modes without the retired
   );
   assert.match(
     publisher,
-    /act-showcase\.html\?id=\$\{encodeURIComponent\(slug\)\}&showcaseMode=cinematic/
+    /act-showcase\.html\?id=\$\{encodeURIComponent\(slug\)\}/
   );
+  assert.doesNotMatch(publisher, /showcaseMode=cinematic/);
   assert.doesNotMatch(publisher, /bgSample=neotokyo/);
   assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=1/);
 
