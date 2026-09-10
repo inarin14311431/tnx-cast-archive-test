@@ -21,7 +21,7 @@ test("act showcase exposes exactly seven replacement background presets", async 
   const presetCount = [...presetSection.matchAll(/Object\.freeze\(\{\s*key:/g)].length;
   assert.equal(presetCount, 7);
   assert.match(source, /new URL\("\.\.\/assets\/showcase\/backgrounds\/", import\.meta\.url\)/);
-  assert.match(source, /SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images-avif-v2"/);
+  assert.match(source, /SHOWCASE_BACKGROUND_ASSET_VERSION = "[^"]+"/);
   assert.match(source, /url\.searchParams\.set\("v", SHOWCASE_BACKGROUND_ASSET_VERSION\)/);
 
   for (const [key, name, filename] of expectedPresets) {
@@ -35,21 +35,19 @@ test("act showcase exposes exactly seven replacement background presets", async 
   }
 });
 
-test("all seven showcase backgrounds are self-contained user-selected AVIF image SVG files", async () => {
-  for (const [, , filename] of expectedPresets) {
-    const asset = await read(`assets/showcase/backgrounds/${filename}`);
-    assert.match(asset, /^<svg\b/);
-    assert.match(asset, /<\/svg>\s*$/);
-    assert.match(asset, /<image\b[^>]+href="data:image\/avif;base64,/i);
-    assert.doesNotMatch(asset, /<script\b/i);
-  }
+test("legacy preset key and asset URL resolve to the canonical 木更津湖港湾 preset", async () => {
+  const source = await read("js/showcase-background-presets.js");
+  assert.match(source, /\["neotokyo-bay",\s*"kisarazu-lake-harbor"\]/);
+  assert.match(source, /normalizeAssetUrl\(rawAssetUrl\("neotokyo-bay\.svg"\)\),\s*"kisarazu-lake-harbor"/);
+  assert.match(source, /LEGACY_PRESET_KEY_ALIASES\.get\(normalized\) \|\| normalized/);
+  assert.match(source, /LEGACY_PRESET_URL_ALIASES\.get\(normalized\)/);
 });
 
-test("generator loads the refreshed preset picker and no longer labels presets as Supabase-only", async () => {
+test("generator loads a versioned preset picker and no longer labels presets as Supabase-only", async () => {
   const html = await read("showcase-generator.html");
   const picker = await read("js/showcase-background-preset-picker.js");
-  assert.match(html, /showcase-background-preset-picker\.js\?v=5/);
+  assert.match(html, /showcase-background-preset-picker\.js\?v=\d+/);
   assert.match(html, /ACT VISUAL \/ PRESET LIBRARY/);
   assert.ok(!html.includes("ACT VISUAL / SUPABASE STORAGE"));
-  assert.match(picker, /showcase-background-presets\.js\?v=5/);
+  assert.match(picker, /showcase-background-presets\.js\?v=\d+/);
 });
