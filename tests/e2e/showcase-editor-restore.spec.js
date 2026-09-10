@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { hasAuthCredentials } from "./helpers.js";
 
 const ownedShowcase = {
   slug: "e2e-edit-restore",
@@ -38,6 +39,8 @@ async function fulfillJson(route, body) {
 }
 
 test("owned showcase can be restored into generator fields", async ({ page }) => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+
   await page.route("**/rest/v1/acts?**", route => fulfillJson(route, [{
     slug: ownedShowcase.slug,
     act_name: ownedShowcase.actName,
@@ -69,6 +72,8 @@ test("owned showcase can be restored into generator fields", async ({ page }) =>
 });
 
 test("owned showcase can be deleted while the current editor contents remain", async ({ page }) => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+
   await page.route("**/rest/v1/acts?**", route => fulfillJson(route, [{
     slug: ownedShowcase.slug,
     act_name: ownedShowcase.actName,
