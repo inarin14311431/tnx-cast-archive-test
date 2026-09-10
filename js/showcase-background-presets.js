@@ -2,7 +2,7 @@ export const SHOWCASE_BACKGROUND_BUCKET = "act-showcase-backgrounds";
 export const SHOWCASE_BACKGROUND_PUBLIC_BASE = "https://koprmbkoftuuffslhsvt.supabase.co/storage/v1/object/public/act-showcase-backgrounds";
 
 const SHOWCASE_BACKGROUND_ASSET_BASE = new URL("../assets/showcase/backgrounds/", import.meta.url);
-const SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images";
+const SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images-avif-v2";
 const rawAssetUrl = filename => new URL(filename, SHOWCASE_BACKGROUND_ASSET_BASE).href;
 const assetUrl = filename => {
   const url = new URL(filename, SHOWCASE_BACKGROUND_ASSET_BASE);
