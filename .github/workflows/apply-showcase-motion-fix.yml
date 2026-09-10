@@ -23,17 +23,11 @@ jobs:
 
           path = Path('js/act-showcase-neotokyo.js')
           source = path.read_text(encoding='utf-8')
-          old = '''  if (prefersReducedMotion()) {
-            document.body.classList.add("showcase-neotokyo-reduced");
-            return;
-          }
-          '''
-          new = '''  if (prefersReducedMotion()) {
-            document.body.classList.add("showcase-neotokyo-reduced");
-          }
-          '''
-          if source.count(old) != 1:
-              raise SystemExit(f'unexpected reduced-motion block count: {source.count(old)}')
+          old = 'if (prefersReducedMotion()) {\n    document.body.classList.add("showcase-neotokyo-reduced");\n    return;\n  }'
+          new = 'if (prefersReducedMotion()) {\n    document.body.classList.add("showcase-neotokyo-reduced");\n  }'
+          count = source.count(old)
+          if count != 1:
+              raise SystemExit(f'unexpected reduced-motion block count: {count}')
           path.write_text(source.replace(old, new, 1), encoding='utf-8')
 
           workflow = Path('.github/workflows/apply-showcase-motion-fix.yml')
