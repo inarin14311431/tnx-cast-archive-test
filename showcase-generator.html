@@ -4,7 +4,7 @@
   <script src="./js/theme-registry.js?v=1"></script>
   <script src="./js/css-next-theme.js?v=8"></script>
   <script src="./js/theme-scope.js?v=1"></script>
-  <link rel="stylesheet" href="./css-next/pages/showcase-entry.css?v=1" data-css-system="next">
+  <link rel="stylesheet" href="./css-next/pages/showcase-entry.css?v=2" data-css-system="next">
   <link rel="stylesheet" href="./css-next/themes/index.css?v=1" data-theme-system="1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -43,6 +43,7 @@
         <div class="selector-controls"><label>検索<input id="cast-search" type="search" placeholder="名前・ハンドル・PL・所属"></label><label>プレイヤー<select id="player-filter"><option value="">すべて</option></select></label><label>スタイル<select id="style-filter"><option value="">すべて</option></select></label></div>
         <p id="library-status" class="generator-status">公開キャストを読み込み中…</p>
         <div id="public-cast-grid" class="public-cast-grid" aria-live="polite"></div>
+        <button id="public-cast-load-more" class="cast-library-more" type="button" hidden><strong>さらに15件表示</strong><small>LOAD 15 MORE</small></button>
         <section class="private-history-selector" aria-labelledby="private-history-heading">
           <header class="private-history-selector__header">
             <h3 id="private-history-heading">自分の非公開キャスト <small>OWNED PRIVATE CAST / LOCAL OUTPUT</small></h3>
@@ -51,6 +52,7 @@
           <p class="private-history-selector__lead">公開キャストと同じ出演枠へ追加し、出演順・参加枠・一言・ハンドアウトを編集してHTMLを生成できます。非公開キャストを含むアクト紹介は公開できません。</p>
           <p id="private-library-status" class="generator-status">自分の非公開キャストを読み込み中…</p>
           <div id="owned-private-cast-grid" class="private-cast-grid" aria-live="polite"></div>
+          <button id="private-cast-load-more" class="cast-library-more" type="button" hidden><strong>さらに15件表示</strong><small>LOAD 15 MORE</small></button>
           <div id="private-selection-summary" class="private-selection-summary" aria-live="polite"><span>非公開キャストは未選択です。</span><small>NO PRIVATE CAST SELECTED</small></div>
         </section>
       </div>
@@ -79,7 +81,8 @@
   <script src="./js/showcase-handle-normalizer.js?v=1"></script>
   <script src="./js/showcase-trailer-multiline.js?v=1"></script>
   <script type="module" src="./js/showcase-generator-loader.js?v=26"></script>
-  <script type="module" src="./js/showcase-background-preset-picker.js?v=5"></script>
+  <script type="module" src="./js/showcase-cast-pagination.js?v=1"></script>
+  <script type="module" src="./js/showcase-background-preset-picker.js?v=6"></script>
   <script type="module" src="./js/showcase-auto-slug.js?v=2"></script>
   <script src="./js/showcase-remove-label.js?v=2"></script>
   <script src="./js/showcase-wording.js?v=4"></script>

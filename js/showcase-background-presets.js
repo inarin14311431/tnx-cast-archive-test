@@ -2,7 +2,7 @@ export const SHOWCASE_BACKGROUND_BUCKET = "act-showcase-backgrounds";
 export const SHOWCASE_BACKGROUND_PUBLIC_BASE = "https://koprmbkoftuuffslhsvt.supabase.co/storage/v1/object/public/act-showcase-backgrounds";
 
 const SHOWCASE_BACKGROUND_ASSET_BASE = new URL("../assets/showcase/backgrounds/", import.meta.url);
-const SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images-avif-v2";
+const SHOWCASE_BACKGROUND_ASSET_VERSION = "20260910-user-images-v3-plus-situations";
 const rawAssetUrl = filename => new URL(filename, SHOWCASE_BACKGROUND_ASSET_BASE).href;
 const assetUrl = filename => {
   const url = new URL(filename, SHOWCASE_BACKGROUND_ASSET_BASE);
@@ -65,6 +65,24 @@ export const SHOWCASE_BACKGROUND_PRESETS = Object.freeze([
     name: "封鎖区域",
     description: "規制ラインと蒸気が漂う事件直後の封鎖都市街路",
     url: assetUrl("incident-blockade.svg")
+  }),
+  Object.freeze({
+    key: "orbital-habitat",
+    name: "軌道",
+    description: "地球を眼下に望む軌道居住区と宇宙港デッキ",
+    url: assetUrl("orbital-habitat.svg")
+  }),
+  Object.freeze({
+    key: "prison-block",
+    name: "牢獄",
+    description: "監視設備と隔壁に囲まれた近未来の拘束・収容区画",
+    url: assetUrl("prison-block.svg")
+  }),
+  Object.freeze({
+    key: "slum-district",
+    name: "スラム街",
+    description: "配線とネオン、仮設建築が密集する都市下層の生活街区",
+    url: assetUrl("slum-district.svg")
   })
 ]);
 
