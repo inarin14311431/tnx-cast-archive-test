@@ -66,14 +66,13 @@ test("NeoTokyo showcase remains responsive through title, trailer, assignment an
   const pageErrors = [];
   page.on("pageerror", error => pageErrors.push(error.message));
 
-  // This test validates sequence/state stability, not decorative motion. Running it
-  // with reduced motion prevents continuously animated CTAs from making Playwright's
-  // actionability check depend on a single animation frame while preserving the full flow.
-  await page.emulateMedia({ reducedMotion: "reduce" });
-
+  // The cinematic route now honors reduced-motion natively by exiting the sequence.
+  // Exercise the full sequence with normal motion and force CTA clicks so animated
+  // controls cannot make Playwright actionability depend on a single frame.
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   await registerShowcaseRoutes(page);
 
-  await page.goto("/act-showcase.html?id=e2e-observer-stability&bgSample=neotokyo", { waitUntil: "domcontentloaded" });
+  await page.goto("/act-showcase.html?id=e2e-observer-stability", { waitUntil: "domcontentloaded" });
 
   const intro = page.locator("#cinematic-intro");
   const advance = page.locator(".neotokyo-sequence__advance");
@@ -81,15 +80,15 @@ test("NeoTokyo showcase remains responsive through title, trailer, assignment an
 
   await expect(advance).toBeVisible({ timeout: 12_000 });
   await expect(advance).toHaveText("NEXT // ACT TRAILER");
-  await advance.click();
+  await advance.click({ force: true });
 
   await expect(advance).toHaveText("NEXT // HANDOUT 01", { timeout: 12_000 });
   await expect(advance).toBeVisible();
-  await advance.click();
+  await advance.click({ force: true });
 
   await expect(advance).toHaveText("ASSIGN // PC1", { timeout: 12_000 });
   await expect(advance).toBeVisible();
-  await advance.click();
+  await advance.click({ force: true });
 
   await expect(advance).toHaveText("NEXT // ACT SUMMARY", { timeout: 12_000 });
   await expect(advance).toBeVisible();
@@ -100,12 +99,12 @@ test("NeoTokyo showcase remains responsive through title, trailer, assignment an
   expect(responsive).toBe("responsive");
   await expect(page.locator(".neotokyo-sequence__cast--linked .is-role-primary")).toHaveCount(1);
 
-  await advance.click();
+  await advance.click({ force: true });
   await expect(advance).toBeHidden({ timeout: 12_000 });
   const access = page.locator(".neotokyo-finale__access-button");
   await expect(access).toBeVisible({ timeout: 12_000 });
   await expect(access).toContainText("OPEN FULL SHOWCASE");
-  await access.click();
+  await access.click({ force: true });
 
   await expect(intro).toHaveAttribute("aria-hidden", "true", { timeout: 8_000 });
   await expect(page.locator("#act-showcase-root")).toBeVisible();
@@ -115,11 +114,11 @@ test("NeoTokyo showcase remains responsive through title, trailer, assignment an
   expect(pageErrors).toEqual([]);
 });
 
-test("NeoTokyo mode keeps the published background from the first rendered frame", async ({ page }) => {
+test("NeoTokyo route keeps the published background from the first rendered frame", async ({ page }) => {
   const background = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
   await registerShowcaseRoutes(page, { ...showcase, background });
 
-  await page.goto("/act-showcase.html?id=e2e-published-background&bgSample=neotokyo", { waitUntil: "domcontentloaded" });
+  await page.goto("/act-showcase.html?id=e2e-published-background", { waitUntil: "domcontentloaded" });
   await expect(page.locator("body")).toHaveClass(/showcase-poster-v2-ready/, { timeout: 8_000 });
 
   const state = await page.evaluate(() => ({
@@ -144,7 +143,7 @@ test("ACT TRAILER moves the stage scroll position while typing a long trailer", 
   };
 
   await registerShowcaseRoutes(page, longShowcase);
-  await page.goto("/act-showcase.html?id=e2e-trailer-scroll&bgSample=neotokyo", { waitUntil: "domcontentloaded" });
+  await page.goto("/act-showcase.html?id=e2e-trailer-scroll", { waitUntil: "domcontentloaded" });
 
   const intro = page.locator("#cinematic-intro");
   const advance = page.locator(".neotokyo-sequence__advance");
@@ -152,7 +151,7 @@ test("ACT TRAILER moves the stage scroll position while typing a long trailer", 
 
   await expect(intro).toHaveAttribute("aria-hidden", "false", { timeout: 8_000 });
   await expect(advance).toHaveText("NEXT // ACT TRAILER", { timeout: 12_000 });
-  await advance.click();
+  await advance.click({ force: true });
 
   await expect(stage).toHaveClass(/is-trailer-scroll/, { timeout: 5_000 });
   await expect.poll(async () => stage.evaluate(element => {
