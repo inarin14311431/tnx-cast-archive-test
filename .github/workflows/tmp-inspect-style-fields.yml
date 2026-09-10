@@ -1,0 +1,30 @@
+name: Temporary style detail inspection
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  inspect-style-detail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print focused style detail and load flow source
+        shell: bash
+        run: |
+          echo '=== style-skill-fields.js ==='
+          cat js/style-skill-fields.js
+          echo '=== style-skill-detail-integrity.js ==='
+          cat js/style-skill-detail-integrity.js
+          echo '=== sheet-master-search.js helpers 300-460 ==='
+          sed -n '300,460p' js/sheet-master-search.js
+          echo '=== sheet.js imports and load/new flow 1-330 ==='
+          sed -n '1,330p' js/sheet.js
+          echo '=== sheet-new-character-state tests ==='
+          cat tests/sheet-new-character-state.test.mjs
+          echo '=== style detail e2e ==='
+          cat tests/e2e/style-skill-detail-integrity.spec.js
+          echo '=== SKD / master search test references ==='
+          grep -RniE 'addSkdRow|data-style-field|master-search-add|SKD.*追加|SKD検索' tests --include='*.js' --include='*.mjs' | head -n 300 || true
+          echo '=== playwright workflow relevant ==='
+          grep -nE 'master|style-skill|sheet-new|sheet-skill|spec.js' .github/workflows/playwright.yml | head -n 250 || true
