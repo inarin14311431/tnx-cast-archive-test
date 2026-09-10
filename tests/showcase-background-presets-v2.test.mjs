@@ -13,9 +13,9 @@ const expectedPresets = [
   ["industrial-port", "工業港湾地区", "industrial-port.svg"],
   ["executive-lounge", "ホワイトエリア", "executive-lounge.svg"],
   ["incident-blockade", "封鎖区域", "incident-blockade.svg"],
-  ["orbital-habitat", "軌道", "orbital-habitat.svg"],
-  ["prison-block", "牢獄", "prison-block.svg"],
-  ["slum-district", "スラム街", "slum-district.svg"]
+  ["orbital-habitat", "軌道", "orbital-habitat.avif"],
+  ["prison-block", "牢獄", "prison-block.avif"],
+  ["slum-district", "スラム街", "slum-district.avif"]
 ];
 
 test("act showcase exposes exactly ten background presets", async () => {
