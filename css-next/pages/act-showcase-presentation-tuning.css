@@ -12,7 +12,6 @@ body#act-showcase-page .poster-supporting-card__body{padding:20px 22px}
 body#act-showcase-page .poster-supporting-card__body h3{font-size:clamp(1.2rem,1.7vw,1.7rem)}
 body#act-showcase-page .poster-supporting-card__meta{font-size:.7rem}
 body#act-showcase-page .poster-supporting-card blockquote{font-size:.9rem;line-height:1.65}
-body#act-showcase-page .poster-supporting-card__summary{font-size:.76rem;line-height:1.62}
 body#act-showcase-page .neotokyo-supporting-cast{margin-top:11px;padding:11px 12px 12px}
 body#act-showcase-page .neotokyo-supporting-cast__rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible}
 body#act-showcase-page .neotokyo-supporting-card{display:grid;grid-template-columns:76px minmax(0,1fr);min-height:94px;width:auto}
