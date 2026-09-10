@@ -1,7 +1,7 @@
 import {
   SHOWCASE_BACKGROUND_PRESETS,
   findShowcaseBackgroundPresetByUrl
-} from "./showcase-background-presets.js?v=4";
+} from "./showcase-background-presets.js?v=5";
 
 const grid = document.querySelector("#background-preset-grid");
 const keyField = document.querySelector("#background-preset");
