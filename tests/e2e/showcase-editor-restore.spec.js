@@ -33,14 +33,16 @@ const corsHeaders = {
   "content-type": "application/json"
 };
 
+test.beforeEach(() => {
+  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
+});
+
 async function fulfillJson(route, body) {
   if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: corsHeaders, body: "" });
   return route.fulfill({ status: 200, headers: corsHeaders, body: JSON.stringify(body) });
 }
 
 test("owned showcase can be restored into generator fields", async ({ page }) => {
-  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
-
   await page.route("**/rest/v1/acts?**", route => fulfillJson(route, [{
     slug: ownedShowcase.slug,
     act_name: ownedShowcase.actName,
@@ -72,8 +74,6 @@ test("owned showcase can be restored into generator fields", async ({ page }) =>
 });
 
 test("owned showcase can be deleted while the current editor contents remain", async ({ page }) => {
-  test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
-
   await page.route("**/rest/v1/acts?**", route => fulfillJson(route, [{
     slug: ownedShowcase.slug,
     act_name: ownedShowcase.actName,
