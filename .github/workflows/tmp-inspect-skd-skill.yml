@@ -1,0 +1,22 @@
+name: Temporary skill inspection
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate SKD/master and skill rendering code
+        shell: bash
+        run: |
+          echo '=== candidate files ==='
+          find js tests -type f \( -name '*.js' -o -name '*.mjs' \) | sort | grep -Ei 'skill|master|sheet|editor|search|catalog' | head -n 200
+          echo '=== SKD/master/detail references ==='
+          grep -RniE 'SKD|マスタ|master|タイミング|目標値|参照P|射程|対決' js tests --include='*.js' --include='*.mjs' | head -n 400 || true
+          echo '=== society/connection/default references ==='
+          grep -RniE '社会|コネ|society|connection|default.*skill|initial.*skill|general.*skill' js tests --include='*.js' --include='*.mjs' | head -n 400 || true
+          echo '=== sheet-skill-renderer relevant ==='
+          grep -nE 'skillTable|社会|コネ|general|society|connection|return' js/sheet/sheet-skill-renderer.js | head -n 250 || true
