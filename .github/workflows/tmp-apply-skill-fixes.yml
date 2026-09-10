@@ -1,17 +1,16 @@
 name: Temporary apply skill fixes
 on:
-  pull_request:
-    branches: [main]
+  push:
+    branches: [fix/skd-skill-empty-sections-20260911]
 permissions:
   contents: write
 jobs:
   apply:
-    if: github.event.pull_request.head.ref == 'fix/skd-skill-empty-sections-20260911'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.ref_name }}
       - name: Apply focused fixes and regression tests
         shell: bash
         run: |
@@ -28,7 +27,6 @@ jobs:
                   raise SystemExit(f'{path}: expected one replacement, got {count}')
               p.write_text(text.replace(old, new, 1))
 
-          # 1) SKD: wait for the projected 17-column detail controls, not the native backing textarea.
           replace_once(
               'js/sheet-master-search.js',
               '''  await waitFor(() => row.querySelector("[data-style-field='description']") || row.querySelector("[data-f='description']"), 1600);''',
@@ -48,7 +46,6 @@ jobs:
           }'''
           )
 
-          # 2) Reuse the canonical 4 social + 3 connection starter package for legacy rows where both are absent.
           p = Path('js/sheet-new-character-state.js')
           text = p.read_text()
           constant = '''\nexport const STARTER_SOCIAL_CONNECTION_ROWS = Object.freeze([\n  ["social", "社会：N◎VA"],\n  ["social", "社会："],\n  ["social", "社会："],\n  ["social", "社会："],\n  ["connection", "コネ："],\n  ["connection", "コネ："],\n  ["connection", "コネ："]\n].map(row => Object.freeze(row)));\n\nexport function appendStarterSocialConnectionRowsIfBothMissing(rows = [], {\n  createSkillRow = defaultCreateSkillRow\n} = {}) {\n  if (typeof createSkillRow !== "function") throw new TypeError("createSkillRow is required");\n  const source = [...rows];\n  const hasSocial = source.some(row => row?.category === "social");\n  const hasConnection = source.some(row => row?.category === "connection");\n  if (hasSocial || hasConnection) return source;\n\n  const sharedTrailingSortOrder = source.length;\n  const starterRows = STARTER_SOCIAL_CONNECTION_ROWS.map(([category, name]) => createSkillRow(category, {\n    name,\n    level: 1,\n    free_level: 0,\n    skill_kind: "proper"\n  }, { sortOrder: sharedTrailingSortOrder }));\n  return appendRows(source, starterRows);\n}\n'''
@@ -76,14 +73,12 @@ jobs:
               '''    ensureGeneralMasterRows(); addInitialGeneralBlankSlots();\n    skills = appendStarterSocialConnectionRowsIfBothMissing(skills);\n    outfits = bundle.outfits.map(normalizeLoadedOutfit);'''
           )
 
-          # 3) Keep Social / Connections section frames even when only that category has zero rows.
           replace_once(
               'js/sheet-skill-renderer.js',
               '''  if (!rows.length && !category.startsWith("general")) return "";''',
               '''  if (!rows.length && category.split(" ")[0] === "style") return "";'''
           )
 
-          # Regression tests.
           p = Path('tests/sheet-new-character-state.test.mjs')
           text = p.read_text()
           text = text.replace(
@@ -114,12 +109,7 @@ jobs:
           p.write_text(text)
           PY
 
-          echo '=== sheet.js cache reference in HTML ==='
-          grep -nE 'sheet\.js' sheet.html || true
-          echo '=== diff ==='
           git diff --check
-          git diff -- js/sheet-master-search.js js/sheet-new-character-state.js js/sheet.js js/sheet-skill-renderer.js tests/sheet-new-character-state.test.mjs tests/sheet-skill-renderer.test.mjs tests/master-search-selection.test.mjs
-
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add js/sheet-master-search.js js/sheet-new-character-state.js js/sheet.js js/sheet-skill-renderer.js tests/sheet-new-character-state.test.mjs tests/sheet-skill-renderer.test.mjs tests/master-search-selection.test.mjs
@@ -128,4 +118,4 @@ jobs:
             exit 0
           fi
           git commit -m 'SKD技能反映と空の社会・コネ枠を修正'
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:${{ github.ref_name }}
