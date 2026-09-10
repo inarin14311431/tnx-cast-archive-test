@@ -26,8 +26,8 @@ test("cinematic route is defined by act-showcase.html and legacy showcaseMode is
 
 test("selected ACT background is painted by the opening hero only", () => {
   assert.match(posterCss, /\.scene-opening:before\{[^}]*var\(--showcase-background\)/s);
-  assert.match(followupCss, /\.ambient-stage::before,[\s\S]*\.poster-v2-board::before\{[\s\S]*display:none!important/);
-  assert.match(followupCss, /\.poster-v2-board\{\s*background:#030813/);
+  assert.match(followupCss, /body#act-showcase-page\.showcase-poster-v2-ready \.ambient-stage::before,[\s\S]*body#act-showcase-page\.showcase-poster-v2-ready \.poster-v2-board::before\{[\s\S]*display:none/);
+  assert.match(followupCss, /body#act-showcase-page\.showcase-poster-v2-ready \.poster-v2-board\{\s*background:#030813/);
 });
 
 test("cast matching has an explicit scanning state and an obvious completion state", () => {
@@ -42,8 +42,8 @@ test("cast matching has an explicit scanning state and an obvious completion sta
 
 test("poster guest descriptions are rendered in full without line clamping", () => {
   assert.match(supportingJs, /textNode\("p", guest\.summary, "poster-supporting-card__summary"\)/);
-  assert.match(followupCss, /\.poster-supporting-card__summary\{[\s\S]*display:block!important/);
-  assert.match(followupCss, /overflow:visible!important/);
-  assert.match(followupCss, /-webkit-line-clamp:unset!important/);
+  assert.match(followupCss, /body#act-showcase-page \.poster-supporting-card__summary\{[\s\S]*display:block/);
+  assert.match(followupCss, /overflow:visible/);
+  assert.match(followupCss, /-webkit-line-clamp:unset/);
   assert.match(followupCss, /white-space:pre-wrap/);
 });
