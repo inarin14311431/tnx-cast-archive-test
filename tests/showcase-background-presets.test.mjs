@@ -16,7 +16,9 @@ test("generator exposes the canonical background preset picker wiring", () => {
   assert.match(entryCss, /showcase-background-presets\.css\?v=\d+/);
   assert.doesNotMatch(generatorHtml, /<link[^>]+showcase-background-presets\.css/);
   assert.match(presets, /export const SHOWCASE_BACKGROUND_PRESETS/);
-  assert.match(presets, /new URL\(/);
+  assert.match(presets, /new URL\("\.\.\/assets\/showcase\/backgrounds\/", import\.meta\.url\)/);
+  assert.match(presets, /url\.searchParams\.set\("v", SHOWCASE_BACKGROUND_ASSET_VERSION\)/);
+  assert.match(picker, /showcase-background-presets\.js\?v=\d+/);
 });
 
 test("preset selection reuses the existing background URL publishing path", () => {
