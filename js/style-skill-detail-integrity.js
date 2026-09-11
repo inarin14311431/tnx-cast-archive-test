@@ -1,5 +1,6 @@
 /* Keep structured style-skill detail payloads canonical during normal editing.
  * Legacy import reconciliation belongs to sheet-import-style-skill-compat.js.
+ * Detail DOM creation/readiness is owned by style-skill-fields.js.
  */
 (() => {
   import("./skill-display-enhancements.js?v=1");
@@ -148,6 +149,7 @@
   }
 
   function scan() {
+    window.TNXStyleSkillFields?.enhance?.();
     document.querySelectorAll('#style-skills tr[data-skill-key]').forEach(repairRow);
   }
 
@@ -157,20 +159,14 @@
     if (root.dataset.styleDetailIntegrityInitialized === "1") return;
     root.dataset.styleDetailIntegrityInitialized = "1";
 
-    let queued = false;
-    const queue = () => {
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(() => { queued = false; scan(); });
-    };
-    root.addEventListener(STYLE_SKILLS_CHANGED_EVENT, queue);
+    root.addEventListener(STYLE_SKILLS_CHANGED_EVENT, scan);
     root.addEventListener("pointerdown", event => {
       const textarea = event.target.closest?.('textarea[data-style-field="description"]');
       if (textarea && root.contains(textarea)) startDescriptionResizeTracking(textarea);
     });
     window.addEventListener("pointerup", stopDescriptionResizeTracking, true);
     window.addEventListener("pointercancel", stopDescriptionResizeTracking, true);
-    queue();
+    scan();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initializeStyleSkillDetailIntegrity, { once: true });
