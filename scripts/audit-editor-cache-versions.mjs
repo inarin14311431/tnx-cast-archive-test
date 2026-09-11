@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import {
   root,
@@ -46,8 +46,16 @@ if (entries.length >= 2) {
   }
 }
 
-for (const fileName of testFiles) {
+const discoveredTestFiles = (await readdir(path.join(root, "tests"), { withFileTypes: true }))
+  .filter(entry => entry.isFile() && entry.name.endsWith(".test.mjs"))
+  .map(entry => `tests/${entry.name}`);
+const cacheContractTestFiles = [...new Set([...testFiles, ...discoveredTestFiles])].sort();
+let cacheContractTests = 0;
+
+for (const fileName of cacheContractTestFiles) {
   const source = await readFile(path.join(root, fileName), "utf8");
+  if (!/[?&]v=[A-Za-z0-9._-]+/.test(source)) continue;
+  cacheContractTests += 1;
   for (const match of source.matchAll(/[?&]v=([A-Za-z0-9._-]+)/g)) {
     if (match[1] !== version) problems.push(`${fileName}: test cache token v=${match[1]}; expected v=${version}`);
   }
@@ -58,4 +66,4 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`Editor cache version audit passed: v=${version}, ${versionedTargets.size} versioned targets, ${sharedTargets} PC/mobile shared targets, ${combined.files.size} reachable files, ${testFiles.length} contract tests.`);
+console.log(`Editor cache version audit passed: v=${version}, ${versionedTargets.size} versioned targets, ${sharedTargets} PC/mobile shared targets, ${combined.files.size} reachable files, ${cacheContractTests} cache contract tests.`);
