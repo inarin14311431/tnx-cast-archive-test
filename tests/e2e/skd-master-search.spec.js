@@ -1,5 +1,5 @@
 import { test, expect } from "./safe-test.js";
-import { hasAuthCredentials, waitForEditorReady } from "./helpers.js";
+import { getTestCastId, hasAuthCredentials, waitForEditorReady } from "./helpers.js";
 
 const DETAIL_FIELDS = ["skill", "limit", "timing", "target", "range", "difficulty", "confrontation", "description", "page"];
 
@@ -10,7 +10,7 @@ function normalizeDisplayValue(value) {
 
 test.beforeEach(async ({ page }) => {
   test.skip(!hasAuthCredentials(), "requires authenticated editor credentials");
-  await page.goto("/sheet.html", { waitUntil: "domcontentloaded" });
+  await page.goto(`/sheet.html?id=${getTestCastId()}`, { waitUntil: "domcontentloaded" });
   await waitForEditorReady(page);
 });
 
