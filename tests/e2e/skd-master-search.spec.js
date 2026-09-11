@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { hasE2ECredentials, installSafeTestGuard, waitForEditorReady, waitForShellMode } from "./safe-test.js";
+import { test, expect } from "./safe-test.js";
+import { hasAuthCredentials, waitForEditorReady } from "./helpers.js";
 
 const DETAIL_FIELDS = ["skill", "limit", "timing", "target", "range", "difficulty", "confrontation", "description", "page"];
 
@@ -9,11 +9,9 @@ function normalizeDisplayValue(value) {
 }
 
 test.beforeEach(async ({ page }) => {
-  test.skip(!hasE2ECredentials, "requires authenticated editor credentials");
-  await installSafeTestGuard(page);
-  await page.goto("sheet.html", { waitUntil: "domcontentloaded" });
+  test.skip(!hasAuthCredentials(), "requires authenticated editor credentials");
+  await page.goto("/sheet.html", { waitUntil: "domcontentloaded" });
   await waitForEditorReady(page);
-  await waitForShellMode(page, "editor");
 });
 
 test("SKD search adds a fully prepared structured style-skill row", async ({ page }) => {
