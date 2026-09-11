@@ -22,6 +22,18 @@ test('unlisted editor exposes an owner-only share URL control', () => {
   assert.match(shareEditor, /searchParams\.set\("share", shareToken\)/);
 });
 
+test('share URL becomes copyable only after unlisted visibility is saved', () => {
+  assert.match(shareEditor, /savedVisibility\(\) !== "unlisted"/);
+  assert.match(shareEditor, /const text = activeShareUrl\(\)/);
+  assert.match(shareEditor, /限定公開を保存すると共有URLが有効になります。/);
+  assert.match(shareEditor, /このURLはログインしていない相手にも共有できます。/);
+});
+
+test('share panel does not render a readonly URL input', () => {
+  assert.doesNotMatch(shareEditor, /<input id=\\"character-share-url\\"/);
+  assert.match(shareEditor, /character-share-url-fallback/);
+});
+
 test('cast view resolves a valid capability token through the dedicated RPC', () => {
   assert.match(supabaseClient, /get_unlisted_character_bundle/);
   assert.match(supabaseClient, /p_share_token: sharedViewToken/);
