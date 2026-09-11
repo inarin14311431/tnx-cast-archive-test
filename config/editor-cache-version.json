@@ -1,5 +1,11 @@
 {
   "version": "2026091101",
   "format": "YYYYMMDDNN",
-  "scope": ["sheet.html", "sheet-mobile.html"]
+  "scope": ["sheet.html", "sheet-mobile.html"],
+  "testFiles": [
+    "tests/mobile-editor-route.test.mjs",
+    "tests/sheet-alliance-runtime.test.mjs",
+    "tests/sheet-entry-runtime.test.mjs",
+    "tests/sheet-front-controller-runtime.test.mjs"
+  ]
 }
