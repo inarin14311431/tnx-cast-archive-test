@@ -24,11 +24,18 @@ const VISIBILITY_VALUES = new Set(["public", "unlisted", "private"]);
 
 function ensureVisibilityOptions(root = document) {
   const select = root.querySelector("#visibility");
-  if (!select || [...select.options].some(option => option.value === "unlisted")) return;
-  const option = (root.ownerDocument || root).createElement("option");
+  if (!select) return;
+
+  const options = select.options ? [...select.options] : [];
+  if (options.some(option => option.value === "unlisted")) return;
+
+  const ownerDocument = root.ownerDocument || (typeof root.createElement === "function" ? root : null);
+  if (!ownerDocument?.createElement || typeof select.insertBefore !== "function") return;
+
+  const option = ownerDocument.createElement("option");
   option.value = "unlisted";
   option.textContent = "限定公開 / UNLISTED";
-  const privateOption = [...select.options].find(item => item.value === "private");
+  const privateOption = options.find(item => item.value === "private");
   select.insertBefore(option, privateOption || null);
 }
 
