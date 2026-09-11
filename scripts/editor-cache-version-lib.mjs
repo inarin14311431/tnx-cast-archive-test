@@ -88,11 +88,12 @@ export async function loadEditorCachePolicy() {
   const policy = JSON.parse(await readFile(policyPath, "utf8"));
   const version = String(policy.version || "").trim();
   const entries = Array.isArray(policy.scope) ? policy.scope.map(String) : [];
+  const testFiles = Array.isArray(policy.testFiles) ? policy.testFiles.map(String) : [];
   if (!/^\d{10}$/.test(version)) {
     throw new Error(`editor cache version must use YYYYMMDDNN (10 digits): ${version || "<empty>"}`);
   }
   if (!entries.length) throw new Error("editor cache version scope must include at least one entry file");
-  return { version, entries };
+  return { version, entries, testFiles };
 }
 
 export async function collectEditorGraph(entries) {
