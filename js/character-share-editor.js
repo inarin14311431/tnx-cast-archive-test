@@ -39,6 +39,10 @@ function savedVisibility() {
   return normalizeVisibility(currentCharacter?.visibility);
 }
 
+function shouldShowSharePanel() {
+  return currentVisibility() === "unlisted" || savedVisibility() === "unlisted";
+}
+
 function buildShareUrl(publicId, shareToken) {
   if (!publicId || !shareToken) return "";
   const url = new URL(`${SITE_BASE_PATH}cast.html`, window.location.origin);
@@ -48,7 +52,7 @@ function buildShareUrl(publicId, shareToken) {
 }
 
 function activeShareUrl() {
-  if (currentVisibility() !== "unlisted" || savedVisibility() !== "unlisted") return "";
+  if (savedVisibility() !== "unlisted") return "";
   return buildShareUrl(currentCharacter?.public_id, currentShareToken);
 }
 
@@ -69,7 +73,7 @@ function ensurePanel() {
   panel = document.createElement("section");
   panel.id = "character-share-panel";
   panel.className = "character-share-panel";
-  panel.hidden = true;
+  panel.hidden = !shouldShowSharePanel();
   panel.innerHTML = `
     <strong>限定公開URL <small>UNLISTED SHARE LINK</small></strong>
     <p>URLを知っている人のみ閲覧できます。一覧・検索には表示されません。</p>
@@ -100,9 +104,9 @@ function renderPanel() {
   getVisibilitySelects().forEach(ensureUnlistedOption);
   const panel = ensurePanel();
   if (!panel) return;
-  const isUnlisted = currentVisibility() === "unlisted";
-  panel.hidden = !isUnlisted;
-  if (!isUnlisted) {
+  const shouldShow = shouldShowSharePanel();
+  panel.hidden = !shouldShow;
+  if (!shouldShow) {
     setFallbackUrl();
     return;
   }
@@ -226,8 +230,10 @@ function bindEvents() {
   });
 
   const observer = new MutationObserver(() => {
+    const hadPanel = Boolean(document.querySelector("#character-share-panel"));
     getVisibilitySelects().forEach(ensureUnlistedOption);
-    ensurePanel();
+    const panel = ensurePanel();
+    if (!hadPanel && panel) queueMicrotask(renderPanel);
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
 }

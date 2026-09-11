@@ -22,6 +22,17 @@ test('unlisted editor exposes an owner-only share URL control', () => {
   assert.match(shareEditor, /searchParams\.set\("share", shareToken\)/);
 });
 
+test('share panel stays visible for the full lifetime of unlisted visibility', () => {
+  assert.match(
+    shareEditor,
+    /return currentVisibility\(\) === "unlisted" \|\| savedVisibility\(\) === "unlisted";/
+  );
+  assert.match(shareEditor, /panel\.hidden = !shouldShowSharePanel\(\);/);
+  assert.match(shareEditor, /const shouldShow = shouldShowSharePanel\(\);/);
+  assert.match(shareEditor, /const hadPanel = Boolean\(document\.querySelector\("#character-share-panel"\)\);/);
+  assert.match(shareEditor, /if \(!hadPanel && panel\) queueMicrotask\(renderPanel\);/);
+});
+
 test('share URL becomes copyable only after unlisted visibility is saved', () => {
   assert.match(shareEditor, /savedVisibility\(\) !== "unlisted"/);
   assert.match(shareEditor, /const text = activeShareUrl\(\)/);
