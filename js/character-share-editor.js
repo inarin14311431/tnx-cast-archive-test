@@ -35,12 +35,21 @@ function currentVisibility() {
   return normalizeVisibility(source?.value);
 }
 
+function savedVisibility() {
+  return normalizeVisibility(currentCharacter?.visibility);
+}
+
 function buildShareUrl(publicId, shareToken) {
   if (!publicId || !shareToken) return "";
   const url = new URL(`${SITE_BASE_PATH}cast.html`, window.location.origin);
   url.searchParams.set("id", publicId);
   url.searchParams.set("share", shareToken);
   return url.toString();
+}
+
+function activeShareUrl() {
+  if (currentVisibility() !== "unlisted" || savedVisibility() !== "unlisted") return "";
+  return buildShareUrl(currentCharacter?.public_id, currentShareToken);
 }
 
 function findPanelHost() {
@@ -65,10 +74,10 @@ function ensurePanel() {
     <strong>限定公開URL <small>UNLISTED SHARE LINK</small></strong>
     <p>URLを知っている人のみ閲覧できます。一覧・検索には表示されません。</p>
     <div class="character-share-panel__controls">
-      <input id="character-share-url" type="url" readonly aria-label="限定公開URL">
       <button id="character-share-copy" type="button">URLをコピー</button>
     </div>
     <p id="character-share-status" class="character-share-panel__status" aria-live="polite"></p>
+    <p id="character-share-url-fallback" class="character-share-panel__url" hidden></p>
   `;
   target.host.insertBefore(panel, target.before || null);
   panel.querySelector("#character-share-copy")?.addEventListener("click", copyShareUrl);
@@ -80,24 +89,41 @@ function setStatus(message) {
   if (element) element.textContent = message || "";
 }
 
+function setFallbackUrl(url = "") {
+  const element = document.querySelector("#character-share-url-fallback");
+  if (!element) return;
+  element.textContent = url;
+  element.hidden = !url;
+}
+
 function renderPanel() {
   getVisibilitySelects().forEach(ensureUnlistedOption);
   const panel = ensurePanel();
   if (!panel) return;
   const isUnlisted = currentVisibility() === "unlisted";
   panel.hidden = !isUnlisted;
-  if (!isUnlisted) return;
+  if (!isUnlisted) {
+    setFallbackUrl();
+    return;
+  }
 
-  const input = panel.querySelector("#character-share-url");
   const button = panel.querySelector("#character-share-copy");
-  const url = buildShareUrl(currentCharacter?.public_id, currentShareToken);
-  if (input) input.value = url;
+  const isSavedUnlisted = savedVisibility() === "unlisted";
+  const url = activeShareUrl();
   if (button) button.disabled = !url;
+  setFallbackUrl();
 
-  if (url) setStatus("このURLを共有すると、限定公開キャストを閲覧できます。");
-  else if (currentCharacter?.id && loadingShareToken) setStatus("共有URLを取得しています…");
-  else if (currentCharacter?.id) setStatus("共有URLを取得できませんでした。保存後に再読み込みしてください。");
-  else setStatus("キャストを保存すると共有URLが発行されます。");
+  if (!currentCharacter?.id) {
+    setStatus("キャストを限定公開で保存すると共有URLが発行されます。");
+  } else if (!isSavedUnlisted) {
+    setStatus("限定公開を保存すると共有URLが有効になります。");
+  } else if (loadingShareToken) {
+    setStatus("共有URLを取得しています…");
+  } else if (url) {
+    setStatus("このURLはログインしていない相手にも共有できます。");
+  } else {
+    setStatus("共有URLを取得できませんでした。保存後に再読み込みしてください。");
+  }
 }
 
 async function fetchShareToken(character) {
@@ -148,21 +174,17 @@ async function loadCharacterFromLocation() {
 }
 
 async function copyShareUrl() {
-  const input = document.querySelector("#character-share-url");
-  const text = input?.value?.trim();
+  const text = activeShareUrl();
   if (!text) return;
   try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      input.focus();
-      input.select();
-      if (!document.execCommand("copy")) throw new Error("copy failed");
-    }
+    if (!navigator.clipboard?.writeText) throw new Error("Clipboard API is unavailable.");
+    await navigator.clipboard.writeText(text);
+    setFallbackUrl();
     setStatus("共有URLをコピーしました。");
   } catch (error) {
     console.error(error);
-    setStatus("コピーに失敗しました。URL欄から手動でコピーしてください。");
+    setFallbackUrl(text);
+    setStatus("コピーに失敗しました。下のURLを手動でコピーしてください。");
   }
 }
 
