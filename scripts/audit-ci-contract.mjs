@@ -13,16 +13,23 @@ const verify = String(packageJson.scripts?.verify || "");
 const auditScripts = Object.keys(packageJson.scripts || {})
   .filter(name => name.startsWith("audit:") && name !== "audit:ci")
   .sort();
+const regressionAuditScripts = auditScripts.filter(name => name !== "audit:security");
 
 for (const name of auditScripts) {
   if (!verify.includes(`npm run ${name}`)) {
     failures.push(`package.json verify is missing ${name}`);
   }
+}
+
+for (const name of regressionAuditScripts) {
   if (!regression.includes(`npm run ${name}`)) {
     failures.push(`regression workflow is missing ${name}`);
   }
 }
 
+if (regression.includes("npm run audit:security")) {
+  failures.push("regression workflow must not duplicate the dedicated security audit");
+}
 if (!verify.includes("npm run audit:ci")) {
   failures.push("package.json verify must run audit:ci");
 }
@@ -44,4 +51,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`CI contract audit passed: ${auditScripts.length} audit scripts are covered by verify and regression CI.`);
+console.log(`CI contract audit passed: ${auditScripts.length} audit scripts covered without duplicate security execution.`);
