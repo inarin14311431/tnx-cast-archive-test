@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import {
   root,
@@ -21,9 +21,17 @@ for (const [fileName, fileReplacements] of replacements) {
   changed.push(fileName);
 }
 
-for (const fileName of testFiles) {
+const discoveredTestFiles = (await readdir(path.join(root, "tests"), { withFileTypes: true }))
+  .filter(entry => entry.isFile() && entry.name.endsWith(".test.mjs"))
+  .map(entry => `tests/${entry.name}`);
+const cacheContractTestFiles = [...new Set([...testFiles, ...discoveredTestFiles])].sort();
+let cacheContractTests = 0;
+
+for (const fileName of cacheContractTestFiles) {
   const filePath = path.join(root, fileName);
   const source = await readFile(filePath, "utf8");
+  if (!/[?&]v=[A-Za-z0-9._-]+/.test(source)) continue;
+  cacheContractTests += 1;
   const normalized = source.replace(/([?&]v=)[A-Za-z0-9._-]+/g, `$1${version}`);
   if (normalized === source) continue;
   await writeFile(filePath, normalized, "utf8");
@@ -36,4 +44,4 @@ if (changed.length) {
 } else {
   console.log(`Editor cache versions already normalized to ${version}.`);
 }
-console.log(`Versioned editor targets: ${versionedTargets.size}; traversed files: ${files.size}; contract tests: ${testFiles.length}.`);
+console.log(`Versioned editor targets: ${versionedTargets.size}; traversed files: ${files.size}; cache contract tests: ${cacheContractTests}.`);
