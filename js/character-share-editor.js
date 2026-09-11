@@ -186,11 +186,11 @@ async function copyShareUrl() {
   }
 }
 
-function syncVisibilitySelects(source) {
-  const value = normalizeVisibility(source?.value);
+function syncVisibilityValue(value) {
+  const normalized = normalizeVisibility(value);
   for (const select of getVisibilitySelects()) {
     ensureUnlistedOption(select);
-    if (select !== source && select.value !== value) select.value = value;
+    if (select.value !== normalized) select.value = normalized;
   }
   renderPanel();
 }
@@ -198,7 +198,13 @@ function syncVisibilitySelects(source) {
 function bindEvents() {
   document.addEventListener("change", event => {
     const select = event.target.closest?.("#visibility, [data-mobile-character-field=\"visibility\"], #mobile-global-visibility");
-    if (select) syncVisibilitySelects(select);
+    if (select) event.__tnxVisibilityValue = normalizeVisibility(select.value);
+  }, true);
+
+  document.addEventListener("change", event => {
+    const value = event.__tnxVisibilityValue;
+    if (!value) return;
+    queueMicrotask(() => syncVisibilityValue(value));
   });
 
   window.addEventListener("tnx:character-saved", event => {
