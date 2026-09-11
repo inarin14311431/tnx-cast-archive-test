@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2026091101";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
 const ABILITIES=[["reason","理性","REASON"],["passion","感情","PASSION"],["life","生命","LIFE"],["mundane","外界","MUNDANE"]];
 const $=selector=>document.querySelector(selector),num=value=>Number(value||0),signed=value=>{const n=num(value);return n?`${n>0?"+":""}${n}`:"";},displayBreakdown=(base,growth=0,mod=0)=>`${num(base)}${num(growth)>0?`+${num(growth)}`:""}${signed(mod)}`;

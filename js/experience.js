@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client.js";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
-import { isInitialGeneralSkill } from "./general-skill-catalog.js";
-import { CREATION_ALLOWANCE, INITIAL_SKILL_COST, paidFixedInitialGeneralLevel, paidSocialConnectionInitialCost, paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.js?v=6";
+import { isInitialGeneralSkill } from "./general-skill-catalog.js?v=2026091101";
+import { CREATION_ALLOWANCE, INITIAL_SKILL_COST, paidFixedInitialGeneralLevel, paidSocialConnectionInitialCost, paidSkillLevel, steppedExperienceCost } from "./sheet-experience-rules.js?v=2026091101";
 
 /* Single authoritative experience-point calculator. */
 (function(){

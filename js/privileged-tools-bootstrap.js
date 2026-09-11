@@ -12,12 +12,12 @@ async function initializePrivilegedTools() {
 
     const page = document.body?.dataset?.page || "";
     if (page === "sheet.html") {
-      await import("./sheet-privileged-tools.js?v=4");
+      await import("./sheet-privileged-tools.js?v=2026091101");
       return;
     }
     if (page === "account.html") {
-      await import("./master-data-admin.js?v=4");
-      await import("./master-user-delete.js?v=4");
+      await import("./master-data-admin.js?v=2026091101");
+      await import("./master-user-delete.js?v=2026091101");
     }
   } catch (error) {
     console.warn("Privileged tools are unavailable.", error);

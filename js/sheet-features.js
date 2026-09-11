@@ -1,8 +1,8 @@
-import "./help-ui.js?v=7";
-import "./combo-multi-suit.js?v=1";
-import "./sheet-save-state.js?v=2";
-import "./direct-transfer-button.js?v=6";
-import "./sheet-import-specialized-cleanup.js?v=1";
+import "./help-ui.js?v=2026091101";
+import "./combo-multi-suit.js?v=2026091101";
+import "./sheet-save-state.js?v=2026091101";
+import "./direct-transfer-button.js?v=2026091101";
+import "./sheet-import-specialized-cleanup.js?v=2026091101";
 
 /* Sheet editor helper features.
  * Keeps only presentation helpers. DB persistence is handled by sheet.js,
@@ -22,7 +22,7 @@ function ensureGlobalHelpAvailable(){
   if(document.body?.dataset.page!=="sheet.html")return;
   window.setTimeout(()=>{
     if(document.querySelector("#sheet-global-help"))return;
-    import("./help-ui.js?v=7&retry=1").catch(error=>console.error("Help UI bootstrap failed",error));
+    import("./help-ui.js?v=2026091101&retry=1").catch(error=>console.error("Help UI bootstrap failed",error));
   },250);
 }
 

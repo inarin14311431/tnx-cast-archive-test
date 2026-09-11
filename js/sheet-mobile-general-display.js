@@ -1,4 +1,4 @@
-import { STARRED_GENERAL_NAMES } from "./general-skill-catalog.js?v=1";
+import { STARRED_GENERAL_NAMES } from "./general-skill-catalog.js?v=2026091101";
 
 export function mobileGeneralDisplayName(value) {
   const name = String(value ?? "");

@@ -1,9 +1,9 @@
-import { requestCharacterSheetSource } from "./character-sheet-source.js?v=1";
+import { requestCharacterSheetSource } from "./character-sheet-source.js?v=2026091101";
 import {
   canonicalizeArchiveBundle,
   canonicalizeCharacterSheetJsonp,
   diffCanonicalBundles
-} from "./character-sheet-jsonp-canonical.js?v=2";
+} from "./character-sheet-jsonp-canonical.js?v=2026091101";
 
 function parseJsonData(value) {
   if (typeof value !== "string") return value;

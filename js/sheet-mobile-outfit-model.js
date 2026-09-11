@@ -4,8 +4,8 @@ import {
   normalizeOutfitDetailCompatibility,
   outfitSupportsControl,
   outfitSupportsCsModifier
-} from "./outfit-contract.js";
-import { parseLegacyDefense, splitLegacyConcealment } from "./outfit-legacy-compat.js";
+} from "./outfit-contract.js?v=2026091101";
+import { parseLegacyDefense, splitLegacyConcealment } from "./outfit-legacy-compat.js?v=2026091101";
 
 export const LABELS = OUTFIT_LABELS;
 

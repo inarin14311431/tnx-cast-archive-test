@@ -1,8 +1,8 @@
 import { supabase } from "./supabase-client.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
-import { moveAdjacentRow } from "./sheet-row-collection-state.js?v=2";
-import { GENERAL_MOBILE_ORDER, MUTABLE_GENERAL_PREFIXES } from "./general-skill-catalog.js?v=1";
-import { normalizeStyleSkillRow } from "./sheet-mobile-style-normalizer.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2026091101";
+import { moveAdjacentRow } from "./sheet-row-collection-state.js?v=2026091101";
+import { GENERAL_MOBILE_ORDER, MUTABLE_GENERAL_PREFIXES } from "./general-skill-catalog.js?v=2026091101";
+import { normalizeStyleSkillRow } from "./sheet-mobile-style-normalizer.js?v=2026091101";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

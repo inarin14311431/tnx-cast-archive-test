@@ -1,5 +1,5 @@
-import { initialGeneralSkillSuit } from "./general-skill-catalog.js?v=2";
-import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
+import { initialGeneralSkillSuit } from "./general-skill-catalog.js?v=2026091101";
+import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2026091101";
 
 const ABILITY_KEYS = ["reason", "passion", "life", "mundane"];
 

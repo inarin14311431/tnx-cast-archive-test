@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client.js";
-import { requireAuth } from "./auth-state.js?v=4";
-import { requestSheetSave, waitForSheetSaved } from "./sheet-save-state.js?v=2";
-import { getImageFocusX, getImageFocusY, getImageObjectPosition, getImageScale, getImageTransformOrigin, getImageZoom, setImageFocusX, setImageFocusY, setImageZoom } from "./image-focus.js?v=3";
+import { requireAuth } from "./auth-state.js?v=2026091101";
+import { requestSheetSave, waitForSheetSaved } from "./sheet-save-state.js?v=2026091101";
+import { getImageFocusX, getImageFocusY, getImageObjectPosition, getImageScale, getImageTransformOrigin, getImageZoom, setImageFocusX, setImageFocusY, setImageZoom } from "./image-focus.js?v=2026091101";
 
 const BUCKET_NAME="character-images";
 const MAX_SOURCE_FILE_SIZE=20*1024*1024;

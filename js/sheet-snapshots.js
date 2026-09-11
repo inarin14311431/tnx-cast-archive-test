@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { hasUnsavedSheetChanges, focusSheetSaveButton } from "./sheet-save-state.js?v=2";
+import { hasUnsavedSheetChanges, focusSheetSaveButton } from "./sheet-save-state.js?v=2026091101";
 
 const MAX_SNAPSHOTS = 10;
 let characterId = null;

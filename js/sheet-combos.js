@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { requireAuth } from "./auth-state.js?v=4";
+import { requireAuth } from "./auth-state.js?v=2026091101";
 
 const openButton = document.querySelector("#sheet-combo-open");
 const dialog = document.querySelector("#sheet-combo-dialog");

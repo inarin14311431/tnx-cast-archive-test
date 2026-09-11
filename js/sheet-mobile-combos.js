@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2026091101";
 
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

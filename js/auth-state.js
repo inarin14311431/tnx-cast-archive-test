@@ -1,4 +1,4 @@
-import { SITE_BASE_PATH } from "./config.js?v=2";
+import { SITE_BASE_PATH } from "./config.js?v=2026091101";
 import { supabase } from "./supabase-client.js";
 
 let pendingSessionRequest = null;

@@ -1,4 +1,4 @@
-import { initialGeneralSkillSuit } from "./general-skill-catalog.js?v=2";
+import { initialGeneralSkillSuit } from "./general-skill-catalog.js?v=2026091101";
 
 let queued = false;
 

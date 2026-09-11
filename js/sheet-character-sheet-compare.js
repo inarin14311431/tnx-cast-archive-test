@@ -1,11 +1,11 @@
-import { requestCharacterSheetSource } from "./character-sheet-source.js?v=1";
+import { requestCharacterSheetSource } from "./character-sheet-source.js?v=2026091101";
 import { supabase } from "./supabase-client.js";
-import { loadSheetBundle } from "./sheet-load-persistence.js?v=1";
-import { buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=1";
-import { getSheetSaveState, focusSheetSaveButton } from "./sheet-save-state.js?v=2";
-import { normalizeCharacterSheetUrl } from "./character-sheet-url.js?v=2";
-import { canonicalizeArchiveBundle, canonicalizeCharacterSheetJsonp, diffCanonicalBundles } from "./character-sheet-jsonp-canonical.js?v=2";
-import { groupCharacterSheetDifferences, summarizeCharacterSheetDifferences } from "./character-sheet-diff-display.js?v=3";
+import { loadSheetBundle } from "./sheet-load-persistence.js?v=2026091101";
+import { buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=2026091101";
+import { getSheetSaveState, focusSheetSaveButton } from "./sheet-save-state.js?v=2026091101";
+import { normalizeCharacterSheetUrl } from "./character-sheet-url.js?v=2026091101";
+import { canonicalizeArchiveBundle, canonicalizeCharacterSheetJsonp, diffCanonicalBundles } from "./character-sheet-jsonp-canonical.js?v=2026091101";
+import { groupCharacterSheetDifferences, summarizeCharacterSheetDifferences } from "./character-sheet-diff-display.js?v=2026091101";
 
 const SESSION_KEY = "tnx:character-sheet-comparison:v2";
 const STYLE_SEPARATOR_MARKER = "[[STYLE_SEPARATOR]]";

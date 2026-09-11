@@ -3,8 +3,8 @@ import {
   OUTFIT_BASE_FIELDS,
   OUTFIT_FIELD_LABELS,
   normalizeOutfitCategory
-} from "./outfit-contract.js?v=2";
-import { splitLegacyConcealment } from "./outfit-legacy-compat.js?v=1";
+} from "./outfit-contract.js?v=2026091101";
+import { splitLegacyConcealment } from "./outfit-legacy-compat.js?v=2026091101";
 
 const ROOT = "#outfit-list";
 const TABLE_NATIVE_FIELDS = Object.freeze({

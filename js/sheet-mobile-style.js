@@ -1,5 +1,5 @@
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2026091101";
 const ABILITIES=["reason","passion","life","mundane"],MARKS=["","◎","●","◎●"];
 const $=selector=>document.querySelector(selector);const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));const num=value=>Number(value||0);
 let user=null,character=null,draft=null,repairingSummary=false;
