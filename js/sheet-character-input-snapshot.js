@@ -1,6 +1,9 @@
 import { normalizeCharacterSheetUrl } from "./character-sheet-url.js?v=2";
 import "./character-sheet-url-import-sync.js?v=5";
-import "./character-share-editor.js?v=1";
+
+if (typeof document !== "undefined") {
+  import("./character-share-editor.js?v=1");
+}
 
 const BASE_FIELD_SELECTORS = {
   character_name: "#character-name",
