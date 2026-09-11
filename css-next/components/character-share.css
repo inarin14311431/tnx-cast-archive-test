@@ -6,10 +6,6 @@
   background: rgba(0, 0, 0, .12);
 }
 
-.character-share-panel[hidden] {
-  display: none !important;
-}
-
 .character-share-panel strong {
   display: block;
   font-size: .88rem;
