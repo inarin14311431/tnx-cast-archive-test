@@ -33,7 +33,7 @@ test("style TSV paste previews and appends a structured row without saving", asy
   expect(savedEvents).toBe(0);
 
   const existing = page.locator("#style-skills [data-skill-key]");
-  const beforeKeys = await existing.evaluateAll(rows => rows.map(row => row.dataset.skillKey));
+  const beforeKeys = await existing.evaluateAll(rows => [...new Set(rows.map(row => row.dataset.skillKey).filter(Boolean))]);
   await page.locator("#import-style-tsv").click();
 
   const values = {
@@ -58,9 +58,15 @@ test("style TSV paste previews and appends a structured row without saving", asy
   await dialog.locator("#tsv-apply").click();
   await expect(dialog).not.toBeVisible();
 
-  await expect.poll(async () => existing.evaluateAll((rows, keys) => rows.filter(row => !keys.includes(row.dataset.skillKey)).length, beforeKeys)).toBe(1);
-  const newKey = await existing.evaluateAll((rows, keys) => rows.find(row => !keys.includes(row.dataset.skillKey))?.dataset.skillKey, beforeKeys);
-  const added = page.locator(`#style-skills [data-skill-key="${newKey}"]`);
+  await expect.poll(async () => existing.evaluateAll((rows, keys) => {
+    const current = [...new Set(rows.map(row => row.dataset.skillKey).filter(Boolean))];
+    return current.filter(key => !keys.includes(key)).length;
+  }, beforeKeys)).toBe(1);
+  const newKey = await existing.evaluateAll((rows, keys) => {
+    const current = [...new Set(rows.map(row => row.dataset.skillKey).filter(Boolean))];
+    return current.find(key => !keys.includes(key));
+  }, beforeKeys);
+  const added = page.locator(`#style-skills [data-skill-key="${newKey}"]`).first();
   await expect(added).toHaveAttribute("data-full-style-fields", "1");
   await expect(added.locator("[data-f='name']")).toHaveValue(values["名称"]);
   await expect(added.locator("[data-f='level']")).toHaveValue(values["レベル"]);
@@ -89,7 +95,7 @@ test("TSV validation accepts quoted multiline description and rejects multiline 
 
 test("outfit TSV file import appends current editor fields and keeps existing rows", async ({ page }) => {
   const existingRows = page.locator("#outfit-list [data-outfit-key]");
-  const beforeKeys = await existingRows.evaluateAll(rows => [...new Set(rows.map(row => row.dataset.outfitKey))]);
+  const beforeKeys = await existingRows.evaluateAll(rows => [...new Set(rows.map(row => row.dataset.outfitKey).filter(Boolean))]);
   await page.locator("#import-outfit-tsv").click();
 
   const values = {
@@ -119,12 +125,12 @@ test("outfit TSV file import appends current editor fields and keeps existing ro
   await expect(page.locator("#tsv-dialog")).not.toBeVisible();
 
   await expect.poll(async () => page.locator("#outfit-list [data-outfit-key]").evaluateAll((rows, keys) => {
-    const current = [...new Set(rows.map(row => row.dataset.outfitKey))];
+    const current = [...new Set(rows.map(row => row.dataset.outfitKey).filter(Boolean))];
     return current.filter(key => !keys.includes(key)).length;
   }, beforeKeys)).toBe(1);
 
   const newKey = await page.locator("#outfit-list [data-outfit-key]").evaluateAll((rows, keys) => {
-    const current = [...new Set(rows.map(row => row.dataset.outfitKey))];
+    const current = [...new Set(rows.map(row => row.dataset.outfitKey).filter(Boolean))];
     return current.find(key => !keys.includes(key));
   }, beforeKeys);
   const added = page.locator(`#outfit-list [data-outfit-key="${newKey}"]`).first();
@@ -135,6 +141,6 @@ test("outfit TSV file import appends current editor fields and keeps existing ro
   await expect(added.locator("[data-o='manufacturer']")).toHaveValue(values["メーカー"]);
   await expect(added.locator("[data-o='description']")).toHaveValue(values["解説"]);
 
-  const currentKeys = await page.locator("#outfit-list [data-outfit-key]").evaluateAll(rows => [...new Set(rows.map(row => row.dataset.outfitKey))]);
+  const currentKeys = await page.locator("#outfit-list [data-outfit-key]").evaluateAll(rows => [...new Set(rows.map(row => row.dataset.outfitKey).filter(Boolean))]);
   for (const key of beforeKeys) expect(currentKeys).toContain(key);
 });
