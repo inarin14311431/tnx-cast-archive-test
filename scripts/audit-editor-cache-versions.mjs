@@ -1,4 +1,4 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
   root,
@@ -46,13 +46,8 @@ if (entries.length >= 2) {
   }
 }
 
-const discoveredTestFiles = (await readdir(path.join(root, "tests"), { withFileTypes: true }))
-  .filter(entry => entry.isFile() && entry.name.endsWith(".test.mjs"))
-  .map(entry => `tests/${entry.name}`);
-const cacheContractTestFiles = [...new Set([...testFiles, ...discoveredTestFiles])].sort();
 let cacheContractTests = 0;
-
-for (const fileName of cacheContractTestFiles) {
+for (const fileName of testFiles) {
   const source = await readFile(path.join(root, fileName), "utf8");
   if (!/[?&]v=[A-Za-z0-9._-]+/.test(source)) continue;
   cacheContractTests += 1;
