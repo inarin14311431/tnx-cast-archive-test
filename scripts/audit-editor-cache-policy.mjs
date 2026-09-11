@@ -34,6 +34,12 @@ for (const [target, edges] of grouped) {
   }
 }
 
+function describeEdges(edges) {
+  return edges
+    .map(edge => `${edge.from} -> ${edge.raw}`)
+    .sort();
+}
+
 let sharedTargets = 0;
 let pcMobileSharedMismatch = 0;
 if (entries.length >= 2) {
@@ -50,7 +56,15 @@ if (entries.length >= 2) {
     const mobileKey = [...mobileVersions].sort().join(",");
     if (pcKey !== mobileKey) {
       pcMobileSharedMismatch += 1;
-      findings.push({ kind: "pcMobileSharedMismatch", target, values: [`PC:${pcKey}`, `mobile:${mobileKey}`] });
+      findings.push({
+        kind: "pcMobileSharedMismatch",
+        target,
+        values: [`PC:${pcKey}`, `mobile:${mobileKey}`],
+        details: [
+          ...describeEdges(pcEdges).map(value => `PC ${value}`),
+          ...describeEdges(mobileEdges).map(value => `mobile ${value}`)
+        ]
+      });
     }
   }
 }
@@ -58,8 +72,15 @@ if (entries.length >= 2) {
 for (const finding of findings) {
   const mode = enforcement[finding.kind] || "report";
   const message = `${finding.kind}: ${finding.target} -> ${finding.values.join(" / ")}`;
-  if (mode === "error") hardProblems.push(message);
-  else console.warn(`[cache-policy:${mode}] ${message}`);
+  const detailLines = Array.isArray(finding.details)
+    ? finding.details.map(detail => `    ${detail}`)
+    : [];
+  if (mode === "error") {
+    hardProblems.push([message, ...detailLines].join("\n"));
+  } else {
+    console.warn(`[cache-policy:${mode}] ${message}`);
+    for (const detail of detailLines) console.warn(detail);
+  }
 }
 
 if (hardProblems.length) {
