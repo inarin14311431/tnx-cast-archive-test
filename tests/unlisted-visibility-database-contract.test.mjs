@@ -7,9 +7,20 @@ const migration = fs.readFileSync(
   'utf8'
 );
 
+function readSqlStringAssignment(source, variableName) {
+  const pattern = new RegExp(`${variableName}\\s+text\\s*:=\\s*'((?:''|[^'])*)';`);
+  const match = source.match(pattern);
+  assert.ok(match, `${variableName} SQL string assignment was not found`);
+  return match[1].replaceAll("''", "'");
+}
+
 test('database save migration preserves public, unlisted, and private semantics', () => {
-  assert.match(migration, /in \('public', 'unlisted'\)/);
-  assert.match(migration, /then p_character->>'visibility'/);
-  assert.match(migration, /else 'private' end/);
+  const visibilityNormalizer = readSqlStringAssignment(migration, 'v_new');
+
+  assert.equal(
+    visibilityNormalizer,
+    "case when p_character->>'visibility' in ('public', 'unlisted') then p_character->>'visibility' else 'private' end"
+  );
+  assert.match(migration, /v_definition := replace\(v_definition, v_old, v_new\);/);
   assert.match(migration, /Expected 2 legacy visibility normalizers/);
 });
