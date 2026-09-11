@@ -23,9 +23,10 @@ test("style detail DOM readiness is owned by style-skill-fields", () => {
   assert.doesNotMatch(masterSearch, /querySelectorAll\("\[data-style-field\]"\)[\s\S]{0,180}fields\.length\s*>=\s*9/);
 });
 
-test("integrity layer consumes detail readiness instead of owning DOM observation", () => {
+test("integrity layer consumes detail readiness without owning DOM observation", () => {
   assert.doesNotMatch(integrity, /new\s+MutationObserver\s*\(/);
-  assert.doesNotMatch(integrity, /requestAnimationFrame\s*\(/);
   assert.match(integrity, /TNXStyleSkillFields\?\.enhance\?\.\(\)/);
-  assert.match(integrity, /addEventListener\(STYLE_SKILLS_CHANGED_EVENT,\s*scan\)/);
+  assert.match(integrity, /const\s+queue\s*=\s*\(\)\s*=>/);
+  assert.match(integrity, /requestAnimationFrame\s*\(/);
+  assert.match(integrity, /addEventListener\(STYLE_SKILLS_CHANGED_EVENT,\s*queue\)/);
 });
