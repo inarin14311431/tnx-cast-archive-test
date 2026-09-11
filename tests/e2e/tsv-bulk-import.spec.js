@@ -76,6 +76,54 @@ test("style TSV paste previews and appends a structured row without saving", asy
   expect(await page.evaluate(() => window.__tsvSavedEvents)).toBe(0);
 });
 
+test("headerless TSV uses template column order and template action is in the upper-right header", async ({ page }) => {
+  await page.locator("#import-style-tsv").click();
+  const dialog = page.locator("#tsv-dialog");
+  const templateButton = dialog.locator("header #tsv-template");
+  await expect(templateButton).toBeVisible();
+
+  const titleBox = await dialog.locator("#tsv-title").boundingBox();
+  const templateBox = await templateButton.boundingBox();
+  expect(titleBox).not.toBeNull();
+  expect(templateBox).not.toBeNull();
+  expect(templateBox.x).toBeGreaterThan(titleBox.x);
+
+  const values = {
+    "名称": "見出しなし技能",
+    "種別": "一般",
+    "レベル": "3",
+    "技能": "射撃",
+    "上限": "5",
+    "タイミング": "メジャー",
+    "対象": "単体",
+    "射程": "武器",
+    "目標値": "制御値",
+    "対決": "回避",
+    "解説": "見出し行なしで取り込む",
+    "参照P": "123"
+  };
+  await dialog.locator("#tsv-input").fill(`${row(STYLE_HEADERS, values)}\r\n`);
+  await expect(dialog.locator("#tsv-error")).toBeHidden();
+  await expect(dialog.locator("#tsv-preview tbody tr")).toHaveCount(1);
+  await expect(dialog.locator("#tsv-preview tbody tr td").first()).toHaveText(values["名称"]);
+  await expect(dialog.locator("#tsv-preview tbody tr td").nth(3)).toHaveText(values["技能"]);
+  await expect(dialog.locator("#tsv-apply")).toBeEnabled();
+});
+
+test("malformed header-like first row is still rejected instead of being treated as data", async ({ page }) => {
+  await page.locator("#import-style-tsv").click();
+  const dialog = page.locator("#tsv-dialog");
+  const malformedHeaders = [...STYLE_HEADERS];
+  malformedHeaders[1] = "種別X";
+  const values = Object.fromEntries(STYLE_HEADERS.map(header => [header, ""]));
+  values["名称"] = "テスト";
+  values["レベル"] = "1";
+  await dialog.locator("#tsv-input").fill(`${malformedHeaders.join("\t")}\r\n${row(STYLE_HEADERS, values)}\r\n`);
+  await expect(dialog.locator("#tsv-error")).toContainText("不足している見出し");
+  await expect(dialog.locator("#tsv-error")).toContainText("未対応の見出し");
+  await expect(dialog.locator("#tsv-apply")).toBeDisabled();
+});
+
 test("TSV validation accepts quoted multiline description and rejects multiline non-text field", async ({ page }) => {
   await page.locator("#import-style-tsv").click();
   const dialog = page.locator("#tsv-dialog");
@@ -143,4 +191,26 @@ test("outfit TSV file import appends current editor fields and keeps existing ro
 
   const currentKeys = await page.locator("#outfit-list [data-outfit-key]").evaluateAll(rows => [...new Set(rows.map(row => row.dataset.outfitKey).filter(Boolean))]);
   for (const key of beforeKeys) expect(currentKeys).toContain(key);
+});
+
+test("headerless outfit TSV is accepted in template order", async ({ page }) => {
+  await page.locator("#import-outfit-tsv").click();
+  const dialog = page.locator("#tsv-dialog");
+  const values = {
+    "分類": "防具",
+    "名称": "見出しなし防具",
+    "購入": "8",
+    "常備化": "2",
+    "隠匿値": "12",
+    "隠匿修正": "0",
+    "S": "2",
+    "P": "3",
+    "I": "1",
+    "解説": "見出しなしアウトフィット"
+  };
+  await dialog.locator("#tsv-input").fill(`${row(OUTFIT_HEADERS, values)}\r\n`);
+  await expect(dialog.locator("#tsv-error")).toBeHidden();
+  await expect(dialog.locator("#tsv-preview tbody tr")).toHaveCount(1);
+  await expect(dialog.locator("#tsv-preview tbody tr td").nth(1)).toHaveText(values["名称"]);
+  await expect(dialog.locator("#tsv-apply")).toBeEnabled();
 });
