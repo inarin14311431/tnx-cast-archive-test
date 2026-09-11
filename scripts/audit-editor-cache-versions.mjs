@@ -1,10 +1,13 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import {
+  root,
   loadEditorCachePolicy,
   collectEditorGraph,
   replacementsForVersionedTargets
 } from "./editor-cache-version-lib.mjs";
 
-const { version, entries } = await loadEditorCachePolicy();
+const { version, entries, testFiles } = await loadEditorCachePolicy();
 const combined = await collectEditorGraph(entries);
 const { versionedTargets } = replacementsForVersionedTargets(combined.edges, version);
 const problems = [];
@@ -43,9 +46,16 @@ if (entries.length >= 2) {
   }
 }
 
+for (const fileName of testFiles) {
+  const source = await readFile(path.join(root, fileName), "utf8");
+  for (const match of source.matchAll(/[?&]v=([A-Za-z0-9._-]+)/g)) {
+    if (match[1] !== version) problems.push(`${fileName}: test cache token v=${match[1]}; expected v=${version}`);
+  }
+}
+
 if (problems.length) {
   console.error("Editor cache version audit failed:\n" + problems.map(problem => `- ${problem}`).join("\n"));
   process.exit(1);
 }
 
-console.log(`Editor cache version audit passed: v=${version}, ${versionedTargets.size} versioned targets, ${sharedTargets} PC/mobile shared targets, ${combined.files.size} reachable files.`);
+console.log(`Editor cache version audit passed: v=${version}, ${versionedTargets.size} versioned targets, ${sharedTargets} PC/mobile shared targets, ${combined.files.size} reachable files, ${testFiles.length} contract tests.`);
