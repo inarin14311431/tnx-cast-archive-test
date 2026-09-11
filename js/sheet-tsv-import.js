@@ -30,37 +30,37 @@ const OUTFIT_CATEGORY_MAP = new Map([
 
 const OUTFIT_FIELD_MAP = {
   "名称": "name",
-  "購入": "purchase_target",
-  "常備化": "permanent_cost",
-  "隠匿値": "conceal_a",
-  "隠匿修正": "conceal_b",
+  "購入": "purchase_value",
+  "常備化": "experience_cost",
+  "隠匿値": "concealment",
+  "隠匿修正": "concealment_penalty",
   "攻撃": "attack",
   "受": "parry",
   "射程": "range",
   "ス": "speed",
-  "電制": "electronic",
+  "電制": "electronic_control",
   "S": "defense_s",
   "P": "defense_p",
   "I": "defense_i",
-  "制御値": "control",
-  "CS修正": "cs",
-  "表層": "surface",
-  "深層": "deep",
-  "無": "no_a",
-  "ソ": "software",
-  "サ": "support",
-  "ハ": "hardware",
+  "制御値": "control_modifier",
+  "CS修正": "cs_modifier",
+  "表層": "ianus_surface",
+  "深層": "ianus_deep",
+  "無": "ianus_none",
+  "ソ": "tron_software",
+  "サ": "tron_support",
+  "ハ": "tron_hardware",
   "乗員": "crew",
   "SF": "sf",
-  "登": "boarding",
-  "電": "electric",
-  "ア": "armor",
-  "部位": "part",
+  "登": "residence_entry",
+  "電": "residence_electric",
+  "ア": "residence_area",
+  "部位": "slot",
   "メーカー": "manufacturer",
-  "参照P": "page",
-  "OFC大分類": "ofc_parent",
-  "OFC小分類": "ofc_child",
-  "解説": "effect"
+  "参照P": "page_number",
+  "OFC大分類": "major_category",
+  "OFC小分類": "minor_category",
+  "解説": "description"
 };
 
 let activeSchema = STYLE_SCHEMA;
@@ -181,9 +181,7 @@ function validateTsv(text, schema) {
   }
 
   while (matrix.length && matrix[matrix.length - 1].every(value => value === "")) matrix.pop();
-  if (!matrix.length || matrix.every(row => row.every(value => value === ""))) {
-    return { rows: [], errors: [] };
-  }
+  if (!matrix.length || matrix.every(row => row.every(value => value === ""))) return { rows: [], errors: [] };
 
   const header = matrix.shift().map((value, index) => index === 0 ? value.replace(/^\uFEFF/, "") : value);
   const duplicates = header.filter((value, index) => value && header.indexOf(value) !== index);
@@ -214,9 +212,7 @@ function validateTsv(text, schema) {
     const record = {};
     header.forEach((name, index) => { record[name] = cells[index] ?? ""; });
     for (const [name, value] of Object.entries(record)) {
-      if (value.includes("\n") && !schema.multiline.has(name)) {
-        errors.push(`${lineNumber}行目「${name}」: セル内改行は名称・解説のみ使用できます。`);
-      }
+      if (value.includes("\n") && !schema.multiline.has(name)) errors.push(`${lineNumber}行目「${name}」: セル内改行は名称・解説のみ使用できます。`);
     }
     if (schema.mode === "outfit" && !normalizeOutfitCategory(record["分類"])) {
       errors.push(`${lineNumber}行目「分類」: 武器・防具・サイバーウェア・トロン・ヴィークル・住居・その他のいずれかを指定してください。`);
@@ -356,7 +352,7 @@ async function applyRows() {
     showImportNotice(`${count}件を編集画面へ追加しました。保存ボタンを押すまでDBには保存されません。`);
   } catch (error) {
     console.error("[tnx] TSV import failed", error);
-    showErrors([error?.message || "TSV取込中にエラーが発生しました。"])) ;
+    showErrors([error?.message || "TSV取込中にエラーが発生しました。"]);
     apply.disabled = false;
   } finally {
     apply.textContent = originalLabel;
@@ -368,26 +364,17 @@ async function appendStyleRow(record) {
   const addButton = document.querySelector("#add-style-skill");
   if (!addButton) throw new Error("スタイル技能の追加ボタンが見つかりません。");
   addButton.click();
-  const row = await waitForNewElement("#style-skills [data-skill-key]", before, "スタイル技能行を追加できませんでした。");
+  const row = await waitForNewStyleRow(before);
   await window.TNXStyleSkillFields?.waitUntilReady?.(row, 1600);
 
   setControl(row.querySelector("[data-f='name']"), record["名称"]);
   setControl(row.querySelector("[data-f='skill_kind']"), normalizeSkillKind(record["種別"]));
   setControl(row.querySelector("[data-f='level']"), record["レベル"] || "1");
   const details = {
-    skill: record["技能"],
-    limit: record["上限"],
-    timing: record["タイミング"],
-    target: record["対象"],
-    range: record["射程"],
-    difficulty: record["目標値"],
-    confrontation: record["対決"],
-    description: record["解説"],
-    page: record["参照P"]
+    skill: record["技能"], limit: record["上限"], timing: record["タイミング"], target: record["対象"],
+    range: record["射程"], difficulty: record["目標値"], confrontation: record["対決"], description: record["解説"], page: record["参照P"]
   };
-  for (const [field, value] of Object.entries(details)) {
-    setControl(row.querySelector(`[data-style-field="${field}"]`), value || "");
-  }
+  for (const [field, value] of Object.entries(details)) setControl(row.querySelector(`[data-style-field="${field}"]`), value || "");
 }
 
 async function appendOutfitRow(record) {
@@ -397,10 +384,8 @@ async function appendOutfitRow(record) {
   const key = editor.addOutfitForImport(category);
   if (!key) throw new Error(`「${record["名称"]}」のアウトフィット行を追加できませんでした。`);
 
-  const row = await waitForElementByKey(key);
-  for (const [header, field] of Object.entries(OUTFIT_FIELD_MAP)) {
-    setControl(row.querySelector(`[data-o="${field}"]`), record[header] || "");
-  }
+  const row = await waitForOutfitRow(key);
+  for (const [header, field] of Object.entries(OUTFIT_FIELD_MAP)) setControl(row.querySelector(`[data-o="${field}"]`), record[header] || "");
 }
 
 function normalizeSkillKind(value) {
@@ -409,11 +394,12 @@ function normalizeSkillKind(value) {
   if (/秘技|secret/i.test(text)) return "secret";
   if (/演出|方向|direction/i.test(text)) return "direction";
   if (/なし|none/i.test(text)) return "none";
-  return "general";
+  return "normal";
 }
 
 function normalizeOutfitCategory(value) {
-  return OUTFIT_CATEGORY_MAP.get(String(value || "").trim().toLowerCase()) || OUTFIT_CATEGORY_MAP.get(String(value || "").trim()) || "";
+  const raw = String(value || "").trim();
+  return OUTFIT_CATEGORY_MAP.get(raw.toLowerCase()) || OUTFIT_CATEGORY_MAP.get(raw) || "";
 }
 
 function setControl(control, value) {
@@ -423,20 +409,18 @@ function setControl(control, value) {
   control.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
-async function waitForNewElement(selector, beforeKeys, message) {
+async function waitForNewStyleRow(beforeKeys) {
   for (let attempt = 0; attempt < 80; attempt += 1) {
-    const rows = [...document.querySelectorAll(selector)];
-    const found = rows.find(row => !beforeKeys.has(row.dataset.skillKey));
+    const found = [...document.querySelectorAll("#style-skills [data-skill-key]")].find(row => !beforeKeys.has(row.dataset.skillKey));
     if (found) return found;
     await nextFrame();
   }
-  throw new Error(message);
+  throw new Error("スタイル技能行を追加できませんでした。");
 }
 
-async function waitForElementByKey(key) {
-  const escaped = CSS.escape(String(key));
+async function waitForOutfitRow(key) {
   for (let attempt = 0; attempt < 80; attempt += 1) {
-    const row = document.querySelector(`[data-key="${escaped}"]`);
+    const row = [...document.querySelectorAll("[data-outfit-key]")].find(element => element.dataset.outfitKey === String(key));
     if (row) return row;
     await nextFrame();
   }
