@@ -100,15 +100,17 @@ function createDialog() {
   dialog.id = "tsv-dialog";
   dialog.innerHTML = `
     <form>
-      <header>
-        <h2 id="tsv-title">TSV取込</h2>
-        <p class="tsv-import-guide">Excelのセル範囲をコピーして貼り付けるか、.tsvファイルを選択してください。プレビュー確認後に編集画面へ新規行として追加します。</p>
+      <header class="tsv-import-guide__header">
+        <div>
+          <h2 id="tsv-title">TSV取込</h2>
+          <p>Excelのセル範囲をコピーして貼り付けるか、.tsvファイルを選択してください。見出し行は省略できます。省略する場合はテンプレートと同じ列順で入力してください。</p>
+        </div>
+        <button id="tsv-template" type="button" class="btn btn-small">テンプレート <small>DOWNLOAD TSV</small></button>
       </header>
       <div class="tsv-file-picker">
         <input id="tsv-file" type="file" accept=".tsv,text/tab-separated-values,text/plain">
-        <button id="tsv-template" type="button" class="btn btn-small">テンプレート</button>
       </div>
-      <textarea id="tsv-input" spellcheck="false" aria-label="TSVデータ" placeholder="Excelからここへ貼り付け"></textarea>
+      <textarea id="tsv-input" spellcheck="false" aria-label="TSVデータ" placeholder="Excelからここへ貼り付け（見出し行なしでも可）"></textarea>
       <p id="tsv-error" role="alert" aria-live="polite"></p>
       <div id="tsv-preview" aria-live="polite"></div>
       <footer class="modal-actions">
@@ -183,30 +185,36 @@ function validateTsv(text, schema) {
   while (matrix.length && matrix[matrix.length - 1].every(value => value === "")) matrix.pop();
   if (!matrix.length || matrix.every(row => row.every(value => value === ""))) return { rows: [], errors: [] };
 
-  const header = matrix.shift().map((value, index) => index === 0 ? value.replace(/^\uFEFF/, "") : value);
-  const duplicates = header.filter((value, index) => value && header.indexOf(value) !== index);
-  const expected = new Set(schema.headers);
-  const actual = new Set(header);
-  const missing = schema.headers.filter(value => !actual.has(value));
-  const unexpected = header.filter(value => value && !expected.has(value));
-  const emptyHeaders = header.filter(value => !value).length;
+  const firstRow = matrix[0].map((value, index) => index === 0 ? value.replace(/^\uFEFF/, "") : value);
+  const hasHeader = looksLikeHeaderRow(firstRow, schema);
+  const header = hasHeader ? matrix.shift().map((value, index) => index === 0 ? value.replace(/^\uFEFF/, "") : value) : [...schema.headers];
 
-  if (duplicates.length) errors.push(`重複した見出しがあります: ${[...new Set(duplicates)].join("、")}`);
-  if (missing.length) errors.push(`不足している見出し: ${missing.join("、")}`);
-  if (unexpected.length) errors.push(`未対応の見出し: ${[...new Set(unexpected)].join("、")}`);
-  if (emptyHeaders) errors.push("空の見出しがあります。");
-  if (header.length !== schema.headers.length) errors.push(`列数が不正です。必要: ${schema.headers.length}列 / 入力: ${header.length}列`);
-  if (errors.length) return { rows: [], errors };
+  if (hasHeader) {
+    const duplicates = header.filter((value, index) => value && header.indexOf(value) !== index);
+    const expected = new Set(schema.headers);
+    const actual = new Set(header);
+    const missing = schema.headers.filter(value => !actual.has(value));
+    const unexpected = header.filter(value => value && !expected.has(value));
+    const emptyHeaders = header.filter(value => !value).length;
+
+    if (duplicates.length) errors.push(`重複した見出しがあります: ${[...new Set(duplicates)].join("、")}`);
+    if (missing.length) errors.push(`不足している見出し: ${missing.join("、")}`);
+    if (unexpected.length) errors.push(`未対応の見出し: ${[...new Set(unexpected)].join("、")}`);
+    if (emptyHeaders) errors.push("空の見出しがあります。");
+    if (header.length !== schema.headers.length) errors.push(`列数が不正です。必要: ${schema.headers.length}列 / 入力: ${header.length}列`);
+    if (errors.length) return { rows: [], errors };
+  }
 
   const rows = [];
+  const lineOffset = hasHeader ? 2 : 1;
   matrix.forEach((cells, rowIndex) => {
-    const lineNumber = rowIndex + 2;
+    const lineNumber = rowIndex + lineOffset;
     if (cells.every(value => value === "")) {
       errors.push(`${lineNumber}行目: 途中の空行は使用できません。`);
       return;
     }
     if (cells.length !== header.length) {
-      errors.push(`${lineNumber}行目: 列数が${cells.length}列です。${header.length}列必要です。`);
+      errors.push(`${lineNumber}行目: 列数が${cells.length}列です。${header.length}列必要です。見出し行を省略する場合はテンプレートと同じ列順・列数にしてください。`);
       return;
     }
     const record = {};
@@ -225,6 +233,13 @@ function validateTsv(text, schema) {
   });
 
   return { rows, errors };
+}
+
+function looksLikeHeaderRow(cells, schema) {
+  const normalized = cells.map(value => String(value || "").trim());
+  const expected = new Set(schema.headers);
+  const matches = normalized.filter(value => expected.has(value)).length;
+  return normalized[0] === schema.headers[0] || matches >= 2;
 }
 
 export function parseTsv(source) {
