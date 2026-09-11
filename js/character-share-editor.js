@@ -43,26 +43,6 @@ function buildShareUrl(publicId, shareToken) {
   return url.toString();
 }
 
-function injectStyles() {
-  if (document.querySelector("#tnx-character-share-style")) return;
-  const style = document.createElement("style");
-  style.id = "tnx-character-share-style";
-  style.textContent = `
-    .character-share-panel{margin:.75rem 0;padding:.8rem;border:1px solid currentColor;border-radius:.35rem;background:rgba(0,0,0,.12)}
-    .character-share-panel[hidden]{display:none!important}
-    .character-share-panel strong{display:block;font-size:.88rem}
-    .character-share-panel small{display:block;opacity:.72;font-size:.68rem;letter-spacing:.06em}
-    .character-share-panel p{margin:.4rem 0;font-size:.76rem;line-height:1.5}
-    .character-share-panel__controls{display:flex;gap:.45rem;align-items:stretch}
-    .character-share-panel__controls input{min-width:0;flex:1;font-size:.72rem}
-    .character-share-panel__controls button{flex:0 0 auto;white-space:nowrap}
-    .character-share-panel__status{min-height:1.2em;opacity:.8}
-    .mobile-sheet-actions .character-share-panel{flex:1 1 100%;width:100%;box-sizing:border-box}
-    @media (max-width:720px){.character-share-panel__controls{flex-direction:column}.character-share-panel__controls button{min-height:44px}}
-  `;
-  document.head.append(style);
-}
-
 function findPanelHost() {
   const mobileActions = document.querySelector(".mobile-sheet-actions");
   if (mobileActions) return { host: mobileActions, before: document.querySelector("#mobile-save") };
@@ -233,7 +213,6 @@ function bindEvents() {
 function init() {
   if (window.__TNXCharacterShareEditorInitialized) return;
   window.__TNXCharacterShareEditorInitialized = true;
-  injectStyles();
   getVisibilitySelects().forEach(ensureUnlistedOption);
   ensurePanel();
   bindEvents();
