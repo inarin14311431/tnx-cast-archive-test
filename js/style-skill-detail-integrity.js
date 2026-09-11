@@ -159,14 +159,22 @@
     if (root.dataset.styleDetailIntegrityInitialized === "1") return;
     root.dataset.styleDetailIntegrityInitialized = "1";
 
-    root.addEventListener(STYLE_SKILLS_CHANGED_EVENT, scan);
+    // Preserve the established event ordering: projected controls finish their own
+    // input handlers before the canonical integrity repair reads the backing value.
+    let queued = false;
+    const queue = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; scan(); });
+    };
+    root.addEventListener(STYLE_SKILLS_CHANGED_EVENT, queue);
     root.addEventListener("pointerdown", event => {
       const textarea = event.target.closest?.('textarea[data-style-field="description"]');
       if (textarea && root.contains(textarea)) startDescriptionResizeTracking(textarea);
     });
     window.addEventListener("pointerup", stopDescriptionResizeTracking, true);
     window.addEventListener("pointercancel", stopDescriptionResizeTracking, true);
-    scan();
+    queue();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initializeStyleSkillDetailIntegrity, { once: true });
