@@ -24,6 +24,7 @@
         "tests/e2e/authenticated.spec.js",
         "tests/e2e/style-skill-detail-integrity.spec.js",
         "tests/e2e/skd-master-search.spec.js",
+        "tests/e2e/tsv-bulk-import.spec.js",
         "tests/e2e/troop-editor-flow.spec.js",
         "tests/e2e/showcase-editor-restore.spec.js"
       ]
