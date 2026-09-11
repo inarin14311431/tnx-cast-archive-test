@@ -1,0 +1,5 @@
+{
+  "version": "2026091101",
+  "format": "YYYYMMDDNN",
+  "scope": ["sheet.html", "sheet-mobile.html"]
+}
