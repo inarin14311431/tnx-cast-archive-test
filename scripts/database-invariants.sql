@@ -11,7 +11,7 @@ select 'capability_rpc_authenticated_only',
   and has_function_privilege('authenticated','public.has_privileged_editor_tools()','execute')
 union all
 select 'save_rpc_security_invoker',
-  (select count(*)=2 and bool_and(not p.prosecdef) from pg_proc p join pg_namespace n on n.oid=p.relnamespace where false)
+  (select count(*)=2 and bool_and(not p.prosecdef) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('save_character_bundle','save_character_bundle_with_ofc'))
 union all
 select 'master_policies_internal_helper',
   (select count(*)=2 and bool_and(qual='internal_security.can_use_master_search()') from pg_policies where schemaname='public' and policyname in ('skd_master_allowed_select','ofc_master_allowed_select'))
