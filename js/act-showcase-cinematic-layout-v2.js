@@ -65,7 +65,9 @@
       const subtitle = document.createElement("p");
       subtitle.className = "neotokyo-sequence__act-subtitle";
       subtitle.textContent = text;
-      title.insertAdjacentElement("afterend", subtitle);
+      const rule = screen.querySelector(".neotokyo-title-logo__rule");
+      if (rule) rule.before(subtitle);
+      else title.insertAdjacentElement("afterend", subtitle);
     }
   }
 
