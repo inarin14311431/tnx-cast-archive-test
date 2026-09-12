@@ -11,7 +11,7 @@ async function initializeFinalTrailer(slug) {
     const trailer = normalizeTrailer(data);
     if (!trailer.body || document.querySelector("#poster-final-act-trailer")) return;
 
-    mountAsFinalStage(createTrailerSection(trailer));
+    mountAtFinalBoardTop(createTrailerSection(trailer));
   } catch (error) {
     console.warn("Final ACT TRAILER could not be rendered.", error);
   }
@@ -65,17 +65,13 @@ function createTrailerSection(trailer) {
   return section;
 }
 
-function mountAsFinalStage(section) {
+function mountAtFinalBoardTop(section) {
   const mount = () => {
-    const story = document.querySelector("#showcase-story");
     const board = document.getElementById("poster-showcase-board-v2");
-    if (!story || !board) return false;
+    const frame = board?.querySelector(":scope > .poster-v2-frame");
+    if (!board || !frame) return false;
 
-    story.append(section);
-    const keepLast = new MutationObserver(() => {
-      if (section.parentElement === story && story.lastElementChild !== section) story.append(section);
-    });
-    keepLast.observe(story, { childList: true });
+    board.insertBefore(section, frame);
     return true;
   };
   if (mount()) return;

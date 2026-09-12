@@ -232,13 +232,16 @@
 
   let queued = false;
   const sync = () => {
+    // Title markup must be finalized before swapScreen() exposes it on the next animation frame.
+    // Deferring this decoration to rAF made the title-note appear one frame late and caused layout jitter.
+    intro?.querySelectorAll(".neotokyo-sequence__screen--title").forEach(decorateTitle);
+
     if (queued) return;
     queued = true;
     requestAnimationFrame(() => {
       queued = false;
       intro?.querySelectorAll(".neotokyo-sequence__screen--linked").forEach(decorateLinked);
       intro?.querySelectorAll(".neotokyo-sequence__screen--trailer").forEach(decorateTrailer);
-      intro?.querySelectorAll(".neotokyo-sequence__screen--title").forEach(decorateTitle);
       intro?.querySelectorAll(".neotokyo-sequence__screen--summary").forEach(decorateSummary);
       splitGenderId();
     });
