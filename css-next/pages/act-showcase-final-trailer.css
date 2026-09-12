@@ -3,10 +3,10 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage{
   z-index:6;
   display:grid;
   min-height:94svh;
-  place-items:center;
+  place-items:start center;
   overflow:hidden;
   margin:0;
-  padding:clamp(108px,14vh,176px) clamp(28px,7vw,112px) clamp(116px,15vh,188px);
+  padding:clamp(52px,7vh,82px) clamp(28px,7vw,112px) clamp(116px,15vh,188px);
   isolation:isolate;
   background:
     radial-gradient(circle at 18% 24%,rgba(68,206,255,.16),transparent 28%),
@@ -159,7 +159,7 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
 @media(max-width:760px){
   body.showcase-poster-v2-ready .poster-v2-trailer-stage{
     min-height:88svh;
-    padding:86px 20px 104px;
+    padding:42px 20px 104px;
   }
   body.showcase-poster-v2-ready .poster-v2-trailer-stage::before{bottom:18%;font-size:clamp(4rem,23vw,8rem)}
   body.showcase-poster-v2-ready .poster-v2-trailer-stage__inner::before,
