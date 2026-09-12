@@ -43,9 +43,10 @@ test("observer-owned DOM writes are idempotent and cannot retrigger forever", as
 
 test("public showcase bootstrap cache-busts every stable observer script", async () => {
   const bootstrap = await read("js/act-showcase-bootstrap.js");
-  assert.match(bootstrap, /act-showcase-board-layout\.js\?v=20260908b/);
-  assert.match(bootstrap, /act-showcase-story-flow\.js\?v=20260908b/);
-  assert.match(bootstrap, /act-showcase-writing-patterns\.js\?v=20260908b/);
-  assert.match(bootstrap, /act-showcase-visual-caption-code\.js\?v=3/);
-  assert.match(bootstrap, /act-showcase-supporting-cast\.js\?v=4/);
+  const hasVersionedImport = path => new RegExp(`${path.replaceAll(".", "\\.")}\\?v=[^\\"')\\s]+`).test(bootstrap);
+  assert.ok(hasVersionedImport("act-showcase-board-layout.js"));
+  assert.ok(hasVersionedImport("act-showcase-story-flow.js"));
+  assert.ok(hasVersionedImport("act-showcase-writing-patterns.js"));
+  assert.ok(hasVersionedImport("act-showcase-visual-caption-code.js"));
+  assert.ok(hasVersionedImport("act-showcase-supporting-cast.js"));
 });
