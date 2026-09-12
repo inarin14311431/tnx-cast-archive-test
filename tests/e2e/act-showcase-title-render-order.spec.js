@@ -73,10 +73,11 @@ test("タイトル画面は最初に表示されるフレームから最終装�
   const advance = page.locator(".neotokyo-sequence__advance");
   await expect(advance).toHaveText("NEXT // ACT TRAILER", { timeout: 12_000 });
 
-  const snapshot = await expect.poll(async () => page.evaluate(() => window.__titleVisibleSnapshot), {
+  await expect.poll(async () => page.evaluate(() => window.__titleVisibleSnapshot), {
     timeout: 5_000,
     intervals: [50, 100, 200]
-  }).not.toBeNull().then(() => page.evaluate(() => window.__titleVisibleSnapshot));
+  }).not.toBeNull();
+  const snapshot = await page.evaluate(() => window.__titleVisibleSnapshot);
 
   expect(snapshot.screenClass).toContain("neotokyo-sequence__screen--title-logo");
   expect(snapshot.titleClass).toContain("neotokyo-sequence__act-title--logo");
