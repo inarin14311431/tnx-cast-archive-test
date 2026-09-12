@@ -9,11 +9,11 @@ async function initializeFinalTrailer(slug) {
   try {
     const data = await loadPublicShowcase(slug);
     const trailer = normalizeTrailer(data);
-    if (!trailer || document.querySelector("#poster-final-act-trailer")) return;
+    if (!trailer.body || document.querySelector("#poster-final-act-trailer")) return;
 
-    mountInsideFinalBoard(createTrailerSection(trailer));
+    mountAsFinalStage(createTrailerSection(trailer));
   } catch (error) {
-    console.warn("ACT TRAILER could not be rendered in the final board.", error);
+    console.warn("Final ACT TRAILER could not be rendered.", error);
   }
 }
 
@@ -21,28 +21,61 @@ function normalizeTrailer(data) {
   const source = data?.trailer && typeof data.trailer === "object" && !Array.isArray(data.trailer)
     ? data.trailer
     : null;
-  return source
-    ? text(source.body || source.text)
-    : text(data?.intro || data?.trailer || data?.actTrailer || data?.trailerText || data?.trailerBody);
+  return {
+    title: source ? text(source.title) : text(data?.trailerTitle),
+    body: source
+      ? text(source.body || source.text)
+      : text(data?.intro || data?.trailer || data?.actTrailer || data?.trailerText || data?.trailerBody)
+  };
 }
 
 function createTrailerSection(trailer) {
-  const section = node("section", "poster-v2-board-trailer");
+  const section = node("section", "poster-v2-trailer-stage");
   section.id = "poster-final-act-trailer";
-  section.setAttribute("aria-label", "ACT TRAILER");
-  section.append(node("p", "poster-v2-board-trailer__copy", trailer));
+  section.setAttribute("aria-labelledby", "poster-final-act-trailer-heading");
+
+  const inner = node("div", "poster-v2-trailer-stage__inner");
+  const overline = node("p", "poster-v2-trailer-stage__overline");
+  overline.append(
+    node("span", "", "05 / FINAL TRANSMISSION"),
+    node("small", "", "N◎VA MUNICIPAL DATABASE // ACT ARCHIVE")
+  );
+
+  const heading = node("h2", "poster-v2-trailer-stage__heading", "ACT TRAILER");
+  heading.id = "poster-final-act-trailer-heading";
+  inner.append(overline, heading);
+
+  if (trailer.title) {
+    inner.append(node("p", "poster-v2-trailer-stage__title", trailer.title));
+  }
+
+  const copyWrap = node("div", "poster-v2-trailer-stage__copy-wrap");
+  copyWrap.append(node("blockquote", "poster-v2-trailer-stage__copy", trailer.body));
+  inner.append(copyWrap);
+
+  const footer = node("div", "poster-v2-trailer-stage__footer");
+  footer.setAttribute("aria-hidden", "true");
+  footer.append(
+    node("i", ""),
+    node("span", "", "END OF ACT FILE // ACCESS LOG CLOSED"),
+    node("i", "")
+  );
+  inner.append(footer);
+  section.append(inner);
   return section;
 }
 
-function mountInsideFinalBoard(section) {
+function mountAsFinalStage(section) {
   const mount = () => {
+    const story = document.querySelector("#showcase-story");
     const board = document.getElementById("poster-showcase-board-v2");
-    const frame = board?.querySelector(":scope > .poster-v2-frame");
-    const meta = frame?.querySelector(":scope > .poster-v2-act-meta");
-    const grid = frame?.querySelector(":scope > .poster-v2-grid");
-    if (!frame || !meta || !grid) return false;
+    if (!story || !board) return false;
 
-    frame.insertBefore(section, grid);
+    story.append(section);
+    const keepLast = new MutationObserver(() => {
+      if (section.parentElement === story && story.lastElementChild !== section) story.append(section);
+    });
+    keepLast.observe(story, { childList: true });
     return true;
   };
   if (mount()) return;
