@@ -60,13 +60,14 @@ async function registerRoutes(page, data = showcase, guests = guest) {
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => mockRpc(route, guests));
 }
 
-test("豪華版のACT TRAILERをキャストカード枠の外に独立した最終ページとして表示する", async ({ page }) => {
+test("豪華版のACT TRAILERを最終ボードの一番上かつキャストカード枠の外に表示する", async ({ page }) => {
   await registerRoutes(page);
   await page.goto("/act-showcase.html?id=e2e-final-trailer", { waitUntil: "domcontentloaded" });
 
-  const story = page.locator("#showcase-story");
-  const frame = page.locator("#poster-showcase-board-v2 > .poster-v2-frame");
-  const trailer = page.locator("#poster-final-act-trailer");
+  const board = page.locator("#poster-showcase-board-v2");
+  const frame = board.locator(":scope > .poster-v2-frame");
+  const trailer = board.locator(":scope > #poster-final-act-trailer");
+  await expect(board).toHaveCount(1);
   await expect(frame).toHaveCount(1);
   await expect(trailer).toHaveCount(1);
   await expect(frame.locator("#poster-final-act-trailer")).toHaveCount(0);
@@ -75,13 +76,14 @@ test("豪華版のACT TRAILERをキャストカード枠の外に独立した最
   await expect(trailer.locator(".poster-v2-trailer-stage__copy")).toHaveText(showcase.trailer.body);
   await expect(page.locator("#poster-supporting-cast")).toHaveCount(1);
 
-  const parentId = await trailer.evaluate(node => node.parentElement?.id || "");
-  expect(parentId).toBe("showcase-story");
-  const lastChildId = await story.evaluate(node => node.lastElementChild?.id || "");
-  expect(lastChildId).toBe("poster-final-act-trailer");
+  const firstChildId = await board.evaluate(node => node.firstElementChild?.id || "");
+  expect(firstChildId).toBe("poster-final-act-trailer");
+  const order = await board.evaluate(node => [...node.children].map(child => child.id || child.className));
+  expect(order[0]).toBe("poster-final-act-trailer");
+  expect(String(order[1])).toContain("poster-v2-frame");
 });
 
-test("公開トレーラー未登録時は独立ACT TRAILERページを追加しない", async ({ page }) => {
+test("公開トレーラー未登録時は最終ボードにACT TRAILERを追加しない", async ({ page }) => {
   await registerRoutes(page, { ...showcase, trailer: null }, []);
   await page.goto("/act-showcase.html?id=e2e-no-final-trailer", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#poster-showcase-board-v2")).toHaveCount(1);
