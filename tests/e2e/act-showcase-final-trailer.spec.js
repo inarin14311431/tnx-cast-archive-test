@@ -60,23 +60,24 @@ async function registerRoutes(page, data = showcase, guests = guest) {
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => mockRpc(route, guests));
 }
 
-test("豪華版の最終ボードでタイトル群とキャストカード群の間に通常版調のACT TRAILERを表示する", async ({ page }) => {
+test("豪華版の最終ボードでタイトル群とキャストカード群の間にstandard版と同じ中央寄せACT TRAILERを表示する", async ({ page }) => {
   await registerRoutes(page);
   await page.goto("/act-showcase.html?id=e2e-final-trailer", { waitUntil: "domcontentloaded" });
 
-  const board = page.locator("#poster-showcase-board-v2");
-  const trailer = board.locator(":scope > #poster-final-act-trailer");
-  await expect(board).toHaveCount(1);
+  const frame = page.locator("#poster-showcase-board-v2 > .poster-v2-frame");
+  const trailer = frame.locator(":scope > #poster-final-act-trailer");
+  await expect(frame).toHaveCount(1);
   await expect(trailer).toHaveCount(1);
-  await expect(trailer.locator(".poster-v2-board-trailer__title")).toHaveText("THE LAST SIGNAL");
   await expect(trailer.locator(".poster-v2-board-trailer__copy")).toHaveText(showcase.trailer.body);
   await expect(trailer).toHaveCSS("text-align", "center");
+  await expect(trailer.locator(".poster-v2-board-trailer__copy")).toHaveCSS("line-height", "30.4px");
+  await expect(trailer.locator(".poster-v2-board-trailer__title")).toHaveCount(0);
   await expect(page.locator("#poster-supporting-cast")).toHaveCount(1);
 
-  const order = await board.evaluate(node => [...node.children].map(child => child.id || child.className));
-  const metaIndex = order.findIndex(value => String(value).includes("poster-v2-board__meta"));
+  const order = await frame.evaluate(node => [...node.children].map(child => child.id || child.className));
+  const metaIndex = order.findIndex(value => String(value).includes("poster-v2-act-meta"));
   const trailerIndex = order.indexOf("poster-final-act-trailer");
-  const gridIndex = order.findIndex(value => String(value).includes("poster-v2-board__grid"));
+  const gridIndex = order.findIndex(value => String(value).includes("poster-v2-grid"));
   expect(metaIndex).toBeGreaterThanOrEqual(0);
   expect(trailerIndex).toBeGreaterThan(metaIndex);
   expect(gridIndex).toBeGreaterThan(trailerIndex);
