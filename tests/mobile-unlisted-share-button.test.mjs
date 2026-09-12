@@ -33,6 +33,14 @@ test("mobile share panel uses footer-sized controls without the card chrome", as
   assert.match(css, /\.mobile-sheet-actions \.character-share-panel--mobile \.character-share-panel__controls button\s*\{[\s\S]*?min-height:\s*50px;[\s\S]*?padding:\s*8px 10px;/);
 });
 
+test("mobile fixed actions keep top, view, share and save on one row", async () => {
+  const css = await read("css-next/pages/sheet-mobile-ux.css");
+
+  assert.match(css, /\.mobile-sheet-actions\s*\{[\s\S]*?grid-template-columns:56px minmax\(68px,\.75fr\) minmax\(118px,1\.45fr\) 62px;/);
+  assert.match(css, /character-share-panel--mobile[\s\S]*?character-share-panel__controls button[\s\S]*?font-size:11px;[\s\S]*?white-space:nowrap;/);
+  assert.match(css, /@media\(max-width:390px\)[\s\S]*?\.mobile-sheet-actions\{grid-template-columns:52px minmax\(62px,\.7fr\) minmax\(108px,1\.35fr\) 56px;/);
+});
+
 test("mobile entry points bust caches for the compact share UI", async () => {
   const [html, entry, app] = await Promise.all([
     read("sheet-mobile.html"),
@@ -40,8 +48,9 @@ test("mobile entry points bust caches for the compact share UI", async () => {
     read("js/sheet-mobile-app.js")
   ]);
 
-  assert.match(html, /sheet-mobile-entry\.css\?v=2/);
+  assert.match(html, /sheet-mobile-entry\.css\?v=3/);
   assert.match(html, /sheet-mobile-app\.js\?v=10/);
+  assert.match(entry, /sheet-mobile-ux\.css\?v=4/);
   assert.match(entry, /character-share\.css\?v=2/);
   assert.match(app, /character-share-editor\.js\?v=2/);
 });
