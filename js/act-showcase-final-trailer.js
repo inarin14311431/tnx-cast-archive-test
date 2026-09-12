@@ -9,13 +9,10 @@ async function initializeFinalTrailer(slug) {
   try {
     const data = await loadPublicShowcase(slug);
     const model = normalizeTrailer(data);
-    if (!model.trailer) return;
-
-    const story = document.querySelector("#showcase-story");
-    if (!story || document.querySelector("#poster-final-act-trailer")) return;
+    if (!model.trailer || document.querySelector("#poster-final-act-trailer")) return;
 
     const section = createTrailerSection(model);
-    mountInsideFinalBoard(story, section);
+    mountInsideFinalBoard(section);
   } catch (error) {
     console.warn("ACT TRAILER could not be rendered in the final board.", error);
   }
@@ -51,12 +48,20 @@ function createTrailerSection(model) {
   return section;
 }
 
-function mountInsideFinalBoard(story, section) {
+function mountInsideFinalBoard(section) {
   const mount = () => {
-    const board = story.querySelector("#poster-showcase-board-v2");
-    const grid = board?.querySelector(":scope > .poster-v2-board__grid");
-    if (!board || !grid) return false;
-    board.insertBefore(section, grid);
+    const board = document.getElementById("poster-showcase-board-v2");
+    if (!board) return false;
+
+    const grid = board.querySelector(".poster-v2-board__grid");
+    if (!grid) return false;
+
+    const gridBlock = grid.parentElement === board
+      ? grid
+      : [...board.children].find(child => child === grid || child.contains(grid));
+    if (!gridBlock) return false;
+
+    board.insertBefore(section, gridBlock);
     return true;
   };
   if (mount()) return;
@@ -65,7 +70,7 @@ function mountInsideFinalBoard(story, section) {
     if (!mount()) return;
     observer.disconnect();
   });
-  observer.observe(story, { childList: true, subtree: true });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 function node(tag, className = "", value = "") {
