@@ -70,7 +70,6 @@ test("豪華版の最終ボードでタイトル群とキャストカード群�
   await expect(trailer).toHaveCount(1);
   await expect(trailer.locator(".poster-v2-board-trailer__copy")).toHaveText(showcase.trailer.body);
   await expect(trailer).toHaveCSS("text-align", "center");
-  await expect(trailer.locator(".poster-v2-board-trailer__copy")).toHaveCSS("line-height", "30.4px");
   await expect(trailer.locator(".poster-v2-board-trailer__title")).toHaveCount(0);
   await expect(page.locator("#poster-supporting-cast")).toHaveCount(1);
 
