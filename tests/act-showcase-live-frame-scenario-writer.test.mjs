@@ -67,10 +67,11 @@ test("cinematic and standard public pages render SCENARIO WRITER at the same vis
   assert.match(standardScenario, /className = "hero__ruler hero__scenario-writer"/);
 });
 
-test("SCENARIO WRITER title label is horizontal while the base RULER label remains vertical", () => {
-  assert.match(hierarchyCss, /\.neotokyo-sequence__ruler-label\{[^}]*writing-mode:vertical-rl[^}]*transform:rotate\(180deg\)/);
-  assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\] \.neotokyo-sequence__ruler-label\{[^}]*writing-mode:horizontal-tb[^}]*transform:none/);
-  assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{[^}]*grid-template-columns:minmax\(0,1fr\)[^}]*margin-top:14px/);
+test("RULER and SCENARIO WRITER title labels use the same compact horizontal credit layout", () => {
+  assert.match(hierarchyCss, /\.neotokyo-sequence__ruler-credit\{[^}]*grid-template-columns:minmax\(0,1fr\)[^}]*grid-template-rows:auto auto auto/);
+  assert.match(hierarchyCss, /\.neotokyo-sequence__ruler-label\{[^}]*writing-mode:horizontal-tb[^}]*transform:none[^}]*white-space:nowrap/);
+  assert.doesNotMatch(hierarchyCss, /writing-mode:vertical-rl|rotate\(180deg\)/);
+  assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{margin-top:10px\}/);
 });
 
 test("entry cache keys expose the latest generator, cinematic bootstrap, and title-credit CSS", () => {
