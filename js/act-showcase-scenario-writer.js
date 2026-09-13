@@ -2,6 +2,7 @@ import { loadPublicShowcase, normalizeShowcaseSlug } from "./public-showcase-ser
 
 let scenarioWriterName = "";
 let observer = null;
+let syncQueued = false;
 
 void initialize();
 
@@ -14,11 +15,28 @@ async function initialize() {
     if (!scenarioWriterName) return;
 
     syncCredits();
-    observer = new MutationObserver(syncCredits);
+    observer = new MutationObserver(records => {
+      if (!hasStructuralElementMutation(records)) return;
+      scheduleSync();
+    });
     observer.observe(document.body, { subtree: true, childList: true });
   } catch (error) {
     console.warn("Scenario writer credit could not be rendered.", error);
   }
+}
+
+function scheduleSync() {
+  if (syncQueued) return;
+  syncQueued = true;
+  requestAnimationFrame(() => {
+    syncQueued = false;
+    syncCredits();
+  });
+}
+
+function hasStructuralElementMutation(records) {
+  return records.some(record => record.type === "childList" && [...record.addedNodes, ...record.removedNodes]
+    .some(node => node.nodeType === Node.ELEMENT_NODE));
 }
 
 function syncCredits() {
