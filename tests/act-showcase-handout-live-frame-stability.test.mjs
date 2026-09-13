@@ -25,11 +25,13 @@ test("HANDOUT readout grows with typed content and delegates viewport overflow t
   assert.doesNotMatch(handoutFrame, /scrollIntoView|window\.scrollBy/);
 });
 
-test("HANDOUT live sizing releases control when assignment split starts", () => {
+test("HANDOUT live sizing releases control when assignment split starts and resets each new handout", () => {
   assert.match(handoutFrame, /!screen\.classList\.contains\("is-splitting"\)/);
-  assert.match(handoutFrame, /stage\?\.classList\.remove\("is-handout-scroll"\)/);
+  assert.match(handoutFrame, /stage\.classList\.remove\("is-handout-scroll"\)/);
   assert.match(handoutFrame, /releaseReadout\(activeReadout\)/);
   assert.match(handoutFrame, /readout\.style\.removeProperty\(property\)/);
+  assert.match(handoutFrame, /if \(activeReadout !== readout\)/);
+  assert.match(handoutFrame, /stage\.scrollTop = 0/);
 });
 
 test("HANDOUT CSS makes the stage the sole scroll owner before assignment", () => {
