@@ -13,7 +13,7 @@ const finalTrailer = read("js/act-showcase-final-trailer.js");
 const page = read("js/act-showcase-page.js");
 
 test("HANDOUT readout grows with typed content and delegates viewport overflow to the stage", () => {
-  assert.match(bootstrap, /act-showcase-handout-live-frame\.js\?v=1/);
+  assert.match(bootstrap, /act-showcase-handout-live-frame\.js\?v=2/);
   assert.ok(bootstrap.indexOf("act-showcase-trailer-live-frame.js") < bootstrap.indexOf("act-showcase-handout-live-frame.js"));
   assert.ok(bootstrap.indexOf("act-showcase-handout-live-frame.js") < bootstrap.indexOf("act-showcase-page.js"));
   assert.match(handoutFrame, /readout\.scrollHeight/);
@@ -22,7 +22,26 @@ test("HANDOUT readout grows with typed content and delegates viewport overflow t
   assert.match(handoutFrame, /stage\.classList\.add\("is-handout-scroll"\)/);
   assert.match(handoutFrame, /ResizeObserver/);
   assert.match(handoutFrame, /MutationObserver/);
-  assert.doesNotMatch(handoutFrame, /scrollIntoView|window\.scrollBy/);
+  assert.match(handoutFrame, /height \.16s cubic-bezier\(\.22,\.61,\.36,1\)/);
+  assert.doesNotMatch(handoutFrame, /scrollIntoView|window\.scrollBy|window\.scrollTo/);
+});
+
+test("HANDOUT follows actual box growth with the stage without restarting the same smooth scroll", () => {
+  assert.match(handoutFrame, /const handoutScrollTargets = new WeakMap\(\)/);
+  assert.match(handoutFrame, /const remainingGrowth = Math\.max\(0, targetHeight - readout\.clientHeight\)/);
+  assert.match(handoutFrame, /stage\.scrollHeight - stage\.clientHeight \+ remainingGrowth/);
+  assert.match(handoutFrame, /const previousTarget = handoutScrollTargets\.get\(stage\)/);
+  assert.match(handoutFrame, /Math\.abs\(targetTop - previousTarget\) <= 1/);
+  assert.match(handoutFrame, /stage\.scrollTo\(\{/);
+  assert.match(handoutFrame, /behavior: prefersReducedMotion\(\) \? "auto" : "smooth"/);
+});
+
+test("HANDOUT typewriter mutations update only the active readout instead of rescanning the whole surface", () => {
+  assert.match(handoutFrame, /const pendingReadouts = new Set\(\)/);
+  assert.match(handoutFrame, /if \(record\.type === "characterData"\) \{[\s\S]*if \(readout\) scheduleReadout\(readout\)/);
+  assert.match(handoutFrame, /if \(record\.type === "childList"\) \{[\s\S]*if \(readout\) \{[\s\S]*scheduleReadout\(readout\);[\s\S]*continue/);
+  assert.match(handoutFrame, /nodes\.some\(node => node\.nodeType === Node\.ELEMENT_NODE\)/);
+  assert.match(handoutFrame, /if \(surfaceMayHaveChanged\) scheduleSync\(\)/);
 });
 
 test("HANDOUT live sizing releases control when assignment split starts and resets each new handout", () => {
@@ -30,8 +49,17 @@ test("HANDOUT live sizing releases control when assignment split starts and rese
   assert.match(handoutFrame, /stage\.classList\.remove\("is-handout-scroll"\)/);
   assert.match(handoutFrame, /releaseReadout\(activeReadout\)/);
   assert.match(handoutFrame, /readout\.style\.removeProperty\(property\)/);
-  assert.match(handoutFrame, /if \(activeReadout !== readout\)/);
+  assert.match(handoutFrame, /if \(activeReadout !== readout \|\| activeStage !== stage\)/);
   assert.match(handoutFrame, /stage\.scrollTop = 0/);
+  assert.match(handoutFrame, /handoutScrollTargets\.delete\(stage\)/);
+});
+
+test("HANDOUT releases stale ResizeObservers when the active handout changes", () => {
+  assert.match(handoutFrame, /const readoutObservers = new WeakMap\(\)/);
+  assert.match(handoutFrame, /readoutObservers\.set\(readout, resizeObserver\)/);
+  assert.match(handoutFrame, /resizeObserver\?\.disconnect\(\)/);
+  assert.match(handoutFrame, /readoutObservers\.delete\(readout\)/);
+  assert.match(handoutFrame, /pendingReadouts\.delete\(readout\)/);
 });
 
 test("HANDOUT CSS makes the stage the sole scroll owner before assignment", () => {
