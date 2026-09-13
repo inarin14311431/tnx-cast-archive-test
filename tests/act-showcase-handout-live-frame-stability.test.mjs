@@ -36,7 +36,7 @@ test("HANDOUT CSS makes the stage the sole scroll owner before assignment", () =
   assert.match(handoutCss, /\.neotokyo-sequence__stage\.is-handout-scroll\{[^}]*overflow-y:auto/);
   assert.match(handoutCss, /\.neotokyo-sequence__screen--linked:not\(\.is-splitting\)\{[^}]*height:auto[^}]*max-height:none[^}]*overflow:visible/);
   assert.match(handoutCss, /\.neotokyo-sequence__readout\{[^}]*max-height:none[^}]*overflow:visible/);
-  assert.doesNotMatch(handoutCss, /\.is-splitting[^}]*overflow:visible/);
+  assert.doesNotMatch(handoutCss, /\.neotokyo-sequence__screen--linked\.is-splitting/);
 });
 
 test("high-frequency typewriter text mutations no longer trigger full showcase decoration scans", () => {
