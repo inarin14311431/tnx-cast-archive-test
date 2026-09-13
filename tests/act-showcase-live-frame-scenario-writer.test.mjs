@@ -13,6 +13,8 @@ const standardScenario = read("js/act-showcase-standard-scenario-writer.js");
 const cinematicHtml = read("act-showcase.html");
 const standardHtml = read("act-showcase-standard.html");
 const generatorHtml = read("showcase-generator.html");
+const entryCss = read("css-next/pages/act-showcase-entry.css");
+const hierarchyCss = read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
 
 test("ACT TRAILER restores a text-length driven live terminal height without replacing stage scrolling", () => {
   assert.match(bootstrap, /act-showcase-cinematic-enhancer\.js\?v=4/);
@@ -65,7 +67,15 @@ test("cinematic and standard public pages render SCENARIO WRITER at the same vis
   assert.match(standardScenario, /className = "hero__ruler hero__scenario-writer"/);
 });
 
-test("entry cache keys expose the new generator and cinematic bootstrap immediately", () => {
+test("SCENARIO WRITER title label is horizontal while the base RULER label remains vertical", () => {
+  assert.match(hierarchyCss, /\.neotokyo-sequence__ruler-label\{[^}]*writing-mode:vertical-rl[^}]*transform:rotate\(180deg\)/);
+  assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\] \.neotokyo-sequence__ruler-label\{[^}]*writing-mode:horizontal-tb[^}]*transform:none/);
+  assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{[^}]*grid-template-columns:minmax\(0,1fr\)[^}]*margin-top:14px/);
+});
+
+test("entry cache keys expose the latest generator, cinematic bootstrap, and title-credit CSS", () => {
   assert.match(generatorHtml, /showcase-generator-loader\.js\?v=29/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=7/);
   assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=10/);
+  assert.match(entryCss, /act-showcase-neotokyo-hierarchy\.css\?v=20260913a/);
 });
