@@ -28,6 +28,12 @@ function mountScenarioWriterField() {
   const rulerLabel = ruler?.closest("label");
   if (!rulerLabel) return null;
 
+  const pair = document.createElement("div");
+  pair.className = "showcase-credit-fields";
+  pair.dataset.showcaseCreditFields = "true";
+  rulerLabel.before(pair);
+  pair.append(rulerLabel);
+
   const label = document.createElement("label");
   label.dataset.scenarioWriterField = "true";
   label.append(document.createTextNode("SCENARIO WRITER名"));
@@ -39,7 +45,7 @@ function mountScenarioWriterField() {
   input.placeholder = "例：稲荷秋";
   input.autocomplete = "off";
   label.append(input);
-  rulerLabel.after(label);
+  pair.append(label);
   return input;
 }
 
