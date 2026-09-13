@@ -16,18 +16,19 @@ const generatorHtml = read("showcase-generator.html");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 const hierarchyCss = read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
 
-test("ACT TRAILER restores a text-length driven live terminal height without replacing stage scrolling", () => {
+test("ACT TRAILER restores a size-driven live terminal height without replacing stage scrolling", () => {
   assert.match(bootstrap, /act-showcase-cinematic-enhancer\.js\?v=4/);
-  assert.match(bootstrap, /act-showcase-trailer-live-frame\.js\?v=1/);
+  assert.match(bootstrap, /act-showcase-trailer-live-frame\.js\?v=2/);
   assert.ok(bootstrap.indexOf("act-showcase-cinematic-enhancer.js") < bootstrap.indexOf("act-showcase-trailer-live-frame.js"));
   assert.ok(bootstrap.indexOf("act-showcase-trailer-live-frame.js") < bootstrap.indexOf("act-showcase-page.js"));
   assert.match(liveFrame, /readout\.scrollHeight/);
   assert.match(liveFrame, /bar\?\.offsetHeight/);
   assert.match(liveFrame, /verticalPadding \+ 30/);
   assert.match(liveFrame, /terminal\.style\.height = `\$\{targetHeight\}px`/);
-  assert.match(liveFrame, /height \.12s ease-out/);
+  assert.match(liveFrame, /height \.16s cubic-bezier\(\.22,\.61,\.36,1\)/);
   assert.match(liveFrame, /MutationObserver/);
   assert.match(liveFrame, /ResizeObserver/);
+  assert.match(liveFrame, /lastHeights/);
   assert.doesNotMatch(liveFrame, /scrollIntoView|window\.scrollBy/);
 });
 

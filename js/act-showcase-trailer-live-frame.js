@@ -4,20 +4,49 @@
   const intro = document.querySelector("#cinematic-intro");
   if (!intro) return;
 
+  const supportsResizeObserver = typeof ResizeObserver === "function";
   const observedReadouts = new WeakSet();
-  let scheduled = false;
+  const lastHeights = new WeakMap();
+  const pendingReadouts = new Set();
+  let syncScheduled = false;
+  let frameScheduled = false;
 
-  const observer = new MutationObserver(() => scheduleSync());
-  observer.observe(intro, { subtree: true, childList: true, characterData: true });
+  const observer = new MutationObserver(records => {
+    let structureChanged = false;
+    for (const record of records) {
+      if (record.type !== "childList") continue;
+      const nodes = [...record.addedNodes, ...record.removedNodes];
+      if (nodes.some(node => node.nodeType === Node.ELEMENT_NODE)) {
+        structureChanged = true;
+        break;
+      }
+    }
+
+    if (structureChanged || !supportsResizeObserver) scheduleSync();
+  });
+  observer.observe(intro, { subtree: true, childList: true, characterData: !supportsResizeObserver });
   window.addEventListener("resize", scheduleSync, { passive: true });
   scheduleSync();
 
   function scheduleSync() {
-    if (scheduled) return;
-    scheduled = true;
+    if (syncScheduled) return;
+    syncScheduled = true;
     requestAnimationFrame(() => {
-      scheduled = false;
+      syncScheduled = false;
       syncAll();
+    });
+  }
+
+  function scheduleFrame(readout) {
+    if (!readout?.isConnected) return;
+    pendingReadouts.add(readout);
+    if (frameScheduled) return;
+    frameScheduled = true;
+    requestAnimationFrame(() => {
+      frameScheduled = false;
+      const readouts = [...pendingReadouts];
+      pendingReadouts.clear();
+      readouts.forEach(updateFrame);
     });
   }
 
@@ -27,14 +56,14 @@
     );
     for (const readout of readouts) {
       observeReadout(readout);
-      updateFrame(readout);
+      scheduleFrame(readout);
     }
   }
 
   function observeReadout(readout) {
-    if (observedReadouts.has(readout) || typeof ResizeObserver !== "function") return;
+    if (observedReadouts.has(readout) || !supportsResizeObserver) return;
     observedReadouts.add(readout);
-    const resizeObserver = new ResizeObserver(() => updateFrame(readout));
+    const resizeObserver = new ResizeObserver(() => scheduleFrame(readout));
     resizeObserver.observe(readout);
   }
 
@@ -51,11 +80,16 @@
       Math.ceil(readout.scrollHeight + (bar?.offsetHeight || 0) + verticalPadding + 30)
     );
 
+    if (lastHeights.get(terminal) === targetHeight) return;
+    lastHeights.set(terminal, targetHeight);
+
     terminal.style.minHeight = "94px";
     terminal.style.height = `${targetHeight}px`;
     terminal.style.maxHeight = "none";
     terminal.style.overflow = "visible";
-    terminal.style.transition = prefersReducedMotion() ? "none" : "height .12s ease-out";
+    terminal.style.transition = prefersReducedMotion()
+      ? "none"
+      : "height .16s cubic-bezier(.22,.61,.36,1)";
     terminal.style.setProperty("--showcase-trailer-live-height", `${targetHeight}px`);
   }
 
