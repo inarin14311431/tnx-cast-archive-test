@@ -17,13 +17,17 @@ test("NeoTokyo decoration observers ignore typewriter churn while preserving lin
   assert.match(story, /hasLinkedScreenStateMutation/);
   assert.match(story, /observer\.observe\(intro, \{ childList: true, subtree: true, attributes: true, attributeFilter: \["class"\] \}\)/);
   assert.match(story, /target\.matches\("\.neotokyo-sequence__screen--linked"\)/);
-  assert.match(writing, /observer\.observe\(intro, \{ childList: true, subtree: true \}\)/);
+  assert.match(writing, /hasStructuralElementMutation/);
+  assert.match(writing, /hasLinkedScreenStateMutation/);
+  assert.match(writing, /observer\.observe\(intro, \{ childList: true, subtree: true, attributes: true, attributeFilter: \["class"\] \}\)/);
+  assert.match(writing, /target\.matches\("\.neotokyo-sequence__screen--linked"\)/);
   assert.match(supporting, /hasStructuralElementMutation/);
   assert.match(supporting, /observer\.observe\(document\.body, \{ childList: true, subtree: true \}\)/);
   assert.match(visual, /observer\.observe\(story, \{ childList: true, subtree: true \}\)/);
+  assert.match(board, /hasStructuralElementMutation/);
   assert.match(board, /observer\.observe\(story, \{ childList: true, subtree: true \}\)/);
   assert.match(board, /observer\.observe\(intro, \{ childList: true, subtree: true \}\)/);
-  for (const source of [writing, supporting, visual, board]) assert.doesNotMatch(source, /attributes:\s*true/);
+  for (const source of [supporting, visual, board]) assert.doesNotMatch(source, /attributes:\s*true/);
 });
 
 test("observer-owned DOM writes are idempotent and cannot retrigger forever", async () => {
