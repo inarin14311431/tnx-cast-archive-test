@@ -58,7 +58,7 @@ test("dynamic publishing stores scenarioWriterName in the public showcase JSON",
 });
 
 test("cinematic and standard public pages render SCENARIO WRITER at the same visual level as RULER", () => {
-  assert.match(bootstrap, /act-showcase-scenario-writer\.js\?v=1/);
+  assert.match(bootstrap, /act-showcase-scenario-writer\.js\?v=2/);
   assert.match(showcaseScenario, /className = "opening-ruler opening-scenario-writer"/);
   assert.match(showcaseScenario, /className = "poster-v2-credit-row"/);
   assert.match(showcaseScenario, /ruler\.cloneNode\(true\)/);
@@ -74,9 +74,10 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
   assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{margin-top:10px\}/);
 });
 
-test("entry cache keys expose the latest generator, cinematic bootstrap, and title-credit CSS", () => {
+test("entry cache keys expose the latest generator, cinematic bootstrap, title-credit CSS, and handout live frame", () => {
   assert.match(generatorHtml, /showcase-generator-loader\.js\?v=29/);
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=7/);
-  assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=10/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=8/);
+  assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=11/);
   assert.match(entryCss, /act-showcase-neotokyo-hierarchy\.css\?v=20260913a/);
+  assert.match(entryCss, /act-showcase-handout-live-frame\.css\?v=1/);
 });
