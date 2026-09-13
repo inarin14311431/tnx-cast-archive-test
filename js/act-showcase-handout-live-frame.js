@@ -36,15 +36,18 @@
     const live = Boolean(stage && screen && readout && !screen.classList.contains("is-splitting"));
 
     if (!live) {
-      stage?.classList.remove("is-handout-scroll");
+      if (stage?.classList.contains("is-handout-scroll")) stage.classList.remove("is-handout-scroll");
       if (activeReadout) releaseReadout(activeReadout);
       activeReadout = null;
       return;
     }
 
-    stage.classList.add("is-handout-scroll");
-    if (activeReadout && activeReadout !== readout) releaseReadout(activeReadout);
-    activeReadout = readout;
+    if (!stage.classList.contains("is-handout-scroll")) stage.classList.add("is-handout-scroll");
+    if (activeReadout !== readout) {
+      if (activeReadout) releaseReadout(activeReadout);
+      activeReadout = readout;
+      stage.scrollTop = 0;
+    }
     observeReadout(readout);
     updateReadout(readout);
   }
