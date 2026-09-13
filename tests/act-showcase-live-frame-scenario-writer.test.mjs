@@ -29,11 +29,14 @@ test("ACT TRAILER restores a text-length driven live terminal height without rep
   assert.doesNotMatch(liveFrame, /scrollIntoView|window\.scrollBy/);
 });
 
-test("scenario writer is mounted next to RULER and invalidates stale generated output", () => {
+test("scenario writer is mounted at the same form level as RULER and invalidates stale generated output", () => {
   assert.match(generatorLoader, /showcase-scenario-writer\.js\?v=1/);
   assert.ok(generatorLoader.indexOf("showcase-scenario-writer.js") < generatorLoader.indexOf("showcase-dynamic-publish-v3.js"));
   assert.match(generatorScenario, /scenario-writer-name/);
-  assert.match(generatorScenario, /rulerLabel\.after\(label\)/);
+  assert.match(generatorScenario, /showcase-credit-fields/);
+  assert.match(generatorScenario, /gridTemplateColumns = "repeat\(2, minmax\(0, 1fr\)\)"/);
+  assert.match(generatorScenario, /pair\.append\(rulerLabel\)/);
+  assert.match(generatorScenario, /pair\.append\(label\)/);
   assert.match(generatorScenario, /pageTitle\?\.dispatchEvent\(new Event\("input"/);
 });
 
