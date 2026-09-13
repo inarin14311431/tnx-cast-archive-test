@@ -31,6 +31,10 @@ function mountScenarioWriterField() {
   const pair = document.createElement("div");
   pair.className = "showcase-credit-fields";
   pair.dataset.showcaseCreditFields = "true";
+  pair.style.display = "grid";
+  pair.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+  pair.style.gap = "12px";
+  pair.style.minWidth = "0";
   rulerLabel.before(pair);
   pair.append(rulerLabel);
 
