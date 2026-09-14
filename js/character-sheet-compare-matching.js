@@ -173,7 +173,8 @@ export function stripLegacyArchiveOutfitElectronicControl(bundle = {}) {
     ...bundle,
     outfits: bundle.outfits.map((row) => {
       if (!row || typeof row !== "object" || Array.isArray(row)) return row;
-      const { electronic_control: _legacyElectronicControl, ...currentRow } = row;
+      const currentRow = { ...row };
+      delete currentRow.electronic_control;
       return currentRow;
     })
   };
