@@ -5,6 +5,8 @@ const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), "ut
 
 const generatorHtml = read("showcase-generator.html");
 const generator = read("js/showcase-generator-v3.js");
+const generatorLoader = read("js/showcase-generator-loader.js");
+const generatedOutput = read("js/showcase-dedicated-output.js");
 const publisher = read("js/showcase-dynamic-publish-v3.js");
 const restore = read("js/showcase-edit-restore.js");
 const runtime = read("js/act-showcase-theme-runtime.js");
@@ -13,49 +15,59 @@ const cinematicBootstrap = read("js/act-showcase-bootstrap.js");
 const standardHtml = read("act-showcase-standard.html");
 const cinematicPage = read("js/act-showcase-page.js");
 const standardPage = read("js/act-showcase-standard.js");
-const themeCss = read("css-next/pages/act-showcase-theme.css");
-const coverageCss = read("css-next/pages/act-showcase-theme-coverage.css");
+const dedicatedCss = read("css-next/pages/act-showcase-dedicated-themes.css");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 
 const themes = ["nova", "intron", "vlad", "lutetia"];
 for (const theme of themes) {
-  assert.match(generatorHtml, new RegExp(`option value=["']${theme}["']`), `${theme} must be selectable in the generator`);
-  assert.match(runtime, new RegExp(`${theme}: Object\\.freeze`), `${theme} must be supported by the runtime`);
-  assert.match(themeCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have showcase theme tokens`);
+  assert.match(generatorHtml, new RegExp(`option value=["']${theme}["']`), `${theme} compatibility id must remain selectable`);
+  assert.match(runtime, new RegExp(`${theme}: Object\\.freeze`), `${theme} compatibility id must remain supported by runtime`);
+  assert.match(dedicatedCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have ACT-specific theme tokens`);
 }
 
-assert.match(generatorHtml, /id="showcase-theme"/, "generator must expose a showcase theme selector");
-assert.match(generator, /showcaseTheme: document\.querySelector\("#showcase-theme"\)/, "generator must read the theme selector");
-assert.match(generator, /theme: normalizeShowcaseTheme\(elements\.showcaseTheme\?\.value\)/, "generated HTML must capture selected theme");
-assert.match(generator, /data-showcase-theme=/, "generated HTML must carry a fixed theme attribute");
-assert.match(generator, /createOutputCss\(backgroundStyle, data\.theme\)/, "generated HTML CSS must receive the selected theme");
+assert.match(generatorHtml, /ネオン・グリッド \/ NEON GRID/);
+assert.match(generatorHtml, /モノクローム・ドシエ \/ DOSSIER/);
+assert.match(generatorHtml, /クリムゾン・ノワール \/ CRIMSON NOIR/);
+assert.match(generatorHtml, /オービタル・グラス \/ ORBITAL GLASS/);
+assert.match(generatorHtml, /HTML生成・スタンダード版・豪華版の3出力へ共通適用/);
+assert.match(runtime, /storage ids are intentionally kept|Storage ids are intentionally kept/i);
+assert.match(runtime, /label: "ネオン・グリッド"/);
+assert.match(runtime, /label: "モノクローム・ドシエ"/);
 
+assert.match(generator, /showcaseTheme: document\.querySelector\("#showcase-theme"\)/, "generator must still read the theme selector");
 assert.match(publisher, /showcaseData\.theme = normalizeShowcaseTheme\(showcaseThemeField\?\.value\)/, "dynamic publish must persist theme inside showcase_data");
-assert.match(publisher, /act-showcase-standard\.html\?id=.*&theme=/s, "standard public URL must carry theme for first paint");
-assert.match(publisher, /act-showcase\.html\?id=.*&theme=/s, "cinematic public URL must carry theme for first paint");
-assert.match(restore, /setField\(elements\.showcaseTheme,[\s\S]*showcase\.theme/, "edit restore must restore saved theme");
+assert.match(restore, /setField\(elements\.showcaseTheme,[\s\S]*showcase\.theme/, "edit restore must restore saved compatibility ids");
 
-assert.doesNotMatch(cinematicHtml, /act-showcase-theme-runtime\.js/, "cinematic HTML must keep the one-bootstrap architecture");
-assert.match(cinematicBootstrap, /^await import\("\.\/act-showcase-theme-runtime\.js\?v=1"\);/, "cinematic bootstrap must initialize theme runtime before other showcase modules");
-assert.match(cinematicHtml, /act-showcase-entry\.css\?v=11/, "cinematic public showcase must load the themed showcase entry bundle");
-assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=1/, "standard public showcase must load theme runtime");
-assert.match(standardHtml, /act-showcase-theme\.css\?v=1/, "standard public showcase must load the showcase theme layer");
-assert.match(standardHtml, /act-showcase-theme-coverage\.css\?v=1/, "standard public showcase must load expanded theme coverage");
-assert.match(entryCss, /act-showcase-theme\.css\?v=1/, "cinematic theme layer must be imported by the showcase entry bundle");
-assert.match(entryCss, /act-showcase-theme-coverage\.css\?v=1/, "expanded cinematic theme coverage must load after the base theme layer");
-assert.ok(entryCss.indexOf("act-showcase-theme.css") < entryCss.indexOf("act-showcase-theme-coverage.css"), "theme coverage must load after base tokens");
-assert.match(cinematicPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/, "cinematic page must apply saved theme data");
-assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/, "standard page must apply saved theme data");
+assert.match(generatorLoader, /showcase-dedicated-output\.js\?v=1/, "generator must load the standard-output synchronizer");
+assert.match(generatedOutput, /act-showcase-standard\.css\?v=3/);
+assert.match(generatedOutput, /act-showcase-standard-hotfix\.css\?v=1/);
+assert.match(generatedOutput, /act-showcase-dedicated-themes\.css\?v=1/);
+assert.match(generatedOutput, /body\.id = "act-showcase-standard-page"/);
+assert.match(generatedOutput, /showcaseOutput = OUTPUT_MARKER/);
+assert.match(generatedOutput, /showcase-end wrap/);
+assert.match(generatedOutput, /hero__scroll-cue/);
 
-assert.match(themeCss, /Intron deliberately flips the showcase into a light municipal-record aesthetic/, "Intron must include dedicated light-theme overrides");
-assert.match(themeCss, /Poster-v2 is the current cinematic presentation/, "cinematic poster-v2 must receive dedicated theme overrides");
-assert.doesNotMatch(themeCss, /:root\[data-showcase-theme="nova"\][^{]*body\.showcase-poster-v2-ready/, "Nova should preserve the existing visual baseline instead of receiving broad overrides");
+assert.doesNotMatch(cinematicHtml, /act-showcase-theme-runtime\.js/, "cinematic HTML must keep one-bootstrap architecture");
+assert.match(cinematicBootstrap, /^await import\("\.\/act-showcase-theme-runtime\.js\?v=2"\);/, "cinematic bootstrap must initialize dedicated runtime first");
+assert.match(cinematicHtml, /act-showcase-entry\.css\?v=12/);
+assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=2/);
+assert.match(standardHtml, /act-showcase-dedicated-themes\.css\?v=1/);
+assert.doesNotMatch(standardHtml, /act-showcase-theme(?:-coverage)?\.css/);
+assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=1/);
+assert.doesNotMatch(entryCss, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
+assert.match(cinematicPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
+assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
 
-assert.match(coverageCss, /Final transmission \/ ACT TRAILER/, "expanded theme coverage must include the final trailer stage");
-assert.match(coverageCss, /poster-v2-trailer-stage__heading/, "final trailer heading must use theme tokens");
-assert.match(coverageCss, /poster-v2-topbar/, "top-level cinematic chrome must use theme tokens");
-assert.match(coverageCss, /poster-v2-panel__head/, "information panels must use theme tokens");
-assert.match(coverageCss, /#act-showcase-standard-page/, "standard public view must receive the expanded coverage layer");
-assert.doesNotMatch(coverageCss, /!important/, "expanded theme coverage must stay within the CSS audit contract");
+assert.match(dedicatedCss, /STANDARD \+ generated standalone HTML/);
+assert.match(dedicatedCss, /CINEMATIC \/ deluxe/);
+assert.match(dedicatedCss, /SYSTEM ACCESS \/ title \/ trailer readout/);
+assert.match(dedicatedCss, /HANDOUT -> CAST ASSIGN/);
+assert.match(dedicatedCss, /Final ACT TRAILER stage/);
+assert.match(dedicatedCss, /#act-showcase-standard-page/);
+assert.match(dedicatedCss, /neotokyo-sequence__trailer-terminal/);
+assert.match(dedicatedCss, /neotokyo-sequence__handout-panel/);
+assert.match(dedicatedCss, /neotokyo-sequence__assign-frame/);
+assert.match(dedicatedCss, /poster-v2-trailer-stage__heading/);
+assert.doesNotMatch(dedicatedCss, /!important/);
 
-console.log("showcase theme prototype contract: ok");
+console.log("dedicated showcase theme contract: ok");
