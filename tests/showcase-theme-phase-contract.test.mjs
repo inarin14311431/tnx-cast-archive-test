@@ -12,7 +12,7 @@ const [entry, phase, cinematicHtml] = await Promise.all([
 
 test("phase contract is the last cinematic stylesheet and cache key is bumped", () => {
   assert.equal(entry.trim().split("\n").at(-1), '@import "./act-showcase-theme-phase-contract.css?v=1";');
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=14/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=15/);
   assert.doesNotMatch(phase, /!important/);
 });
 
