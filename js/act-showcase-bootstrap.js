@@ -21,5 +21,5 @@ await import("./act-showcase-handout-live-frame.js?v=2");
 await import("./act-showcase-page.js?v=20260915a");
 await import("./act-showcase-scenario-writer.js?v=2");
 await import("./act-showcase-supporting-cast.js?v=5");
-await import("./act-showcase-final-trailer.js?v=7");
+await import("./act-showcase-final-trailer.js?v=8");
 await import("./act-showcase-display-normalizer.js?v=1");
