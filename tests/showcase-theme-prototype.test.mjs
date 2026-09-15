@@ -17,6 +17,7 @@ const cinematicPage = read("js/act-showcase-page.js");
 const standardPage = read("js/act-showcase-standard.js");
 const dedicatedCss = read("css-next/pages/act-showcase-dedicated-themes.css");
 const surfaceCss = read("css-next/pages/act-showcase-theme-surface-system.css");
+const phaseCss = read("css-next/pages/act-showcase-theme-phase-contract.css");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 
 const themes = ["nova", "intron", "vlad", "lutetia"];
@@ -54,14 +55,16 @@ assert.match(generatedOutput, /hero__scroll-cue/);
 
 assert.doesNotMatch(cinematicHtml, /act-showcase-theme-runtime\.js/, "cinematic HTML must keep one-bootstrap architecture");
 assert.match(cinematicBootstrap, /^await import\("\.\/act-showcase-theme-runtime\.js\?v=2"\);/, "cinematic bootstrap must initialize dedicated runtime first");
-assert.match(cinematicHtml, /act-showcase-entry\.css\?v=13/);
+assert.match(cinematicHtml, /act-showcase-entry\.css\?v=14/);
 assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=2/);
 assert.match(standardHtml, /act-showcase-dedicated-themes\.css\?v=1/);
 assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=1/);
 assert.doesNotMatch(standardHtml, /act-showcase-theme(?:-coverage)?\.css/);
 assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=1/);
 assert.match(entryCss, /act-showcase-theme-surface-system\.css\?v=1/);
+assert.match(entryCss, /act-showcase-theme-phase-contract\.css\?v=1/);
 assert.ok(entryCss.indexOf("act-showcase-dedicated-themes.css") < entryCss.indexOf("act-showcase-theme-surface-system.css"));
+assert.ok(entryCss.indexOf("act-showcase-theme-surface-system.css") < entryCss.indexOf("act-showcase-theme-phase-contract.css"));
 assert.doesNotMatch(entryCss, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 assert.match(cinematicPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
 assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
@@ -84,6 +87,11 @@ assert.match(surfaceCss, /ACT READY/);
 assert.match(surfaceCss, /Poster \/ opening page/);
 assert.match(surfaceCss, /Supporting \/ guest cast/);
 assert.match(surfaceCss, /STANDARD \+ generated HTML/);
-assert.doesNotMatch(`${dedicatedCss}\n${surfaceCss}`, /!important/);
+assert.match(phaseCss, /phase theme contract/i);
+assert.match(phaseCss, /ACT TITLE \/ credit lockup/);
+assert.match(phaseCss, /ACT TRAILER: frame owns clipping/);
+assert.match(phaseCss, /HANDOUT -> CAST ASSIGN \/ MATCH FOUND/);
+assert.match(phaseCss, /ACT READY \/ ASSIGNMENT BAY/);
+assert.doesNotMatch(`${dedicatedCss}\n${surfaceCss}\n${phaseCss}`, /!important/);
 
 console.log("dedicated showcase theme contract: ok");
