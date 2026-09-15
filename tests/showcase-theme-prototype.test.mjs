@@ -9,6 +9,7 @@ const publisher = read("js/showcase-dynamic-publish-v3.js");
 const restore = read("js/showcase-edit-restore.js");
 const runtime = read("js/act-showcase-theme-runtime.js");
 const cinematicHtml = read("act-showcase.html");
+const cinematicBootstrap = read("js/act-showcase-bootstrap.js");
 const standardHtml = read("act-showcase-standard.html");
 const cinematicPage = read("js/act-showcase-page.js");
 const standardPage = read("js/act-showcase-standard.js");
@@ -33,10 +34,11 @@ assert.match(publisher, /act-showcase-standard\.html\?id=.*&theme=/s, "standard 
 assert.match(publisher, /act-showcase\.html\?id=.*&theme=/s, "cinematic public URL must carry theme for first paint");
 assert.match(restore, /setField\(elements\.showcaseTheme,[\s\S]*showcase\.theme/, "edit restore must restore saved theme");
 
-for (const html of [cinematicHtml, standardHtml]) {
-  assert.match(html, /act-showcase-theme-runtime\.js\?v=1/, "public showcase must load theme runtime before rendering");
-  assert.match(html, /act-showcase-theme\.css\?v=1|act-showcase-entry\.css\?v=9/, "public showcase must load the showcase theme layer");
-}
+assert.doesNotMatch(cinematicHtml, /act-showcase-theme-runtime\.js/, "cinematic HTML must keep the one-bootstrap architecture");
+assert.match(cinematicBootstrap, /^await import\("\.\/act-showcase-theme-runtime\.js\?v=1"\);/, "cinematic bootstrap must initialize theme runtime before other showcase modules");
+assert.match(cinematicHtml, /act-showcase-entry\.css\?v=9/, "cinematic public showcase must load the themed showcase entry bundle");
+assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=1/, "standard public showcase must load theme runtime");
+assert.match(standardHtml, /act-showcase-theme\.css\?v=1/, "standard public showcase must load the showcase theme layer");
 assert.match(entryCss, /act-showcase-theme\.css\?v=1/, "cinematic theme layer must be imported last by the showcase entry bundle");
 assert.match(cinematicPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/, "cinematic page must apply saved theme data");
 assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/, "standard page must apply saved theme data");
