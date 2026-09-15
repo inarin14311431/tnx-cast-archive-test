@@ -17,7 +17,7 @@ test("current dynamic publisher stores trailer and not legacy intro", async () =
     read("js/showcase-generator-loader.js"),
     read("js/showcase-dynamic-publish-v3.js")
   ]);
-  assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=2/);
+  assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=3/);
   assert.match(publisher, /version: 2/);
   assert.match(publisher, /trailer: trailerBody \? \{ title: "ACT TRAILER", body: trailerBody \} : null/);
   assert.doesNotMatch(publisher, /\n\s*intro:/);
@@ -72,7 +72,7 @@ test("SYSTEM ACCESS uses a dedicated cinematic access treatment", async () => {
   ]);
   assert.match(enhancer, /ACT FILE \/\/ ACCESS/);
   assert.match(enhancer, /PUBLIC ACCESS \/\/ AUTHORIZED/);
-  assert.match(css, /cinematic-aperture/);
+  assert.match(enhancer, /cinematic-aperture/);
   assert.match(css, /cinematic-access-scan/);
 });
 
