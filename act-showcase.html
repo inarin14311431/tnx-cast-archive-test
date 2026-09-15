@@ -6,7 +6,7 @@
   <title>ACT SHOWCASE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;500;700;900&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css-next/pages/act-showcase-entry.css?v=12">
+  <link rel="stylesheet" href="./css-next/pages/act-showcase-entry.css?v=13">
 </head>
 <body id="act-showcase-page">
   <div id="cinematic-intro" class="cinematic-intro" aria-hidden="true">
@@ -28,32 +28,54 @@
       <span class="ambient-stage__flare ambient-stage__flare--pink"></span>
     </div>
 
-    <main id="showcase-story" class="showcase-story">
-      <section id="scene-opening" class="showcase-scene scene-opening" data-scene="opening" aria-labelledby="opening-act-name">
-        <div class="opening-world" aria-hidden="true">
-          <div class="opening-city"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-          <div class="opening-horizon"></div>
-          <div class="opening-floor"></div>
-          <div class="opening-door opening-door--left"><i></i></div>
-          <div class="opening-door opening-door--right"><i></i></div>
-        </div>
-        <div class="scene-shell opening-content">
-          <div class="opening-systemline"><span>N◎VA MUNICIPAL DATABASE</span><span>PUBLIC ACT FILE</span></div>
+    <header class="site-header">
+      <div class="site-header__brand"><strong>N◎VA</strong><span>MUNICIPAL DATABASE</span></div>
+      <div class="site-header__meta"><span>CONNECTION // SECURE</span><small>NODE // TOKYO N◎VA</small></div>
+    </header>
+
+    <main class="showcase-story">
+      <section id="scene-opening" class="story-scene scene-opening" data-scene="opening">
+        <div class="opening-world" aria-hidden="true"><span>01</span><b>PUBLIC ACT SHOWCASE</b></div>
+        <div class="opening-systemline" aria-hidden="true">ACT FILE // NEURO AGE</div>
+        <div class="opening-floor" aria-hidden="true"></div>
+        <div class="opening-horizon" aria-hidden="true"></div>
+        <div class="opening-content">
           <p class="scene-index">01 // OPENING</p>
-          <p id="showcase-kicker" class="opening-kicker">PUBLIC ACT SHOWCASE</p>
-          <h1 id="opening-act-name">ACT CAST FILE</h1>
-          <p id="opening-subtitle" class="opening-subtitle">CAST SHOWCASE</p>
-          <p id="opening-ruler" class="opening-ruler" hidden></p>
-          <button type="button" class="opening-scroll"><span>SCROLL TO SHOWCASE</span><i></i></button>
+          <p class="opening-kicker">PUBLIC ACT SHOWCASE</p>
+          <h1 id="showcase-title">ACT SHOWCASE</h1>
+          <p id="showcase-subtitle" class="opening-subtitle" hidden></p>
+          <p id="showcase-ruler" class="opening-ruler" hidden></p>
+          <button id="opening-scroll" class="opening-scroll" type="button"><span>SCROLL TO SHOWCASE</span><i></i></button>
+        </div>
+      </section>
+
+      <section id="scene-trailer" class="story-scene scene-trailer" data-scene="trailer">
+        <div class="scene-shell">
+          <header class="scene-heading">
+            <p class="scene-eyebrow">02 // ACT TRAILER</p>
+            <h2>アクトトレーラー</h2>
+            <p class="scene-heading__note">PRE-ACT READOUT / PUBLIC BROADCAST</p>
+          </header>
+          <div class="trailer-body"><p id="showcase-intro"></p></div>
+        </div>
+      </section>
+
+      <section id="scene-casts" class="story-scene scene-casts" data-scene="casts">
+        <div class="scene-shell scene-shell--casts">
+          <header class="scene-heading">
+            <p class="scene-eyebrow">03 // CAST FILES</p>
+            <h2>アサインキャスト</h2>
+            <p class="scene-heading__note">CAST ASSIGNMENT / ACTIVE DOSSIER</p>
+          </header>
+          <nav id="showcase-navigation" class="cast-selector" aria-label="キャスト選択"></nav>
+          <div id="showcase-casts" class="cast-stage"></div>
         </div>
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="scene-shell">「トーキョーN◎VA THE AXLERATION」は有限会社ファーイースト・アミューズメント・リサーチの著作物です。</div>
-    </footer>
+    <footer class="site-footer"><span>ACT SHOWCASE // PUBLIC ARCHIVE</span><span>© N◎VA CAST ARCHIVE</span></footer>
   </div>
 
-  <script type="module" src="./js/act-showcase-bootstrap.js?v=15"></script>
+  <script type="module" src="./js/act-showcase-bootstrap.js?v=14"></script>
 </body>
 </html>
