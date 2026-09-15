@@ -37,7 +37,7 @@ assert.match(restore, /setField\(elements\.showcaseTheme,[\s\S]*showcase\.theme/
 
 assert.doesNotMatch(cinematicHtml, /act-showcase-theme-runtime\.js/, "cinematic HTML must keep the one-bootstrap architecture");
 assert.match(cinematicBootstrap, /^await import\("\.\/act-showcase-theme-runtime\.js\?v=1"\);/, "cinematic bootstrap must initialize theme runtime before other showcase modules");
-assert.match(cinematicHtml, /act-showcase-entry\.css\?v=10/, "cinematic public showcase must load the themed showcase entry bundle");
+assert.match(cinematicHtml, /act-showcase-entry\.css\?v=11/, "cinematic public showcase must load the themed showcase entry bundle");
 assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=1/, "standard public showcase must load theme runtime");
 assert.match(standardHtml, /act-showcase-theme\.css\?v=1/, "standard public showcase must load the showcase theme layer");
 assert.match(standardHtml, /act-showcase-theme-coverage\.css\?v=1/, "standard public showcase must load expanded theme coverage");
