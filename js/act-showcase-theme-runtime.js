@@ -1,9 +1,11 @@
 (() => {
+  // Storage ids are intentionally kept for backwards compatibility with already
+  // published showcase_data. Labels and presentation are ACT SHOWCASE specific.
   const definitions = Object.freeze({
-    nova: Object.freeze({ id: "nova", label: "トーキョーＮ◎ＶＡ", colorScheme: "dark" }),
-    intron: Object.freeze({ id: "intron", label: "イントロン", colorScheme: "light" }),
-    vlad: Object.freeze({ id: "vlad", label: "ヴラド・コロニー", colorScheme: "dark" }),
-    lutetia: Object.freeze({ id: "lutetia", label: "ヴィル・ヌーヴ・ルテチア", colorScheme: "dark" })
+    nova: Object.freeze({ id: "nova", label: "ネオン・グリッド", code: "NEON GRID", colorScheme: "dark" }),
+    intron: Object.freeze({ id: "intron", label: "モノクローム・ドシエ", code: "DOSSIER", colorScheme: "light" }),
+    vlad: Object.freeze({ id: "vlad", label: "クリムゾン・ノワール", code: "CRIMSON NOIR", colorScheme: "dark" }),
+    lutetia: Object.freeze({ id: "lutetia", label: "オービタル・グラス", code: "ORBITAL GLASS", colorScheme: "dark" })
   });
   const defaultId = "nova";
   const params = new URLSearchParams(location.search);
