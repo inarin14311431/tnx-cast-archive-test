@@ -1,6 +1,6 @@
 /* ACT SHOWCASE phase theme contract.
    Loaded last. This layer deliberately matches the legacy cinematic selectors'
-   specificity so theme ownership wins without !important or animation rewrites. */
+   specificity so theme ownership wins through normal cascade and animation-safe overrides. */
 
 /* ---------- Shared cinematic phase surfaces ---------- */
 :root[data-showcase-theme] body#act-showcase-page .cinematic-intro.neotokyo-sequence{
