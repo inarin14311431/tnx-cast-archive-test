@@ -153,7 +153,7 @@ async function extractShowcaseData(source) {
     actName: doc.querySelector(".hero__act")?.textContent?.trim() || "",
     rulerName: (doc.querySelector(".hero__ruler:not(.hero__scenario-writer)")?.textContent || "").replace(/^RULER[：:]\s*/i, "").trim(),
     scenarioWriterName: (doc.querySelector(".hero__scenario-writer")?.textContent || "").replace(/^SCENARIO WRITER[：:]\s*/i, "").trim(),
-    trailer: trailerBody ? { title: "ACT TRAILER", body: trailerBody } : null,
+    trailer: trailerBody ? { title: "アクトトレーラー", body: trailerBody } : null,
     background,
     casts: cards,
     publishedAt: new Date().toISOString()
@@ -218,35 +218,20 @@ function normalizeDisplayQuotes(value) {
 }
 
 function getJsonByteLength(value) { return getUtf8ByteLength(JSON.stringify(value)); }
-function getUtf8ByteLength(value) { return new TextEncoder().encode(String(value || "")).byteLength; }
-function formatBytes(bytes) { return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(2)}MB` : `${Math.ceil(bytes / 1024)}KB`; }
-function extractBackgroundUrl(styleText) { const bodyRule = styleText.match(/body\s*\{[^}]*background-image\s*:[^;}]*url\((['"]?)(.*?)\1\)/is); return bodyRule?.[2] || ""; }
-
-function translateError(error) {
-  const message = String(error?.message || "");
-  if (/showcase data is too large/i.test(message)) return "公開データが容量上限を超えました。背景画像を小さくするか、画像ファイルではなく背景画像URLを指定して再生成してください。";
-  if (/publish_act_showcase_for_current_user|function.*does not exist|schema cache/i.test(message)) return "動的公開機能が未設定です。Supabaseで supabase/20_dynamic_act_showcase.sql を実行してください。";
-  if (/owned by another|another user|permission denied/i.test(message)) return "このアクト識別名は別のユーザーが使用しています。別の識別名を入力してください。";
-  if (/participant|not accessible|do not exist/i.test(message)) return "選択した公開キャストの一部を登録できません。公開状態を確認してください。";
-  return message || "アクト紹介の公開に失敗しました。";
-}
-
-function setStatus(message, state = "", allowHtml = false) {
+function getUtf8ByteLength(value) { return new TextEncoder().encode(String(value ?? "")).length; }
+function formatBytes(bytes) { return `${Math.max(0, Number(bytes) || 0).toLocaleString("ja-JP")} bytes`; }
+function normalizeSlug(value) { return String(value || "").trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80); }
+function normalizeShowcaseTheme(value) { return ["nova", "intron", "vlad", "lutetia"].includes(String(value || "").toLowerCase()) ? String(value).toLowerCase() : "nova"; }
+function escapeAttribute(value) { return String(value ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function setStatus(message, type = "", allowHtml = false) {
   if (!status) return;
   if (allowHtml) status.innerHTML = message;
   else status.textContent = message;
-  status.className = `generator-status${state ? ` is-${state}` : ""}`;
+  status.className = `generator-status${type ? ` is-${type}` : ""}`;
 }
-
-function normalizeShowcaseTheme(value) {
-  const theme = String(value || "").trim().toLowerCase();
-  return ["nova", "intron", "vlad", "lutetia"].includes(theme) ? theme : "nova";
-}
-
-function normalizeSlug(value) {
-  return String(value || "").normalize("NFKC").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64);
-}
-
-function escapeAttribute(value) {
-  return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
+function translateError(error) {
+  const message = String(error?.message || "");
+  if (/duplicate key|unique/i.test(message)) return "このアクト識別名はすでに他のユーザーが使用しています。別の識別名を入力してください。";
+  if (/permission|policy|row-level security|forbidden/i.test(message)) return "このアクト紹介を更新する権限がありません。自分が公開したアクト識別名を使用してください。";
+  return message || "公開処理に失敗しました。";
 }
