@@ -24,7 +24,7 @@ test("cinematic JS classifies text but does not own font metrics", () => {
 test("cinematic tagline sizing is owned by CSS data-fit states", () => {
   assert.match(entry, /act-showcase-cinematic-fit\.css\?v=1/);
   for (const fit of ["medium", "long", "xlong"]) {
-    const selector = new RegExp(`showcase-fit-tagline\\[data-fit=["']${fit}["']\\][\\s\\S]*font-size`);
+    const selector = new RegExp(`\\.showcase-fit-tagline\\[data-fit=["']${fit}["']\\]\\s*\\{[\\s\\S]*?font-size`);
     assert.match(fitCss, selector);
   }
 });
