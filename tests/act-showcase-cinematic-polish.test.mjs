@@ -72,7 +72,7 @@ test("SYSTEM ACCESS uses a dedicated cinematic access treatment", async () => {
   ]);
   assert.match(enhancer, /ACT FILE \/\/ ACCESS/);
   assert.match(enhancer, /PUBLIC ACCESS \/\/ AUTHORIZED/);
-  assert.match(enhancer, /cinematic-aperture/);
+  assert.match(css, /cinematic-aperture/);
   assert.match(css, /cinematic-access-scan/);
 });
 
