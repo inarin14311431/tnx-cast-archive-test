@@ -153,7 +153,7 @@ async function extractShowcaseData(source) {
     actName: doc.querySelector(".hero__act")?.textContent?.trim() || "",
     rulerName: (doc.querySelector(".hero__ruler:not(.hero__scenario-writer)")?.textContent || "").replace(/^RULER[：:]\s*/i, "").trim(),
     scenarioWriterName: (doc.querySelector(".hero__scenario-writer")?.textContent || "").replace(/^SCENARIO WRITER[：:]\s*/i, "").trim(),
-    trailer: trailerBody ? { title: "ACT TRAILER", body: trailerBody } : null,
+    trailer: trailerBody ? { title: "アクトトレーラー", body: trailerBody } : null,
     background,
     casts: cards,
     publishedAt: new Date().toISOString()

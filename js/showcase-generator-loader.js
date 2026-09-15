@@ -30,7 +30,7 @@ async function initializeShowcaseGenerator() {
     await import("./showcase-scenario-writer.js?v=1");
     await import("./showcase-guests.js?v=1");
     await import("./showcase-guest-publish-bridge.js?v=1");
-    await import("./showcase-dynamic-publish-v3.js?v=3");
+    await import("./showcase-dynamic-publish-v3.js?v=4");
     await import("./showcase-publish-url-canonicalizer.js?v=1");
     document.documentElement.dataset.showcaseGeneratorState = "ready";
   } catch (error) {

@@ -17,10 +17,17 @@ test("current dynamic publisher stores trailer and not legacy intro", async () =
     read("js/showcase-generator-loader.js"),
     read("js/showcase-dynamic-publish-v3.js")
   ]);
-  assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=3/);
+  assert.match(loader, /showcase-dynamic-publish-v3\.js\?v=4/);
   assert.match(publisher, /version: 2/);
-  assert.match(publisher, /trailer: trailerBody \? \{ title: "ACT TRAILER", body: trailerBody \} : null/);
+  assert.match(publisher, /trailer: trailerBody \? \{ title: "アクトトレーラー", body: trailerBody \} : null/);
   assert.doesNotMatch(publisher, /\n\s*intro:/);
+});
+
+test("final ACT TRAILER keeps the English main heading and localizes the duplicate subtitle", async () => {
+  const source = await read("js/act-showcase-final-trailer.js");
+  assert.match(source, /poster-v2-trailer-stage__heading", "ACT TRAILER"/);
+  assert.match(source, /return "アクトトレーラー"/);
+  assert.match(source, /\^ACT\\s\*TRAILER\$\/i/);
 });
 
 test("showcase publish normalizes nested handle quotation marks without changing stored character data", async () => {

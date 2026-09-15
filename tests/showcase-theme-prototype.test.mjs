@@ -14,6 +14,7 @@ const standardHtml = read("act-showcase-standard.html");
 const cinematicPage = read("js/act-showcase-page.js");
 const standardPage = read("js/act-showcase-standard.js");
 const themeCss = read("css-next/pages/act-showcase-theme.css");
+const coverageCss = read("css-next/pages/act-showcase-theme-coverage.css");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 
 const themes = ["nova", "intron", "vlad", "lutetia"];
@@ -36,15 +37,25 @@ assert.match(restore, /setField\(elements\.showcaseTheme,[\s\S]*showcase\.theme/
 
 assert.doesNotMatch(cinematicHtml, /act-showcase-theme-runtime\.js/, "cinematic HTML must keep the one-bootstrap architecture");
 assert.match(cinematicBootstrap, /^await import\("\.\/act-showcase-theme-runtime\.js\?v=1"\);/, "cinematic bootstrap must initialize theme runtime before other showcase modules");
-assert.match(cinematicHtml, /act-showcase-entry\.css\?v=9/, "cinematic public showcase must load the themed showcase entry bundle");
+assert.match(cinematicHtml, /act-showcase-entry\.css\?v=10/, "cinematic public showcase must load the themed showcase entry bundle");
 assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=1/, "standard public showcase must load theme runtime");
 assert.match(standardHtml, /act-showcase-theme\.css\?v=1/, "standard public showcase must load the showcase theme layer");
-assert.match(entryCss, /act-showcase-theme\.css\?v=1/, "cinematic theme layer must be imported last by the showcase entry bundle");
+assert.match(standardHtml, /act-showcase-theme-coverage\.css\?v=1/, "standard public showcase must load expanded theme coverage");
+assert.match(entryCss, /act-showcase-theme\.css\?v=1/, "cinematic theme layer must be imported by the showcase entry bundle");
+assert.match(entryCss, /act-showcase-theme-coverage\.css\?v=1/, "expanded cinematic theme coverage must load after the base theme layer");
+assert.ok(entryCss.indexOf("act-showcase-theme.css") < entryCss.indexOf("act-showcase-theme-coverage.css"), "theme coverage must load after base tokens");
 assert.match(cinematicPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/, "cinematic page must apply saved theme data");
 assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/, "standard page must apply saved theme data");
 
 assert.match(themeCss, /Intron deliberately flips the showcase into a light municipal-record aesthetic/, "Intron must include dedicated light-theme overrides");
 assert.match(themeCss, /Poster-v2 is the current cinematic presentation/, "cinematic poster-v2 must receive dedicated theme overrides");
 assert.doesNotMatch(themeCss, /:root\[data-showcase-theme="nova"\][^{]*body\.showcase-poster-v2-ready/, "Nova should preserve the existing visual baseline instead of receiving broad overrides");
+
+assert.match(coverageCss, /Final transmission \/ ACT TRAILER/, "expanded theme coverage must include the final trailer stage");
+assert.match(coverageCss, /poster-v2-trailer-stage__heading/, "final trailer heading must use theme tokens");
+assert.match(coverageCss, /poster-v2-topbar/, "top-level cinematic chrome must use theme tokens");
+assert.match(coverageCss, /poster-v2-panel__head/, "information panels must use theme tokens");
+assert.match(coverageCss, /#act-showcase-standard-page/, "standard public view must receive the expanded coverage layer");
+assert.doesNotMatch(coverageCss, /!important/, "expanded theme coverage must stay within the CSS audit contract");
 
 console.log("showcase theme prototype contract: ok");
