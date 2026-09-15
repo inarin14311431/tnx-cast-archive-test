@@ -58,8 +58,6 @@
   }
 
   window.addEventListener("resize", () => {
-    intro?.querySelectorAll(".neotokyo-sequence__cast--linked .neotokyo-sequence__cast-tagline")
-      .forEach(tagline => fitAssignedTagline(tagline));
     const readout = intro?.querySelector(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout");
     if (readout) scheduleTrailerFrame(readout);
   }, { passive: true });
@@ -172,23 +170,7 @@
         role.textContent = String(role.textContent || "").replace(/[◎●]/g, "").trim();
         role.dataset.presentationClean = "true";
       }
-      const tagline = card.querySelector(".neotokyo-sequence__cast-tagline");
-      if (tagline) fitAssignedTagline(tagline);
     }
-  }
-
-  function fitAssignedTagline(tagline) {
-    if (!tagline?.isConnected) return;
-    requestAnimationFrame(() => {
-      if (!tagline.isConnected || tagline.clientWidth <= 0) return;
-      tagline.style.removeProperty("font-size");
-      let size = parseFloat(getComputedStyle(tagline).fontSize) || 16;
-      const minimum = 13;
-      while (tagline.scrollWidth > tagline.clientWidth + 1 && size > minimum) {
-        size = Math.max(minimum, size - .5);
-        tagline.style.fontSize = `${size}px`;
-      }
-    });
   }
 
   function normalizeOpeningSubtitle() {
