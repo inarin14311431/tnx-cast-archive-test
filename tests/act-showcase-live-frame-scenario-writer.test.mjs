@@ -77,7 +77,7 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
 
 test("entry cache keys expose the latest generator, cinematic bootstrap, title-credit CSS, and handout live frame", () => {
   assert.match(generatorHtml, /showcase-generator-loader\.js\?v=31/);
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=10/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=11/);
   assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=14/);
   assert.match(bootstrap, /act-showcase-final-trailer\.js\?v=8/);
   assert.match(entryCss, /act-showcase-neotokyo-hierarchy\.css\?v=20260913a/);
