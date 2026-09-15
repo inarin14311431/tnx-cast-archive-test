@@ -1,3 +1,5 @@
+await import("./act-showcase-theme-runtime.js?v=1");
+
 const current = new URL(location.href);
 if (String(current.searchParams.get("showcaseMode") || "").toLowerCase() === "cinematic") {
   current.searchParams.delete("showcaseMode");
