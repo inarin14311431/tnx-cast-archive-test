@@ -34,7 +34,9 @@ test("ACT TRAILER restores a size-driven live terminal height without replacing 
 
 test("scenario writer is mounted at the same form level as RULER and invalidates stale generated output", () => {
   assert.match(generatorLoader, /showcase-scenario-writer\.js\?v=1/);
-  assert.ok(generatorLoader.indexOf("showcase-scenario-writer.js") < generatorLoader.indexOf("showcase-dynamic-publish-v3.js"));
+  assert.match(generatorLoader, /showcase-dedicated-output\.js\?v=1/);
+  assert.ok(generatorLoader.indexOf("showcase-scenario-writer.js") < generatorLoader.indexOf("showcase-dedicated-output.js"));
+  assert.ok(generatorLoader.indexOf("showcase-dedicated-output.js") < generatorLoader.indexOf("showcase-dynamic-publish-v3.js"));
   assert.match(generatorScenario, /scenario-writer-name/);
   assert.match(generatorScenario, /showcase-credit-fields/);
   assert.match(generatorScenario, /gridTemplateColumns = "repeat\(2, minmax\(0, 1fr\)\)"/);
@@ -75,12 +77,14 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
   assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{margin-top:10px\}/);
 });
 
-test("entry cache keys expose the latest generator, cinematic bootstrap, title-credit CSS, and handout live frame", () => {
-  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=31/);
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=11/);
-  assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=14/);
+test("entry cache keys expose the dedicated theme stack and latest generator bootstrap", () => {
+  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=32/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=12/);
+  assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=15/);
+  assert.match(bootstrap, /act-showcase-theme-runtime\.js\?v=2/);
   assert.match(bootstrap, /act-showcase-final-trailer\.js\?v=8/);
   assert.match(entryCss, /act-showcase-neotokyo-hierarchy\.css\?v=20260913a/);
   assert.match(entryCss, /act-showcase-handout-live-frame\.css\?v=1/);
-  assert.match(entryCss, /act-showcase-theme-coverage\.css\?v=1/);
+  assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=1/);
+  assert.doesNotMatch(entryCss, /act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 });
