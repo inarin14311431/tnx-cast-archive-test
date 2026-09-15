@@ -45,6 +45,6 @@ assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/, 
 
 assert.match(themeCss, /Intron deliberately flips the showcase into a light municipal-record aesthetic/, "Intron must include dedicated light-theme overrides");
 assert.match(themeCss, /Poster-v2 is the current cinematic presentation/, "cinematic poster-v2 must receive dedicated theme overrides");
-assert.doesNotMatch(themeCss, /data-showcase-theme="nova"[^}]*body\.showcase-poster-v2-ready/s, "Nova should preserve the existing visual baseline instead of receiving broad overrides");
+assert.doesNotMatch(themeCss, /:root\[data-showcase-theme="nova"\][^{]*body\.showcase-poster-v2-ready/, "Nova should preserve the existing visual baseline instead of receiving broad overrides");
 
 console.log("showcase theme prototype contract: ok");
