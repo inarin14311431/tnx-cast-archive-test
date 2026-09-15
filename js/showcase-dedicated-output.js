@@ -44,10 +44,10 @@ async function synchronizeGeneratedOutput() {
   }
 
   doc.querySelectorAll("style").forEach(node => node.remove());
-  const style = doc.createElement("style");
-  style.dataset.showcaseStandardSource = "true";
-  style.textContent = css;
-  doc.head.append(style);
+  doc.head.insertAdjacentHTML(
+    "beforeend",
+    `<style data-showcase-standard-source="true">${escapeStyleText(css)}</style>`
+  );
 
   normalizeStandardStructure(doc);
 
@@ -123,4 +123,8 @@ function escapeCssString(value) {
     "\n": "",
     "\r": ""
   }[character]));
+}
+
+function escapeStyleText(value) {
+  return String(value || "").replace(/<\/style/gi, "<\\/style");
 }
