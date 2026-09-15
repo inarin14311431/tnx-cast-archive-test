@@ -20,7 +20,7 @@ test("dedicated ACT tokens, shared surfaces, and the final phase contract load i
   assert.equal(lines.at(-3), '@import "./act-showcase-dedicated-themes.css?v=1";');
   assert.equal(lines.at(-2), '@import "./act-showcase-theme-surface-system.css?v=1";');
   assert.equal(lines.at(-1), '@import "./act-showcase-theme-phase-contract.css?v=1";');
-  assert.match(showcaseHtml, /act-showcase-entry\.css\?v=14/);
+  assert.match(showcaseHtml, /act-showcase-entry\.css\?v=15/);
 });
 
 test("all four ACT-specific themes own explicit tokens", () => {
