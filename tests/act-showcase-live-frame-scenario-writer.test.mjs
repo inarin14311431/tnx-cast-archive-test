@@ -15,6 +15,7 @@ const standardHtml = read("act-showcase-standard.html");
 const generatorHtml = read("showcase-generator.html");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 const hierarchyCss = read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
+const surfaceCss = read("css-next/pages/act-showcase-theme-surface-system.css");
 
 test("ACT TRAILER restores a size-driven live terminal height without replacing stage scrolling", () => {
   assert.match(bootstrap, /act-showcase-cinematic-enhancer\.js\?v=4/);
@@ -32,9 +33,15 @@ test("ACT TRAILER restores a size-driven live terminal height without replacing 
   assert.doesNotMatch(liveFrame, /scrollIntoView|window\.scrollBy/);
 });
 
+test("surface system caps the live terminal and lets the readout own overflow", () => {
+  assert.match(surfaceCss, /neotokyo-sequence__screen--trailer[\s\S]*overflow:hidden/);
+  assert.match(surfaceCss, /neotokyo-sequence__trailer-terminal[\s\S]*max-height:min\(58svh,620px\)[\s\S]*overflow:hidden/);
+  assert.match(surfaceCss, /neotokyo-sequence__readout\.is-terminal-readout[\s\S]*max-height:min\(48svh,510px\)[\s\S]*overflow:auto/);
+});
+
 test("scenario writer is mounted at the same form level as RULER and invalidates stale generated output", () => {
   assert.match(generatorLoader, /showcase-scenario-writer\.js\?v=1/);
-  assert.match(generatorLoader, /showcase-dedicated-output\.js\?v=1/);
+  assert.match(generatorLoader, /showcase-dedicated-output\.js\?v=2/);
   assert.ok(generatorLoader.indexOf("showcase-scenario-writer.js") < generatorLoader.indexOf("showcase-dedicated-output.js"));
   assert.ok(generatorLoader.indexOf("showcase-dedicated-output.js") < generatorLoader.indexOf("showcase-dynamic-publish-v3.js"));
   assert.match(generatorScenario, /scenario-writer-name/);
@@ -77,14 +84,16 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
   assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{margin-top:10px\}/);
 });
 
-test("entry cache keys expose the dedicated theme stack and latest generator bootstrap", () => {
-  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=32/);
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=12/);
+test("entry cache keys expose the final surface layer and latest generator bootstrap", () => {
+  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=33/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=13/);
   assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=15/);
   assert.match(bootstrap, /act-showcase-theme-runtime\.js\?v=2/);
   assert.match(bootstrap, /act-showcase-final-trailer\.js\?v=8/);
   assert.match(entryCss, /act-showcase-neotokyo-hierarchy\.css\?v=20260913a/);
   assert.match(entryCss, /act-showcase-handout-live-frame\.css\?v=1/);
   assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=1/);
+  assert.match(entryCss, /act-showcase-theme-surface-system\.css\?v=1/);
+  assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=1/);
   assert.doesNotMatch(entryCss, /act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 });
