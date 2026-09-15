@@ -76,9 +76,11 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
 });
 
 test("entry cache keys expose the latest generator, cinematic bootstrap, title-credit CSS, and handout live frame", () => {
-  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=30/);
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=9/);
-  assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=13/);
+  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=31/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=10/);
+  assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=14/);
+  assert.match(bootstrap, /act-showcase-final-trailer\.js\?v=8/);
   assert.match(entryCss, /act-showcase-neotokyo-hierarchy\.css\?v=20260913a/);
   assert.match(entryCss, /act-showcase-handout-live-frame\.css\?v=1/);
+  assert.match(entryCss, /act-showcase-theme-coverage\.css\?v=1/);
 });
