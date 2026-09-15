@@ -16,8 +16,9 @@ const generatorHtml = read("showcase-generator.html");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 const hierarchyCss = read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
 const surfaceCss = read("css-next/pages/act-showcase-theme-surface-system.css");
+const phaseCss = read("css-next/pages/act-showcase-theme-phase-contract.css");
 
-test("ACT TRAILER restores a size-driven live terminal height without replacing stage scrolling", () => {
+test("ACT TRAILER keeps size-driven live terminal measurement without page scrolling", () => {
   assert.match(bootstrap, /act-showcase-cinematic-enhancer\.js\?v=4/);
   assert.match(bootstrap, /act-showcase-trailer-live-frame\.js\?v=2/);
   assert.ok(bootstrap.indexOf("act-showcase-cinematic-enhancer.js") < bootstrap.indexOf("act-showcase-trailer-live-frame.js"));
@@ -33,10 +34,12 @@ test("ACT TRAILER restores a size-driven live terminal height without replacing 
   assert.doesNotMatch(liveFrame, /scrollIntoView|window\.scrollBy/);
 });
 
-test("surface system caps the live terminal and lets the readout own overflow", () => {
+test("final phase contract defeats legacy overflow specificity and gives scrolling to the readout", () => {
   assert.match(surfaceCss, /neotokyo-sequence__screen--trailer[\s\S]*overflow:hidden/);
-  assert.match(surfaceCss, /neotokyo-sequence__trailer-terminal[\s\S]*max-height:min\(58svh,620px\)[\s\S]*overflow:hidden/);
-  assert.match(surfaceCss, /neotokyo-sequence__readout\.is-terminal-readout[\s\S]*max-height:min\(48svh,510px\)[\s\S]*overflow:auto/);
+  assert.match(phaseCss, /body#act-showcase-page[\s\S]*stage\.is-trailer-scroll[\s\S]*overflow:hidden/);
+  assert.match(phaseCss, /neotokyo-sequence__screen--trailer[\s\S]*max-height:min\(92svh,760px\)[\s\S]*overflow:hidden/);
+  assert.match(phaseCss, /neotokyo-sequence__trailer-terminal[\s\S]*max-height:min\(58svh,560px\)[\s\S]*overflow:hidden/);
+  assert.match(phaseCss, /neotokyo-sequence__readout\.is-terminal-readout[\s\S]*max-height:min\(46svh,440px\)[\s\S]*overflow:auto/);
 });
 
 test("scenario writer is mounted at the same form level as RULER and invalidates stale generated output", () => {
@@ -84,9 +87,9 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
   assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{margin-top:10px\}/);
 });
 
-test("entry cache keys expose the final surface layer and latest generator bootstrap", () => {
+test("entry cache keys expose the final phase layer and latest generator bootstrap", () => {
   assert.match(generatorHtml, /showcase-generator-loader\.js\?v=33/);
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=13/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=14/);
   assert.match(cinematicHtml, /act-showcase-bootstrap\.js\?v=15/);
   assert.match(bootstrap, /act-showcase-theme-runtime\.js\?v=2/);
   assert.match(bootstrap, /act-showcase-final-trailer\.js\?v=8/);
@@ -94,6 +97,7 @@ test("entry cache keys expose the final surface layer and latest generator boots
   assert.match(entryCss, /act-showcase-handout-live-frame\.css\?v=1/);
   assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=1/);
   assert.match(entryCss, /act-showcase-theme-surface-system\.css\?v=1/);
+  assert.match(entryCss, /act-showcase-theme-phase-contract\.css\?v=1/);
   assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=1/);
   assert.doesNotMatch(entryCss, /act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 });
