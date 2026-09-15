@@ -8,7 +8,7 @@ const read = path => readFile(new URL(path, root), "utf8");
 test("generator exposes separate standard and cinematic publication actions", async () => {
   const html = await read("showcase-generator.html");
   assert.match(html, /data-publish-mode="standard"/);
-  assert.match(html, /従来版で公開/);
+  assert.match(html, /スタンダード版で公開/);
   assert.match(html, /data-publish-mode="cinematic"/);
   assert.match(html, /豪華版で公開/);
   assert.match(html, /id="publish-button"[^>]*hidden/);
