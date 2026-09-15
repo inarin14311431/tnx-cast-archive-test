@@ -1,11 +1,12 @@
 const preview = document.querySelector("#showcase-preview");
 const themeField = document.querySelector("#showcase-theme");
 
-const OUTPUT_MARKER = "dedicated-standard-v1";
+const OUTPUT_MARKER = "dedicated-standard-v2";
 const STYLE_PATHS = [
   "../css-next/pages/act-showcase-standard.css?v=3",
   "../css-next/pages/act-showcase-standard-hotfix.css?v=1",
-  "../css-next/pages/act-showcase-dedicated-themes.css?v=1"
+  "../css-next/pages/act-showcase-dedicated-themes.css?v=1",
+  "../css-next/pages/act-showcase-theme-surface-system.css?v=1"
 ];
 let cssPromise = null;
 let rewriting = false;
