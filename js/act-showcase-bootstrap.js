@@ -1,4 +1,4 @@
-await import("./act-showcase-theme-runtime.js?v=1");
+await import("./act-showcase-theme-runtime.js?v=2");
 
 const current = new URL(location.href);
 if (String(current.searchParams.get("showcaseMode") || "").toLowerCase() === "cinematic") {
