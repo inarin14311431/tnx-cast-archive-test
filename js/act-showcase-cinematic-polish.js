@@ -69,12 +69,20 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = "neotokyo-finale__access-button";
-    button.setAttribute("aria-label", "アクト紹介本編を開く");
+    button.setAttribute("aria-label", "THUS OPENS THE GATE OF DESTINY — OPEN FULL SHOWCASE");
 
     const code = document.createElement("span");
-    code.textContent = "ACCESS // AUTHORIZED";
+    code.textContent = "ACT ENTRY // AUTHORIZED";
+
     const label = document.createElement("strong");
-    label.textContent = "ACCESS ACT";
+    label.className = "neotokyo-finale__access-title";
+    for (const text of ["THUS OPENS", "THE GATE OF DESTINY"]) {
+      const line = document.createElement("span");
+      line.className = "neotokyo-finale__access-title-line";
+      line.textContent = text;
+      label.append(line);
+    }
+
     const note = document.createElement("small");
     note.textContent = "OPEN FULL SHOWCASE";
     button.append(code, label, note);

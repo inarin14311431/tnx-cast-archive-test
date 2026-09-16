@@ -35,6 +35,34 @@
     0 0 18px rgba(var(--showcase-secondary-rgb),.20);
 }
 
+/* Finale access gate: keep the traditional opening phrase as a deliberate two-line title. */
+body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong.neotokyo-finale__access-title{
+  font-size:clamp(.98rem,1.48vw,1.3rem);
+  line-height:1;
+  letter-spacing:.075em;
+  white-space:normal;
+}
+
+body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line{
+  display:block;
+  color:inherit;
+  font-size:inherit;
+  line-height:inherit;
+  letter-spacing:inherit;
+  white-space:nowrap;
+}
+
+body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line + .neotokyo-finale__access-title-line{
+  margin-top:.1em;
+}
+
+@media(max-width:760px){
+  body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong.neotokyo-finale__access-title{
+    font-size:clamp(.82rem,4.15vw,1rem);
+    letter-spacing:.055em;
+  }
+}
+
 /* DOSSIER / light theme stays crisp rather than receiving a coloured halo. */
 :root[data-showcase-theme="intron"] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .scene-opening:before{
   background-image:
