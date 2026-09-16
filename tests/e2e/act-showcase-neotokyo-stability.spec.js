@@ -66,9 +66,6 @@ test("NeoTokyo showcase remains responsive through title, trailer, assignment an
   const pageErrors = [];
   page.on("pageerror", error => pageErrors.push(error.message));
 
-  // The cinematic route now honors reduced-motion natively by exiting the sequence.
-  // Exercise the full sequence with normal motion and force CTA clicks so animated
-  // controls cannot make Playwright actionability depend on a single frame.
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await registerShowcaseRoutes(page);
 
@@ -129,7 +126,7 @@ test("NeoTokyo route keeps the published background from the first rendered fram
   expect(state.sample).toBe(false);
 });
 
-test("ACT TRAILER moves the stage scroll position while typing a long trailer", async ({ page }) => {
+test("ACT TRAILER keeps its frame fixed and follows typing inside the readout", async ({ page }) => {
   test.setTimeout(35_000);
   const longTrailer = Array.from({ length: 72 }, (_, index) =>
     `${String(index + 1).padStart(2, "0")} // 夜のN◎VAを走るシグナルが、次の事件へキャストを導く。`
@@ -148,27 +145,32 @@ test("ACT TRAILER moves the stage scroll position while typing a long trailer", 
   const intro = page.locator("#cinematic-intro");
   const advance = page.locator(".neotokyo-sequence__advance");
   const stage = page.locator(".neotokyo-sequence__stage");
+  const screen = page.locator(".neotokyo-sequence__screen--trailer");
+  const readout = page.locator(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout");
 
   await expect(intro).toHaveAttribute("aria-hidden", "false", { timeout: 8_000 });
   await expect(advance).toHaveText("NEXT // ACT TRAILER", { timeout: 12_000 });
   await advance.click({ force: true });
 
-  await expect(stage).toHaveClass(/is-trailer-scroll/, { timeout: 5_000 });
-  await expect.poll(async () => stage.evaluate(element => {
+  await expect(screen).toBeVisible({ timeout: 5_000 });
+  await expect(readout).toBeVisible();
+  await expect.poll(async () => readout.evaluate(element => {
     const maxScroll = element.scrollHeight - element.clientHeight;
     return maxScroll > 20 && element.scrollTop > 5;
   }), { timeout: 10_000, intervals: [150, 250, 400] }).toBe(true);
 
   const ownership = await stage.evaluate(element => {
-    const screen = element.querySelector(".neotokyo-sequence__screen--trailer");
-    const readout = element.querySelector(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout");
+    const trailerScreen = element.querySelector(".neotokyo-sequence__screen--trailer");
+    const trailerReadout = trailerScreen?.querySelector(".neotokyo-sequence__readout");
     return {
       stageOverflow: getComputedStyle(element).overflowY,
-      screenOverflow: screen ? getComputedStyle(screen).overflowY : "missing",
-      readoutOverflow: readout ? getComputedStyle(readout).overflowY : "missing"
+      screenOverflow: trailerScreen ? getComputedStyle(trailerScreen).overflowY : "missing",
+      readoutOverflow: trailerReadout ? getComputedStyle(trailerReadout).overflowY : "missing",
+      stageScrollTop: element.scrollTop
     };
   });
-  expect(ownership.stageOverflow).toBe("auto");
-  expect(ownership.screenOverflow).toBe("visible");
-  expect(ownership.readoutOverflow).toBe("visible");
+  expect(ownership.stageOverflow).toBe("hidden");
+  expect(ownership.screenOverflow).toBe("hidden");
+  expect(ownership.readoutOverflow).toBe("auto");
+  expect(ownership.stageScrollTop).toBe(0);
 });
