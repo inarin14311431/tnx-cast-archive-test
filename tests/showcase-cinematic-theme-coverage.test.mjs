@@ -15,7 +15,7 @@ test("dedicated ACT tokens, shared surfaces, and the final phase contract load i
   const surface = entry.indexOf("act-showcase-theme-surface-system.css");
   const phase = entry.indexOf("act-showcase-theme-phase-contract.css");
   assert.ok(dedicated >= 0 && surface > dedicated && phase > surface);
-  assert.equal(entry.slice(phase).trim().split("\n")[0], '@import "./act-showcase-theme-phase-contract.css?v=1";');
+  assert.match(entry.trim().split("\n").at(-1), /^@import "\.\/act-showcase-theme-phase-contract\.css\?v=[A-Za-z0-9._-]+";$/);
   assert.doesNotMatch(entry, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 });
 
