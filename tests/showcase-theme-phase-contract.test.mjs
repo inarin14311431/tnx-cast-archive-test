@@ -4,20 +4,22 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
-const [entry, phase, legibility, scene] = await Promise.all([
+const [entry, phase, legibility, scene, emphasis] = await Promise.all([
   read("css-next/pages/act-showcase-entry.css"),
   read("css-next/pages/act-showcase-theme-phase-contract.css"),
   read("css-next/pages/act-showcase-theme-legibility.css"),
-  read("css-next/pages/act-showcase-theme-scene-contract.css")
+  read("css-next/pages/act-showcase-theme-scene-contract.css"),
+  read("css-next/pages/act-showcase-visual-emphasis.css")
 ]);
 
-test("phase contract is followed by legibility and the final scene completion stylesheet", () => {
+test("phase contract is followed by legibility, scene completion, and final visual emphasis", () => {
   const phaseIndex = entry.indexOf("act-showcase-theme-phase-contract.css");
   const legibilityIndex = entry.indexOf("act-showcase-theme-legibility.css");
   const sceneIndex = entry.indexOf("act-showcase-theme-scene-contract.css");
-  assert.ok(phaseIndex >= 0 && legibilityIndex > phaseIndex && sceneIndex > legibilityIndex);
-  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-scene-contract\.css\?v=/);
-  assert.doesNotMatch(`${phase}\n${legibility}\n${scene}`, /!important/);
+  const emphasisIndex = entry.indexOf("act-showcase-visual-emphasis.css");
+  assert.ok(phaseIndex >= 0 && legibilityIndex > phaseIndex && sceneIndex > legibilityIndex && emphasisIndex > sceneIndex);
+  assert.match(entry.trim().split("\n").at(-1), /act-showcase-visual-emphasis\.css\?v=/);
+  assert.doesNotMatch(`${phase}\n${legibility}\n${scene}\n${emphasis}`, /!important/);
 });
 
 test("legacy id-specific cinematic rules are deliberately matched by the phase contract", () => {
