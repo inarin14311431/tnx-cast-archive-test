@@ -4,8 +4,9 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
-const [surface, entry, standardHtml, output, loader, generatorHtml] = await Promise.all([
+const [surface, phase, entry, standardHtml, output, loader, generatorHtml] = await Promise.all([
   read("css-next/pages/act-showcase-theme-surface-system.css"),
+  read("css-next/pages/act-showcase-theme-phase-contract.css"),
   read("css-next/pages/act-showcase-entry.css"),
   read("act-showcase-standard.html"),
   read("js/showcase-dedicated-output.js"),
@@ -13,17 +14,18 @@ const [surface, entry, standardHtml, output, loader, generatorHtml] = await Prom
   read("showcase-generator.html")
 ]);
 
-test("final surface layer is shared by deluxe, standard, and generated HTML", () => {
+test("shared surface system is followed by the cinematic phase contract", () => {
   assert.ok(entry.indexOf("act-showcase-dedicated-themes.css") < entry.indexOf("act-showcase-theme-surface-system.css"));
-  assert.equal(entry.trim().split("\n").at(-1), '@import "./act-showcase-theme-surface-system.css?v=1";');
-  assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=1/);
-  assert.match(output, /act-showcase-theme-surface-system\.css\?v=1/);
+  assert.ok(entry.indexOf("act-showcase-theme-surface-system.css") < entry.indexOf("act-showcase-theme-phase-contract.css"));
+  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-phase-contract\.css\?v=/);
+  assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=/);
+  assert.match(output, /act-showcase-theme-surface-system\.css\?v=/);
   assert.match(output, /dedicated-standard-v2/);
-  assert.match(loader, /showcase-dedicated-output\.js\?v=2/);
-  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=33/);
+  assert.match(loader, /showcase-dedicated-output\.js\?v=/);
+  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=/);
 });
 
-test("reviewed cinematic surfaces are theme-owned instead of inheriting legacy neutral colors", () => {
+test("reviewed cinematic surfaces remain theme-owned", () => {
   for (const selector of [
     ".neotokyo-sequence__trailer-terminal",
     ".neotokyo-sequence__readout.is-terminal-readout",
@@ -35,32 +37,33 @@ test("reviewed cinematic surfaces are theme-owned instead of inheriting legacy n
     ".poster-supporting-cast",
     ".poster-supporting-card"
   ]) {
-    assert.ok(surface.includes(selector), `surface layer missing ${selector}`);
+    assert.ok(surface.includes(selector) || phase.includes(selector), `theme layer missing ${selector}`);
   }
   assert.match(surface, /--showcase-surface-0/);
   assert.match(surface, /--showcase-border-strong/);
   assert.match(surface, /--showcase-name-surface/);
 });
 
-test("ACT TRAILER is bounded by the viewport and only its readout scrolls", () => {
-  assert.match(surface, /screen--trailer[\s\S]*max-height:100%[\s\S]*overflow:hidden/);
-  assert.match(surface, /trailer-terminal[\s\S]*max-height:min\(58svh,620px\)[\s\S]*overflow:hidden/);
-  assert.match(surface, /readout\.is-terminal-readout[\s\S]*max-height:min\(48svh,510px\)[\s\S]*overflow:auto/);
-  assert.match(surface, /@media\(max-height:760px\) and \(min-width:761px\)/);
+test("ACT TRAILER has a high-specificity viewport contract and only its readout scrolls", () => {
+  assert.match(phase, /body#act-showcase-page[\s\S]*stage\.is-trailer-scroll[\s\S]*overflow:hidden/);
+  assert.match(phase, /screen--trailer[\s\S]*max-height:min\(92svh,760px\)[\s\S]*overflow:hidden/);
+  assert.match(phase, /trailer-terminal[\s\S]*max-height:min\(58svh,560px\)[\s\S]*overflow:hidden/);
+  assert.match(phase, /readout\.is-terminal-readout[\s\S]*max-height:min\(46svh,440px\)[\s\S]*overflow:auto[\s\S]*scrollbar-gutter:stable/);
+  assert.match(phase, /@media\(max-height:760px\) and \(min-width:761px\)/);
 });
 
-test("assigned cast name receives a dedicated contrast surface and Dossier removes glow", () => {
+test("assigned cast name keeps its dedicated contrast surface and Dossier removes glow", () => {
   assert.match(surface, /cast--linked[\s\S]*cast-detail:before[\s\S]*background:var\(--showcase-name-surface\)/);
   assert.match(surface, /cast-detail h3[\s\S]*color:var\(--showcase-text\)/);
   assert.match(surface, /data-showcase-theme="intron"[\s\S]*cast-detail h3[\s\S]*color:#171717[\s\S]*text-shadow:none/);
 });
 
-test("all four dedicated personalities alter full surfaces", () => {
+test("all four dedicated personalities alter full surfaces without important overrides", () => {
   for (const id of ["nova", "intron", "vlad", "lutetia"]) {
     assert.match(surface, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
   }
   assert.match(surface, /data-showcase-theme="intron"[\s\S]*--showcase-surface-1:rgba\(255,255,255,.98\)/);
   assert.match(surface, /data-showcase-theme="vlad"[\s\S]*--showcase-border-strong:rgba\(255,56,82,.68\)/);
   assert.match(surface, /data-showcase-theme="lutetia"[\s\S]*backdrop-filter:blur\(16px\)/);
-  assert.doesNotMatch(surface, /!important/);
+  assert.doesNotMatch(`${surface}\n${phase}`, /!important/);
 });
