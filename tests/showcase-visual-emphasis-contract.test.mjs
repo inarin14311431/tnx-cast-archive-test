@@ -14,8 +14,8 @@ test("handout terminal restores theme-aware neon glow while intron stays crisp",
   assert.match(emphasisCss, /neotokyo-sequence__handout-panel \.neotokyo-sequence__readout/);
   assert.match(emphasisCss, /rgba\(var\(--showcase-primary-rgb\),\.34\)/);
   assert.match(emphasisCss, /rgba\(var\(--showcase-secondary-rgb\),\.24\)/);
-  assert.match(emphasisCss, /text-shadow:[\s\S]*!important/);
-  assert.match(emphasisCss, /data-showcase-theme="intron"[\s\S]*text-shadow:none !important/);
+  assert.doesNotMatch(emphasisCss, /!important/);
+  assert.match(emphasisCss, /data-showcase-theme="intron"[\s\S]*text-shadow:none/);
 });
 
 test("opening keeps ACT background visible under a lighter location-preserving overlay", () => {
@@ -27,10 +27,11 @@ test("opening keeps ACT background visible under a lighter location-preserving o
   assert.match(emphasisCss, /backdrop-filter:blur\(5px\) saturate\(115%\)/);
 });
 
-test("visual emphasis is versioned after legibility and before final scene contract", () => {
+test("visual emphasis is versioned as the final cinematic presentation layer", () => {
   const legibility = entryCss.indexOf('act-showcase-theme-legibility.css?v=1');
-  const emphasis = entryCss.indexOf('act-showcase-visual-emphasis.css?v=1');
   const scene = entryCss.indexOf('act-showcase-theme-scene-contract.css?v=1');
-  assert.ok(legibility >= 0 && emphasis > legibility && scene > emphasis);
+  const emphasis = entryCss.indexOf('act-showcase-visual-emphasis.css?v=2');
+  assert.ok(legibility >= 0 && scene > legibility && emphasis > scene);
+  assert.match(entryCss.trim().split("\n").at(-1), /act-showcase-visual-emphasis\.css\?v=2/);
   assert.match(cinematicHtml, /act-showcase-entry\.css\?v=18/);
 });
