@@ -14,6 +14,7 @@ const standardHtml = read("act-showcase-standard.html");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 const hierarchyCss = read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
 const phaseCss = read("css-next/pages/act-showcase-theme-phase-contract.css");
+const sceneCss = read("css-next/pages/act-showcase-theme-scene-contract.css");
 
 test("ACT TRAILER no longer uses an inline terminal sizing module", () => {
   assert.doesNotMatch(bootstrap, /act-showcase-trailer-live-frame\.js/);
@@ -68,6 +69,8 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
   assert.match(hierarchyCss, /\.neotokyo-sequence__ruler-label\{[^}]*writing-mode:horizontal-tb[^}]*transform:none[^}]*white-space:nowrap/);
   assert.doesNotMatch(hierarchyCss, /writing-mode:vertical-rl|rotate\(180deg\)/);
   assert.match(hierarchyCss, /\[data-scenario-writer-credit="title"\]\{margin-top:10px\}/);
+  assert.match(sceneCss, /neotokyo-sequence__ruler-name/);
+  assert.match(sceneCss, /neotokyo-sequence__ruler-role/);
 });
 
 test("showcase entry keeps the final theme layers wired without pinning cache revisions here", () => {
@@ -76,6 +79,8 @@ test("showcase entry keeps the final theme layers wired without pinning cache re
   assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=/);
   assert.match(entryCss, /act-showcase-theme-surface-system\.css\?v=/);
   assert.match(entryCss, /act-showcase-theme-phase-contract\.css\?v=/);
+  assert.match(entryCss, /act-showcase-theme-legibility\.css\?v=/);
+  assert.match(entryCss, /act-showcase-theme-scene-contract\.css\?v=/);
   assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=/);
   assert.doesNotMatch(entryCss, /act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 });
