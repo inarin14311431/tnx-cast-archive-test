@@ -1,10 +1,10 @@
 const preview = document.querySelector("#showcase-preview");
 const themeField = document.querySelector("#showcase-theme");
 
-const OUTPUT_MARKER = "dedicated-standard-v3";
+const OUTPUT_MARKER = "dedicated-standard-v4";
 const STYLE_PATHS = [
   "../css-next/pages/act-showcase-standard.css?v=3",
-  "../css-next/pages/act-showcase-standard-hotfix.css?v=1",
+  "../css-next/pages/act-showcase-standard-hotfix.css?v=2",
   "../css-next/pages/act-showcase-dedicated-themes.css?v=1",
   "../css-next/pages/act-showcase-theme-surface-system.css?v=1",
   "../css-next/pages/act-showcase-theme-legibility.css?v=1"
@@ -31,7 +31,7 @@ async function synchronizeGeneratedOutput() {
   const oldStyleText = [...doc.querySelectorAll("style")]
     .map(node => node.textContent || "")
     .join("\n");
-  const background = extractBackgroundUrl(oldStyleText);
+  const background = extractBackgroundUrl(oldStyleText) || extractInlineBackgroundUrl(doc.body?.style?.backgroundImage);
 
   doc.documentElement.dataset.showcaseTheme = normalizeTheme(themeField?.value);
   doc.documentElement.dataset.showcaseOutput = OUTPUT_MARKER;
@@ -50,6 +50,12 @@ async function synchronizeGeneratedOutput() {
     "beforeend",
     `<style data-showcase-standard-source="true">${escapeStyleText(css)}</style>`
   );
+  if (background) {
+    doc.head.insertAdjacentHTML(
+      "beforeend",
+      `<style data-showcase-background-source="true">body{background-image:url("${escapeCssString(background)}")}</style>`
+    );
+  }
 
   normalizeStandardStructure(doc);
 
@@ -116,6 +122,11 @@ function normalizeTheme(value) {
 function extractBackgroundUrl(styleText) {
   const bodyRule = String(styleText || "").match(/body\s*\{[^}]*background-image\s*:[^;}]*url\((['"]?)(.*?)\1\)/is);
   return bodyRule?.[2] || "";
+}
+
+function extractInlineBackgroundUrl(value) {
+  const match = String(value || "").match(/url\((['"]?)(.*?)\1\)/is);
+  return match?.[2] || "";
 }
 
 function escapeCssString(value) {

@@ -47,7 +47,7 @@ assert.match(restore, /setField\(elements\.showcaseTheme,[\s\S]*showcase\.theme/
 
 assert.match(generatorHtml, /showcase-generator-loader\.js\?v=/);
 assert.match(generatorLoader, /showcase-dedicated-output\.js\?v=/, "generator must load the current standard-output synchronizer");
-assert.match(generatedOutput, /dedicated-standard-v3/);
+assert.match(generatedOutput, /dedicated-standard-v4/);
 assert.match(generatedOutput, /act-showcase-standard\.css\?v=/);
 assert.match(generatedOutput, /act-showcase-standard-hotfix\.css\?v=/);
 assert.match(generatedOutput, /act-showcase-dedicated-themes\.css\?v=/);

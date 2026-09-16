@@ -28,7 +28,7 @@ async function initializeShowcaseGenerator() {
     await import("./showcase-generator-v3.js?v=9");
     await import("./showcase-act-subtitle.js?v=1");
     await import("./showcase-scenario-writer.js?v=1");
-    await import("./showcase-dedicated-output.js?v=3");
+    await import("./showcase-dedicated-output.js?v=4");
     await import("./showcase-guests.js?v=1");
     await import("./showcase-guest-publish-bridge.js?v=1");
     await import("./showcase-dynamic-publish-v3.js?v=4");

@@ -26,7 +26,7 @@ test("shared surface system is followed by phase behavior, legibility, and final
   assert.match(standardHtml, /act-showcase-theme-legibility\.css\?v=/);
   assert.match(output, /act-showcase-theme-surface-system\.css\?v=/);
   assert.match(output, /act-showcase-theme-legibility\.css\?v=/);
-  assert.match(output, /dedicated-standard-v3/);
+  assert.match(output, /dedicated-standard-v4/);
   assert.match(loader, /showcase-dedicated-output\.js\?v=/);
   assert.match(generatorHtml, /showcase-generator-loader\.js\?v=/);
 });
