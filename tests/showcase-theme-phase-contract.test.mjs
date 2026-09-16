@@ -4,14 +4,18 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
-const [entry, phase] = await Promise.all([
+const [entry, phase, legibility] = await Promise.all([
   read("css-next/pages/act-showcase-entry.css"),
-  read("css-next/pages/act-showcase-theme-phase-contract.css")
+  read("css-next/pages/act-showcase-theme-phase-contract.css"),
+  read("css-next/pages/act-showcase-theme-legibility.css")
 ]);
 
-test("phase contract is the last cinematic stylesheet", () => {
-  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-phase-contract\.css\?v=/);
-  assert.doesNotMatch(phase, /!important/);
+test("phase contract is followed only by the final legibility stylesheet", () => {
+  const phaseIndex = entry.indexOf("act-showcase-theme-phase-contract.css");
+  const legibilityIndex = entry.indexOf("act-showcase-theme-legibility.css");
+  assert.ok(phaseIndex >= 0 && legibilityIndex > phaseIndex);
+  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-legibility\.css\?v=/);
+  assert.doesNotMatch(`${phase}\n${legibility}`, /!important/);
 });
 
 test("legacy id-specific cinematic rules are deliberately matched by the phase contract", () => {
@@ -38,6 +42,7 @@ test("Dossier phase surfaces remove dark islands from title, matching, and assig
   assert.match(dossier, /background:rgba\(255,255,255,.96\)/);
   assert.match(dossier, /ruler-name[\s\S]*color:#171717/);
   assert.match(dossier, /search--linked\.is-found>strong\{color:#356d52;text-shadow:none\}/);
+  assert.match(legibility, /data-showcase-theme="intron"[\s\S]*--showcase-readable-text:#171717/);
 });
 
 test("assigned casts and guest casts share the same theme token family", () => {
@@ -47,4 +52,12 @@ test("assigned casts and guest casts share the same theme token family", () => {
   assert.match(phase, /var\(--showcase-primary-rgb\)/);
   assert.match(phase, /var\(--showcase-secondary-rgb\)/);
   assert.match(phase, /var\(--showcase-tertiary-rgb\)/);
+});
+
+test("legibility layer changes contrast only and keeps phase layout ownership intact", () => {
+  assert.match(legibility, /final legibility layer/i);
+  assert.match(legibility, /neotokyo-sequence__screen--title/);
+  assert.match(legibility, /neotokyo-sequence__ruler-credit/);
+  assert.doesNotMatch(legibility, /stage\.is-trailer-scroll[\s\S]*overflow/);
+  assert.doesNotMatch(legibility, /screen--trailer[\s\S]*height:min\(92svh,760px\)/);
 });

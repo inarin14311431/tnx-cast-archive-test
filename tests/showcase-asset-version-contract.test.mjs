@@ -46,13 +46,15 @@ test("cinematic CSS entry versions every import and preserves final theme owners
   const dedicated = names.indexOf("act-showcase-dedicated-themes.css");
   const surface = names.indexOf("act-showcase-theme-surface-system.css");
   const phase = names.indexOf("act-showcase-theme-phase-contract.css");
-  assert.ok(dedicated >= 0 && surface > dedicated && phase > surface);
-  assert.equal(phase, names.length - 1, "phase contract must remain the final cinematic stylesheet");
+  const legibility = names.indexOf("act-showcase-theme-legibility.css");
+  assert.ok(dedicated >= 0 && surface > dedicated && phase > surface && legibility > phase);
+  assert.equal(legibility, names.length - 1, "legibility layer must remain the final cinematic stylesheet");
 });
 
 test("standard and generator entrypoints keep versioned local assets without pinning revision values", () => {
   assert.match(standardHtml, new RegExp(`act-showcase-theme-runtime\\.js\\?v=${VERSION}`));
   assert.match(standardHtml, new RegExp(`act-showcase-theme-surface-system\\.css\\?v=${VERSION}`));
+  assert.match(standardHtml, new RegExp(`act-showcase-theme-legibility\\.css\\?v=${VERSION}`));
   assert.match(generatorHtml, new RegExp(`showcase-generator-loader\\.js\\?v=${VERSION}`));
   assert.match(generatorLoader, new RegExp(`showcase-dedicated-output\\.js\\?v=${VERSION}`));
 });

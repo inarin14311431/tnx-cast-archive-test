@@ -18,6 +18,7 @@ const standardPage = read("js/act-showcase-standard.js");
 const dedicatedCss = read("css-next/pages/act-showcase-dedicated-themes.css");
 const surfaceCss = read("css-next/pages/act-showcase-theme-surface-system.css");
 const phaseCss = read("css-next/pages/act-showcase-theme-phase-contract.css");
+const legibilityCss = read("css-next/pages/act-showcase-theme-legibility.css");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 
 const themes = ["nova", "intron", "vlad", "lutetia"];
@@ -26,6 +27,7 @@ for (const theme of themes) {
   assert.match(runtime, new RegExp(`${theme}: Object\\.freeze`), `${theme} compatibility id must remain supported by runtime`);
   assert.match(dedicatedCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have ACT-specific theme tokens`);
   assert.match(surfaceCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have a dedicated surface personality`);
+  assert.match(legibilityCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have a final readable personality`);
 }
 
 assert.match(generatorHtml, /ネオン・グリッド \/ NEON GRID/);
@@ -43,11 +45,12 @@ assert.match(restore, /setField\(elements\.showcaseTheme,[\s\S]*showcase\.theme/
 
 assert.match(generatorHtml, /showcase-generator-loader\.js\?v=/);
 assert.match(generatorLoader, /showcase-dedicated-output\.js\?v=/, "generator must load the current standard-output synchronizer");
-assert.match(generatedOutput, /dedicated-standard-v2/);
+assert.match(generatedOutput, /dedicated-standard-v3/);
 assert.match(generatedOutput, /act-showcase-standard\.css\?v=/);
 assert.match(generatedOutput, /act-showcase-standard-hotfix\.css\?v=/);
 assert.match(generatedOutput, /act-showcase-dedicated-themes\.css\?v=/);
 assert.match(generatedOutput, /act-showcase-theme-surface-system\.css\?v=/);
+assert.match(generatedOutput, /act-showcase-theme-legibility\.css\?v=/);
 assert.match(generatedOutput, /body\.id = "act-showcase-standard-page"/);
 assert.match(generatedOutput, /showcaseOutput = OUTPUT_MARKER/);
 assert.match(generatedOutput, /showcase-end wrap/);
@@ -59,12 +62,15 @@ assert.match(cinematicHtml, /act-showcase-entry\.css\?v=/);
 assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=/);
 assert.match(standardHtml, /act-showcase-dedicated-themes\.css\?v=/);
 assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=/);
+assert.match(standardHtml, /act-showcase-theme-legibility\.css\?v=/);
 assert.doesNotMatch(standardHtml, /act-showcase-theme(?:-coverage)?\.css/);
 assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=/);
 assert.match(entryCss, /act-showcase-theme-surface-system\.css\?v=/);
 assert.match(entryCss, /act-showcase-theme-phase-contract\.css\?v=/);
+assert.match(entryCss, /act-showcase-theme-legibility\.css\?v=/);
 assert.ok(entryCss.indexOf("act-showcase-dedicated-themes.css") < entryCss.indexOf("act-showcase-theme-surface-system.css"));
 assert.ok(entryCss.indexOf("act-showcase-theme-surface-system.css") < entryCss.indexOf("act-showcase-theme-phase-contract.css"));
+assert.ok(entryCss.indexOf("act-showcase-theme-phase-contract.css") < entryCss.indexOf("act-showcase-theme-legibility.css"));
 assert.doesNotMatch(entryCss, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 assert.match(cinematicPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
 assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
@@ -92,6 +98,12 @@ assert.match(phaseCss, /ACT TITLE \/ credit lockup/);
 assert.match(phaseCss, /ACT TRAILER: frame owns clipping/);
 assert.match(phaseCss, /HANDOUT -> CAST ASSIGN \/ MATCH FOUND/);
 assert.match(phaseCss, /ACT READY \/ ASSIGNMENT BAY/);
-assert.doesNotMatch(`${dedicatedCss}\n${surfaceCss}\n${phaseCss}`, /!important/);
+assert.match(legibilityCss, /final legibility layer/i);
+assert.match(legibilityCss, /STANDARD \+ generated HTML/);
+assert.match(legibilityCss, /Poster \/ opening/);
+assert.match(legibilityCss, /ACT TITLE \/ credits/);
+assert.match(legibilityCss, /cast-card__tagline/);
+assert.match(legibilityCss, /opening-ruler/);
+assert.doesNotMatch(`${dedicatedCss}\n${surfaceCss}\n${phaseCss}\n${legibilityCss}`, /!important/);
 
 console.log("dedicated showcase theme contract: ok");
