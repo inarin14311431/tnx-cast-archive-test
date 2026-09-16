@@ -19,6 +19,7 @@ const dedicatedCss = read("css-next/pages/act-showcase-dedicated-themes.css");
 const surfaceCss = read("css-next/pages/act-showcase-theme-surface-system.css");
 const phaseCss = read("css-next/pages/act-showcase-theme-phase-contract.css");
 const legibilityCss = read("css-next/pages/act-showcase-theme-legibility.css");
+const sceneCss = read("css-next/pages/act-showcase-theme-scene-contract.css");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 
 const themes = ["nova", "intron", "vlad", "lutetia"];
@@ -28,6 +29,7 @@ for (const theme of themes) {
   assert.match(dedicatedCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have ACT-specific theme tokens`);
   assert.match(surfaceCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have a dedicated surface personality`);
   assert.match(legibilityCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must have a final readable personality`);
+  assert.match(sceneCss, new RegExp(`data-showcase-theme=["']${theme}["']`), `${theme} must own cinematic scene surfaces`);
 }
 
 assert.match(generatorHtml, /ネオン・グリッド \/ NEON GRID/);
@@ -68,9 +70,11 @@ assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=/);
 assert.match(entryCss, /act-showcase-theme-surface-system\.css\?v=/);
 assert.match(entryCss, /act-showcase-theme-phase-contract\.css\?v=/);
 assert.match(entryCss, /act-showcase-theme-legibility\.css\?v=/);
+assert.match(entryCss, /act-showcase-theme-scene-contract\.css\?v=/);
 assert.ok(entryCss.indexOf("act-showcase-dedicated-themes.css") < entryCss.indexOf("act-showcase-theme-surface-system.css"));
 assert.ok(entryCss.indexOf("act-showcase-theme-surface-system.css") < entryCss.indexOf("act-showcase-theme-phase-contract.css"));
 assert.ok(entryCss.indexOf("act-showcase-theme-phase-contract.css") < entryCss.indexOf("act-showcase-theme-legibility.css"));
+assert.ok(entryCss.indexOf("act-showcase-theme-legibility.css") < entryCss.indexOf("act-showcase-theme-scene-contract.css"));
 assert.doesNotMatch(entryCss, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 assert.match(cinematicPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
 assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
@@ -104,6 +108,11 @@ assert.match(legibilityCss, /Poster \/ opening/);
 assert.match(legibilityCss, /ACT TITLE \/ credits/);
 assert.match(legibilityCss, /cast-card__tagline/);
 assert.match(legibilityCss, /opening-ruler/);
-assert.doesNotMatch(`${dedicatedCss}\n${surfaceCss}\n${phaseCss}\n${legibilityCss}`, /!important/);
+assert.match(sceneCss, /cinematic scene completion contract/i);
+assert.match(sceneCss, /ACT TITLE/);
+assert.match(sceneCss, /HANDOUT context/);
+assert.match(sceneCss, /Assignment bridge/);
+assert.match(sceneCss, /backdrop-filter:blur\(16px\)/);
+assert.doesNotMatch(`${dedicatedCss}\n${surfaceCss}\n${phaseCss}\n${legibilityCss}\n${sceneCss}`, /!important/);
 
 console.log("dedicated showcase theme contract: ok");
