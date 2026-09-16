@@ -1,7 +1,6 @@
 /* ACT SHOWCASE visual emphasis layer.
-   Loaded after legibility and immediately before the final scene contract.
-   It restores intentional neon text treatment and lets the authored ACT background
-   read as an actual location instead of a nearly black ambient texture. */
+   Loaded after the final scene contract so intentional presentation accents can be restored
+   without !important while all structural and theme ownership rules remain settled first. */
 
 /* Opening / public showcase: keep enough dimming for text, but let the location read clearly. */
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .scene-opening:before{
@@ -25,7 +24,7 @@
     0 0 1px rgba(255,255,255,.42),
     0 0 6px rgba(var(--showcase-primary-rgb),.34),
     0 0 14px rgba(var(--showcase-secondary-rgb),.24),
-    0 0 24px rgba(var(--showcase-primary-rgb),.12) !important;
+    0 0 24px rgba(var(--showcase-primary-rgb),.12);
 }
 
 :root[data-showcase-theme]:not([data-showcase-theme="intron"]) body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__handout-panel .neotokyo-sequence__section-title,
@@ -52,5 +51,5 @@
 }
 
 :root[data-showcase-theme="intron"] body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__handout-panel .neotokyo-sequence__readout{
-  text-shadow:none !important;
+  text-shadow:none;
 }
