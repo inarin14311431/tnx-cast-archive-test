@@ -99,3 +99,18 @@ test("cinematic override follows CSS audit rule and contains no important declar
   const css = await read("css-next/pages/act-showcase-cinematic.css");
   assert.doesNotMatch(css, /!important/);
 });
+
+test("finale access gate uses the destiny phrase with an intentional two-line title", async () => {
+  const [polish, emphasis] = await Promise.all([
+    read("js/act-showcase-cinematic-polish.js"),
+    read("css-next/pages/act-showcase-visual-emphasis.css")
+  ]);
+  assert.match(polish, /ACT ENTRY \/\/ AUTHORIZED/);
+  assert.match(polish, /\["THUS OPENS", "THE GATE OF DESTINY"\]/);
+  assert.match(polish, /neotokyo-finale__access-title-line/);
+  assert.match(polish, /OPEN FULL SHOWCASE/);
+  assert.doesNotMatch(polish, /ACCESS \/\/ AUTHORIZED|label\.textContent = "ACCESS ACT"/);
+  assert.match(emphasis, /neotokyo-finale__access-title-line\{[\s\S]*display:block/);
+  assert.match(emphasis, /white-space:nowrap/);
+  assert.doesNotMatch(emphasis, /!important/);
+});
