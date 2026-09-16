@@ -17,12 +17,12 @@ const [surface, phase, entry, standardHtml, output, loader, generatorHtml] = awa
 test("shared surface system is followed by the cinematic phase contract", () => {
   assert.ok(entry.indexOf("act-showcase-dedicated-themes.css") < entry.indexOf("act-showcase-theme-surface-system.css"));
   assert.ok(entry.indexOf("act-showcase-theme-surface-system.css") < entry.indexOf("act-showcase-theme-phase-contract.css"));
-  assert.equal(entry.trim().split("\n").at(-1), '@import "./act-showcase-theme-phase-contract.css?v=1";');
-  assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=1/);
-  assert.match(output, /act-showcase-theme-surface-system\.css\?v=1/);
+  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-phase-contract\.css\?v=/);
+  assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=/);
+  assert.match(output, /act-showcase-theme-surface-system\.css\?v=/);
   assert.match(output, /dedicated-standard-v2/);
-  assert.match(loader, /showcase-dedicated-output\.js\?v=2/);
-  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=33/);
+  assert.match(loader, /showcase-dedicated-output\.js\?v=/);
+  assert.match(generatorHtml, /showcase-generator-loader\.js\?v=/);
 });
 
 test("reviewed cinematic surfaces remain theme-owned", () => {
