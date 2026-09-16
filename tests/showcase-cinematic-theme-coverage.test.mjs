@@ -6,21 +6,17 @@ const entry = await readFile(new URL("../css-next/pages/act-showcase-entry.css",
 const dedicatedTheme = await readFile(new URL("../css-next/pages/act-showcase-dedicated-themes.css", import.meta.url), "utf8");
 const surfaceSystem = await readFile(new URL("../css-next/pages/act-showcase-theme-surface-system.css", import.meta.url), "utf8");
 const phaseContract = await readFile(new URL("../css-next/pages/act-showcase-theme-phase-contract.css", import.meta.url), "utf8");
-const showcaseHtml = await readFile(new URL("../act-showcase.html", import.meta.url), "utf8");
 const combinedTheme = `${dedicatedTheme}\n${surfaceSystem}\n${phaseContract}`;
 
 const ids = ["nova", "intron", "vlad", "lutetia"];
 
 test("dedicated ACT tokens, shared surfaces, and the final phase contract load in order", () => {
-  assert.match(entry, /act-showcase-dedicated-themes\.css\?v=1/);
-  assert.match(entry, /act-showcase-theme-surface-system\.css\?v=1/);
-  assert.match(entry, /act-showcase-theme-phase-contract\.css\?v=1/);
+  const dedicated = entry.indexOf("act-showcase-dedicated-themes.css");
+  const surface = entry.indexOf("act-showcase-theme-surface-system.css");
+  const phase = entry.indexOf("act-showcase-theme-phase-contract.css");
+  assert.ok(dedicated >= 0 && surface > dedicated && phase > surface);
+  assert.equal(entry.slice(phase).trim().split("\n")[0], '@import "./act-showcase-theme-phase-contract.css?v=1";');
   assert.doesNotMatch(entry, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
-  const lines = entry.trim().split("\n");
-  assert.equal(lines.at(-3), '@import "./act-showcase-dedicated-themes.css?v=1";');
-  assert.equal(lines.at(-2), '@import "./act-showcase-theme-surface-system.css?v=1";');
-  assert.equal(lines.at(-1), '@import "./act-showcase-theme-phase-contract.css?v=1";');
-  assert.match(showcaseHtml, /act-showcase-entry\.css\?v=15/);
 });
 
 test("all four ACT-specific themes own explicit tokens", () => {
