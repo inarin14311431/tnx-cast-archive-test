@@ -8,18 +8,20 @@ const surfaceSystem = await readFile(new URL("../css-next/pages/act-showcase-the
 const phaseContract = await readFile(new URL("../css-next/pages/act-showcase-theme-phase-contract.css", import.meta.url), "utf8");
 const legibility = await readFile(new URL("../css-next/pages/act-showcase-theme-legibility.css", import.meta.url), "utf8");
 const sceneContract = await readFile(new URL("../css-next/pages/act-showcase-theme-scene-contract.css", import.meta.url), "utf8");
-const combinedTheme = `${dedicatedTheme}\n${surfaceSystem}\n${phaseContract}\n${legibility}\n${sceneContract}`;
+const visualEmphasis = await readFile(new URL("../css-next/pages/act-showcase-visual-emphasis.css", import.meta.url), "utf8");
+const combinedTheme = `${dedicatedTheme}\n${surfaceSystem}\n${phaseContract}\n${legibility}\n${sceneContract}\n${visualEmphasis}`;
 
 const ids = ["nova", "intron", "vlad", "lutetia"];
 
-test("dedicated ACT tokens, shared surfaces, phase, legibility, and scene completion load in order", () => {
+test("dedicated ACT tokens, shared surfaces, phase, legibility, scene completion, and visual emphasis load in order", () => {
   const dedicated = entry.indexOf("act-showcase-dedicated-themes.css");
   const surface = entry.indexOf("act-showcase-theme-surface-system.css");
   const phase = entry.indexOf("act-showcase-theme-phase-contract.css");
   const readable = entry.indexOf("act-showcase-theme-legibility.css");
   const scene = entry.indexOf("act-showcase-theme-scene-contract.css");
-  assert.ok(dedicated >= 0 && surface > dedicated && phase > surface && readable > phase && scene > readable);
-  assert.match(entry.trim().split("\n").at(-1), /^@import "\.\/act-showcase-theme-scene-contract\.css\?v=[A-Za-z0-9._-]+";$/);
+  const emphasis = entry.indexOf("act-showcase-visual-emphasis.css");
+  assert.ok(dedicated >= 0 && surface > dedicated && phase > surface && readable > phase && scene > readable && emphasis > scene);
+  assert.match(entry.trim().split("\n").at(-1), /^@import "\.\/act-showcase-visual-emphasis\.css\?v=[A-Za-z0-9._-]+";$/);
   assert.doesNotMatch(entry, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 });
 
@@ -71,7 +73,7 @@ test("phase contract closes high-specificity trailer, matching, title credit, an
   assert.match(phaseContract, /poster-supporting-card/);
 });
 
-test("final legibility layer owns the broad screenshot-critical contrast surfaces", () => {
+test("legibility layer owns the broad screenshot-critical contrast surfaces", () => {
   assert.match(legibility, /cast-card__tagline/);
   assert.match(legibility, /opening-ruler/);
   assert.match(legibility, /poster-ornament__orbit/);

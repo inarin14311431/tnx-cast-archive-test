@@ -1,0 +1,55 @@
+/* ACT SHOWCASE visual emphasis layer.
+   Loaded after the final scene contract so intentional presentation accents can be restored
+   through the normal cascade while all structural and theme ownership rules settle first. */
+
+/* Opening / public showcase: keep enough dimming for text, but let the location read clearly. */
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .scene-opening:before{
+  background-image:
+    linear-gradient(180deg,rgba(var(--showcase-bg-rgb),.16),rgba(var(--showcase-bg-rgb),.50)),
+    var(--showcase-background);
+  background-position:center center;
+  filter:saturate(1.12) contrast(1.05) brightness(1.02);
+}
+
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .opening-content:before{
+  background:linear-gradient(135deg,rgba(var(--showcase-surface-rgb),.66),rgba(var(--showcase-surface-rgb),.26));
+  -webkit-backdrop-filter:blur(5px) saturate(115%);
+  backdrop-filter:blur(5px) saturate(115%);
+  box-shadow:0 20px 58px rgba(var(--showcase-bg-rgb),.24),inset 0 0 0 1px rgba(var(--showcase-primary-rgb),.045);
+}
+
+/* Handout terminal: bring back the soft multi-colour neon halo without reducing legibility. */
+:root[data-showcase-theme]:not([data-showcase-theme="intron"]) body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__handout-panel .neotokyo-sequence__readout{
+  text-shadow:
+    0 0 1px rgba(255,255,255,.42),
+    0 0 6px rgba(var(--showcase-primary-rgb),.34),
+    0 0 14px rgba(var(--showcase-secondary-rgb),.24),
+    0 0 24px rgba(var(--showcase-primary-rgb),.12);
+}
+
+:root[data-showcase-theme]:not([data-showcase-theme="intron"]) body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__handout-panel .neotokyo-sequence__section-title,
+:root[data-showcase-theme]:not([data-showcase-theme="intron"]) body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__handout-title{
+  text-shadow:
+    0 0 2px rgba(255,255,255,.34),
+    0 0 8px rgba(var(--showcase-primary-rgb),.32),
+    0 0 18px rgba(var(--showcase-secondary-rgb),.20);
+}
+
+/* DOSSIER / light theme stays crisp rather than receiving a coloured halo. */
+:root[data-showcase-theme="intron"] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .scene-opening:before{
+  background-image:
+    linear-gradient(180deg,rgba(236,235,231,.28),rgba(236,235,231,.56)),
+    var(--showcase-background);
+  filter:saturate(.84) contrast(.98) brightness(1.06);
+}
+
+:root[data-showcase-theme="intron"] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .opening-content:before{
+  background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(255,255,255,.48));
+  -webkit-backdrop-filter:blur(4px) saturate(104%);
+  backdrop-filter:blur(4px) saturate(104%);
+  box-shadow:0 18px 46px rgba(23,23,23,.12),inset 0 0 0 1px rgba(23,23,23,.05);
+}
+
+:root[data-showcase-theme="intron"] body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__handout-panel .neotokyo-sequence__readout{
+  text-shadow:none;
+}
