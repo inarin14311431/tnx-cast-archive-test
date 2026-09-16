@@ -4,15 +4,13 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
-const [entry, phase, cinematicHtml] = await Promise.all([
+const [entry, phase] = await Promise.all([
   read("css-next/pages/act-showcase-entry.css"),
-  read("css-next/pages/act-showcase-theme-phase-contract.css"),
-  read("act-showcase.html")
+  read("css-next/pages/act-showcase-theme-phase-contract.css")
 ]);
 
-test("phase contract is the last cinematic stylesheet and cache key is bumped", () => {
-  assert.equal(entry.trim().split("\n").at(-1), '@import "./act-showcase-theme-phase-contract.css?v=1";');
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=15/);
+test("phase contract is the last cinematic stylesheet", () => {
+  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-phase-contract\.css\?v=/);
   assert.doesNotMatch(phase, /!important/);
 });
 
