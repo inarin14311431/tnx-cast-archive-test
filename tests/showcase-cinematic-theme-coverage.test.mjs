@@ -7,33 +7,37 @@ const dedicatedTheme = await readFile(new URL("../css-next/pages/act-showcase-de
 const surfaceSystem = await readFile(new URL("../css-next/pages/act-showcase-theme-surface-system.css", import.meta.url), "utf8");
 const phaseContract = await readFile(new URL("../css-next/pages/act-showcase-theme-phase-contract.css", import.meta.url), "utf8");
 const legibility = await readFile(new URL("../css-next/pages/act-showcase-theme-legibility.css", import.meta.url), "utf8");
-const combinedTheme = `${dedicatedTheme}\n${surfaceSystem}\n${phaseContract}\n${legibility}`;
+const sceneContract = await readFile(new URL("../css-next/pages/act-showcase-theme-scene-contract.css", import.meta.url), "utf8");
+const combinedTheme = `${dedicatedTheme}\n${surfaceSystem}\n${phaseContract}\n${legibility}\n${sceneContract}`;
 
 const ids = ["nova", "intron", "vlad", "lutetia"];
 
-test("dedicated ACT tokens, shared surfaces, phase contract, and final legibility layer load in order", () => {
+test("dedicated ACT tokens, shared surfaces, phase, legibility, and scene completion load in order", () => {
   const dedicated = entry.indexOf("act-showcase-dedicated-themes.css");
   const surface = entry.indexOf("act-showcase-theme-surface-system.css");
   const phase = entry.indexOf("act-showcase-theme-phase-contract.css");
   const readable = entry.indexOf("act-showcase-theme-legibility.css");
-  assert.ok(dedicated >= 0 && surface > dedicated && phase > surface && readable > phase);
-  assert.match(entry.trim().split("\n").at(-1), /^@import "\.\/act-showcase-theme-legibility\.css\?v=[A-Za-z0-9._-]+";$/);
+  const scene = entry.indexOf("act-showcase-theme-scene-contract.css");
+  assert.ok(dedicated >= 0 && surface > dedicated && phase > surface && readable > phase && scene > readable);
+  assert.match(entry.trim().split("\n").at(-1), /^@import "\.\/act-showcase-theme-scene-contract\.css\?v=[A-Za-z0-9._-]+";$/);
   assert.doesNotMatch(entry, /act-showcase-theme\.css|act-showcase-theme-coverage\.css|act-showcase-cinematic-theme\.css/);
 });
 
-test("all four ACT-specific themes own explicit tokens and readable personalities", () => {
+test("all four ACT-specific themes own explicit tokens and readable scene personalities", () => {
   for (const id of ids) {
     assert.match(dedicatedTheme, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
     assert.match(surfaceSystem, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
     assert.match(legibility, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
+    assert.match(sceneContract, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
   }
   assert.match(dedicatedTheme, /--showcase-theme-name:"NEON GRID"/);
   assert.match(dedicatedTheme, /--showcase-theme-name:"DOSSIER"/);
   assert.match(dedicatedTheme, /--showcase-theme-name:"CRIMSON NOIR"/);
   assert.match(dedicatedTheme, /--showcase-theme-name:"ORBITAL GLASS"/);
   assert.match(legibility, /--showcase-readable-text/);
-  assert.match(legibility, /--showcase-readable-muted/);
-  assert.match(legibility, /--showcase-readable-surface-strong/);
+  assert.match(sceneContract, /--showcase-scene-text/);
+  assert.match(sceneContract, /--showcase-scene-glass/);
+  assert.match(sceneContract, /--showcase-scene-accent-3/);
 });
 
 test("intermediate cinematic sequence is driven by dedicated theme tokens and phase-owned surfaces", () => {
@@ -50,7 +54,6 @@ test("intermediate cinematic sequence is driven by dedicated theme tokens and ph
     assert.ok(combinedTheme.includes(selector), `theme stack missing cinematic selector: ${selector}`);
   }
   assert.match(combinedTheme, /var\(--showcase-bg\)/);
-  assert.match(combinedTheme, /var\(--showcase-surface(?:-rgb|-0|-1|-2|-3)?\)/);
   assert.match(combinedTheme, /var\(--showcase-primary(?:-rgb)?\)/);
   assert.match(combinedTheme, /var\(--showcase-secondary(?:-rgb)?\)/);
   assert.match(combinedTheme, /var\(--showcase-tertiary(?:-rgb)?\)/);
@@ -58,7 +61,7 @@ test("intermediate cinematic sequence is driven by dedicated theme tokens and ph
   assert.match(combinedTheme, /var\(--showcase-muted\)/);
 });
 
-test("phase contract closes the high-specificity gaps in trailer, matching, title credits, and finale", () => {
+test("phase contract closes high-specificity trailer, matching, title credit, and finale gaps", () => {
   assert.match(phaseContract, /body#act-showcase-page/);
   assert.match(phaseContract, /stage\.is-trailer-scroll[\s\S]*overflow:hidden/);
   assert.match(phaseContract, /readout\.is-terminal-readout[\s\S]*overflow:auto/);
@@ -68,7 +71,7 @@ test("phase contract closes the high-specificity gaps in trailer, matching, titl
   assert.match(phaseContract, /poster-supporting-card/);
 });
 
-test("final legibility layer owns the screenshot-critical contrast surfaces", () => {
+test("final legibility layer owns the broad screenshot-critical contrast surfaces", () => {
   assert.match(legibility, /cast-card__tagline/);
   assert.match(legibility, /opening-ruler/);
   assert.match(legibility, /poster-ornament__orbit/);
@@ -80,15 +83,30 @@ test("final legibility layer owns the screenshot-critical contrast surfaces", ()
   assert.match(legibility, /showcase-readable-surface-strong/);
 });
 
-test("Dossier specifically eliminates legacy dark islands and washed-out light text", () => {
+test("scene completion contract covers all eight reported cinematic regressions", () => {
+  assert.match(sceneContract, /neotokyo-story__title-note/);
+  assert.match(sceneContract, /neotokyo-sequence__ruler-name/);
+  assert.match(sceneContract, /neotokyo-title-logo__meta/);
+  assert.match(sceneContract, /neotokyo-sequence__readout:after/);
+  assert.match(sceneContract, /neotokyo-story__trailer-outro/);
+  assert.match(sceneContract, /neotokyo-story__handout-context/);
+  assert.match(sceneContract, /backdrop-filter:blur\(16px\)/);
+  assert.match(sceneContract, /handout-panel \.neotokyo-sequence__readout/);
+  assert.match(sceneContract, /neotokyo-sequence__link-bridge span/);
+  assert.match(sceneContract, /neotokyo-story__signal-node/);
+  assert.match(sceneContract, /neotokyo-story__entry-vectors/);
+  assert.match(sceneContract, /neotokyo-sequence__assign-panel/);
+});
+
+test("Dossier stays intentionally light while the three dark themes never need neutral fallback surfaces", () => {
   assert.match(phaseContract, /data-showcase-theme="intron"[\s\S]*screen--title/);
-  assert.match(phaseContract, /data-showcase-theme="intron"[\s\S]*search--linked\.is-found/);
-  assert.match(phaseContract, /data-showcase-theme="intron"[\s\S]*neotokyo-finale__cast-card/);
-  assert.match(phaseContract, /data-showcase-theme="intron"[\s\S]*ruler-name[\s\S]*color:#171717/);
   assert.match(surfaceSystem, /data-showcase-theme="intron"[\s\S]*--showcase-surface-1:rgba\(255,255,255,.98\)/);
   assert.match(legibility, /data-showcase-theme="intron"[\s\S]*--showcase-readable-text:#171717/);
-  assert.match(legibility, /data-showcase-theme="intron"[\s\S]*opening-ruler[\s\S]*color:#171717/);
-  assert.match(legibility, /data-showcase-theme="intron"[\s\S]*cast-card__tagline[\s\S]*color:#171717/);
+  assert.match(sceneContract, /data-showcase-theme="intron"[\s\S]*--showcase-scene-bg:#ecebe7/);
+  assert.match(sceneContract, /data-showcase-theme="nova"[\s\S]*--showcase-scene-bg:#02070b/);
+  assert.match(sceneContract, /data-showcase-theme="vlad"[\s\S]*--showcase-scene-bg:#070203/);
+  assert.match(sceneContract, /data-showcase-theme="lutetia"[\s\S]*--showcase-scene-bg:#050b18/);
+  assert.match(sceneContract, /data-showcase-theme="intron"[\s\S]*act-title--logo\.showcase-fit-title[\s\S]*color:#171717/);
 });
 
 test("theme stack covers standard and cinematic states without important overrides", () => {

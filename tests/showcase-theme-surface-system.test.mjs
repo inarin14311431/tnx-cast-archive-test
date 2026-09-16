@@ -4,10 +4,11 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
-const [surface, phase, legibility, entry, standardHtml, output, loader, generatorHtml] = await Promise.all([
+const [surface, phase, legibility, scene, entry, standardHtml, output, loader, generatorHtml] = await Promise.all([
   read("css-next/pages/act-showcase-theme-surface-system.css"),
   read("css-next/pages/act-showcase-theme-phase-contract.css"),
   read("css-next/pages/act-showcase-theme-legibility.css"),
+  read("css-next/pages/act-showcase-theme-scene-contract.css"),
   read("css-next/pages/act-showcase-entry.css"),
   read("act-showcase-standard.html"),
   read("js/showcase-dedicated-output.js"),
@@ -15,11 +16,12 @@ const [surface, phase, legibility, entry, standardHtml, output, loader, generato
   read("showcase-generator.html")
 ]);
 
-test("shared surface system is followed by phase behavior and final legibility", () => {
+test("shared surface system is followed by phase behavior, legibility, and final scene completion", () => {
   assert.ok(entry.indexOf("act-showcase-dedicated-themes.css") < entry.indexOf("act-showcase-theme-surface-system.css"));
   assert.ok(entry.indexOf("act-showcase-theme-surface-system.css") < entry.indexOf("act-showcase-theme-phase-contract.css"));
   assert.ok(entry.indexOf("act-showcase-theme-phase-contract.css") < entry.indexOf("act-showcase-theme-legibility.css"));
-  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-legibility\.css\?v=/);
+  assert.ok(entry.indexOf("act-showcase-theme-legibility.css") < entry.indexOf("act-showcase-theme-scene-contract.css"));
+  assert.match(entry.trim().split("\n").at(-1), /act-showcase-theme-scene-contract\.css\?v=/);
   assert.match(standardHtml, /act-showcase-theme-surface-system\.css\?v=/);
   assert.match(standardHtml, /act-showcase-theme-legibility\.css\?v=/);
   assert.match(output, /act-showcase-theme-surface-system\.css\?v=/);
@@ -41,7 +43,7 @@ test("reviewed cinematic surfaces remain theme-owned", () => {
     ".poster-supporting-cast",
     ".poster-supporting-card"
   ]) {
-    assert.ok(surface.includes(selector) || phase.includes(selector) || legibility.includes(selector), `theme layer missing ${selector}`);
+    assert.ok(surface.includes(selector) || phase.includes(selector) || legibility.includes(selector) || scene.includes(selector), `theme layer missing ${selector}`);
   }
   assert.match(surface, /--showcase-surface-0/);
   assert.match(surface, /--showcase-border-strong/);
@@ -67,10 +69,11 @@ test("all four dedicated personalities alter full surfaces without important ove
   for (const id of ["nova", "intron", "vlad", "lutetia"]) {
     assert.match(surface, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
     assert.match(legibility, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
+    assert.match(scene, new RegExp(`:root\\[data-showcase-theme=["']${id}["']\\]`));
   }
   assert.match(surface, /data-showcase-theme="intron"[\s\S]*--showcase-surface-1:rgba\(255,255,255,.98\)/);
   assert.match(surface, /data-showcase-theme="vlad"[\s\S]*--showcase-border-strong:rgba\(255,56,82,.68\)/);
   assert.match(surface, /data-showcase-theme="lutetia"[\s\S]*backdrop-filter:blur\(16px\)/);
   assert.match(legibility, /data-showcase-theme="intron"[\s\S]*--showcase-readable-text:#171717/);
-  assert.doesNotMatch(`${surface}\n${phase}\n${legibility}`, /!important/);
+  assert.doesNotMatch(`${surface}\n${phase}\n${legibility}\n${scene}`, /!important/);
 });
