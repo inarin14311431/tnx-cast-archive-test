@@ -31,7 +31,7 @@
         );
 
         if (record.type === "characterData") {
-          if (!supportsResizeObserver) scheduleTrailerFrame(recordTarget);
+          if (trailerReadout) scheduleTrailerFrame(trailerReadout);
           continue;
         }
 
@@ -45,7 +45,8 @@
           if (node.nodeType === Node.ELEMENT_NODE) hasElementChange = true;
         }
 
-        if (!trailerReadout || !supportsResizeObserver) scheduleTrailerFrame(recordTarget);
+        if (trailerReadout) scheduleTrailerFrame(trailerReadout);
+        else if (!supportsResizeObserver) scheduleTrailerFrame(recordTarget);
         if (hasElementChange) surfaceMayHaveChanged = true;
       }
       if (surfaceMayHaveChanged) syncTrailerScrollSurface();
@@ -97,14 +98,19 @@
   function syncTrailerScrollSurface() {
     const stage = intro?.querySelector(".neotokyo-sequence__stage");
     if (!stage) return;
-    const active = Boolean(stage.querySelector(".neotokyo-sequence__screen--trailer"));
+    const screen = stage.querySelector(".neotokyo-sequence__screen--trailer");
+    const readout = screen?.querySelector(".neotokyo-sequence__readout");
+    const active = Boolean(screen);
     const wasActive = stage.classList.contains("is-trailer-scroll");
     stage.classList.toggle("is-trailer-scroll", active);
+
     if (active !== wasActive) {
       stage.scrollTop = 0;
-      trailerScrollTargets.delete(stage);
+      if (readout) {
+        readout.scrollTop = 0;
+        trailerScrollTargets.delete(readout);
+      }
     }
-    if (!active) trailerScrollTargets.delete(stage);
   }
 
   function attachTrailerFollow(scope) {
@@ -137,18 +143,18 @@
     if (!screen || !stage) return;
 
     stage.classList.add("is-trailer-scroll");
-    const targetTop = Math.max(0, stage.scrollHeight - stage.clientHeight);
-    const previousTarget = trailerScrollTargets.get(stage);
+    const targetTop = Math.max(0, readout.scrollHeight - readout.clientHeight);
+    const previousTarget = trailerScrollTargets.get(readout);
 
-    if (targetTop <= stage.scrollTop + 1) {
-      trailerScrollTargets.set(stage, targetTop);
+    if (targetTop <= readout.scrollTop + 1) {
+      trailerScrollTargets.set(readout, targetTop);
       return;
     }
     if (Number.isFinite(previousTarget) && Math.abs(targetTop - previousTarget) <= 1) return;
 
-    trailerScrollTargets.set(stage, targetTop);
+    trailerScrollTargets.set(readout, targetTop);
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    stage.scrollTo({
+    readout.scrollTo({
       top: targetTop,
       left: 0,
       behavior: reduced ? "auto" : "smooth"
