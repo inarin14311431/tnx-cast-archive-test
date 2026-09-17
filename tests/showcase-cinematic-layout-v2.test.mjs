@@ -12,7 +12,7 @@ const cinematic = await readFile(new URL("../js/act-showcase-cinematic-layout-v2
 const css = await readFile(new URL("../css-next/pages/act-showcase-cinematic-v2.css", import.meta.url), "utf8");
 const neotokyoCss = await readFile(new URL("../css-next/pages/act-showcase-neotokyo.css", import.meta.url), "utf8");
 const presentation = await readFile(new URL("../css-next/pages/act-showcase-presentation-tuning.css", import.meta.url), "utf8");
-const phaseCss = await readFile(new URL("../css-next/pages/act-showcase-theme-phase-contract.css", import.meta.url), "utf8");
+const emphasisCss = await readFile(new URL("../css-next/pages/act-showcase-visual-emphasis.css", import.meta.url), "utf8");
 
 test("generator separates ACT title and subtitle before dynamic publishing", () => {
   const subtitleImport = loader.search(/import\("\.\/showcase-act-subtitle\.js\?v=\d+"\)/);
@@ -50,17 +50,20 @@ test("cinematic title is multiline-safe and renders a separate subtitle", () => 
   assert.doesNotMatch(presentation, /white-space\s*:\s*nowrap/);
 });
 
-test("cinematic trailer keeps the page and frame locked while the readout owns follow scrolling", () => {
+test("cinematic trailer grows its frame and lets the browser page own follow scrolling", () => {
   assert.match(neotokyoCss, /body\.showcase-neotokyo-intro-active\{overflow:hidden\}/);
   assert.match(cinematic, /syncTrailerScrollSurface/);
   assert.match(cinematic, /stage\.classList\.toggle\("is-trailer-scroll", active\)/);
-  assert.match(cinematic, /readout\.scrollHeight - readout\.clientHeight/);
-  assert.match(cinematic, /readout\.scrollTo\(\{/);
+  assert.match(cinematic, /document\.body\.classList\.toggle\("showcase-trailer-document-scroll", active\)/);
+  assert.match(cinematic, /readout\.getBoundingClientRect\(\)\.bottom \+ window\.scrollY/);
+  assert.match(cinematic, /window\.scrollTo\(\{/);
   assert.match(cinematic, /behavior: reduced \? "auto" : "smooth"/);
   assert.match(cinematic, /record\.type === "characterData"[\s\S]*scheduleTrailerFrame\(trailerReadout\)/);
-  assert.match(phaseCss, /stage\.is-trailer-scroll\{[\s\S]*overflow:hidden/);
-  assert.match(phaseCss, /screen--trailer\{[\s\S]*overflow:hidden/);
-  assert.match(phaseCss, /readout\.is-terminal-readout\{[\s\S]*overflow:auto/);
+  assert.match(emphasisCss, /showcase-trailer-document-scroll[\s\S]*\.cinematic-intro\.neotokyo-sequence\{[\s\S]*position:relative[\s\S]*overflow:visible/);
+  assert.match(emphasisCss, /showcase-trailer-document-scroll[\s\S]*stage\.is-trailer-scroll\{[\s\S]*overflow:visible/);
+  assert.match(emphasisCss, /showcase-trailer-document-scroll[\s\S]*screen--trailer\{[\s\S]*max-height:none[\s\S]*overflow:visible/);
+  assert.match(emphasisCss, /showcase-trailer-document-scroll[\s\S]*readout\.is-terminal-readout\{[\s\S]*max-height:none[\s\S]*overflow:visible/);
+  assert.doesNotMatch(cinematic, /readout\.scrollTo\(/);
   assert.doesNotMatch(cinematic, /stage\.scrollTo\(/);
   assert.doesNotMatch(cinematic, /window\.scrollBy\(/);
 });
