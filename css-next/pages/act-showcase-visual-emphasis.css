@@ -37,12 +37,13 @@
 
 /* ACT TRAILER: let the terminal, screen and stage grow with the typed text.
    During this phase the cinematic layer rejoins document flow so the browser viewport,
-   rather than an inner field, owns scrolling. */
-body#act-showcase-page.showcase-neotokyo-intro-active.showcase-trailer-document-scroll{
+   rather than an inner field, owns scrolling. These selectors intentionally match or exceed
+   the theme phase contract specificity because this final layer owns presentation overflow. */
+:root[data-showcase-theme] body#act-showcase-page.showcase-neotokyo-intro-active.showcase-trailer-document-scroll{
   overflow-y:auto;
 }
 
-body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence{
+:root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence{
   position:relative;
   inset:auto;
   min-height:100svh;
@@ -50,15 +51,17 @@ body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotoky
   overflow:visible;
 }
 
-body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__shell{
+:root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__shell{
   grid-template-rows:auto auto auto;
   min-height:100svh;
   height:auto;
   overflow:visible;
 }
 
-body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll{
+:root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll{
   min-height:0;
+  height:auto;
+  max-height:none;
   overflow:visible;
   place-items:start center;
   padding-block:clamp(18px,3vh,34px) clamp(72px,10vh,120px);
@@ -66,11 +69,11 @@ body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotoky
   scrollbar-gutter:auto;
 }
 
-body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll:before{
+:root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll:before{
   inset:clamp(12px,2vh,24px) clamp(18px,5vw,60px) clamp(42px,7vh,82px);
 }
 
-body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer{
+:root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--trailer{
   width:min(94vw,1180px);
   height:auto;
   min-height:0;
@@ -80,7 +83,7 @@ body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotoky
   align-self:start;
 }
 
-body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__trailer-terminal{
+:root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__trailer-terminal{
   flex:0 0 auto;
   min-height:0;
   max-height:none;
@@ -88,7 +91,7 @@ body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotoky
   overflow:visible;
 }
 
-body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__readout.is-terminal-readout{
+:root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__readout.is-terminal-readout{
   flex:0 0 auto;
   min-height:1.8em;
   max-height:none;
@@ -125,11 +128,11 @@ body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-
     letter-spacing:.055em;
   }
 
-  body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll{
+  :root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll{
     padding-block:14px 72px;
   }
 
-  body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll:before{
+  :root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll:before{
     inset:8px 8px 40px;
   }
 }
