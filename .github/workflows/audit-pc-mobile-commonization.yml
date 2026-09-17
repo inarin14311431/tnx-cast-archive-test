@@ -1,0 +1,44 @@
+name: Audit PC Mobile Commonization
+
+on:
+  push:
+    branches:
+      - audit/pc-mobile-commonization
+    paths:
+      - 'tools/audit-pc-mobile-commonization.mjs'
+      - '.github/workflows/audit-pc-mobile-commonization.yml'
+      - 'js/**'
+      - '*.html'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate audit report
+        run: node tools/audit-pc-mobile-commonization.mjs
+
+      - name: Commit generated report
+        run: |
+          if git diff --quiet -- audit/pc-mobile-commonization-report.md; then
+            echo 'No report changes.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add audit/pc-mobile-commonization-report.md
+          git commit -m 'docs(audit): generate PC/mobile commonization report [skip ci]'
+          git push
