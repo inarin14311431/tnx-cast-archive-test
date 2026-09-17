@@ -33,7 +33,7 @@ jobs:
 
       - name: Commit generated report
         run: |
-          if git diff --quiet -- audit/pc-mobile-commonization-report.md; then
+          if [ -z "$(git status --porcelain -- audit/pc-mobile-commonization-report.md)" ]; then
             echo 'No report changes.'
             exit 0
           fi
