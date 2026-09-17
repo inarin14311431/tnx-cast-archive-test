@@ -4,23 +4,25 @@
 
 この文書は、AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショットである。時点情報なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。
 
-## 1. 現在のFIX点
+## 1. Runtime同期FIX基準点
 
 ### 検証repo
 
 - Repository: `inarin14311431/tnx-cast-archive-test`
-- main: `4e333f5193c91bc90a03db1449cd8f5948d25944`
+- runtime基準: `4e333f5193c91bc90a03db1449cd8f5948d25944`
 
 ### 本番repo
 
 - Repository: `inarin14311431/tnx_cast_list`
-- main: `7f2d202459a8dedd442642ce8819379083615a47`
+- runtime基準: `7f2d202459a8dedd442642ce8819379083615a47`
 
-本番commitは、検証PR #374 / `4e333f5` までを同期したFIX点として記録されている。共有Supabase/DB変更は含まれていない。
+本番側の上記commitは、検証PR #374 / `4e333f5` までのruntimeを同期したFIX点として記録されている。共有Supabase/DB変更は含まれていない。
+
+これらは **runtime/applicationの同期基準** であり、設計資料やREADMEだけのcommitによって各repoのmain SHAはその後進む。最新main SHAを固定値としてこの文書に持たない。作業開始時にGitHubから取得すること。
 
 ## 2. 直近で完了済みの基準状態
 
-検証と本番は、ACT SHOWCASE専用テーマ、表示契約、ACT TRAILER関連修正、関連回帰/E2Eを含む状態まで同期済み。
+検証と本番は、ACT SHOWCASE専用テーマ、表示契約、ACT TRAILER関連修正、関連回帰/E2Eを含むruntime状態まで同期済み。
 
 このFIX点以前の中途半端なPR/branchを現在仕様より優先しない。
 
@@ -30,12 +32,13 @@
 
 ### `refactor/navigation-shared-core`
 
-2026-09-17確認時点:
+このbranchはruntime基準 `4e333f5` から作成され、その時点ではmainと完全同一だった。
 
-- mainとの差分: **0**
-- ahead: 0
-- behind: 0
+2026-09-17時点:
+
+- runtime共通化のcommit: **0**
 - runtime変更: なし
+- その後mainにはAI引き継ぎ資料などdocumentation-only commitが追加されているため、最新mainとのahead/behind数は再確認が必要
 
 branch名は存在するが、実装済みではない。
 
@@ -149,7 +152,7 @@ repo全体をAIセッションへ大量取得するとtimeoutしやすいため�
 推奨順:
 
 1. 最新mainを再確認
-2. `refactor/navigation-shared-core` が依然mainと同一か確認
+2. `refactor/navigation-shared-core` と最新mainのdiffを確認し、必要なら最新mainから新branchを切り直す
 3. Navigation関連3ファイルを再取得
 4. pure core APIを先にテストで定義
 5. shared module追加
