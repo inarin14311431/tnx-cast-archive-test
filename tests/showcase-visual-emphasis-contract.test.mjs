@@ -27,11 +27,12 @@ test("opening keeps ACT background visible under a lighter location-preserving o
   assert.match(emphasisCss, /backdrop-filter:blur\(5px\) saturate\(115%\)/);
 });
 
-test("visual emphasis is versioned as the final cinematic presentation layer", () => {
+test("visual emphasis remains the final cinematic presentation layer", () => {
   const legibility = entryCss.indexOf('act-showcase-theme-legibility.css?v=1');
   const scene = entryCss.indexOf('act-showcase-theme-scene-contract.css?v=1');
+  const structure = entryCss.indexOf('act-showcase-presentation-structure-pass.css?v=1');
   const emphasis = entryCss.indexOf('act-showcase-visual-emphasis.css?v=2');
-  assert.ok(legibility >= 0 && scene > legibility && emphasis > scene);
+  assert.ok(legibility >= 0 && scene > legibility && structure > scene && emphasis > structure);
   assert.match(entryCss.trim().split("\n").at(-1), /act-showcase-visual-emphasis\.css\?v=2/);
-  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=18/);
+  assert.match(cinematicHtml, /act-showcase-entry\.css\?v=19/);
 });
