@@ -39,4 +39,6 @@ npm run verify
 
 `npm run verify` は静的監査、runtime契約、セキュリティ、マイグレーション、Node回帰テスト等をまとめて確認します。
 
-Playwrightの `live-write` は通常確認では実行しません。共有DBへ書込みを行うため、`docs/TESTING_STRATEGY.md` と `tests/e2e/README.md` の安全条件を満たす場合だけ実行してください。
+Playwrightの実行方法には環境差があります。検証側の `e2e:ci-*` / `e2e:live-write` コマンドは、2026-09-17時点の本番側には未導入です。本番の既存CIには保存・原状復帰テストも含まれます。実行前に [`docs/TESTING_STRATEGY.md` の環境差](docs/TESTING_STRATEGY.md#6-playwright-e2e分類) と、そのrepoの `package.json` / `.github/workflows/playwright.yml` を確認してください。
+
+個別のlive-write確認は通常確認では追加実行しません。共有DBへの書込みは `docs/TESTING_STRATEGY.md` と `tests/e2e/README.md` の対象制限・復元条件に従います。

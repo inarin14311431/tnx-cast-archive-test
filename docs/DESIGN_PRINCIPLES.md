@@ -51,7 +51,7 @@ PC版とMobile版は同じ業務ルールを共有するが、同じUI実装を�
 - Theme CSS manifest: `css-next/themes/index.css`
 - CSS ownership: `docs/CSS_ARCHITECTURE.md`
 - migration順序: `supabase/migrations-manifest.json`
-- E2E分類: `tests/e2e/test-suites.json`
+- E2E分類: 検証repoでは `tests/e2e/test-suites.json`。本番repoは分類runner未導入のため、現在の実行対象は `.github/workflows/playwright.yml` を確認する（詳細は `docs/TESTING_STRATEGY.md` 第6節）。
 - Quality gate契約: `quality-gates.json`
 
 新たな重複設定を追加するより、既存source of truthから生成・参照する。

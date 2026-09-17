@@ -12,7 +12,7 @@
 - 実ブラウザ操作はPlaywrightで確認する。
 - 見た目はVisual Regressionへ寄せる。
 - accessibility/performanceはQuality workflowで扱う。
-- live DBへの書込みは通常CIから分離する。
+- live DBへの書込みは通常CIから分離する方針とする。2026-09-17時点で本番側は分離未完了のため、第6節の現状を確認する。
 - テスト失敗を消すために契約を弱めない。
 
 ## 2. 品質契約
@@ -55,7 +55,7 @@
 npm run verify
 ```
 
-`verify` はJavaScript構文、cache policy、module graph、runtime integrity、CSS/Theme、主要画面runtime、Security、Migration、Quality契約、E2E契約、CI契約、ownership report、Node regression testをまとめて実行する。
+`verify` はJavaScript構文、cache policy、module graph、runtime integrity、CSS/Theme、主要画面runtime、Security、Migration、Quality契約、CI契約、ownership report、Node regression testをまとめて実行する。検証repoでは、これにE2E分類契約の `audit:e2e` が含まれる。本番repoにはこの追加監査は未導入である。
 
 「対象コードが少ないから `npm test` だけ」で終了しない。最終的には `verify` を通す。
 
@@ -76,7 +76,7 @@ static auditは、ブラウザを起動せずに構造的な契約を検査す�
 - `audit:troop` — troop runtime
 - `audit:security` — security invariant
 - `audit:migrations` — migration history contract
-- `audit:e2e` — E2E manifest分類
+- `audit:e2e` — E2E manifest分類（検証repoのみ導入済み）
 - `audit:ci` — CI coverage contract
 
 構造変更では、まずauditで検出可能なinvariantを追加することを検討する。
@@ -100,7 +100,24 @@ DOM実ブラウザの挙動を文字列testだけで代用しない。一方、p
 
 ## 6. Playwright E2E分類
 
-正規分類は `tests/e2e/test-suites.json` がsource of truth。新しい `.spec.js` は必ず分類する。
+以下の分類は検証repoで導入済み。正規分類は `tests/e2e/test-suites.json` がsource of truthであり、検証repoに新しい `.spec.js` を追加する場合は必ず分類する。
+
+### 環境差（2026-09-17確認）
+
+| 項目 | 検証repo | 本番repo |
+|---|---|---|
+| `e2e:ci-public` / `e2e:ci-editor` / `e2e:ci-mobile` | npm scriptsとして導入済み | 未導入 |
+| `e2e:manual-ui` / `e2e:live-write` | npm scriptsとして導入済み | 未導入 |
+| `audit:e2e` | `verify` / Regression checksに組込み済み | script・監査とも未導入 |
+| suite runner | `scripts/run-e2e-suite.mjs` がmanifestを読む | runner未導入、workflowがspecを直接列挙 |
+| `tests/e2e/test-suites.json` | 現行の実行分類として利用 | ファイルはあるが、一部の参照specとrunnerが未同期。現在のCI実行対象とは一致しない |
+| 保存・原状復帰テスト | `audit-editor-live.spec.js` を `live-write` に分離 | `audit-coverage.spec.js` が既存CIの実行対象に含まれる |
+
+本番で検証専用コマンドを実行したり、manifestの存在だけでlive-writeが分離済みだと判断したりしないこと。現在の実行対象は、対象repoの `package.json` と `.github/workflows/playwright.yml` で確認する。
+
+本番の `audit-coverage.spec.js` にはPC/Mobileの保存・再読込・原状復帰テストがある。認証条件を満たすと既存CIでも実DBへの書込みが発生し得るため、第7節の対象制限・復元・別repoとの同時書込み回避の条件を適用する。全specを対象にする `npx playwright test` も通常確認の代替として無条件には実行しない。
+
+今回の引き継ぎ資料整備は文書のみを対象とし、テスト構成・workflowの同期は含めない。テスト構成を同期する際は別の変更として差分と共有DBへの影響を確認する。以下の各グループ説明は検証repoの現行構成を示す。
 
 ### `ci-public`
 
@@ -216,6 +233,8 @@ DB変更では `npm run verify` だけでは不十分。
 - 本番クライアントが旧形式をまだ必要としていないか
 
 ## 12. 変更種別ごとの最低テスト
+
+表中の `ci-public` / `ci-editor` / `ci-mobile` は検証repoの分類を指す。本番の確認では第6節の環境差を踏まえ、現行workflowの対象specと書込みの有無を確認する。
 
 | 変更 | 最低限 |
 |---|---|

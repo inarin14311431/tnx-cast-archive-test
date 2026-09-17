@@ -262,7 +262,9 @@ Security audit     -> security invariant
 live-write E2E     -> 実DB保存/復元（明示実行のみ）
 ```
 
-詳細: `docs/TESTING_STRATEGY.md`
+この分類は設計方針であり、2026-09-17時点でmanifestを使った分類runnerは検証repoにのみ導入済み。本番の既存CIには保存・原状復帰テストが含まれる。runtimeが同期済みでも、npm scriptsやCIの実行対象が同じとは限らない。
+
+詳細: `docs/TESTING_STRATEGY.md` 第6節（環境差を含む）。
 
 ## 15. Architecture変更のルール
 

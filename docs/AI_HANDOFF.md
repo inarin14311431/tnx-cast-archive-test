@@ -32,6 +32,8 @@
 
 Supabaseはliveテスト時に共有状態へ触れる可能性がある。repoが分かれていても、DB書込みテストを並行・無制限に実行してよいとは考えないこと。
 
+**runtime同期とテスト構成の同期は別である。** 2026-09-17時点では本番に `e2e:ci-*` / `e2e:live-write` / `audit:e2e` のnpm scriptsはなく、既存CIには保存・原状復帰を行う `audit-coverage.spec.js` が含まれる。両環境の実行方法は [`TESTING_STRATEGY.md` 第6節](TESTING_STRATEGY.md#6-playwright-e2e分類) を参照すること。
+
 ## 3. 作業開始時の確認
 
 AIはコードを変更する前に最低限以下を確認する。
@@ -106,13 +108,15 @@ PC/Mobileのファイル名が似ているだけで統合しない。責務が�
 npm run verify
 ```
 
-変更内容に応じてPlaywrightを追加する。
+変更内容に応じてPlaywrightを追加する。以下のnpm scriptsは検証repoに導入済みの分類であり、本番でもそのまま実行できるとは考えないこと。
 
 - `e2e:ci-public`: 公開画面、意図的live-writeなし
 - `e2e:ci-editor`: 認証編集、意図的live-writeなし
 - `e2e:ci-mobile`: Mobile回帰
 - `e2e:manual-ui`: 特定UI不具合の詳細回帰
 - `e2e:live-write`: 明示承認時のみ。共有DBを書き換える
+
+本番では現行の `package.json` と `.github/workflows/playwright.yml` に記載されたコマンド・specを確認する。manifestが存在していてもrunnerや参照specが揃っているとは限らない。既存CIの保存テストにも承認済み所有者・復元・別repoとの同時書込み回避の条件が適用される。
 
 詳細は `TESTING_STRATEGY.md`。
 
