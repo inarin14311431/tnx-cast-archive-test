@@ -1,0 +1,59 @@
+/* Final structural pass for the cinematic showcase.
+   Keep scrolling inside the trailer readout, widen the reading frame on desktop,
+   and make the public ACT metadata strip consume the active showcase palette. */
+@media(min-width:801px){
+  :root[data-showcase-theme] .neotokyo-sequence__screen--trailer,
+  :root[data-showcase-theme] .neotokyo-sequence__screen[data-screen="trailer"]{
+    width:min(1360px,100%);
+    padding:54px 18px 42px;
+  }
+  :root[data-showcase-theme] .neotokyo-sequence__screen--trailer .neotokyo-sequence__inner--trailer,
+  :root[data-showcase-theme] .neotokyo-sequence__screen[data-screen="trailer"] .neotokyo-sequence__inner--trailer{
+    width:min(1320px,100%);
+  }
+  :root[data-showcase-theme] body.showcase-neotokyo .neotokyo-sequence__trailer-terminal{
+    width:min(100%,1240px);
+    max-height:min(68svh,760px);
+    margin-top:14px;
+  }
+  :root[data-showcase-theme] body.showcase-neotokyo .neotokyo-sequence__readout.is-terminal-readout{
+    max-height:min(58svh,650px);
+  }
+}
+
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta{
+  border-color:rgba(var(--showcase-primary-rgb),.34);
+  border-left-color:var(--showcase-primary);
+  background:linear-gradient(100deg,rgba(var(--showcase-surface-rgb),.96),rgba(var(--showcase-bg-rgb),.94) 57%,rgba(var(--showcase-secondary-rgb),.16));
+  box-shadow:0 14px 38px rgba(var(--showcase-bg-rgb),calc(var(--showcase-shadow) + .08)),inset 0 1px rgba(var(--showcase-text-rgb),.05);
+}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta:before{
+  background:linear-gradient(90deg,transparent 0 47%,rgba(var(--showcase-primary-rgb),.08) 50%,transparent 53%);
+  background-size:210% 100%;
+}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__eyebrow,
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__cell span,
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__status span{color:var(--showcase-primary)}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__title{
+  color:var(--showcase-text);
+  text-shadow:0 0 20px rgba(var(--showcase-primary-rgb),.18);
+}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__identity small{color:var(--showcase-muted)}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__cell{
+  border-left-color:rgba(var(--showcase-primary-rgb),.18);
+}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__cell.is-style,
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__status{
+  border-left-color:rgba(var(--showcase-secondary-rgb),.26);
+}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__cell strong{color:var(--showcase-text)}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__cell.is-style strong{color:var(--showcase-secondary)}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__status i{
+  background:var(--showcase-tertiary);
+  box-shadow:0 0 14px rgba(var(--showcase-tertiary-rgb),.52);
+}
+:root[data-showcase-theme] body.showcase-poster-v2-ready .poster-v2-act-meta__status strong{color:var(--showcase-tertiary)}
+
+:root[data-showcase-theme="intron"] body.showcase-poster-v2-ready .poster-v2-act-meta__title{
+  text-shadow:none;
+}
