@@ -126,7 +126,7 @@ test("NeoTokyo route keeps the published background from the first rendered fram
   expect(state.sample).toBe(false);
 });
 
-test("ACT TRAILER keeps its frame fixed and follows typing inside the readout", async ({ page }) => {
+test("ACT TRAILER expands its field and follows typing with browser page scrolling", async ({ page }) => {
   test.setTimeout(35_000);
   const longTrailer = Array.from({ length: 72 }, (_, index) =>
     `${String(index + 1).padStart(2, "0")} // 夜のN◎VAを走るシグナルが、次の事件へキャストを導く。`
@@ -146,6 +146,7 @@ test("ACT TRAILER keeps its frame fixed and follows typing inside the readout", 
   const advance = page.locator(".neotokyo-sequence__advance");
   const stage = page.locator(".neotokyo-sequence__stage");
   const screen = page.locator(".neotokyo-sequence__screen--trailer");
+  const terminal = page.locator(".neotokyo-sequence__screen--trailer .neotokyo-sequence__trailer-terminal");
   const readout = page.locator(".neotokyo-sequence__screen--trailer .neotokyo-sequence__readout");
 
   await expect(intro).toHaveAttribute("aria-hidden", "false", { timeout: 8_000 });
@@ -154,23 +155,40 @@ test("ACT TRAILER keeps its frame fixed and follows typing inside the readout", 
 
   await expect(screen).toBeVisible({ timeout: 5_000 });
   await expect(readout).toBeVisible();
-  await expect.poll(async () => readout.evaluate(element => {
-    const maxScroll = element.scrollHeight - element.clientHeight;
-    return maxScroll > 20 && element.scrollTop > 5;
-  }), { timeout: 10_000, intervals: [150, 250, 400] }).toBe(true);
+  await expect(page.locator("body")).toHaveClass(/showcase-trailer-document-scroll/);
+  await expect.poll(async () => page.evaluate(() => window.scrollY), {
+    timeout: 10_000,
+    intervals: [150, 250, 400]
+  }).toBeGreaterThan(5);
 
   const ownership = await stage.evaluate(element => {
     const trailerScreen = element.querySelector(".neotokyo-sequence__screen--trailer");
+    const trailerTerminal = trailerScreen?.querySelector(".neotokyo-sequence__trailer-terminal");
     const trailerReadout = trailerScreen?.querySelector(".neotokyo-sequence__readout");
+    const bodyStyle = getComputedStyle(document.body);
+    const stageStyle = getComputedStyle(element);
+    const beforeStyle = getComputedStyle(element, "::before");
     return {
-      stageOverflow: getComputedStyle(element).overflowY,
+      bodyOverflow: bodyStyle.overflowY,
+      stageOverflow: stageStyle.overflowY,
       screenOverflow: trailerScreen ? getComputedStyle(trailerScreen).overflowY : "missing",
+      terminalOverflow: trailerTerminal ? getComputedStyle(trailerTerminal).overflowY : "missing",
       readoutOverflow: trailerReadout ? getComputedStyle(trailerReadout).overflowY : "missing",
-      stageScrollTop: element.scrollTop
+      readoutScrollTop: trailerReadout?.scrollTop || 0,
+      stageScrollTop: element.scrollTop,
+      stageHeight: element.getBoundingClientRect().height,
+      frameBottom: beforeStyle.bottom
     };
   });
-  expect(ownership.stageOverflow).toBe("hidden");
-  expect(ownership.screenOverflow).toBe("hidden");
-  expect(ownership.readoutOverflow).toBe("auto");
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  expect(ownership.bodyOverflow).toBe("auto");
+  expect(ownership.stageOverflow).toBe("visible");
+  expect(ownership.screenOverflow).toBe("visible");
+  expect(ownership.terminalOverflow).toBe("visible");
+  expect(ownership.readoutOverflow).toBe("visible");
+  expect(ownership.readoutScrollTop).toBe(0);
   expect(ownership.stageScrollTop).toBe(0);
+  expect(ownership.stageHeight).toBeGreaterThan(viewportHeight * 0.75);
+  expect(ownership.frameBottom).not.toBe("auto");
+  await expect(terminal).toBeVisible();
 });
