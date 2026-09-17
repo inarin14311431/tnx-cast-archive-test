@@ -52,8 +52,13 @@ function renderShowcase(data) {
   intro.textContent = introText;
 
   const background = safeImageUrl(data.background);
+  document.body.style.removeProperty("background-image");
   if (background) {
-    document.body.style.backgroundImage = `linear-gradient(rgba(var(--showcase-bg-rgb,2,8,12),.58),rgba(var(--showcase-bg-rgb,2,8,12),.92)),url("${escapeCssString(background)}")`;
+    document.body.classList.add("has-showcase-background");
+    document.body.style.setProperty("--showcase-hero-background", `url("${escapeCssString(background)}")`);
+  } else {
+    document.body.classList.remove("has-showcase-background");
+    document.body.style.removeProperty("--showcase-hero-background");
   }
 
   const castList = Array.isArray(data.casts) ? data.casts.slice(0, 6) : [];
