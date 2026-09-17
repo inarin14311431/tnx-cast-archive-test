@@ -1,10 +1,11 @@
 const preview = document.querySelector("#showcase-preview");
 const themeField = document.querySelector("#showcase-theme");
 
-const OUTPUT_MARKER = "dedicated-standard-v4";
+const OUTPUT_MARKER = "dedicated-standard-v5";
 const STYLE_PATHS = [
   "../css-next/pages/act-showcase-standard.css?v=3",
   "../css-next/pages/act-showcase-standard-hotfix.css?v=2",
+  "../css-next/pages/act-showcase-standard-background-pass.css?v=1",
   "../css-next/pages/act-showcase-dedicated-themes.css?v=1",
   "../css-next/pages/act-showcase-theme-surface-system.css?v=1",
   "../css-next/pages/act-showcase-theme-legibility.css?v=1"
@@ -39,10 +40,12 @@ async function synchronizeGeneratedOutput() {
   const body = doc.body;
   body.id = "act-showcase-standard-page";
   body.removeAttribute("class");
+  body.style.removeProperty("background-image");
   if (background) {
-    body.style.backgroundImage = `linear-gradient(rgba(var(--showcase-bg-rgb,2,7,11),.58),rgba(var(--showcase-bg-rgb,2,7,11),.92)),url("${escapeCssString(background)}")`;
+    body.classList.add("has-showcase-background");
+    body.style.setProperty("--showcase-hero-background", `url("${escapeCssString(background)}")`);
   } else {
-    body.style.removeProperty("background-image");
+    body.style.removeProperty("--showcase-hero-background");
   }
 
   doc.querySelectorAll("style").forEach(node => node.remove());
@@ -53,7 +56,7 @@ async function synchronizeGeneratedOutput() {
   if (background) {
     doc.head.insertAdjacentHTML(
       "beforeend",
-      `<style data-showcase-background-source="true">body{background-image:url("${escapeCssString(background)}")}</style>`
+      `<style data-showcase-background-source="true">body{background-image:url("${escapeCssString(background)}");--showcase-hero-background:url("${escapeCssString(background)}")}</style>`
     );
   }
 
