@@ -22,11 +22,13 @@
 | 検証 | `inarin14311431/tnx-cast-archive-test` | 先行実装・CI・回帰確認の基準 |
 | 本番 | `inarin14311431/tnx_cast_list` | 検証済み変更の同期先 |
 
-2026-09-17時点の同期FIX点:
+2026-09-17時点の **runtime同期FIX基準点**:
 
-- 検証 main: `4e333f5193c91bc90a03db1449cd8f5948d25944`
-- 本番 main: `7f2d202459a8dedd442642ce8819379083615a47`
-- 本番コミットは検証PR #374 / `4e333f5` までの同期を明記している。
+- 検証 runtime基準: `4e333f5193c91bc90a03db1449cd8f5948d25944`
+- 本番 runtime基準: `7f2d202459a8dedd442642ce8819379083615a47`
+- 本番側の上記コミットは、検証PR #374 / `4e333f5` までのruntime同期を明記している。
+
+これらは「アプリ実装が同期している基準点」であり、READMEや設計資料だけのcommitによって各repoの最新main SHAはその後進む。**作業開始時は必ずGitHubから最新main SHAを取得し、この文書の固定SHAを最新mainだと解釈しないこと。**
 
 Supabaseはliveテスト時に共有状態へ触れる可能性がある。repoが分かれていても、DB書込みテストを並行・無制限に実行してよいとは考えないこと。
 
@@ -135,12 +137,12 @@ DB変更を含む場合はこの流れにDB live state確認・migration適用�
 
 詳細は `CURRENT_STATE.md`。
 
-- `refactor/navigation-shared-core` は作成済みだが、2026-09-17時点でmainと完全同一。実装は開始していない。
+- `refactor/navigation-shared-core` はruntime基準点から作成済みだが、runtime共通化の実装は開始していない。
 - `audit/pc-mobile-commonization` は調査用。runtimeコードの共通化変更ではない。
 - 共通化候補として Navigation/URL純粋ロジック、Snapshot DB service、Public ID取得utilityが挙がっている。
 - Save CoordinatorのPC/Mobile統合は現時点では見送り。
 
-別AIが作業を再開する場合、ブランチ名だけを見て「変更済み」と判断しないこと。
+別AIが作業を再開する場合、ブランチ名だけを見て「変更済み」と判断しないこと。必ず最新mainとのdiffを確認する。
 
 ## 10. 資料を更新すべき変更
 
