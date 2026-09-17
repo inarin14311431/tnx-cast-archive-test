@@ -26,7 +26,25 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+
+      - name: Check JavaScript syntax
+        run: npm run check:js
+
+      - name: Audit module dependency graph
+        run: npm run audit:modules
+
+      - name: Audit runtime integrity
+        run: npm run audit:integrity
+
+      - name: Audit PC editor runtime
+        run: npm run audit:sheet
+
+      - name: Audit mobile editor runtime
+        run: npm run audit:mobile
+
+      - name: Run Node regression tests
+        run: npm test
 
       - name: Generate audit report
         run: node tools/audit-pc-mobile-commonization.mjs
@@ -38,7 +56,7 @@ jobs:
             exit 0
           fi
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.email '41898282+inarin14311431@users.noreply.github.com'
           git add audit/pc-mobile-commonization-report.md
           git commit -m 'docs(audit): generate PC/mobile commonization report [skip ci]'
           git push
