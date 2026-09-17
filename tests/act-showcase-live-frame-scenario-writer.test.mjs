@@ -13,17 +13,18 @@ const standardScenario = read("js/act-showcase-standard-scenario-writer.js");
 const standardHtml = read("act-showcase-standard.html");
 const entryCss = read("css-next/pages/act-showcase-entry.css");
 const hierarchyCss = read("css-next/pages/act-showcase-neotokyo-hierarchy.css");
-const phaseCss = read("css-next/pages/act-showcase-theme-phase-contract.css");
+const emphasisCss = read("css-next/pages/act-showcase-visual-emphasis.css");
 const sceneCss = read("css-next/pages/act-showcase-theme-scene-contract.css");
 
 test("ACT TRAILER no longer uses an inline terminal sizing module", () => {
   assert.doesNotMatch(bootstrap, /act-showcase-trailer-live-frame\.js/);
   assert.match(bootstrap, /act-showcase-cinematic-layout-v2\.js\?v=/);
-  assert.match(cinematicLayout, /readout\.scrollHeight - readout\.clientHeight/);
-  assert.match(cinematicLayout, /readout\.scrollTo\(\{/);
+  assert.match(cinematicLayout, /readout\.getBoundingClientRect\(\)\.bottom \+ window\.scrollY/);
+  assert.match(cinematicLayout, /window\.scrollTo\(\{/);
+  assert.doesNotMatch(cinematicLayout, /readout\.scrollTo\(\{/);
   assert.doesNotMatch(cinematicLayout, /terminal\.style\.(?:height|maxHeight|overflow)/);
-  assert.match(phaseCss, /stage\.is-trailer-scroll\{[\s\S]*overflow:hidden/);
-  assert.match(phaseCss, /readout\.is-terminal-readout\{[\s\S]*overflow:auto/);
+  assert.match(emphasisCss, /showcase-trailer-document-scroll[\s\S]*stage\.is-trailer-scroll\{[\s\S]*overflow:visible/);
+  assert.match(emphasisCss, /showcase-trailer-document-scroll[\s\S]*readout\.is-terminal-readout\{[\s\S]*overflow:visible/);
 });
 
 test("scenario writer is mounted at the same form level as RULER and invalidates stale generated output", () => {

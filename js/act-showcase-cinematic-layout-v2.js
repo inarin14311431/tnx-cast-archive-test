@@ -4,7 +4,7 @@
   const intro = document.querySelector("#cinematic-intro");
   const openingSubtitle = document.querySelector("#opening-subtitle");
   const supportsResizeObserver = typeof ResizeObserver === "function";
-  const trailerScrollTargets = new WeakMap();
+  const trailerPageTargets = new WeakMap();
   let trailerFrame = 0;
 
   const enhance = root => {
@@ -103,12 +103,13 @@
     const active = Boolean(screen);
     const wasActive = stage.classList.contains("is-trailer-scroll");
     stage.classList.toggle("is-trailer-scroll", active);
+    document.body.classList.toggle("showcase-trailer-document-scroll", active);
 
     if (active !== wasActive) {
-      stage.scrollTop = 0;
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       if (readout) {
         readout.scrollTop = 0;
-        trailerScrollTargets.delete(readout);
+        trailerPageTargets.delete(readout);
       }
     }
   }
@@ -143,18 +144,23 @@
     if (!screen || !stage) return;
 
     stage.classList.add("is-trailer-scroll");
-    const targetTop = Math.max(0, readout.scrollHeight - readout.clientHeight);
-    const previousTarget = trailerScrollTargets.get(readout);
+    document.body.classList.add("showcase-trailer-document-scroll");
+    readout.scrollTop = 0;
 
-    if (targetTop <= readout.scrollTop + 1) {
-      trailerScrollTargets.set(readout, targetTop);
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const viewportPadding = Math.max(72, Math.min(140, window.innerHeight * 0.14));
+    const readoutBottom = readout.getBoundingClientRect().bottom + window.scrollY;
+    const targetTop = Math.max(0, readoutBottom - (window.innerHeight - viewportPadding));
+    const previousTarget = trailerPageTargets.get(readout);
+
+    if (targetTop <= window.scrollY + 1) {
+      trailerPageTargets.set(readout, targetTop);
       return;
     }
     if (Number.isFinite(previousTarget) && Math.abs(targetTop - previousTarget) <= 1) return;
 
-    trailerScrollTargets.set(readout, targetTop);
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    readout.scrollTo({
+    trailerPageTargets.set(readout, targetTop);
+    window.scrollTo({
       top: targetTop,
       left: 0,
       behavior: reduced ? "auto" : "smooth"
