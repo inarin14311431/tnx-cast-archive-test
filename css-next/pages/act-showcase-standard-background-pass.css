@@ -1,0 +1,35 @@
+/* Standard/public ACT background ownership.
+   The selected ACT visual belongs to the title hero, never to the full page body. */
+#act-showcase-standard-page{
+  background-image:none !important;
+}
+#act-showcase-standard-page .hero{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+#act-showcase-standard-page .hero:before{
+  position:absolute;
+  inset:-4%;
+  z-index:-2;
+  content:"";
+  background-image:
+    linear-gradient(180deg,rgba(var(--showcase-bg-rgb,2,8,12),.36),rgba(var(--showcase-bg-rgb,2,8,12),.68)),
+    var(--showcase-hero-background,none);
+  background-repeat:no-repeat,no-repeat;
+  background-position:center,center;
+  background-size:cover,cover;
+  transform:scale(1.06);
+  transform-origin:center 42%;
+  filter:saturate(1.06) contrast(1.03);
+  pointer-events:none;
+}
+#act-showcase-standard-page .hero:after{z-index:-1}
+#act-showcase-standard-page .hero__content,
+#act-showcase-standard-page .hero__scroll-cue{z-index:1}
+#act-showcase-standard-page:not(.has-showcase-background) .hero:before{
+  background-image:linear-gradient(180deg,rgba(var(--showcase-bg-rgb,2,8,12),.14),rgba(var(--showcase-bg-rgb,2,8,12),.52));
+}
+@media(max-width:760px){
+  #act-showcase-standard-page .hero:before{inset:-2%;transform:scale(1.025);background-position:center,center top}
+}
