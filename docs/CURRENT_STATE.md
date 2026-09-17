@@ -22,7 +22,11 @@
 
 ## 2. 直近で完了済みの基準状態
 
-検証と本番は、ACT SHOWCASE専用テーマ、表示契約、ACT TRAILER関連修正、関連回帰/E2Eを含むruntime状態まで同期済み。
+検証と本番は、ACT SHOWCASE専用テーマ、表示契約、ACT TRAILER関連修正と、それらに対応する回帰/E2E変更を含むruntime状態まで同期済み。
+
+これはテスト・CI構成全体の同期完了を意味しない。2026-09-17の照合では、アプリruntimeのファイルは一致する一方、npm scripts、E2E分類runner、一部spec、workflowには環境差がある。本番には検証専用の `e2e:ci-*` / `e2e:live-write` / `audit:e2e` が未導入で、既存CIには `audit-coverage.spec.js` の保存・原状復帰テストが含まれる。
+
+詳細は [`TESTING_STRATEGY.md` 第6節](TESTING_STRATEGY.md#6-playwright-e2e分類)。引き継ぎ資料の同期とテスト構成の同期を別の作業として扱い、共通化実装の保留は維持する。
 
 このFIX点以前の中途半端なPR/branchを現在仕様より優先しない。
 
