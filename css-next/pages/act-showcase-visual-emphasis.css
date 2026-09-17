@@ -101,6 +101,25 @@
   scrollbar-gutter:auto;
 }
 
+/* ACT TRAILER caret: collapse the legacy block size and block glyph into one thin cursor. */
+:root[data-showcase-theme] body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__readout.is-terminal-readout:after{
+  content:"";
+  display:inline-block;
+  width:2px;
+  height:1.05em;
+  margin-left:.22em;
+  vertical-align:-.14em;
+  border:0;
+  border-radius:1px;
+  background:var(--showcase-primary);
+  color:transparent;
+  font-size:0;
+  line-height:0;
+  text-shadow:none;
+  box-shadow:0 0 8px rgba(var(--showcase-primary-rgb),.42);
+  animation:cinematic-cursor .82s steps(1,end) infinite;
+}
+
 /* Finale access gate: keep the traditional opening phrase as a deliberate two-line title. */
 body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong.neotokyo-finale__access-title{
   font-size:clamp(.98rem,1.48vw,1.3rem);
