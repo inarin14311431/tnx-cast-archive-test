@@ -13,12 +13,17 @@ function importedVersion(source, moduleName) {
 }
 
 test("PC/mobile shared general-skill catalog uses one version", () => {
-  assert.equal(importedVersion(pcSheet, "general-skill-catalog.js"), "1");
-  assert.equal(importedVersion(mobileSkills, "general-skill-catalog.js"), "1");
+  const pcVersion = importedVersion(pcSheet, "general-skill-catalog.js");
+  const mobileVersion = importedVersion(mobileSkills, "general-skill-catalog.js");
+  assert.match(pcVersion, /^\d+$/);
+  assert.equal(pcVersion, mobileVersion);
 });
 
 test("PC/mobile shared row collection state uses one version", () => {
-  assert.equal(importedVersion(pcSheet, "sheet-row-collection-state.js"), "2");
-  assert.equal(importedVersion(mobileSkills, "sheet-row-collection-state.js"), "2");
-  assert.equal(importedVersion(mobileOutfit, "sheet-row-collection-state.js"), "2");
+  const pcVersion = importedVersion(pcSheet, "sheet-row-collection-state.js");
+  const mobileSkillsVersion = importedVersion(mobileSkills, "sheet-row-collection-state.js");
+  const mobileOutfitVersion = importedVersion(mobileOutfit, "sheet-row-collection-state.js");
+  assert.match(pcVersion, /^\d+$/);
+  assert.equal(pcVersion, mobileSkillsVersion);
+  assert.equal(pcVersion, mobileOutfitVersion);
 });
