@@ -1,6 +1,6 @@
 # 現在地 / Current State
 
-最終更新: 2026-09-17
+最終更新: 2026-09-19
 
 この文書は、AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショットである。時点情報なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。
 
@@ -30,21 +30,27 @@
 
 このFIX点以前の中途半端なPR/branchを現在仕様より優先しない。
 
-## 3. 停止中: PC/Mobile共通化
+## 3. PC/Mobile共通化: Navigation完了、Snapshot共通化待ち
 
-ユーザー指示により、共通化実装は一旦停止中。
+Navigation(戻り先URL解決)の共通化は完了した。Snapshot Supabase serviceとPublic ID/小さいURL utilityの共通化は未着手で、次のPR候補として残っている。
 
-### `refactor/navigation-shared-core`
+### Navigation共通化(完了、2026-09-19)
 
-このbranchはruntime基準 `4e333f5` から作成され、その時点ではmainと完全同一だった。
+- 共有コア: `js/sheet-navigation-core.js`(UI非依存の純粋関数のみ)
+  - データ: `RETURN_DESTINATIONS`(許可ページごとのPC label/en label/Mobile aria-label)、`PARENT_RETURN_PAGES`、`DEFAULT_RETURN_HREF`
+  - 関数: `readTrimmedSearchParam`、`toLocalHref`、`parseReturnDestination`、`resolveParentReturnHref`
+- PC adapter: `js/sheet-navigation-context.js`。UI側の責務(headerラベル更新、view linkのDOM更新、save後のhistory操作、click/MutationObserver配線)はこのファイルに残置。
+- Mobile adapter: `js/sheet-mobile-navigation-context.js`。UI側の責務(aria-label更新、forwardリンクのcontextualize、click配線)はこのファイルに残置。
+- `js/mobile-editor-route.js` も同じcoreへ切替済み。classic script(`type="module"`ではない)のため、`sheet-open-at-top.js`と同じ動的`import("./sheet-navigation-core.js?v=1")`パターンで読み込む。
+- 契約テスト:
+  - `tests/sheet-navigation-core.test.mjs`: pure core自体の挙動(same-origin検証、許可ページ判定、default解決)と、PC/Mobile同値contract(同じ`return`値に対してPC・Mobile双方が同じhrefへ解決すること)。
+  - `tests/navigation-return-context-contract.test.mjs`: 各adapterの配線(どのファイルがcoreをimportしているか、UI更新ロジックが残っているか)。
 
-2026-09-17時点:
+追加確認: `js/cast-ui.js` にも同種の重複ロジック(`PARENT_RETURN_PAGES`、`parseReturnDestination`、`parentReturnHref`相当)が存在する。今回のスコープには含めていない。次に着手する場合の候補として記録する。
 
-- runtime共通化のcommit: **0**
-- runtime変更: なし
-- その後mainにはAI引き継ぎ資料などdocumentation-only commitが追加されているため、最新mainとのahead/behind数は再確認が必要
+### `refactor/navigation-shared-core`(旧branch、未使用のまま)
 
-branch名は存在するが、実装済みではない。
+このbranchはruntime基準 `4e333f5` から作成されたが、その後実装が進まなかった。2026-09-19時点でも最新mainとの差分はruntime変更0件のまま。Navigationの実装は、このbranchを再利用せず最新mainから新規に切った `feat/navigation-shared-core` で行った。今後不要なら削除を検討してよい。
 
 ### `audit/pc-mobile-commonization`
 
@@ -59,23 +65,26 @@ branch名は存在するが、実装済みではない。
 
 runtimeアプリの共通化実装branchではない。
 
+### Snapshot共通化(未着手)
+
+安全な方向は第7節を参照。Navigation完了後の次のPR候補。
+
+### Public ID / 小さいURL utility共通化(未着手)
+
+Snapshot完了後の次のPR候補。
+
 ## 4. 共通化調査の結論
 
 ### 既に共通化されている重要領域
 
-Mobile新規キャスト技能生成は、sharedな以下を利用している。
-
-- `sheet-new-character-state.js`
-- `sheet-save-payload.js`
-
-したがって、新規技能初期値・保存payloadは「今後初めて共通化する領域」ではない。今後は同値回帰テストを維持する。
+- `sheet-new-character-state.js` / `sheet-save-payload.js`: Mobile新規キャスト技能生成が利用。新規技能初期値・保存payloadは「今後初めて共通化する領域」ではない。今後は同値回帰テストを維持する。
+- `sheet-navigation-core.js`: PC (`sheet-navigation-context.js`)、Mobile (`sheet-mobile-navigation-context.js`)、`mobile-editor-route.js` の3箇所が利用する戻り先URL解決ロジック(許可ページ集合、same-origin検証、parse、URL→local href変換、デフォルト解決、query utility)。今後は `tests/sheet-navigation-core.test.mjs` の同値契約テストを維持する。
 
 ### 優先候補
 
-1. Navigation / URL pure logic
-2. Snapshot Supabase service
-3. Public ID / small URL utility
-4. PC/Mobile同値contract testの強化
+1. Snapshot Supabase service
+2. Public ID / small URL utility
+3. PC/Mobile同値contract testの強化(Navigationについては対応済み。他領域は今後追加)
 
 ### 現時点で統合しないもの
 
@@ -89,30 +98,30 @@ Mobile側はDOM保存ボタンと `tnx:mobile-before-save` のtask aggregation�
 
 無理に統合するとUI依存がshared coreへ入る。
 
-## 5. Navigation共通化で追加確認された範囲
+## 5. Navigation共通化で確認した対象範囲(完了)
 
-共通化候補は以下2ファイルだけではない。
+共通化候補は当初想定の2ファイルだけではなく、以下3ファイルだった。
 
 - `js/sheet-navigation-context.js`
 - `js/sheet-mobile-navigation-context.js`
 - `js/mobile-editor-route.js`
 
-`mobile-editor-route.js` にもallowed return page、same-origin、local href生成の類似処理がある。
+`mobile-editor-route.js` にもallowed return page、same-origin、local href生成の類似処理があり、3箇所とも `js/sheet-navigation-core.js` へ切替済み。
 
-再開時は3箇所を含めて責務を整理してからshared coreを設計する。
+なお `js/cast-ui.js` にも同種の重複ロジックがあることを追加確認したが、今回のスコープには含めていない(第3節参照)。
 
-## 6. Navigation共通化の安全な方向
+## 6. Navigation共通化で実装した内容
 
-shared core候補:
+shared core (`js/sheet-navigation-core.js`) に含めたもの:
 
-- allowed return page set
-- same-origin return validation
-- return URL parse
-- URL → local href
-- default return解決
-- public ID等の小さいquery utility
+- allowed return page set (`RETURN_DESTINATIONS` / `PARENT_RETURN_PAGES`)
+- same-origin return validation (`parseReturnDestination`内)
+- return URL parse (`parseReturnDestination`)
+- URL → local href (`toLocalHref`)
+- default return解決 (`resolveParentReturnHref` + `DEFAULT_RETURN_HREF`。`mobile-editor-route.js`はページ文脈依存のfallbackを呼び出し側で指定)
+- public ID等の小さいquery utility (`readTrimmedSearchParam`)
 
-UI側へ残す:
+UI側(各adapterファイル)へ残したもの:
 
 - PC headerのlabel更新
 - Mobile `aria-label`
@@ -151,24 +160,22 @@ repo全体をAIセッションへ大量取得するとtimeoutしやすいため�
 
 全文一括取得を標準調査方法にしない。
 
-## 9. 次に共通化を再開する場合
+## 9. 次に共通化を再開する場合(Snapshot)
 
-推奨順:
+Navigation共通化は第3〜6節の手順で完了した(2026-09-19)。次に着手する場合はSnapshot Supabase serviceを対象とする。推奨順:
 
 1. 最新mainを再確認
-2. `refactor/navigation-shared-core` と最新mainのdiffを確認し、必要なら最新mainから新branchを切り直す
-3. Navigation関連3ファイルを再取得
-4. pure core APIを先にテストで定義
-5. shared module追加
-6. PC adapter切替
-7. Mobile adapter切替
-8. `mobile-editor-route.js` 切替
-9. Node test + `audit:modules` + `audit:sheet` + `audit:mobile`
-10. `npm run verify`
-11. `ci-editor` + `ci-mobile`
-12. 検証PR
+2. Snapshot関連ファイル(PC/Mobileの一覧・作成・復元・削除呼び出し箇所)を再取得
+3. pure core APIを先にテストで定義
+4. shared service module追加
+5. PC adapter切替
+6. Mobile adapter切替
+7. Node test + 関連audit(`audit:modules`など)
+8. `npm run verify`
+9. `ci-editor` + `ci-mobile`
+10. 検証PR
 
-Snapshot共通化はNavigation完了後に別PRとする。
+Public ID / 小さいURL utilityの共通化はSnapshot完了後に別PRとする。
 
 ## 10. 現在優先して守るべき資料
 
