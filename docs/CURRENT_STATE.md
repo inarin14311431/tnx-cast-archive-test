@@ -1,6 +1,6 @@
 # 現在地 / Current State
 
-最終更新: 2026-09-19
+最終更新: 2026-09-20
 
 この文書は、AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショットである。時点情報なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。
 
@@ -30,9 +30,9 @@
 
 このFIX点以前の中途半端なPR/branchを現在仕様より優先しない。
 
-## 3. PC/Mobile共通化: Navigation・Snapshot完了、Public ID utility共通化待ち
+## 3. PC/Mobile共通化: Navigation・Snapshot・Public ID utility完了
 
-Navigation(戻り先URL解決)とSnapshot Supabase serviceの共通化は完了した。Public ID/小さいURL utilityの共通化は未着手で、次のPR候補として残っている。
+Navigation(戻り先URL解決)、Snapshot Supabase service、Public ID/小さいURL utilityの共通化はいずれも完了した。第4節「優先候補」に元々挙がっていた4項目(Navigation/Snapshot/Public ID/PC-Mobile同値contract強化)が出揃ったため、次の一歩は第10節を参照。
 
 ### Navigation共通化(完了、2026-09-19)
 
@@ -75,9 +75,21 @@ runtimeアプリの共通化実装branchではない。
 - Mobile adapter: `js/sheet-mobile-snapshots.js`。UI側の責務(dirty判定はDOM datasetを直接参照、message表示、render()のDOM生成、section injection、イベント配線)は残置。PC限定機能`createBundleSnapshot`は呼んでいないため、対応する関数をimportしていない。
 - 契約テスト: `tests/sheet-snapshot-service.test.mjs`(新設)。既存のテストにSupabaseクライアントをモック/スタブする慣習がなかったため、`client`引数へ差し込む簡易な記録用フェイクclientをテストファイル内に自作し、各関数が正しいテーブル/RPC名・パラメータでSupabaseを呼んでいること、エラーをthrowせずそのまま返すことを検証している。既存の`tests/snapshots.test.mjs`・`tests/sheet-mobile-architecture.test.mjs`・`tests/character-sheet-compare-contract.test.mjs`も、共有coreへ移動したリテラル(RPC名・テーブル名・`MAX_SNAPSHOTS`定義)の参照先を`js/sheet-snapshot-service.js`側へ更新した。
 
-### Public ID / 小さいURL utility共通化(未着手)
+### Public ID / 小さいURL utility共通化(完了、2026-09-20)
 
-Navigation・Snapshot完了後の次のPR候補。`getPublicId` ↔ `getMobilePublicId`(`js/sheet-image.js` ↔ `js/sheet-mobile-runtime.js`)が対象。
+当初は `js/sheet-image.js` の `getPublicId()` と `js/sheet-mobile-runtime.js` の `getMobilePublicId()` の2箇所の重複として記録されていたが、実際に調べると重複範囲はもっと広く、以下4箇所に実質同一の実装(`new URLSearchParams(location.search).get("id")?.trim() || ""`相当)が個別に存在した。
+
+- `js/cast-data-store.js`: `getPublicId()`
+- `js/cast.js`: `getPublicId()`(`window.location.search`・`??`を使用。他の3つは`location.search`・`||`を使用していたが、空文字列に対する挙動は同一)
+- `js/sheet-image.js`: `getPublicId()`
+- `js/sheet-mobile-runtime.js`: `getMobilePublicId()`(export済みで、`getMobileEditorContext()`が内部で利用)
+
+- 共有コア: `js/public-id-param.js`(新規、「sheet」に限定しない汎用モジュールのため`sheet-`接頭辞なし。`outfit-ofc-utils.js`と同じ命名慣習)
+  - `getPublicIdParam(search = location.search)`: DOM/locationへ直接依存しすぎないよう`search`を注入可能にした純粋関数。引数省略時のみ`location.search`を参照する。
+- `js/cast-data-store.js` / `js/cast.js` / `js/sheet-image.js`: 自前の`getPublicId()`を削除し、`import { getPublicIdParam as getPublicId } from "./public-id-param.js?v=1";`へ置き換えた。ファイル内の既存呼び出し箇所(`getPublicId()`)は変更していない。
+- `js/sheet-mobile-runtime.js`: 自前実装を削除し、`getPublicIdParam`をimportした上で`export { getPublicIdParam as getMobilePublicId };`として再export。この形にした理由: `export { X as Y } from "..."`という再exportのみの構文だとこのファイル自身の中で`Y`(`getMobilePublicId`)を使えない(ローカルbindingを作らないため)。`getMobileEditorContext()`内部で`getMobilePublicId()`相当の処理を呼んでいるため、import + ローカルexportの形にして内部からは`getPublicIdParam()`を直接呼ぶようにした。外部の既存importerからは引き続き`getMobilePublicId`という名前でimportできる。
+- 契約テスト: `tests/public-id-param.test.mjs`(新設)。通常取得・trim・未指定時の空文字列・search文字列を引数で渡せることを検証。
+- 既存テスト`tests/sheet-image-save-state-boundary.test.mjs`は`js/sheet-image.js`内の呼び出し箇所(`const publicId=getPublicId()`)をそのまま検証しており、変更不要だった。
 
 ## 4. 共通化調査の結論
 
@@ -86,11 +98,11 @@ Navigation・Snapshot完了後の次のPR候補。`getPublicId` ↔ `getMobilePu
 - `sheet-new-character-state.js` / `sheet-save-payload.js`: Mobile新規キャスト技能生成が利用。新規技能初期値・保存payloadは「今後初めて共通化する領域」ではない。今後は同値回帰テストを維持する。
 - `sheet-navigation-core.js`: PC (`sheet-navigation-context.js`)、Mobile (`sheet-mobile-navigation-context.js`)、`mobile-editor-route.js` の3箇所が利用する戻り先URL解決ロジック(許可ページ集合、same-origin検証、parse、URL→local href変換、デフォルト解決、query utility)。今後は `tests/sheet-navigation-core.test.mjs` の同値契約テストを維持する。
 - `sheet-snapshot-service.js`: PC (`sheet-snapshots.js`)、Mobile (`sheet-mobile-snapshots.js`) が利用するSnapshot用Supabase呼び出し(一覧取得・通常作成・比較版作成・復元・削除)と`formatDate`。今後は`tests/sheet-snapshot-service.test.mjs`を維持する。
+- `public-id-param.js`: `js/cast-data-store.js`・`js/cast.js`・`js/sheet-image.js`・`js/sheet-mobile-runtime.js`(re-export経由)の4箇所が利用するURLの`id`パラメータ取得ロジック。今後は`tests/public-id-param.test.mjs`を維持する。
 
 ### 優先候補
 
-1. Public ID / small URL utility
-2. PC/Mobile同値contract testの強化(Navigation・Snapshotについては対応済み。他領域は今後追加)
+第3節の4項目(Navigation/Snapshot/Public ID/PC-Mobile同値contract強化)はすべて対応済み。次の一歩は第10節の`js/cast-ui.js`調査を参照。PC/Mobile同値contract testの強化は、新しい重複が見つかった領域ごとに今後も継続する。
 
 ### 現時点で統合しないもの
 
@@ -156,7 +168,20 @@ UI側(各adapterファイル)へ残したもの:
 - section injection(Mobile固有)
 - panel/list要素の取得・イベント配線
 
-## 8. 監査方式
+## 8. Public ID utility共通化で実装した内容
+
+shared core (`js/public-id-param.js`) に含めたもの:
+
+- `getPublicIdParam(search = location.search)`: URLの`id`クエリパラメータをtrimして返す唯一の関数。`search`を引数で注入可能にし、テストが`location`のグローバルに依存しないようにした。
+
+adapter側の扱い:
+
+- `js/cast-data-store.js` / `js/cast.js` / `js/sheet-image.js`: `getPublicIdParam`を`getPublicId`という名前でimportし、既存の呼び出し箇所は無変更。
+- `js/sheet-mobile-runtime.js`: `getPublicIdParam`をimportした上で`getMobilePublicId`として再export。ファイル内部では`getPublicIdParam`を直接呼ぶ(理由は第3節参照)。
+
+この領域にはUI側の責務がほぼ存在しない(単なるURLパラメータ読み取りのため)。
+
+## 9. 監査方式
 
 repo全体をAIセッションへ大量取得するとtimeoutしやすいため、今後の大規模監査では以下を推奨する。
 
@@ -168,22 +193,23 @@ repo全体をAIセッションへ大量取得するとtimeoutしやすいため�
 
 全文一括取得を標準調査方法にしない。
 
-## 9. 次に共通化を再開する場合(Public ID / 小さいURL utility)
+## 10. 次に共通化を再開する場合(js/cast-ui.js調査)
 
-Navigation共通化は第3〜6節、Snapshot共通化は第3・4・7節の手順でそれぞれ完了した(2026-09-19)。次に着手する場合はPublic ID / 小さいURL utility(`getPublicId` ↔ `getMobilePublicId`、`js/sheet-image.js` ↔ `js/sheet-mobile-runtime.js`)を対象とする。推奨順:
+Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Public ID utility共通化は第3・4・8節の手順でそれぞれ完了した(2026-09-19〜20)。第4節の優先候補4項目は出揃った。
+
+次に着手する場合は、Navigation PRの調査中に見つかった `js/cast-ui.js` の重複を対象とする。`js/cast-ui.js` には `js/sheet-navigation-core.js` と同種の重複ロジック(`PARENT_RETURN_PAGES`、`parseReturnDestination`、`parentReturnHref`相当)が存在することを確認済みだが、`cast-ui.js`自体の他の責務(スタイル/能力値/技能/アウトフィット等のDOM描画)との切り分けをまだ調査していない。推奨順:
 
 1. 最新mainを再確認
-2. 対象ファイルを再取得し、PC/Mobileの実装差を洗い出す
-3. pure core APIを先にテストで定義
-4. shared module追加
-5. PC adapter切替
-6. Mobile adapter切替
-7. Node test + 関連audit(`audit:modules`など)
-8. `npm run verify`
-9. `ci-editor` + `ci-mobile`
-10. 検証PR
+2. `js/cast-ui.js` を再取得し、`js/sheet-navigation-core.js`と重複している範囲・していない範囲を洗い出す
+3. `js/sheet-navigation-core.js`を再利用できるか(cast.html固有の事情がないか)を判定する
+4. pure core APIを先にテストで定義(または既存の`sheet-navigation-core.js`を拡張)
+5. `js/cast-ui.js`をcore/adapterへ整理
+6. Node test + 関連audit(`audit:modules`など)
+7. `npm run verify`
+8. `ci-public`(cast-ui.jsは公開閲覧画面が対象)
+9. 検証PR
 
-## 10. 現在優先して守るべき資料
+## 11. 現在優先して守るべき資料
 
 - `docs/AI_HANDOFF.md`
 - `docs/DESIGN_PRINCIPLES.md`

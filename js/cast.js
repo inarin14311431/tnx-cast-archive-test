@@ -2,6 +2,7 @@ import { supabase } from "./supabase-client.js";
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=3";
 import { normalizeOutfitListForView, formatPurchasePair, formatConcealmentPair } from "./outfit-view-model.js";
 import { AppError, toUserFacingErrorMessage, renderErrorState } from "./error-state.js?v=1";
+import { getPublicIdParam as getPublicId } from "./public-id-param.js?v=1";
 
 const content = document.querySelector("#cast-content");
 const statusText = document.querySelector("#cast-status");
@@ -177,11 +178,6 @@ renderCharacter(
     console.error(error);
     showError(toUserFacingErrorMessage(error), loadCharacter);
   }
-}
-
-function getPublicId() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("id")?.trim() ?? "";
 }
 
 function renderCharacter(
