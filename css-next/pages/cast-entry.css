@@ -6,6 +6,7 @@
 
 @import url("../index.css?v=64") layer(app);
 @import url("../components/cast-troops.css?v=1") layer(cast-components);
+@import url("../components/error-state.css?v=1") layer(cast-components);
 @import url("./cast.css?v=44") layer(cast-base);
 @import url("./cast-view-details.css?v=5") layer(cast-details);
 @import url("./cast-combos.css?v=2") layer(cast-combos);

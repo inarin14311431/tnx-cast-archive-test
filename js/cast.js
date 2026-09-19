@@ -1,11 +1,12 @@
 import { supabase } from "./supabase-client.js";
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=3";
 import { normalizeOutfitListForView, formatPurchasePair, formatConcealmentPair } from "./outfit-view-model.js";
+import { AppError, toUserFacingErrorMessage, renderErrorState } from "./error-state.js?v=1";
 
 const content = document.querySelector("#cast-content");
 const statusText = document.querySelector("#cast-status");
 const errorPanel = document.querySelector("#cast-error");
-const errorMessage = document.querySelector("#cast-error-message");
+const errorBody = document.querySelector("#cast-error-message");
 const quickSheet = document.querySelector("#quick-sheet");
 const quickSheetPages = document.querySelector("#quick-sheet-pages");
 const quickSheetButton = document.querySelector("#cast-quick-sheet-button");
@@ -101,7 +102,7 @@ async function loadCharacter() {
     const publicId = getPublicId();
 
     if (!publicId) {
-      throw new Error("キャストIDが指定されていません。");
+      throw new AppError("キャストIDが指定されていません。");
     }
 
     statusText.textContent =
@@ -119,7 +120,7 @@ async function loadCharacter() {
     }
 
     if (!character) {
-      throw new Error("指定されたキャストは存在しません。");
+      throw new AppError("指定されたキャストは存在しません。");
     }
 
 const [
@@ -174,11 +175,7 @@ renderCharacter(
     content.hidden = false;
   } catch (error) {
     console.error(error);
-    showError(
-      error instanceof Error
-        ? error.message
-        : "キャスト情報の取得に失敗しました。"
-    );
+    showError(toUserFacingErrorMessage(error), loadCharacter);
   }
 }
 
@@ -1592,9 +1589,9 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function showError(message) {
+function showError(message, onRetry) {
   statusText.textContent = "ACCESS DENIED";
-  errorMessage.textContent = message;
+  renderErrorState(errorBody, { message, onRetry });
   errorPanel.hidden = false;
 }
 
