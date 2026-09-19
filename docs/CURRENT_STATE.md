@@ -30,9 +30,9 @@
 
 このFIX点以前の中途半端なPR/branchを現在仕様より優先しない。
 
-## 3. PC/Mobile共通化: Navigation完了、Snapshot共通化待ち
+## 3. PC/Mobile共通化: Navigation・Snapshot完了、Public ID utility共通化待ち
 
-Navigation(戻り先URL解決)の共通化は完了した。Snapshot Supabase serviceとPublic ID/小さいURL utilityの共通化は未着手で、次のPR候補として残っている。
+Navigation(戻り先URL解決)とSnapshot Supabase serviceの共通化は完了した。Public ID/小さいURL utilityの共通化は未着手で、次のPR候補として残っている。
 
 ### Navigation共通化(完了、2026-09-19)
 
@@ -65,13 +65,19 @@ Navigation(戻り先URL解決)の共通化は完了した。Snapshot Supabase se
 
 runtimeアプリの共通化実装branchではない。
 
-### Snapshot共通化(未着手)
+### Snapshot共通化(完了、2026-09-19)
 
-安全な方向は第7節を参照。Navigation完了後の次のPR候補。
+- 共有コア: `js/sheet-snapshot-service.js`。Supabase呼び出しのみを持ち、DOM操作は一切含めない。
+  - 定数: `MAX_SNAPSHOTS`
+  - 純粋関数: `formatDate(value)`
+  - Supabase呼び出し関数: `listSnapshots(characterId)`、`createSnapshot(characterId, label)`、`createBundleSnapshot(characterId, data, label)`、`restoreSnapshot(snapshotId)`、`deleteSnapshot(snapshotId)`。いずれもSupabaseの`{data,error}`をそのまま返し、throwするかどうかは呼び出し側(PC/Mobile)に委ねる。各関数はテスト用に`client`を最終引数として差し替え可能(既定値は実際の`supabase`クライアント)。
+- PC adapter: `js/sheet-snapshots.js`。UI側の責務(dirty判定 `hasUnsavedSheetChanges()`/`focusSheetSaveButton()`、confirm/alert、message表示、render()のDOM生成、panel/list要素の取得・イベント配線)は残置。公開API `globalThis.TNXSheetSnapshots` の形は変更していない。
+- Mobile adapter: `js/sheet-mobile-snapshots.js`。UI側の責務(dirty判定はDOM datasetを直接参照、message表示、render()のDOM生成、section injection、イベント配線)は残置。PC限定機能`createBundleSnapshot`は呼んでいないため、対応する関数をimportしていない。
+- 契約テスト: `tests/sheet-snapshot-service.test.mjs`(新設)。既存のテストにSupabaseクライアントをモック/スタブする慣習がなかったため、`client`引数へ差し込む簡易な記録用フェイクclientをテストファイル内に自作し、各関数が正しいテーブル/RPC名・パラメータでSupabaseを呼んでいること、エラーをthrowせずそのまま返すことを検証している。既存の`tests/snapshots.test.mjs`・`tests/sheet-mobile-architecture.test.mjs`・`tests/character-sheet-compare-contract.test.mjs`も、共有coreへ移動したリテラル(RPC名・テーブル名・`MAX_SNAPSHOTS`定義)の参照先を`js/sheet-snapshot-service.js`側へ更新した。
 
 ### Public ID / 小さいURL utility共通化(未着手)
 
-Snapshot完了後の次のPR候補。
+Navigation・Snapshot完了後の次のPR候補。`getPublicId` ↔ `getMobilePublicId`(`js/sheet-image.js` ↔ `js/sheet-mobile-runtime.js`)が対象。
 
 ## 4. 共通化調査の結論
 
@@ -79,12 +85,12 @@ Snapshot完了後の次のPR候補。
 
 - `sheet-new-character-state.js` / `sheet-save-payload.js`: Mobile新規キャスト技能生成が利用。新規技能初期値・保存payloadは「今後初めて共通化する領域」ではない。今後は同値回帰テストを維持する。
 - `sheet-navigation-core.js`: PC (`sheet-navigation-context.js`)、Mobile (`sheet-mobile-navigation-context.js`)、`mobile-editor-route.js` の3箇所が利用する戻り先URL解決ロジック(許可ページ集合、same-origin検証、parse、URL→local href変換、デフォルト解決、query utility)。今後は `tests/sheet-navigation-core.test.mjs` の同値契約テストを維持する。
+- `sheet-snapshot-service.js`: PC (`sheet-snapshots.js`)、Mobile (`sheet-mobile-snapshots.js`) が利用するSnapshot用Supabase呼び出し(一覧取得・通常作成・比較版作成・復元・削除)と`formatDate`。今後は`tests/sheet-snapshot-service.test.mjs`を維持する。
 
 ### 優先候補
 
-1. Snapshot Supabase service
-2. Public ID / small URL utility
-3. PC/Mobile同値contract testの強化(Navigationについては対応済み。他領域は今後追加)
+1. Public ID / small URL utility
+2. PC/Mobile同値contract testの強化(Navigation・Snapshotについては対応済み。他領域は今後追加)
 
 ### 現時点で統合しないもの
 
@@ -129,24 +135,26 @@ UI側(各adapterファイル)へ残したもの:
 - save後のhistory操作
 - click event wiring
 
-## 7. Snapshot共通化の安全な方向
+## 7. Snapshot共通化で実装した内容
 
-shared service候補:
+shared core (`js/sheet-snapshot-service.js`) に含めたもの:
 
+- `MAX_SNAPSHOTS`
+- `formatDate(value)`
 - `listSnapshots(characterId)`
 - `createSnapshot(characterId, label)`
-- `createBundleSnapshot(characterId, data, label)`
+- `createBundleSnapshot(characterId, data, label)`(PC限定機能。Mobileはimportしていない)
 - `restoreSnapshot(snapshotId)`
 - `deleteSnapshot(snapshotId)`
 
-UIへ残す:
+UI側(各adapterファイル)へ残したもの:
 
-- dirty判定
-- confirm
-- alert/focus
-- message
-- PC/Mobile render
-- section injection
+- dirty判定(PC: `hasUnsavedSheetChanges()`/`focusSheetSaveButton()`、Mobile: DOM dataset参照。実装方式が異なるためUI側に残置)
+- confirm/alertダイアログ
+- message/状態表示
+- render()のDOM生成(PC/Mobileでmarkup・class名が異なるため統合せず、両方とも共有coreの`formatDate()`を呼ぶ形に変更)
+- section injection(Mobile固有)
+- panel/list要素の取得・イベント配線
 
 ## 8. 監査方式
 
@@ -160,22 +168,20 @@ repo全体をAIセッションへ大量取得するとtimeoutしやすいため�
 
 全文一括取得を標準調査方法にしない。
 
-## 9. 次に共通化を再開する場合(Snapshot)
+## 9. 次に共通化を再開する場合(Public ID / 小さいURL utility)
 
-Navigation共通化は第3〜6節の手順で完了した(2026-09-19)。次に着手する場合はSnapshot Supabase serviceを対象とする。推奨順:
+Navigation共通化は第3〜6節、Snapshot共通化は第3・4・7節の手順でそれぞれ完了した(2026-09-19)。次に着手する場合はPublic ID / 小さいURL utility(`getPublicId` ↔ `getMobilePublicId`、`js/sheet-image.js` ↔ `js/sheet-mobile-runtime.js`)を対象とする。推奨順:
 
 1. 最新mainを再確認
-2. Snapshot関連ファイル(PC/Mobileの一覧・作成・復元・削除呼び出し箇所)を再取得
+2. 対象ファイルを再取得し、PC/Mobileの実装差を洗い出す
 3. pure core APIを先にテストで定義
-4. shared service module追加
+4. shared module追加
 5. PC adapter切替
 6. Mobile adapter切替
 7. Node test + 関連audit(`audit:modules`など)
 8. `npm run verify`
 9. `ci-editor` + `ci-mobile`
 10. 検証PR
-
-Public ID / 小さいURL utilityの共通化はSnapshot完了後に別PRとする。
 
 ## 10. 現在優先して守るべき資料
 
