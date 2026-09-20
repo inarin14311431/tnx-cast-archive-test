@@ -398,7 +398,7 @@
       reportProgress(42,'スタイル技能を取込中',`スタイル技能${stats.style}件の取込を完了`);
       reportProgress(50,'基本取込完了','プロフィール・技能の基本取込を完了しました');
 
-      document.dispatchEvent(new Event('input',{bubbles:true}));
+      document.body.dispatchEvent(new Event('input',{bubbles:true}));
       window.TNXExperience?.queue?.();
       const summary=`一般技能${stats.general}件、社会${stats.social}件、コネ${stats.connection}件、スタイル技能${stats.style}件`;
       const finalizing=dialog.getAttribute('data-importing')==='1';
