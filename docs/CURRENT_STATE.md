@@ -30,6 +30,10 @@
 
 このFIX点以前の中途半端なPR/branchを現在仕様より優先しない。
 
+### 既知の制限: URLインポートの長時間バックグラウンド放置(PR #387)
+
+PR #387の`wait()`ハイブリッド化(表示中はrequestAnimationFrame、`document.hidden`時はsetTimeoutにフォールバック)は、短時間タブを非表示にするケースには対応するが、Chromeのページ凍結(Page Lifecycle APIのfrozen状態)を伴う長時間バックグラウンド放置には対応しないことを実機検証で確認した(2026-09-20)。実データでのインポート中、character-kana反映直後で完全停止し、180秒後に取込エラーとなるケースを観測した。通常の利用形態(タブを表示したまま操作)では発生しないため、既知の制限として許容する。
+
 ## 3. PC/Mobile共通化: Navigation・Snapshot・Public ID utility完了
 
 Navigation(戻り先URL解決)、Snapshot Supabase service、Public ID/小さいURL utilityの共通化はいずれも完了した。第4節「優先候補」に元々挙がっていた4項目(Navigation/Snapshot/Public ID/PC-Mobile同値contract強化)が出揃ったため、次の一歩は第10節を参照。
