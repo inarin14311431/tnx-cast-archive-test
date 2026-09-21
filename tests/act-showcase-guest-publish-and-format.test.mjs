@@ -26,6 +26,22 @@ test("showcase taglines always use one Japanese quote pair", () => {
   assert.equal(formatShowcaseTagline("「“真実はここにある”」"), "「真実はここにある」");
 });
 
+test("showcase tagline formatting leaves placeholder fallback text unquoted", () => {
+  assert.equal(formatShowcaseTagline("PUBLIC CAST ARCHIVE"), "PUBLIC CAST ARCHIVE");
+  assert.equal(formatShowcaseTagline("PUBLIC CAST"), "PUBLIC CAST");
+  assert.equal(formatShowcaseTagline("  PUBLIC CAST  "), "PUBLIC CAST");
+});
+
+test("display normalizer covers the real cast one-line tagline locations without touching the visual caption", async () => {
+  const normalizer = await read("js/act-showcase-display-normalizer.js");
+  for (const selector of [
+    ".poster-v2-tagline",
+    ".neotokyo-sequence__cast-tagline",
+    ".neotokyo-sequence__summary-cast-tagline"
+  ]) assert.ok(normalizer.includes(selector), `missing selector: ${selector}`);
+  assert.ok(!normalizer.includes(".poster-v2-visual__caption > span"));
+});
+
 test("mode-specific publish saves guests before standard or cinematic publishing", async () => {
   const [loader, bridge] = await Promise.all([
     read("js/showcase-generator-loader.js"),

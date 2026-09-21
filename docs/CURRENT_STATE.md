@@ -1,6 +1,6 @@
 # 現在地 / Current State
 
-最終更新: 2026-09-20
+最終更新: 2026-09-21
 
 この文書は、AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショットである。時点情報なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。
 
@@ -209,7 +209,21 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 8. `ci-public`(cast-ui.jsは公開閲覧画面が対象)
 9. 検証PR
 
-## 11. 現在優先して守るべき資料
+## 11. act-showcase重複ロジックの整理
+
+`js/act-showcase-tagline-quotes.js` と `js/act-showcase-display-normalizer.js` は、同じセレクタ群(`.poster-v2-tagline`等)のタグライン文字列を別ロジックで正規化し、両方とも`document.body`全体をMutationObserverで監視して競合していた。`display-normalizer.js`が呼ぶ`js/showcase-display-format.js`の`formatShowcaseTagline()`は、`tagline-quotes.js`の`normalizeTagline`と引用符ペア配列まで完全に同一だった。
+
+対応(完了、2026-09-21): `formatShowcaseTagline()`に`tagline-quotes.js`側だけが持っていたFALLBACKS除外(`"PUBLIC CAST ARCHIVE"` / `"PUBLIC CAST"`はカギ括弧で囲まない)を移植した上で`js/act-showcase-tagline-quotes.js`を削除し、`act-showcase-bootstrap.js`のimportからも外した。以後、タグライン正規化とMutationObserver監視は`display-normalizer.js`単独が担う。
+
+### 今回のスコープ外として記録する重複・競合候補
+
+今回の調査で見つかったが着手していないもの。次に着手する場合の候補として記録する。
+
+- `js/act-showcase-story-flow.js` と `js/act-showcase-writing-patterns.js`: ハンドアウトの二重解析。
+- `js/act-showcase-finale-enhancer.js` と `js/act-showcase-cinematic-polish.js`: タイトル文字数による分類ロジックの重複。
+- `js/act-showcase-board-layout.js`等7箇所: 「本体が作ったものを削除して作り直す」パターンの重複。
+
+## 12. 現在優先して守るべき資料
 
 - `docs/AI_HANDOFF.md`
 - `docs/DESIGN_PRINCIPLES.md`
