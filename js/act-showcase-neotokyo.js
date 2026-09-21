@@ -1,6 +1,5 @@
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
-const DEFAULT_OVERVIEW = "CAST SHOWCASE";
 const SHOW_ACT_TITLE_SCREEN = true;
 
 export function prepareNeoTokyoLoading(intro) {
@@ -164,16 +163,6 @@ async function showActTitle(state, model) {
     textNode("h1", "neotokyo-sequence__act-title", model.actName || "ACT SHOWCASE"),
     createRulerCredit(model.rulerName)
   );
-
-  const overview = getActOverview(model);
-  if (overview) {
-    const overviewBox = node("div", "neotokyo-sequence__act-overview");
-    overviewBox.append(
-      textNode("span", "neotokyo-sequence__act-overview-label", "ACT OVERVIEW // アクト概要"),
-      textNode("p", "neotokyo-sequence__act-overview-copy", overview)
-    );
-    content.append(overviewBox);
-  }
 
   content.append(textNode("p", "neotokyo-sequence__terminal", "TITLE & CREDITS LOCKED // PREPARING ACT TRAILER"));
   swapScreen(state, content);
@@ -393,13 +382,6 @@ async function showSummary(state, model) {
     overviewMeta
   );
 
-  const actOverview = getActOverview(model);
-  if (actOverview) {
-    overview.append(
-      textNode("p", "neotokyo-sequence__overview-intro-label", "ACT OVERVIEW // アクト概要"),
-      textNode("p", "neotokyo-sequence__overview-intro", actOverview)
-    );
-  }
   overview.append(
     textNode("p", "neotokyo-sequence__overview-label", `${model.trailerTitle || "ACT TRAILER"} // 読み上げ用トレーラー`),
     textNode("p", "neotokyo-sequence__overview-copy", model.trailer || SAMPLE_TRAILER_MESSAGE)
@@ -484,12 +466,6 @@ function roleMatchesStyle(role, style) {
     .replace(/[\s　]+/g, "")
     .toLocaleLowerCase("ja-JP");
   return Boolean(role && style && normalize(role) === normalize(style));
-}
-
-function getActOverview(model) {
-  const value = clean(model?.heroSubTitle);
-  if (!value || value.toUpperCase() === DEFAULT_OVERVIEW) return "";
-  return value;
 }
 
 function replaceStage(state, { eyebrow, title, sub, status = [] }) {
