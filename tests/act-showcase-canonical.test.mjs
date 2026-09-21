@@ -48,7 +48,7 @@ test("canonical renderer keeps every cast selectable while switching detail", as
   assert.match(source, /createRoster\(model\.casts,/);
   assert.doesNotMatch(source, /createRoster\(model\.casts\.slice\(1\)\)/);
   assert.match(source, /activeCastIndex/);
-  assert.match(source, /createCastGrid\(model, model\.casts\[activeCastIndex\]\)/);
+  assert.match(source, /createCastGrid\(model\.casts\[activeCastIndex\]\)/);
   assert.match(source, /grid\.replaceWith\(nextGrid\)/);
   assert.match(source, /dataset\.castIndex/);
   assert.match(source, /aria-pressed/);
@@ -57,6 +57,29 @@ test("canonical renderer keeps every cast selectable while switching detail", as
 test("selected cast handout follows the selected cast", async () => {
   const source = await read("js/act-showcase-page.js");
   assert.match(source, /createHandoutPanel\(\[cast\]\)/);
+});
+
+test("poster builds its final PUBLIC DATA bar and showcase3 grid directly, without a throwaway credits panel", async () => {
+  const [source, boardLayout] = await Promise.all([
+    read("js/act-showcase-page.js"),
+    read("js/act-showcase-board-layout.js")
+  ]);
+  // js/act-showcase-board-layout.js's polishBoard()/ensureActMeta() used to scrape RULER/KEY STYLE
+  // off a poster-v2-panel--credits panel a frame after this file built it, then delete that panel.
+  // This file now builds the final .poster-v2-act-meta bar and poster-v2-grid--showcase3 layout
+  // synchronously from `model`, so that throwaway panel and its DOM round-trip no longer exist.
+  assert.doesNotMatch(source, /function createCreditsPanel|createCreditsPanel\(model\)|poster-v2-credit-table/);
+  assert.match(source, /function createActMetaBar\(model\)/);
+  assert.match(source, /frame\.append\(createActMetaBar\(model\)\)/);
+  assert.match(source, /createActMetaCell\("RULER", model\.rulerName \|\| "—", "is-ruler"\)/);
+  assert.match(source, /createActMetaCell\("KEY STYLE", styles\.slice\(0, 3\)\.join\(" × "\) \|\| "—", "is-style"\)/);
+  assert.match(source, /el\("div", "poster-v2-grid poster-v2-grid--showcase3"\)/);
+  assert.doesNotMatch(source, /poster-v2-grid--4/);
+  // board-layout.js itself is intentionally left untouched: its credits-panel handling now simply
+  // never triggers (no poster-v2-panel--credits panel is ever created), acting as a no-op safety
+  // net rather than dead code that had to be deleted.
+  assert.match(boardLayout, /poster-v2-panel--credits/);
+  assert.match(boardLayout, /poster-v2-grid--showcase3/);
 });
 
 test("NeoTokyo final summary only exits through the explicit footer action", async () => {

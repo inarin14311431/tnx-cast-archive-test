@@ -223,6 +223,14 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 
 対応(完了、2026-09-21、2回目の試みで成功): 1回目の試み(`finale-enhancer.js`側の`classifyTitleFit()`呼び出しを削除し`cinematic-polish.js`側へ一本化)は`tests/e2e/act-showcase-title-render-order.spec.js`で回帰し失敗した。理由: `finale-enhancer.js`はタイトル要素のクラス変化を検知する自前のMutationObserverコールバック内で`dataset.fit`を**同期的**に設定しているのに対し、`cinematic-polish.js`側は`requestAnimationFrame`で**1フレーム遅延**して実行されるため、タイトルが最初に`is-visible`になった瞬間のフレームでは`dataset.fit`がまだ未設定だった(タイミング保証を持つのは`finale-enhancer.js`側だった)。2回目は逆方向で成功: `finale-enhancer.js`側は一切変更せず、`cinematic-polish.js`の`syncTypography()`から`.neotokyo-sequence__act-title`を対象とする`fit()`呼び出し1行だけを削除した。`classify()`の分類ロジック自体(短い関数)は依然両ファイルに残るが(意図的にそのまま)、同じ要素への重複書き込みはなくなった。目視確認: 文字数が異なる4パターン(5/12/17/21字、short/medium/long/xlong相当)それぞれで`act-showcase.html`のneotokyo演出タイトル画面をPlaywrightで実際に描画し、`dataset.fit`とスクリーンショットが変更前後で完全に一致することを確認した。
 
+`js/act-showcase-page.js`の`createCastGrid()`は、RULER/CAST/KEY STYLEを含む`.poster-v2-panel--credits`パネルを毎回新規に構築していたが、`js/act-showcase-board-layout.js`の`polishBoard()`/`ensureActMeta()`が、そのパネルからRULER/KEY STYLEの値をDOM経由で読み取った直後に`credits.remove()`でパネルごと削除し、代わりに`.poster-v2-act-meta`バーを構築して4列→3列(`showcase3`)へ変更していた。つまり`createCreditsPanel()`の出力は値を読み取るためだけに一瞬存在し、直後に丸ごと捨てられていた。
+
+調査の結果、この2段階構造は「意図的なタイミング設計」ではなく、既存の`page.js`に触れずにUIリデザイン(PUBLIC DATA上部集約・3カラム化、commit `5754e9a`)を後付けした実装だったと判断した。実機検証では、初回描画時のチラつきは発生しない(ボードは`#cinematic-intro`より後の通常フロー位置にあり演出中はビューポート外、かつ変換は演出時間よりずっと速い約1フレームで完了する)一方、**ロスター切り替え時には約67msの間、実際に4列+creditsパネルが表示されてから3列+act-metaへ切り替わる既存のチラつきが発生していた**ことを確認した。
+
+対応(完了、2026-09-21): `page.js`側で`createCreditsPanel()`の呼び出しをやめ、`createActMetaBar(model)`を新設して`.poster-v2-act-meta`バーとRULER/KEY STYLEの値を`model`から直接、最初から`poster-v2-grid--showcase3`の最終形で構築するようにした。`board-layout.js`は`polishAccess()`はもちろん、`polishBoard()`/`ensureActMeta()`を含めて一切変更していない(常に`.poster-v2-panel--credits`が存在しない状態で呼ばれるため恒久的にno-opとなるが、将来的なキャッシュ不整合時の安全網として意図的に残した)。目視確認: 修正前後でPlaywrightにより初回描画時・ロスター切り替え後それぞれの最終DOM(act-metaバーのHTML・grid class)が完全に一致することを確認し、**ロスター切り替え時の既存のチラつき(約67ms)は今回の変更で解消された**(悪化ではなく改善)。
+
+**調査中に判明した既存の不具合(今回は対応しない)**: `js/act-showcase-scenario-writer.js`の`syncPosterCredit()`(最終ポスターのクレジットパネルへSCENARIO WRITER行を追加する機能)は、`board-layout.js`のcredits panel削除(rAF、約1フレーム)に対して、`scenario-writer.js`自身の非同期Supabase再取得が確実に間に合わないため、現状でも実質常に失敗している(実機検証で再現試行0/N件成功)。今回のcredits/act-meta統合により、対象要素(`.poster-v2-credit-table`)自体が構造的に存在しなくなるため、この既存の不具合は「タイミング次第で失敗」から「常に失敗」に変わるが、観測可能な挙動(SCENARIO WRITERがポスターのクレジットパネルに出ない)は変わらない。なお同じ`scenario-writer.js`の`syncTitleCredit()`/`syncSummaryCredit()`(タイトル画面・サマリー画面のSCENARIO WRITER表示)はcredits panelに依存しておらず、影響を受けない。対応は別途判断が必要: ①死んでいる`syncPosterCredit()`を削除する、②act-meta barにもSCENARIO WRITER表示を追加して機能を復活させる、のどちらにするかはユーザー判断待ち。
+
 ### 今回のスコープ外として記録する重複・競合候補
 
 今回の調査で見つかったが着手していないもの。次に着手する場合の候補として記録する。
