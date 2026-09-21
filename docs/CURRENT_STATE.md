@@ -219,11 +219,14 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 
 対応(完了、2026-09-21): `ensureHandoutContext()`から`parseHandout`呼び出しとセル追加・`dataset.storySetting`/`storyConnection`/`storyPs`への代入を削除し、`.neotokyo-story__handout-context`セクション・kicker文言・ROLEセルのみを作る「枠組み」構築だけを残した(`is-read`判定・`storyFilled`ガードは維持)。実際のENTRY/CONNECTION/PSセル内容と`assigned-route`の文言決定は、以後`writing-patterns.js`単独が担う。`parseHandout`/`parseField`は他で未使用になったため削除した。目視確認(Playwrightで実行し、修正前・修正後のコミットそれぞれで同一シナリオを実行して結果を比較): ハンドアウト本文が異なる2キャストを含む豪華版アクトを`act-showcase.html`のneotokyo演出で実際に進行させ、ENTRY/CONNECTION/PS/SETTING/HOOKセルの内容と「参加経緯」ボックスの文言が修正前後で完全に一致(JSON差分なし)することを確認した。
 
+`js/act-showcase-finale-enhancer.js`の`classifyTitleFit()`と`js/act-showcase-cinematic-polish.js`の`classify()`(`kind==="title"`)は、文字数によるフォントサイズ分類ロジック(10字以下→short、14字以下→medium、20字以下→long、それ以上→xlong)が完全に同一で、両方とも同じ`.neotokyo-sequence__act-title`に`dataset.fit`を設定していた。
+
+対応(完了、2026-09-21、2回目の試みで成功): 1回目の試み(`finale-enhancer.js`側の`classifyTitleFit()`呼び出しを削除し`cinematic-polish.js`側へ一本化)は`tests/e2e/act-showcase-title-render-order.spec.js`で回帰し失敗した。理由: `finale-enhancer.js`はタイトル要素のクラス変化を検知する自前のMutationObserverコールバック内で`dataset.fit`を**同期的**に設定しているのに対し、`cinematic-polish.js`側は`requestAnimationFrame`で**1フレーム遅延**して実行されるため、タイトルが最初に`is-visible`になった瞬間のフレームでは`dataset.fit`がまだ未設定だった(タイミング保証を持つのは`finale-enhancer.js`側だった)。2回目は逆方向で成功: `finale-enhancer.js`側は一切変更せず、`cinematic-polish.js`の`syncTypography()`から`.neotokyo-sequence__act-title`を対象とする`fit()`呼び出し1行だけを削除した。`classify()`の分類ロジック自体(短い関数)は依然両ファイルに残るが(意図的にそのまま)、同じ要素への重複書き込みはなくなった。目視確認: 文字数が異なる4パターン(5/12/17/21字、short/medium/long/xlong相当)それぞれで`act-showcase.html`のneotokyo演出タイトル画面をPlaywrightで実際に描画し、`dataset.fit`とスクリーンショットが変更前後で完全に一致することを確認した。
+
 ### 今回のスコープ外として記録する重複・競合候補
 
 今回の調査で見つかったが着手していないもの。次に着手する場合の候補として記録する。
 
-- `js/act-showcase-finale-enhancer.js` と `js/act-showcase-cinematic-polish.js`: タイトル文字数による分類ロジックの重複。
 - `js/act-showcase-board-layout.js`等7箇所: 「本体が作ったものを削除して作り直す」パターンの重複。
 
 ## 12. 現在優先して守るべき資料
