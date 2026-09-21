@@ -215,11 +215,14 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 
 対応(完了、2026-09-21): `formatShowcaseTagline()`に`tagline-quotes.js`側だけが持っていたFALLBACKS除外(`"PUBLIC CAST ARCHIVE"` / `"PUBLIC CAST"`はカギ括弧で囲まない)を移植した上で`js/act-showcase-tagline-quotes.js`を削除し、`act-showcase-bootstrap.js`のimportからも外した。以後、タグライン正規化とMutationObserver監視は`display-normalizer.js`単独が担う。
 
+`js/act-showcase-story-flow.js`の`ensureHandoutContext()`は、ハンドアウト本文を自前の簡易パーサー(`parseHandout`)で解析してENTRY/CONNECTION/PSセルを追加し`dataset.storyConnection`等へ保存していたが、直後に`js/act-showcase-writing-patterns.js`の`normalizeHandoutContext()`/`normalizeAssignedRoute()`がより高度なパーサー(`analyzeHandout`)で同じ本文を再解析し、セルを`replaceChildren`で完全に置き換え、`dataset`値も`.neotokyo-story__assigned-route>strong`のテキストも上書きしていたため、story-flow.js側の解析結果は実質使われずに捨てられていた。
+
+対応(完了、2026-09-21): `ensureHandoutContext()`から`parseHandout`呼び出しとセル追加・`dataset.storySetting`/`storyConnection`/`storyPs`への代入を削除し、`.neotokyo-story__handout-context`セクション・kicker文言・ROLEセルのみを作る「枠組み」構築だけを残した(`is-read`判定・`storyFilled`ガードは維持)。実際のENTRY/CONNECTION/PSセル内容と`assigned-route`の文言決定は、以後`writing-patterns.js`単独が担う。`parseHandout`/`parseField`は他で未使用になったため削除した。目視確認(Playwrightで実行し、修正前・修正後のコミットそれぞれで同一シナリオを実行して結果を比較): ハンドアウト本文が異なる2キャストを含む豪華版アクトを`act-showcase.html`のneotokyo演出で実際に進行させ、ENTRY/CONNECTION/PS/SETTING/HOOKセルの内容と「参加経緯」ボックスの文言が修正前後で完全に一致(JSON差分なし)することを確認した。
+
 ### 今回のスコープ外として記録する重複・競合候補
 
 今回の調査で見つかったが着手していないもの。次に着手する場合の候補として記録する。
 
-- `js/act-showcase-story-flow.js` と `js/act-showcase-writing-patterns.js`: ハンドアウトの二重解析。
 - `js/act-showcase-finale-enhancer.js` と `js/act-showcase-cinematic-polish.js`: タイトル文字数による分類ロジックの重複。
 - `js/act-showcase-board-layout.js`等7箇所: 「本体が作ったものを削除して作り直す」パターンの重複。
 
