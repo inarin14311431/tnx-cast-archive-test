@@ -12,7 +12,6 @@
     if (!scope) return;
     normalizeNodeLabel(scope);
     enhanceTitleScreen(scope);
-    simplifyTrailer(scope);
     attachTrailerFollow(scope);
     polishAssignedPresentation(scope);
     normalizeOpeningSubtitle();
@@ -88,11 +87,6 @@
       if (rule) rule.before(subtitle);
       else title.insertAdjacentElement("afterend", subtitle);
     }
-  }
-
-  function simplifyTrailer(scope) {
-    if (scope.matches?.(".neotokyo-sequence__trailer-definition,.cinematic-trailer-band")) scope.remove();
-    scope.querySelectorAll?.(".neotokyo-sequence__trailer-definition,.cinematic-trailer-band").forEach(node => node.remove());
   }
 
   function syncTrailerScrollSurface() {
