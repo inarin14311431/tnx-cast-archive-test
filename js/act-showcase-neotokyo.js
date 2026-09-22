@@ -176,14 +176,8 @@ async function showTrailer(state, model) {
   const trailer = model.trailer || SAMPLE_TRAILER_MESSAGE;
   const copy = textNode("p", "neotokyo-sequence__readout", "");
   if (!model.trailer) copy.classList.add("is-placeholder");
-  const definition = node("p", "neotokyo-sequence__trailer-definition");
-  definition.append(
-    textNode("strong", "", "ACT TRAILER"),
-    textNode("span", "", "プレアクトで読み上げるトレーラー")
-  );
   content.append(
     textNode("p", "neotokyo-sequence__eyebrow", "03 // ACT TRAILER"),
-    definition,
     textNode("p", "neotokyo-sequence__micro", "PRE-ACT READOUT / PUBLIC BROADCAST"),
     textNode("h2", "neotokyo-sequence__section-title", heading),
     copy,

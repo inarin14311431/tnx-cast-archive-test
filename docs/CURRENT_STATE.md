@@ -237,11 +237,15 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 
 対応(完了、2026-09-22): `showActTitle()`から`getActOverview(model)`呼び出しと`.neotokyo-sequence__act-overview`ボックス構築を削除、`showSummary()`から`.neotokyo-sequence__overview-intro-label`/`.neotokyo-sequence__overview-intro`ボックス構築を削除。他で未使用になった`getActOverview()`/`DEFAULT_OVERVIEW`も削除した。`cinematic-enhancer.js`からは対応する2つの`querySelectorAll(...).forEach(node => node.remove())`(`enhanceTitle()`内、および`enhanceScreen()`のsummary分岐)を削除した(空になったsummary分岐の`if`ブロック自体も削除。`enhanceTitle()`のタイトルロゴ演出、`polishAccess()`等の他の処理には触れていない)。`js/act-showcase-cinematic-layout-v2.js`の`.neotokyo-sequence__act-subtitle`表示は今回のスコープ外として変更していない。目視確認: Playwrightで修正前・修正後それぞれ、タイトル画面・サマリー画面の最終DOM状態(ボックスの有無、サブタイトル文字列を含むか、`#opening-subtitle`のテキスト)を取得し完全一致することを確認した。
 
+`js/act-showcase-neotokyo.js`の`showTrailer()`は、トレーラー画面に`.neotokyo-sequence__trailer-definition`(「ACT TRAILER」+「プレアクトで読み上げるトレーラー」)を追加していたが、同じ画面には既にeyebrow行(「03 // ACT TRAILER」)とsection-title見出し(トレーラータイトル)があり、ほぼ同趣旨の3つ目のラベルになっていた。`js/act-showcase-cinematic-layout-v2.js`の`simplifyTrailer()`が毎回この要素を構築直後に削除していた(もう1つの削除対象セレクタ`.cinematic-trailer-band`は、生成箇所がリポジトリ全体に存在しない死んだセレクタだったことも確認した)。
+
+対応(完了、2026-09-22): 実機検証で、削除対象の内容(「ACT TRAILER」「プレアクトで読み上げるトレーラー」)がeyebrow(「03 // ACT TRAILER」)・micro行(「PRE-ACT READOUT / PUBLIC BROADCAST」)と重複していること、`.neotokyo-sequence__trailer-definition`は常に(paint前に同期的に)削除され元から非表示だったことを確認した。`showTrailer()`から`definition`要素の構築を削除し、`cinematic-layout-v2.js`の`simplifyTrailer()`関数と呼び出し元を削除した(`.cinematic-trailer-band`向けのCSSルールは触れていない、死んだセレクタのまま)。`attachTrailerFollow()`/`updateTrailerFrame()`(トレーラー自動スクロール追従)は変更していない。目視確認: Playwrightで修正前・修正後それぞれ、トレーラー画面の最終DOM状態(eyebrow/micro/section-title/readout/terminalの文字列)を取得し完全一致することを確認した。
+
 ### 今回のスコープ外として記録する重複・競合候補
 
 今回の調査で見つかったが着手していないもの。次に着手する場合の候補として記録する。
 
-- `js/act-showcase-board-layout.js`等7箇所: 「本体が作ったものを削除して作り直す」パターンの重複。
+- `js/act-showcase-board-layout.js`等7箇所(うち1件は上記のtrailer-definitionとして対応済み): 「本体が作ったものを削除して作り直す」パターンの重複。
 
 ## 12. 現在優先して守るべき資料
 

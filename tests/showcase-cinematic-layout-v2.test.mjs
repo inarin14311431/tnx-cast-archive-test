@@ -9,6 +9,7 @@ const loader = await readFile(new URL("../js/showcase-generator-loader.js", impo
 const subtitle = await readFile(new URL("../js/showcase-act-subtitle.js", import.meta.url), "utf8");
 const page = await readFile(new URL("../js/act-showcase-page.js", import.meta.url), "utf8");
 const cinematic = await readFile(new URL("../js/act-showcase-cinematic-layout-v2.js", import.meta.url), "utf8");
+const neotokyo = await readFile(new URL("../js/act-showcase-neotokyo.js", import.meta.url), "utf8");
 const css = await readFile(new URL("../css-next/pages/act-showcase-cinematic-v2.css", import.meta.url), "utf8");
 const neotokyoCss = await readFile(new URL("../css-next/pages/act-showcase-neotokyo.css", import.meta.url), "utf8");
 const presentation = await readFile(new URL("../css-next/pages/act-showcase-presentation-tuning.css", import.meta.url), "utf8");
@@ -78,11 +79,22 @@ test("assigned cast removes suit marks only from the participation slot and keep
   assert.match(css, /white-space:nowrap/);
 });
 
-test("cinematic presentation does not render fake navigation and removes duplicate trailer labels", () => {
+test("cinematic presentation does not render fake navigation", () => {
   assert.doesNotMatch(page, /poster-v2-nav/);
-  assert.match(cinematic, /neotokyo-sequence__trailer-definition,.cinematic-trailer-band/);
-  assert.match(css, /cinematic-trailer-band\{display:none\}/);
   assert.doesNotMatch(css, /poster-v2-nav\{display:none!important\}/);
+});
+
+test("trailer screen no longer builds a third ACT TRAILER label duplicating the eyebrow and PRE-ACT READOUT micro line", () => {
+  // js/act-showcase-neotokyo.js's showTrailer() used to build a .neotokyo-sequence__trailer-definition
+  // paragraph ("ACT TRAILER" + "プレアクトで読み上げるトレーラー"), which js/act-showcase-cinematic-
+  // layout-v2.js's simplifyTrailer() deleted synchronously (before first paint) on every render. Its
+  // content was already fully redundant with the still-present eyebrow ("03 // ACT TRAILER") and micro
+  // line ("PRE-ACT READOUT / PUBLIC BROADCAST"), confirmed by live rendering before removing it, so
+  // neither side of the build-then-delete pair exists anymore.
+  assert.doesNotMatch(neotokyo, /neotokyo-sequence__trailer-definition/);
+  assert.doesNotMatch(cinematic, /simplifyTrailer|neotokyo-sequence__trailer-definition|cinematic-trailer-band/);
+  assert.match(neotokyo, /textNode\("p", "neotokyo-sequence__eyebrow", "03 \/\/ ACT TRAILER"\)/);
+  assert.match(neotokyo, /textNode\("p", "neotokyo-sequence__micro", "PRE-ACT READOUT \/ PUBLIC BROADCAST"\)/);
 });
 
 test("opening and title stages use the published background without forcing a zoom crop", () => {
