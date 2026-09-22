@@ -231,6 +231,12 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 
 **調査中に判明した既存の不具合(今回は対応しない)**: `js/act-showcase-scenario-writer.js`の`syncPosterCredit()`(最終ポスターのクレジットパネルへSCENARIO WRITER行を追加する機能)は、`board-layout.js`のcredits panel削除(rAF、約1フレーム)に対して、`scenario-writer.js`自身の非同期Supabase再取得が確実に間に合わないため、現状でも実質常に失敗している(実機検証で再現試行0/N件成功)。今回のcredits/act-meta統合により、対象要素(`.poster-v2-credit-table`)自体が構造的に存在しなくなるため、この既存の不具合は「タイミング次第で失敗」から「常に失敗」に変わるが、観測可能な挙動(SCENARIO WRITERがポスターのクレジットパネルに出ない)は変わらない。なお同じ`scenario-writer.js`の`syncTitleCredit()`/`syncSummaryCredit()`(タイトル画面・サマリー画面のSCENARIO WRITER表示)はcredits panelに依存しておらず、影響を受けない。対応は別途判断が必要: ①死んでいる`syncPosterCredit()`を削除する、②act-meta barにもSCENARIO WRITER表示を追加して機能を復活させる、のどちらにするかはユーザー判断待ち。
 
+`js/act-showcase-neotokyo.js`の`showActTitle()`/`showSummary()`は、`model.heroSubTitle`を`getActOverview()`経由で読み、それぞれの画面に「ACT OVERVIEW // アクト概要」ラベルのボックス(`.neotokyo-sequence__act-overview` / `.neotokyo-sequence__overview-intro`)を追加していたが、`js/act-showcase-cinematic-enhancer.js`が毎回このボックスを構築直後に削除していた(`enhanceTitle()`/`enhanceScreen()`のsummary分岐)。ユーザー確認の上、この重複表示は不要と判断された。
+
+調査の結果、`#opening-subtitle`(`#scene-opening`、CSSの`#opening-subtitle:before{content:"ACT OVERVIEW // アクト概要"}`、`act-showcase-neotokyo-hierarchy.css`)が既に同じラベル+同じ`model.heroSubTitle`テキストを表示していることを実機で確認した。加えて、調査中に**タイトル画面には別ルートの表示がもう一つ存在すること**が判明した: `js/act-showcase-cinematic-layout-v2.js`の`enhanceTitleScreen()`/`getMeaningfulSubtitle()`が、`#opening-subtitle`のテキストを直接読み取って`.neotokyo-sequence__act-subtitle`(ラベルなし)をタイトル画面に追加しており、これは`cinematic-enhancer.js`に削除されず現在も表示され続けている。つまりタイトル画面では、削除対象の`.neotokyo-sequence__act-overview`ボックスは(常に削除されるため)元から非表示、`.neotokyo-sequence__act-subtitle`が実際に表示されている側だった。サマリー画面には`.neotokyo-sequence__act-subtitle`に相当する別ルートは存在せず、`.neotokyo-sequence__overview-intro`も同様に常に削除されていたため元から非表示だった。
+
+対応(完了、2026-09-22): `showActTitle()`から`getActOverview(model)`呼び出しと`.neotokyo-sequence__act-overview`ボックス構築を削除、`showSummary()`から`.neotokyo-sequence__overview-intro-label`/`.neotokyo-sequence__overview-intro`ボックス構築を削除。他で未使用になった`getActOverview()`/`DEFAULT_OVERVIEW`も削除した。`cinematic-enhancer.js`からは対応する2つの`querySelectorAll(...).forEach(node => node.remove())`(`enhanceTitle()`内、および`enhanceScreen()`のsummary分岐)を削除した(空になったsummary分岐の`if`ブロック自体も削除。`enhanceTitle()`のタイトルロゴ演出、`polishAccess()`等の他の処理には触れていない)。`js/act-showcase-cinematic-layout-v2.js`の`.neotokyo-sequence__act-subtitle`表示は今回のスコープ外として変更していない。目視確認: Playwrightで修正前・修正後それぞれ、タイトル画面・サマリー画面の最終DOM状態(ボックスの有無、サブタイトル文字列を含むか、`#opening-subtitle`のテキスト)を取得し完全一致することを確認した。
+
 ### 今回のスコープ外として記録する重複・競合候補
 
 今回の調査で見つかったが着手していないもの。次に着手する場合の候補として記録する。
