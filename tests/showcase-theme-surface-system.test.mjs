@@ -52,6 +52,19 @@ test("reviewed cinematic surfaces remain theme-owned", () => {
   assert.match(surface, /--showcase-name-surface/);
 });
 
+test("standard showcase page background does not tile when the page is taller than the viewport", async () => {
+  const standardCss = await read("css-next/pages/act-showcase-standard.css");
+  // js/act-showcase-standard.js sets document.body.style.backgroundImage (fixed + cover), so
+  // background-repeat must be explicit here too. Without it, the default `repeat` tiles the
+  // cover-sized image down the page whenever content grows taller than one viewport.
+  assert.match(standardCss, /body\{[^}]*background-attachment:fixed[^}]*background-repeat:no-repeat/);
+  // :root[data-showcase-theme] #act-showcase-standard-page{...} (this file) uses the `background`
+  // shorthand, which implicitly resets background-repeat to its initial `repeat` value for any
+  // sub-property it doesn't mention. Its ID selector outranks act-showcase-standard.css's bare
+  // `body` selector, so that implicit `repeat` silently wins unless repeated here explicitly.
+  assert.match(surface, /#act-showcase-standard-page\{[^}]*background:[\s\S]*?;[^}]*background-repeat:no-repeat/);
+});
+
 test("ACT TRAILER has a high-specificity viewport contract and only its readout scrolls", () => {
   assert.match(phase, /body#act-showcase-page[\s\S]*stage\.is-trailer-scroll[\s\S]*overflow:hidden/);
   assert.match(phase, /screen--trailer[\s\S]*max-height:min\(92svh,760px\)[\s\S]*overflow:hidden/);
