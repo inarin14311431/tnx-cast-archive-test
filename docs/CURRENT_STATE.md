@@ -241,6 +241,10 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 
 対応(完了、2026-09-22): 実機検証で、削除対象の内容(「ACT TRAILER」「プレアクトで読み上げるトレーラー」)がeyebrow(「03 // ACT TRAILER」)・micro行(「PRE-ACT READOUT / PUBLIC BROADCAST」)と重複していること、`.neotokyo-sequence__trailer-definition`は常に(paint前に同期的に)削除され元から非表示だったことを確認した。`showTrailer()`から`definition`要素の構築を削除し、`cinematic-layout-v2.js`の`simplifyTrailer()`関数と呼び出し元を削除した(`.cinematic-trailer-band`向けのCSSルールは触れていない、死んだセレクタのまま)。`attachTrailerFollow()`/`updateTrailerFrame()`(トレーラー自動スクロール追従)は変更していない。目視確認: Playwrightで修正前・修正後それぞれ、トレーラー画面の最終DOM状態(eyebrow/micro/section-title/readout/terminalの文字列)を取得し完全一致することを確認した。
 
+`js/act-showcase-neotokyo.js`の`showSummary()`はサマリー画面見出し(`.neotokyo-sequence__summary-title`)に`model.actName`を表示し、`js/act-showcase-supporting-cast.js`の`removeFinalTitleDuplicate()`が表示のたびにこれを「FINAL BRIEFING」固定文字列へ書き換えている(隣接する`.neotokyo-sequence__micro`も「ACT CORE // OPENING BRIEF」へ書き換え)。ユーザー確認により、これは意図的な仕様(アクトタイトルは同じ画面の「ACT READY」表示付近に既に見せているため、見出しでの再表示は不要)とのことだったが、**調査の結果、この修正は見送った(2026-09-22)**。
+
+理由: `js/act-showcase-finale-enhancer.js`の`decorateSummary()`が、サマリー画面表示時に`.neotokyo-sequence__summary-title`の**その時点のtextContent**を読み取り、「FINAL ACT FILE // CAST ASSEMBLED」+ アクト名 + 「ALL ASSIGNMENT CHANNELS VERIFIED // ACT READY」という別ロックアップへ静的にコピーしている。現状は「見出しがまだ`model.actName`のままの瞬間に`decorateSummary()`が先に読み取り、その後`removeFinalTitleDuplicate()`が見出しを書き換える」という順序(実機実測で確認、finale-enhancer.jsがbootstrap上で先に読み込まれるため)によって、ACT READY側にアクト名が実際に表示されている。`showSummary()`側で見出しを最初から「FINAL BRIEFING」固定で構築する変更を実機で一時的に試したところ、`decorateSummary()`が読み取る値も常に「FINAL BRIEFING」になり、**ACT READY側からアクト名の表示が消える**ことを確認した。`js/act-showcase-finale-enhancer.js`を合わせて修正すれば対応可能だが、依頼の対応スコープ(`neotokyo.js`/`supporting-cast.js`)を超えるため、ユーザーと相談の上、今回は見送った。
+
 ### 今回のスコープ外として記録する重複・競合候補
 
 今回の調査で見つかったが着手していないもの。次に着手する場合の候補として記録する。
