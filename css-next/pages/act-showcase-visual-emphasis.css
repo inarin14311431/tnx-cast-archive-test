@@ -8,6 +8,8 @@
     linear-gradient(180deg,rgba(var(--showcase-bg-rgb),.16),rgba(var(--showcase-bg-rgb),.50)),
     var(--showcase-background);
   background-position:center center;
+  background-size:cover,contain;
+  background-repeat:no-repeat,no-repeat;
   filter:saturate(1.12) contrast(1.05) brightness(1.02);
 }
 
@@ -161,6 +163,9 @@ body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-
   background-image:
     linear-gradient(180deg,rgba(236,235,231,.28),rgba(236,235,231,.56)),
     var(--showcase-background);
+  background-position:center,right center;
+  background-size:cover,contain;
+  background-repeat:no-repeat,no-repeat;
   filter:saturate(.84) contrast(.98) brightness(1.06);
 }
 
