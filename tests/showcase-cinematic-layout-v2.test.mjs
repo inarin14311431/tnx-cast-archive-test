@@ -69,6 +69,25 @@ test("cinematic trailer grows its frame and lets the browser page own follow scr
   assert.doesNotMatch(cinematic, /window\.scrollBy\(/);
 });
 
+test("finished poster page stays out of the scrollable flow for the whole neotokyo intro, not just while overflow:hidden holds", () => {
+  // body.showcase-neotokyo-intro-active{overflow:hidden} (act-showcase-neotokyo.css) normally keeps
+  // #act-showcase-root - already unhidden and fully built behind the intro - unreachable, because
+  // #cinematic-intro is a fixed, opaque, full-viewport overlay the whole time. The trailer
+  // document-scroll phase above switches the intro to position:relative and the body to
+  // overflow-y:auto so the browser viewport can follow the growing trailer text; that also makes
+  // #act-showcase-root a normal, scrollable sibling right after the intro's own (now shorter) box.
+  // A free user scroll (wheel/trackpad/scrollbar), which the auto-follow scrollTo() calls never
+  // clamp, could then scroll straight past the intro and reveal the finished page underneath -
+  // most visibly its own giant "05 / FINAL TRANSMISSION" ACT TRAILER recap
+  // (poster-v2-trailer-stage). Removing #act-showcase-root from the render tree for as long as
+  // showcase-neotokyo-intro-active is set removes it from the scrollable area entirely, regardless
+  // of which intro phase (or overflow value) is currently active. Live-verified: before this rule,
+  // scrolling the window during the ACT TRAILER screen exposed the finished page below the intro;
+  // after it, the document has no scrollable area beyond the intro's own height until the intro
+  // sequence actually finishes.
+  assert.match(emphasisCss, /:root\[data-showcase-theme\] body#act-showcase-page\.showcase-neotokyo-intro-active #act-showcase-root\{\s*display:none;\s*\}/);
+});
+
 test("trailer scroll-follow throttles smooth scrollTo calls so each has time to settle", () => {
   // Measured live: window.scrollTo({behavior:"smooth"}) was called as little as ~70ms apart while
   // the typewriter grew the readout, restarting the animation before it ever settled and producing

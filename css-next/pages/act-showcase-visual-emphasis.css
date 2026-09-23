@@ -45,6 +45,20 @@
   overflow-y:auto;
 }
 
+/* #act-showcase-root (the already-fully-built final poster page, including its own "05 / FINAL
+   TRANSMISSION" ACT TRAILER recap) is unhidden and laid out in the document well before the intro
+   sequence finishes. Normally that is harmless: the intro is a fixed, opaque, full-viewport
+   overlay and the body has overflow:hidden, so root's content is never reachable. The instant this
+   phase switches the intro to position:relative and the body to overflow-y:auto (both required so
+   the browser viewport itself can smoothly follow the growing trailer text), root also rejoins the
+   normal scrollable flow right after the intro - so a free user scroll (wheel, trackpad,
+   scrollbar), which the auto-follow scrollTo() calls above never clamp, could scroll straight past
+   the intro into root and reveal the finished page underneath. Keeping root out of the render tree
+   for as long as the intro sequence is active removes it from the scrollable area entirely. */
+:root[data-showcase-theme] body#act-showcase-page.showcase-neotokyo-intro-active #act-showcase-root{
+  display:none;
+}
+
 :root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence{
   position:relative;
   inset:auto;
