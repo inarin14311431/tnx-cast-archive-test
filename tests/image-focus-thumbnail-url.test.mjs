@@ -10,8 +10,8 @@ test("Supabase Storageの公開URLをrender/imageエンドポイントへ変換�
   const url = new URL(result);
   assert.equal(`${url.origin}${url.pathname}`, RENDER_BASE);
   assert.equal(url.searchParams.get("width"), "420");
-  assert.equal(url.searchParams.get("height"), "420");
-  assert.equal(url.searchParams.get("resize"), "cover");
+  assert.equal(url.searchParams.get("height"), "2000");
+  assert.equal(url.searchParams.get("resize"), "contain");
   assert.equal(url.searchParams.get("quality"), "70");
 });
 
@@ -52,8 +52,8 @@ test("既にクエリパラメータを持つURLでも壊れずマージされ�
   assert.equal(`${url.origin}${url.pathname}`, RENDER_BASE);
   assert.equal(url.searchParams.get("token"), "abc123");
   assert.equal(url.searchParams.get("width"), "420");
-  assert.equal(url.searchParams.get("height"), "420");
-  assert.equal(url.searchParams.get("resize"), "cover");
+  assert.equal(url.searchParams.get("height"), "2000");
+  assert.equal(url.searchParams.get("resize"), "contain");
   assert.equal(url.searchParams.get("quality"), "70");
 });
 

@@ -86,10 +86,10 @@ export function setImageZoom(imageUrl, zoom) {
 
 const STORAGE_OBJECT_PATH = "/storage/v1/object/public/";
 const STORAGE_RENDER_PATH = "/storage/v1/render/image/public/";
-const THUMBNAIL_RESIZE_MODE = "cover";
+const THUMBNAIL_RESIZE_MODE = "contain";
 const THUMBNAIL_QUALITY = 70;
 
-export function toThumbnailUrl(imageUrl, { width = 420, height = 420 } = {}) {
+export function toThumbnailUrl(imageUrl, { width = 420, height = 2000 } = {}) {
   const { base, hash } = splitImageUrl(imageUrl);
   if (!base.includes(STORAGE_OBJECT_PATH)) return imageUrl;
 
