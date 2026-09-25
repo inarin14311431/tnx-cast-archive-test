@@ -1,3 +1,4 @@
+import { getComboActUseLimit, isSkillCounterCombo, getComboSkills, getComboValue } from "./cast-combo-rules.js?v=1";
 import { supabase } from "./supabase-client.js";
 import { escapeHtml } from "./dom-escape.js";
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=4";
@@ -1383,26 +1384,6 @@ function updateComboUsageElement(usageElement, usedCount, limit, announce = true
   }
 }
 
-function getComboActUseLimit(combo) {
-  const limit = Number.parseInt(String(combo.act_use_limit ?? ""), 10);
-  return Number.isFinite(limit) && limit > 0 ? limit : null;
-}
-
-function isSkillCounterCombo(combo) {
-  const name = getComboValue(combo.name);
-  const skills = getComboSkills(combo);
-
-  if (!name || name !== skills || !getComboActUseLimit(combo)) {
-    return false;
-  }
-
-  return [
-    combo.ability, combo.ability_key, combo.modifier, combo.target_value, combo.achievement,
-    combo.timing, combo.target, combo.range, combo.difficulty, combo.confrontation,
-    combo.description, combo.effect
-  ].every(value => !getComboValue(value));
-}
-
 function getComboUsageStorageKey(character) {
   const appPath = new URL("./", window.location.href).pathname.replace(/\/$/, "");
   const publicId = String(character.public_id ?? character.id ?? "unknown");
@@ -1482,39 +1463,6 @@ async function writeClipboardText(text) {
   if (!copied) {
     throw new Error("Clipboard copy failed.");
   }
-}
-
-function getComboSkills(combo) {
-  const currentSkills = getComboValue(combo.skills);
-
-  if (currentSkills) {
-    return currentSkills;
-  }
-
-  if (Array.isArray(combo.skill_names)) {
-    return combo.skill_names
-      .map(value => String(value ?? "").trim())
-      .filter(Boolean)
-      .join("＋");
-  }
-
-  return getComboValue(combo.skill_names);
-}
-
-function getComboValue(...values) {
-  for (const value of values) {
-    if (value === null || value === undefined) {
-      continue;
-    }
-
-    const text = String(value).trim();
-
-    if (text) {
-      return text;
-    }
-  }
-
-  return "";
 }
 
 function createOutfitRow(outfit) {
