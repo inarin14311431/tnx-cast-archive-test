@@ -27,7 +27,7 @@ test('zero style skills remain a valid editor state without recovery shim', asyn
   assert.doesNotMatch(html, /style-skill-recovery\.js/);
 
   const sheet = await read('js/sheet.js');
-  const actions = await read('../js/sheet-action-bindings.js');
+  const actions = await read('js/sheet-action-bindings.js');
   assert.match(sheet, /initSheetActionBindings/);
   assert.match(actions, /onAddStyleSkill/);
   assert.doesNotMatch(sheet, /\$\("#add-style-skill"\)\.onclick/);
