@@ -1,3 +1,4 @@
+import { escapeHtml } from "./dom-escape.js";
 import { getCharacter } from "./cast-data-store.js";
 import { getImageFocusX, getImageFocusY, getImageZoom } from "./image-focus.js?v=3";
 
