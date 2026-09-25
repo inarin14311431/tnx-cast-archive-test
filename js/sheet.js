@@ -42,6 +42,7 @@ import { collectCharacterInputSnapshot, applyCharacterInputSnapshot } from "./sh
 import { collectAbilityInputSnapshot, applyAbilityInputSnapshot } from "./sheet-ability-input-snapshot.js?v=1";
 import { collectStyleInputSnapshot, applyStyleInputSnapshot } from "./sheet-style-input-snapshot.js?v=1";
 import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
+import { applyCharacterToEditor, applyStyleAttributeVisibility } from "./sheet-character-application.js?v=1";
 import { initSheetActionBindings } from "./sheet-action-bindings.js?v=1";
 import { appendRow, clearRows, moveRowWithinCategory, normalizeOutfitCategory, removeRowByKey } from "./sheet-row-collection-state.js?v=2";
 import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
@@ -308,12 +309,18 @@ async function loadCharacter(publicId) {
 }
 
 function fillCharacter(data) {
-  applyCharacterInputSnapshot({ root: document, data, structuredFields: STRUCTURED_FIELDS });
-  applyStyleInputSnapshot({ root: document, data });
-  for (let i = 1; i <= 3; i++) toggleAttribute(i);
-  calculateBaselines();
-  applyAbilityInputSnapshot({ root: document, abilities: ABILITIES, data, baselines: styleBaseline });
-  updateDivines(false);
+  applyCharacterToEditor({
+    root: document,
+    data,
+    structuredFields: STRUCTURED_FIELDS,
+    abilities: ABILITIES,
+    styleBaseline,
+    applyCharacterInputSnapshot,
+    applyStyleInputSnapshot,
+    applyAbilityInputSnapshot,
+    calculateBaselines,
+    updateDivines
+  });
 }
 
 function renderStyles() {
@@ -322,17 +329,10 @@ function renderStyles() {
   initSheetStyleInteractions({
     root,
     onStyleChange() {
-      for (let i = 1; i <= 3; i++) toggleAttribute(i);
+      for (let i = 1; i <= 3; i++) applyStyleAttributeVisibility({ root: document, index: i });
       updateDivines(true);
     }
   });
-}
-
-function toggleAttribute(i) {
-  const wrap = $(`#style-${i}-attribute-wrap`), select = $(`#style-${i}-attribute`);
-  if (!wrap || !select) return;
-  const enabled = $(`#style-${i}`).value === "ウツワ";
-  wrap.hidden = !enabled; if (!enabled) select.value = "";
 }
 
 function currentStyleSlots() {
