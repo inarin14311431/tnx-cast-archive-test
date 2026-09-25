@@ -1,4 +1,5 @@
 import { supabase } from "./supabase-client.js";
+import { escapeHtml } from "./dom-escape.js";
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=4";
 import { normalizeOutfitListForView, formatPurchasePair, formatConcealmentPair } from "./outfit-view-model.js";
 import { AppError, toUserFacingErrorMessage, renderErrorState } from "./error-state.js?v=1";
