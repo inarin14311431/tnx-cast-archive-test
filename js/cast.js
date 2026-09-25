@@ -387,6 +387,7 @@ function renderQuickSheet({ character, skills, outfits, combos }) {
   quickSheetPages.querySelectorAll(".quick-sheet__portrait img").forEach(image => {
     image.addEventListener("error", () => { image.src = "./assets/placeholders/scan-failed.webp"; }, { once: true });
   });
+  window.dispatchEvent(new CustomEvent("tnx:quick-sheet-rendered"));
 }
 
 function createQuickPageHeader(character, page) {
