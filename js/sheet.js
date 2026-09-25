@@ -1,3 +1,4 @@
+import { applyStylePresentation, applyAbilityFinals } from "./sheet-presentation-dom.js?v=1";
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=4";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
@@ -357,12 +358,7 @@ function updateDivines(apply) {
     slots: currentStyleSlots(),
     styleData: STYLE_DATA
   });
-  presentation.divines.forEach((divine, index) => {
-    const i = index + 1;
-    $(`#divine-${i}`).textContent = divine.name;
-    $(`#divine-${i}-yomi`).textContent = divine.yomi;
-  });
-  $("#style-warning").textContent = presentation.warning;
+  applyStylePresentation(document, presentation);
   if (!apply || loading) return;
   const old = { ...styleBaseline }; calculateBaselines();
   for (const [key] of ABILITIES) {
@@ -437,11 +433,7 @@ function recalc() {
     values: input.values,
     cs: input.cs
   });
-  for (const [key] of ABILITIES) {
-    $(`#${key}-final`).textContent = finals[key];
-    $(`#${key}-control-final`).textContent = finals[`${key}-control`];
-  }
-  $("#cs-final").textContent = finals.cs;
+  applyAbilityFinals(document, ABILITIES, finals);
   window.TNXExperience?.queue?.();
 }
 function markDirty() { if (loading) return; saveCoordinator.markDirty(); }
