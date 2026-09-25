@@ -313,8 +313,12 @@
         .forEach(setupPanel);
     };
 
-    new MutationObserver(setup).observe(root, { childList: true, subtree: true });
-    setup();
+    const applyAfterCastRender = () => setup();
+    if (!root.hidden) {
+      applyAfterCastRender();
+    } else {
+      window.addEventListener("tnx:cast-rendered", applyAfterCastRender, { once: true });
+    }
   }
 
   initializeCastPanelCollapse();
