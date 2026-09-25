@@ -1,3 +1,5 @@
+import { escapeHtml } from "./dom-escape.js";
+const esc = escapeHtml;
 import { getStyleSkills } from "./cast-data-store.js";
 import "./skill-display-enhancements.js?v=1";
 
