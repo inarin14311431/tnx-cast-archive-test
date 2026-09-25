@@ -34,13 +34,11 @@ const PARENT_RETURN_PAGES = new Set([
 ]);
 
 function whenCastReady(callback) {
-  if (!content || !content.hidden) { callback(); return; }
-  const observer = new MutationObserver(() => {
-    if (content.hidden) return;
-    observer.disconnect();
+  if (!content || !content.hidden) {
     callback();
-  });
-  observer.observe(content, { attributes: true, attributeFilter: ["hidden"] });
+    return;
+  }
+  window.addEventListener("tnx:cast-rendered", callback, { once: true });
 }
 
 function initializeReadonlyFields() {
