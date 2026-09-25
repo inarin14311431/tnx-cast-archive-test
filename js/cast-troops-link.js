@@ -150,10 +150,14 @@ function watchDesktopExperience(expText) {
 function watchUntilExperienceRendered(root, expText, targetSelector) {
   if (!root) return;
   if (decorateExperience(expText, targetSelector)) return;
-  const observer = new MutationObserver(() => {
-    if (decorateExperience(expText, targetSelector)) observer.disconnect();
-  });
-  observer.observe(root, { childList: true, subtree: true });
+
+  const eventName = targetSelector === ".mobile-cast-meta"
+    ? "tnx:mobile-cast-rendered"
+    : "tnx:quick-sheet-rendered";
+
+  window.addEventListener(eventName, () => {
+    decorateExperience(expText, targetSelector);
+  }, { once: true });
 }
 
 function setTextIfChanged(node, value) {
