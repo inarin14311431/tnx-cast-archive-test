@@ -175,6 +175,7 @@ renderCharacter(
 
     statusText.textContent = "ACCESS GRANTED";
     content.hidden = false;
+    window.dispatchEvent(new CustomEvent("tnx:cast-rendered"));
   } catch (error) {
     console.error(error);
     showError(toUserFacingErrorMessage(error), loadCharacter);
