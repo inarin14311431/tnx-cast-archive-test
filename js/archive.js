@@ -1,3 +1,4 @@
+import { escapeHtml, escapeAttribute } from "./dom-escape.js";
 import { supabase } from "./supabase-client.js";
 import { renderAuthNavigation } from "./auth-state.js?v=4";
 import { getStyleColor } from "./style-colors.js";
