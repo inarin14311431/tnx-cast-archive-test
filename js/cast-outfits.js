@@ -1,3 +1,4 @@
+import { escapeHtml, escapeAttribute } from "./dom-escape.js";
 import { getOutfits } from "./cast-data-store.js?v=2";
 import {
   OUTFIT_CATEGORIES,
@@ -87,7 +88,7 @@ function createCell(field, item) {
     const value = text === "—" ? "" : text;
     return `<td class="cast-outfit-col--description style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable outfit-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${escapeHtml(value)}</textarea></td>`;
   }
-  return `<td class="cast-outfit-col--${field}"><span class="cast-outfit-value" title="${escapeAttribute(text)}">${escapeHtml(text)}</span></td>`;
+  return `<td class="cast-outfit-col--${field}"><span class="cast-outfit-value" title="${escapeAttributeWithNewlines(text)}">${escapeHtml(text)}</span></td>`;
 }
 
 function displayItem(category, item) {
