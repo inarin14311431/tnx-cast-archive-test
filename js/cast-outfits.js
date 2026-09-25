@@ -1,4 +1,4 @@
-import { escapeHtml, escapeAttribute } from "./dom-escape.js";
+import { escapeHtml, escapeAttribute as escapeHtmlAttribute } from "./dom-escape.js";
 import { getOutfits } from "./cast-data-store.js?v=2";
 import {
   OUTFIT_CATEGORIES,
@@ -126,12 +126,6 @@ function displayValue(value) {
   return value === null || value === undefined || String(value).trim() === "" ? "—" : String(value);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[char]));
-}
-
 function escapeAttribute(value) {
-  return escapeHtml(value).replace(/\r?\n/g, "&#10;");
+  return escapeHtmlAttribute(value).replace(/\r?\n/g, "&#10;");
 }
