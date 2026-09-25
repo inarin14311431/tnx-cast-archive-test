@@ -261,7 +261,8 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 - `uploadImage()`: 本体画像アップロード後、`createThumbnail(uploadFile)`でサムネイルを生成し、同フォルダへ`-thumb`付きでアップロード。`characters.image_url`と`image_thumbnail_url`を同時に更新し、入れ替え前の本体・サムネイル両方を`removeOwnedStorageObject()`で削除。エラー時はサムネイル→本体の順にロールバック削除する。
 - `clearImageReference()`: 本体画像と合わせてサムネイルも削除・列クリアする。
 - `supabase/48_add_character_thumbnail_url.sql`(`characters.image_thumbnail_url text`、nullable)を追加し`migrations-manifest.json`にも追記した。2026-09-25に検証・本番共有のSupabaseプロジェクト(`koprmbkoftuuffslhsvt`)へ適用済み。
-- `js/archive.js`・`js/showcase-generator-v3.js`(カード一覧3箇所: `createLibraryCard`のライブラリピッカー、`createArchiveSelection`の選択済みキャストプレビュー、`createOutputCastCard`の公開出力カード)を`character.image_thumbnail_url || character.image_url`のフォールバックへ変更。`archive.js`は`toThumbnailUrl()`の呼び出しをやめた(関数自体・そのテストは削除せず残置。呼び出し元が無いことをrepo全体grepで確認済み)。
+- `js/archive.js`・`js/showcase-generator-v3.js`(カード一覧3箇所: `createLibraryCard`のライブラリピッカー、`createArchiveSelection`の選択済みキャストプレビュー、`createOutputCastCard`の公開出力カード)を`character.image_thumbnail_url || character.image_url`のフォールバックへ変更。生成HTMLから公開データへ変換する`js/showcase-dynamic-publish-v3.js`は`createOutputCastCard`の画像URLをそのまま引き継ぐため、標準・NEO TOKYO両方の公開キャスト紹介も保存済みサムネイルを表示する。
+- 2026-09-25に完全脱却を実施。未使用で残っていた`js/image-focus.js`の`toThumbnailUrl()`と変換URL生成用定数、変換専用テストを削除し、E2Eの通信許可も`/storage/v1/object/public/character-images/`だけに限定した。実行コードに`/storage/v1/render/image/`や`toThumbnailUrl`が再混入しない回帰テストを追加した。
 - **migration未適用の間の安全対策**: `js/archive.js`のキャスト一覧取得、`js/sheet-image.js`の`loadCharacter()`はいずれも単発の`.select()`で、存在しない列を1つでも含めると`{error}`でSELECT全体が失敗する(検証・本番が同一Supabaseプロジェクトを共有しているため、影響は新機能が使えないだけでなく既存のアーカイブ一覧・画像編集画面そのものが丸ごとエラーになる)。`js/showcase-generator-v3.js`に既に実装されていた「列が存在しないエラー(`isMissingColumnError()`)を検知し、旧カラム構成のSELECTへ自動リトライする」パターンを、`js/archive.js`(`queryPublicCharacters()`)・`js/sheet-image.js`(`queryOwnedCharacter()`)にも同様に追加した(3ファイルとも同種のヘルパーを個別に持つ形になっており、共通化はしていない。次に着手する場合の候補として記録する)。
 
 ### 既知の制限として記録するもの
