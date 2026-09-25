@@ -1,3 +1,4 @@
+import { escapeHtml } from "./dom-escape.js";
 import { supabase } from "./supabase-client.js";
 
 const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
@@ -181,4 +182,3 @@ function decorateExperience(expText, scope = "") {
 }
 
 function num(value) { return Math.max(0, Number(value) || 0); }
-function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
