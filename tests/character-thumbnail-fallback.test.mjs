@@ -5,11 +5,14 @@ import { readFile } from "node:fs/promises";
 const archiveSource = await readFile(new URL("../js/archive.js", import.meta.url), "utf8");
 const sheetImageSource = await readFile(new URL("../js/sheet-image.js", import.meta.url), "utf8");
 const generatorSource = await readFile(new URL("../js/showcase-generator-v3.js", import.meta.url), "utf8");
+const publisherSource = await readFile(new URL("../js/showcase-dynamic-publish-v3.js", import.meta.url), "utf8");
+const standardShowcaseSource = await readFile(new URL("../js/act-showcase-standard.js", import.meta.url), "utf8");
+const neotokyoShowcaseSource = await readFile(new URL("../js/act-showcase-neotokyo.js", import.meta.url), "utf8");
 
 // Card list locations must fall back to the full-size image_url whenever image_thumbnail_url is
-// empty (existing characters have none until their photo is next re-uploaded - see
-// docs/CURRENT_STATE.md). Verified as plain source-text assertions since these are simple string
-// template functions with no branching worth extracting and executing.
+// empty (for example after a mobile image replacement or in a separately provisioned environment).
+// Verified as plain source-text assertions since these are simple string-template functions with
+// no branching worth extracting and executing.
 test("archive card list falls back from image_thumbnail_url to image_url and no longer calls the retired Supabase transform helper", () => {
   assert.match(archiveSource, /character\.image_thumbnail_url \|\| character\.image_url \|\| "\.\/assets\/placeholders\/scan-failed\.webp"/);
   assert.doesNotMatch(archiveSource, /toThumbnailUrl/);
@@ -22,12 +25,17 @@ test("showcase generator's three per-character card renders all fall back from i
   assert.match(generatorSource, /image_url, image_thumbnail_url, summary, age, gender, visibility, updated_at/);
 });
 
+test("published cast showcases preserve and render the thumbnail URL selected by the generator", () => {
+  assert.match(publisherSource, /imageUrl: card\.querySelector\("\.cast-card__image img"\)\?\.getAttribute\("src"\)/);
+  assert.match(standardShowcaseSource, /safeImageUrl\(item\.imageUrl\)/);
+  assert.match(neotokyoShowcaseSource, /safeImageUrl\(cast\?\.imageUrl \|\| cast\?\.image_url\)/);
+});
+
 // Extracts and runs the real column-fallback helpers (not hand-copied) against a fake Supabase
 // client, so this tracks the shipped retry decision instead of a duplicate of it. This matters
-// because migration 48 (image_thumbnail_url) is committed to the repo but not yet applied to the
-// shared verification/production database - selecting the column against the live schema would
-// otherwise fail the whole query, breaking the archive list and the image editor entirely until
-// the migration is applied.
+// Migration 48 is already applied to the shared verification/production database. The fallback
+// remains as forward-compatible protection for a separately provisioned or temporarily stale
+// environment so one optional column cannot break the whole archive list or image editor.
 function extractBetween(source, startMarker, endMarker) {
   const start = source.indexOf(startMarker);
   assert.notEqual(start, -1, `marker not found: ${startMarker}`);
