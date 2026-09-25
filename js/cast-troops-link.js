@@ -1,3 +1,4 @@
+import { escapeHtml } from "./dom-escape.js";
 import { supabase } from "./supabase-client.js";
 
 const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
