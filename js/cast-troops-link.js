@@ -131,19 +131,20 @@ function suits(skill) {
 
 function watchDesktopExperience(expText) {
   const exp = document.querySelector("#cast-exp");
+  const content = document.querySelector("#cast-content");
   const castStatus = document.querySelector("#cast-status");
   if (!exp) return;
+
   const apply = () => setTextIfChanged(exp, `${expText} EXP`);
-  if (!castStatus || castStatus.textContent?.trim() === "ACCESS GRANTED") {
+  const rendered = content && !content.hidden;
+  const granted = !castStatus || castStatus.textContent?.trim() === "ACCESS GRANTED";
+
+  if (rendered || granted) {
     apply();
     return;
   }
-  const observer = new MutationObserver(() => {
-    if (castStatus.textContent?.trim() !== "ACCESS GRANTED") return;
-    apply();
-    observer.disconnect();
-  });
-  observer.observe(castStatus, { childList: true, characterData: true, subtree: true });
+
+  window.addEventListener("tnx:cast-rendered", apply, { once: true });
 }
 
 function watchUntilExperienceRendered(root, expText, targetSelector) {
