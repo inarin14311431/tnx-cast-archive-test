@@ -266,8 +266,12 @@
     }
 
     const castContent = document.querySelector("#cast-content");
-    if (castContent) new MutationObserver(prepareDescriptionFields).observe(castContent, { childList: true, subtree: true });
-    prepareDescriptionFields();
+    const applyAfterCastRender = () => prepareDescriptionFields();
+    if (!castContent || !castContent.hidden) {
+      applyAfterCastRender();
+    } else {
+      window.addEventListener("tnx:cast-rendered", applyAfterCastRender, { once: true });
+    }
   }
 
   initializeCastDescriptionControls();
