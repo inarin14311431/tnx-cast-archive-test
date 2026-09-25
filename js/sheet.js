@@ -42,6 +42,7 @@ import { collectCharacterInputSnapshot, applyCharacterInputSnapshot } from "./sh
 import { collectAbilityInputSnapshot, applyAbilityInputSnapshot } from "./sheet-ability-input-snapshot.js?v=1";
 import { collectStyleInputSnapshot, applyStyleInputSnapshot } from "./sheet-style-input-snapshot.js?v=1";
 import { initSheetStyleInteractions } from "./sheet-style-interactions.js?v=1";
+import { initSheetActionBindings } from "./sheet-action-bindings.js?v=1";
 import { appendRow, clearRows, moveRowWithinCategory, normalizeOutfitCategory, removeRowByKey } from "./sheet-row-collection-state.js?v=2";
 import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
 import { GENERAL_MASTER_ROWS as GENERAL_MASTER, GENERAL_BLANK_SLOT_COLUMNS } from "./general-skill-catalog.js?v=2";
@@ -123,12 +124,15 @@ function bind() {
     onDeleteOutfit: deleteOutfitByKey
   });
 
-  $("#save-button").onclick = () => saveCoordinator.save(true);
-  $("#add-general").onclick = addGeneralSkill;
-  $("#add-social").onclick = () => addSkill("social", "proper", "社会：");
-  $("#add-connection").onclick = () => addSkill("connection", "proper", "コネ：");
-  $("#add-style-skill").onclick = () => addSkill("style", "normal", "");
-  $("#add-outfit").onclick = () => addOutfitForImport("other");
+  initSheetActionBindings({
+    root: document,
+    onSave: () => saveCoordinator.save(true),
+    onAddGeneral: addGeneralSkill,
+    onAddSocial: () => addSkill("social", "proper", "社会："),
+    onAddConnection: () => addSkill("connection", "proper", "コネ："),
+    onAddStyleSkill: () => addSkill("style", "normal", ""),
+    onAddOutfit: () => addOutfitForImport("other")
+  });
 }
 
 function handleSkillRowInput({ key, field, value, row }) {
