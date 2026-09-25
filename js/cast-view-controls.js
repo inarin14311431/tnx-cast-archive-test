@@ -126,13 +126,18 @@
       scheduleMeasure();
     });
 
-    new MutationObserver(() => {
+    const applyAfterCastRender = () => {
       setExpanded(false);
       scheduleMeasure();
-    }).observe(summary, { childList: true, characterData: true, subtree: true });
+    };
+    const castContent = document.querySelector("#cast-content");
+    if (!castContent || !castContent.hidden) {
+      applyAfterCastRender();
+    } else {
+      window.addEventListener("tnx:cast-rendered", applyAfterCastRender, { once: true });
+    }
 
     window.addEventListener("resize", scheduleMeasure, { passive: true });
-    scheduleMeasure();
   }
 
   initializeCastSummaryControl();
