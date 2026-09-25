@@ -1577,14 +1577,6 @@ function formatHandle(handle) {
   return `“${handle}”`;
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 
 function showError(message, onRetry) {
   statusText.textContent = "ACCESS DENIED";
