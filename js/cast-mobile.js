@@ -1,3 +1,5 @@
+import { escapeHtml } from "./dom-escape.js";
+const esc = escapeHtml;
 import { getCharacter, getSkills, getOutfits, getCombos } from "./cast-data-store.js";
 import { formatPurchasePair, formatConcealmentPair } from "./outfit-view-model.js";
 const params=new URLSearchParams(location.search);if(params.get("mobile")!=="1"){document.documentElement.classList.remove("mobile-cast-requested");}else{initializeMobileCast();}
