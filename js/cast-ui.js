@@ -49,13 +49,7 @@ function initializeReadonlyFields() {
     if (root.matches(selector)) root.tabIndex = -1;
     root.querySelectorAll(selector).forEach(field => { field.tabIndex = -1; });
   };
-  apply(content);
-  new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
-      if (mutation.type === "attributes") apply(mutation.target);
-      mutation.addedNodes.forEach(apply);
-    });
-  }).observe(content, { childList: true, subtree: true, attributes: true, attributeFilter: ["readonly"] });
+  whenCastReady(() => apply(content));
 }
 
 function parseReturnDestination(value) {
