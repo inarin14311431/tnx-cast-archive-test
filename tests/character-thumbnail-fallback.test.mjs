@@ -27,7 +27,9 @@ test("showcase generator's three per-character card renders all fall back from i
 });
 
 test("SNS card export prefers the stored thumbnail and falls back to the full-size image", () => {
-  assert.match(snsCardSource, /readImageAsDataUrl\(character\.image_thumbnail_url \|\| character\.image_url\)/);
+  assert.match(snsCardSource, /const thumbnailUrl = character\.image_thumbnail_url \|\| ""/);
+  assert.match(snsCardSource, /readImageAsDataUrl\(thumbnailUrl \|\| character\.image_url\)/);
+  assert.match(snsCardSource, /readImageAsDataUrl\(character\.image_url\)/);
 });
 
 test("published cast showcases preserve and render the thumbnail URL selected by the generator", () => {
