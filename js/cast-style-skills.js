@@ -82,12 +82,7 @@ function renderTable(section, skills) {
 function whenCastReady(callback) {
   const content = document.querySelector("#cast-content");
   if (!content || !content.hidden) { callback(); return; }
-  const observer = new MutationObserver(() => {
-    if (content.hidden) return;
-    observer.disconnect();
-    callback();
-  });
-  observer.observe(content, { attributes: true, attributeFilter: ["hidden"] });
+  window.addEventListener("tnx:cast-rendered", callback, { once: true });
 }
 
 async function initializeCastStyleSkills() {

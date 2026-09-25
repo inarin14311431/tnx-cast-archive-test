@@ -27,12 +27,7 @@ async function initializeCastOutfits() {
 function waitForCastReady() {
   if (!content || !content.hidden) return Promise.resolve();
   return new Promise(resolve => {
-    const observer = new MutationObserver(() => {
-      if (content.hidden) return;
-      observer.disconnect();
-      resolve();
-    });
-    observer.observe(content, { attributes: true, attributeFilter: ["hidden"] });
+    window.addEventListener("tnx:cast-rendered", resolve, { once: true });
   });
 }
 
