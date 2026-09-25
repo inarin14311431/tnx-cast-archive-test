@@ -37,7 +37,11 @@ function countMatches(source, pattern) {
   return [...source.matchAll(pattern)].length;
 }
 
-const htmlFiles = await filesUnder(root, name => name.endsWith(".html"));
+const rootEntries = await readdir(root, { withFileTypes: true });
+const htmlFiles = rootEntries
+  .filter(entry => entry.isFile() && entry.name.endsWith(".html"))
+  .map(entry => path.join(root, entry.name))
+  .sort();
 const jsFiles = await filesUnder(jsRoot, name => name.endsWith(".js"));
 const jsSources = new Map();
 for (const file of jsFiles) jsSources.set(relative(file), await readFile(file, "utf8"));
@@ -46,15 +50,15 @@ const pages = [];
 for (const file of htmlFiles) {
   const source = await readFile(file, "utf8");
   const scripts = [];
-  for (const match of source.matchAll(/<script\\b([^>]*)>/gi)) {
+  for (const match of source.matchAll(/<script\b([^>]*)>/gi)) {
     const attributes = match[1];
-    const src = attributes.match(/\\bsrc=["']([^"']+)["']/i)?.[1];
+    const src = attributes.match(/\bsrc=["']([^"']+)["']/i)?.[1];
     if (!src) continue;
     const target = resolveScriptRef(file, src);
     if (!target) continue;
     scripts.push({
       path: target,
-      kind: /\\btype=["']module["']/i.test(attributes) ? "module" : "classic"
+      kind: /\btype=["']module["']/i.test(attributes) ? "module" : "classic"
     });
   }
   pages.push({
@@ -78,11 +82,11 @@ const hotspots = [];
 
 for (const [file, source] of jsSources) {
   const metrics = {
-    eventListeners: countMatches(source, /\\b(?:addEventListener|removeEventListener)\\s*\\(/g),
-    mutationObservers: countMatches(source, /\\bnew\\s+MutationObserver\\b/g),
-    resizeObservers: countMatches(source, /\\bnew\\s+ResizeObserver\\b/g),
-    intersectionObservers: countMatches(source, /\\bnew\\s+IntersectionObserver\\b/g),
-    globalExports: countMatches(source, /\\b(?:globalThis|window)\\s*\\.[A-Za-z_$][\\w$]*\\s*=/g)
+    eventListeners: countMatches(source, /\b(?:addEventListener|removeEventListener)\s*\(/g),
+    mutationObservers: countMatches(source, /\bnew\s+MutationObserver\b/g),
+    resizeObservers: countMatches(source, /\bnew\s+ResizeObserver\b/g),
+    intersectionObservers: countMatches(source, /\bnew\s+IntersectionObserver\b/g),
+    globalExports: countMatches(source, /\b(?:globalThis|window)\s*\.[A-Za-z_$][\w$]*\s*=/g)
   };
   for (const key of Object.keys(metrics)) aggregate[key] += metrics[key];
   const score = Object.values(metrics).reduce((sum, value) => sum + value, 0);
