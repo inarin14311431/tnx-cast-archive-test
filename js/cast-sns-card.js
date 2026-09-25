@@ -1,7 +1,7 @@
 import { getCharacter } from "./cast-data-store.js";
 import { getImageFocusX, getImageFocusY, getImageZoom } from "./image-focus.js?v=3";
 
-const THEMES = {
+const FALLBACK_THEMES = {
   nova: {
     label: "Neon Grid",
     background: "#030711",
@@ -70,23 +70,23 @@ function ensureDialog() {
         <div class="cast-sns-dialog__preview-wrap"><img class="cast-sns-dialog__preview" alt="SNS紹介カードプレビュー"></div>
         <div class="cast-sns-dialog__controls">
           <label>テーマ <select data-sns-theme>
-            <option value="site">現在の画面テーマ</option>
-            ${Object.entries(THEMES).map(([id, theme]) => `<option value="${id}">${theme.label}</option>`).join("")}
+            <option value="nova">現在の画面テーマ</option>
           </select></label>
           <p class="cast-sns-dialog__note">1200×630px / PNG</p>
           <button type="button" class="cast-sns-dialog__download" data-sns-download><span>PNGをダウンロード</span><small>DOWNLOAD PNG</small></button>
         </div>
       </div>
     </form>`;
-  document.body.append(dialog);
-  preview = dialog.querySelector(".cast-sns-dialog__preview");
+ document.body.append(dialog);
+ preview = dialog.querySelector(".cast-sns-dialog__preview");
+  populateThemeOptions();
   dialog.querySelector("[data-sns-theme]").addEventListener("change", renderPreview);
   dialog.querySelector("[data-sns-download]").addEventListener("click", downloadCard);
 }
 
 async function openDialog() {
   ensureDialog();
-  dialog.querySelector("[data-sns-theme]").value = "site";
+  dialog.querySelector("[data-sns-theme]").value = globalThis.TNX_THEME?.current?.() || document.documentElement.dataset.theme || "nova";
   if (!dialog.open) dialog.showModal();
   preview.alt = "SNS紹介カードを生成中";
   try {
@@ -160,14 +160,63 @@ async function downloadCard() {
 }
 
 function resolveTheme(themeId) {
-  if (THEMES[themeId]) return THEMES[themeId];
-  if (themeId !== "site") return THEMES.nova;
-  const siteThemeId = globalThis.TNX_THEME?.current?.() || document.documentElement.dataset.theme || "nova";
-  if (THEMES[siteThemeId]) return THEMES[siteThemeId];
-  const siteDefinition = globalThis.TNX_THEME_REGISTRY?.get?.(siteThemeId);
-  return siteDefinition?.colorScheme === "light"
-    ? { ...THEMES.orbital, label: siteDefinition.label }
-    : { ...THEMES.nova, label: siteDefinition?.label || THEMES.nova.label };
+  const currentThemeId = globalThis.TNX_THEME?.current?.() || document.documentElement.dataset.theme || "nova";
+  const selectedThemeId = themeId === "site" ? currentThemeId : themeId;
+  const registry = globalThis.TNX_THEME_REGISTRY;
+  if (registry?.has?.(selectedThemeId)) return readThemeTokens(selectedThemeId);
+  return FALLBACK_THEMES[selectedThemeId] || FALLBACK_THEMES.nova;
+}
+
+function populateThemeOptions() {
+  const select = dialog?.querySelector("[data-sns-theme]");
+  const registry = globalThis.TNX_THEME_REGISTRY;
+  if (!select || !registry?.themes?.length) return;
+  const current = globalThis.TNX_THEME?.current?.() || document.documentElement.dataset.theme || registry.defaultId;
+  select.replaceChildren();
+  registry.themes.forEach(theme => {
+    const option = document.createElement("option");
+    option.value = theme.id;
+    option.textContent = theme.id === current ? `現在の画面テーマ：${theme.label}` : theme.label;
+    select.append(option);
+  });
+  select.value = current;
+}
+
+function readThemeTokens(themeId) {
+  const root = document.documentElement;
+  const previousTheme = root.dataset.theme;
+  const previousColorScheme = root.style.colorScheme;
+  const definition = globalThis.TNX_THEME_REGISTRY?.get?.(themeId);
+  root.dataset.theme = themeId;
+  if (definition?.colorScheme) root.style.colorScheme = definition.colorScheme;
+  const tokens = getComputedStyle(root);
+  const theme = {
+    label: definition?.label || themeId,
+    background: token(tokens, "--color-bg", "#05080b"),
+    surface: token(tokens, "--color-surface", "#0b1424"),
+    surfaceAlt: token(tokens, "--color-surface-alt", "#14243b"),
+    text: token(tokens, "--color-text", "#ffffff"),
+    muted: token(tokens, "--color-muted", "#aebbd0"),
+    accent: token(tokens, "--color-accent", "#70eaff"),
+    accent2: token(tokens, "--color-accent-strong", token(tokens, "--color-feature", "#9a78ff")),
+    border: token(tokens, "--color-border", token(tokens, "--color-border-muted", "#53647a")),
+    pattern: themePattern(themeId)
+  };
+  if (previousTheme) root.dataset.theme = previousTheme;
+  else delete root.dataset.theme;
+  root.style.colorScheme = previousColorScheme;
+  return theme;
+}
+
+function token(styles, name, fallback) {
+  return styles.getPropertyValue(name).trim() || fallback;
+}
+
+function themePattern(themeId) {
+  if (themeId === "spectrum-neon") return "spectrum";
+  if (themeId === "japanese-army") return "army";
+  if (["intron", "orbital", "statistics-bureau"].includes(themeId)) return "paper";
+  return "grid";
 }
 
 function loadImage(src) {
@@ -194,7 +243,13 @@ function createCardSvg(cast, theme, image) {
   const positionY = getImageFocusY(cast.image_url);
   const zoom = getImageZoom(cast.image_url) / 100;
   const imageHref = image || "";
-  const pattern = theme.pattern === "diagonal"
+  const pattern = theme.pattern === "spectrum"
+    ? `<pattern id="pattern" width="140" height="140" patternUnits="userSpaceOnUse"><path d="M0 30L140 0M0 90L140 60M0 150L140 120" stroke="${theme.accent}" stroke-opacity=".13" stroke-width="2"/><circle cx="32" cy="86" r="2" fill="${theme.accent2}" fill-opacity=".6"/><circle cx="108" cy="36" r="2" fill="${theme.accent}" fill-opacity=".5"/></pattern>`
+    : theme.pattern === "army"
+      ? `<pattern id="pattern" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M0 60L60 0M-15 60L60 -15M0 75L75 0" stroke="${theme.accent}" stroke-opacity=".1" stroke-width="1"/><circle cx="30" cy="30" r="10" fill="none" stroke="${theme.accent2}" stroke-opacity=".08"/></pattern>`
+      : theme.pattern === "paper"
+        ? `<pattern id="pattern" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M0 31H32M31 0V32" stroke="${theme.accent}" stroke-opacity=".08"/><circle cx="6" cy="7" r="1" fill="${theme.accent}" fill-opacity=".15"/></pattern>`
+        : theme.pattern === "diagonal"
     ? `<pattern id="pattern" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 0V20" stroke="${theme.accent}" stroke-opacity=".11"/></pattern>`
     : theme.pattern === "orbit"
       ? `<pattern id="pattern" width="80" height="80" patternUnits="userSpaceOnUse"><circle cx="40" cy="40" r="28" fill="none" stroke="${theme.accent2}" stroke-opacity=".12"/><circle cx="40" cy="40" r="2" fill="${theme.accent}" fill-opacity=".45"/></pattern>`
