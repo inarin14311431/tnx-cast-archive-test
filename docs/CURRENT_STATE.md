@@ -247,7 +247,7 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 
 - `js/act-showcase-board-layout.js`等7箇所(うち1件は上記のtrailer-definitionとして対応済み): 「本体が作ったものを削除して作り直す」パターンの重複。
 
-## 12. Supabase画像変換への依存廃止・自前サムネイル生成への切替(進行中)
+## 12. Supabase画像変換への依存廃止・自前サムネイル生成への切替(完了)
 
 ### 背景
 
@@ -260,15 +260,15 @@ Navigation共通化は第3・5・6節、Snapshot共通化は第3・4・7節、Pu
 - `js/sheet-image.js`: 既存の`decodeImage`/`renderToCanvas`/`canvasToBlob`を再利用する`createThumbnail(file,{maxLongEdge=420,targetSize=40*1024})`を追加。`optimizeImage()`の圧縮済み`uploadFile`(最大1920px)を渡し、元画像の再デコードを避ける。
 - `uploadImage()`: 本体画像アップロード後、`createThumbnail(uploadFile)`でサムネイルを生成し、同フォルダへ`-thumb`付きでアップロード。`characters.image_url`と`image_thumbnail_url`を同時に更新し、入れ替え前の本体・サムネイル両方を`removeOwnedStorageObject()`で削除。エラー時はサムネイル→本体の順にロールバック削除する。
 - `clearImageReference()`: 本体画像と合わせてサムネイルも削除・列クリアする。
-- `supabase/48_add_character_thumbnail_url.sql`(`characters.image_thumbnail_url text`、nullable)を追加し`migrations-manifest.json`にも追記した。**このmigrationはrepoにcommitしただけで、検証・本番共有のSupabaseプロジェクト(`koprmbkoftuuffslhsvt`)へは未適用。** `docs/DATABASE_MIGRATIONS.md`記載の運用(repo commitと実DB適用を別ゲートにする)通り、適用は別途明示的な確認を得てから行う。
+- `supabase/48_add_character_thumbnail_url.sql`(`characters.image_thumbnail_url text`、nullable)を追加し`migrations-manifest.json`にも追記した。2026-09-25に検証・本番共有のSupabaseプロジェクト(`koprmbkoftuuffslhsvt`)へ適用済み。
 - `js/archive.js`・`js/showcase-generator-v3.js`(カード一覧3箇所: `createLibraryCard`のライブラリピッカー、`createArchiveSelection`の選択済みキャストプレビュー、`createOutputCastCard`の公開出力カード)を`character.image_thumbnail_url || character.image_url`のフォールバックへ変更。`archive.js`は`toThumbnailUrl()`の呼び出しをやめた(関数自体・そのテストは削除せず残置。呼び出し元が無いことをrepo全体grepで確認済み)。
 - **migration未適用の間の安全対策**: `js/archive.js`のキャスト一覧取得、`js/sheet-image.js`の`loadCharacter()`はいずれも単発の`.select()`で、存在しない列を1つでも含めると`{error}`でSELECT全体が失敗する(検証・本番が同一Supabaseプロジェクトを共有しているため、影響は新機能が使えないだけでなく既存のアーカイブ一覧・画像編集画面そのものが丸ごとエラーになる)。`js/showcase-generator-v3.js`に既に実装されていた「列が存在しないエラー(`isMissingColumnError()`)を検知し、旧カラム構成のSELECTへ自動リトライする」パターンを、`js/archive.js`(`queryPublicCharacters()`)・`js/sheet-image.js`(`queryOwnedCharacter()`)にも同様に追加した(3ファイルとも同種のヘルパーを個別に持つ形になっており、共通化はしていない。次に着手する場合の候補として記録する)。
 
-### 今回のスコープ外・既知の制限として記録するもの
+### 既知の制限として記録するもの
 
-- **`js/sheet-mobile-image.js`は対象外**。この画面は`js/sheet-image.js`と同種の圧縮アップロード処理(`optimize()`/`upload()`)を独自に重複実装しているが、今回はPC側(`js/sheet-image.js`)のみを対象とし、モバイル側は着手していない。サムネイル生成もモバイル側からのアップロードには追加されていない(モバイルでアップロードした画像は`image_thumbnail_url`が更新されないため、モバイル経由の新規登録・更新でもサムネイルは生成されない)。次に着手する場合は、この重複解消と合わせてサムネイル生成をモバイル側にも実装する。
+- **`js/sheet-mobile-image.js`はサムネイル生成自体には未対応**。バックフィル後にモバイルから画像を差し替え・解除した際、旧サムネイルが残って誤画像を表示しないよう、`image_thumbnail_url`を解除して旧サムネイルStorageオブジェクトも削除する。モバイルで差し替えた画像は、PCから再登録するか次回バックフィルまでフルサイズ画像へフォールバックする。次に着手する場合は、PC/Mobileの画像処理重複解消と合わせてサムネイル生成をモバイル側にも実装する。
 - **`js/showcase-guests.js`は対象外**。ユーザー指示では直近PR対象ファイルとして名前が挙がっていたが、実際に調べるとゲスト画像は`characters`テーブルと無関係(別テーブル`act_showcase_guests`、別Storageアップロード経路、圧縮なし・最大1MB直接アップロード)であり、`image_thumbnail_url`列を持たない。`character.image_thumbnail_url || character.image_url`をそのまま当てはめると存在しないフィールドを参照する誤りになるため、今回は変更していない。ゲスト画像の軽量化が今後必要になった場合は、`characters`側とは別の対応(専用の`thumbnail_url`列を`act_showcase_guests`に追加する等)が必要。
-- **既存キャストは次回画像を再アップロードするまでサムネイルが生成されない**。`image_thumbnail_url`は新規列でnullable・既存行はすべて空のため、既存キャストの一覧表示は(migration適用後も)`image_thumbnail_url || image_url`のフォールバックにより従来通りフルサイズ画像を使い続ける。一括バックフィル(既存の`image_url`から一括でサムネイルを生成する)は今回のスコープに含めていない。
+- 2026-09-25に既存キャストを一括バックフィルした。全125件中、元画像がある108件について長辺最大420px・目標40KBのWebPを生成し、Storageオブジェクトと`image_thumbnail_url`の対応を108/108件確認した。元画像がない17件はサムネイルも空のまま。
 
 ## 13. 現在優先して守るべき資料
 
