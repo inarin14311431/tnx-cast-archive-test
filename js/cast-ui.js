@@ -196,6 +196,7 @@ async function initializeCharacterSheetLinks() {
     const href = normalizeCharacterSheetUrl(character?.character_sheet_url);
     if (!href) return;
 
+    const mobileRequested = new URLSearchParams(location.search).get("mobile") === "1";
     const render = () => {
       const desktopList = document.querySelector(".cast-hero .identity-grid");
       if (desktopList && !desktopList.querySelector('[data-character-sheet-link="1"]')) {
@@ -207,21 +208,23 @@ async function initializeCharacterSheetLinks() {
         mobileList.append(createCharacterSheetLinkRow(href, { mobile: true }));
       }
 
-      const mobileRequested = new URLSearchParams(location.search).get("mobile") === "1";
       return mobileRequested ? Boolean(mobileList) : Boolean(desktopList);
     };
 
     if (render()) return;
-    const observer = new MutationObserver(() => {
-      if (!render()) return;
-      observer.disconnect();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+
+    const eventName = mobileRequested
+      ? "tnx:mobile-cast-rendered"
+      : "tnx:cast-rendered";
+
+    const handleRendered = () => {
+      render();
+    };
+    window.addEventListener(eventName, handleRendered, { once: true });
   } catch (error) {
     console.warn("character sheet link could not be loaded", error);
   }
 }
-
 async function initializeHandleKana() {
   const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
   const handle = document.querySelector("#cast-handle");
