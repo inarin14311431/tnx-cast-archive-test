@@ -92,7 +92,7 @@ async function openDialog() {
   try {
     character = await getCharacter();
     if (!character) throw new Error("キャストデータを取得できませんでした。");
-    imageDataUrl = await readImageAsDataUrl(character.image_url);
+    imageDataUrl = await readImageAsDataUrl(character.image_thumbnail_url || character.image_url);
     await renderPreview();
   } catch (error) {
     console.error(error);
