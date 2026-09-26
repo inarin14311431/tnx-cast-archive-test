@@ -1,4 +1,4 @@
-/* cast-v3.html: spreadsheet-like sorting and column resizing for the style skill table.
+/* Public cast viewer (cast.html): spreadsheet-like sorting and column resizing for the style skill table.
  * Owned by js/cast-style-skill-table-controls.js. */
 
 .style-table-tools {
@@ -35,13 +35,13 @@
 .style-table-tools__button:is(:hover, :focus-visible) { border-color: var(--color-accent); }
 .style-table-tools__button:disabled { opacity: .45; cursor: default; }
 
-.style-skill-view-table.is-v3-controlled thead th {
+.style-skill-view-table.is-table-controlled thead th {
   position: relative;
   padding-right: 14px;
   user-select: none;
 }
-.style-skill-view-table.is-v3-controlled thead th[data-sort-key] { cursor: pointer; }
-.style-skill-view-table.is-v3-controlled thead th[data-sort-key]:is(:hover, :focus-visible) {
+.style-skill-view-table.is-table-controlled thead th[data-sort-key] { cursor: pointer; }
+.style-skill-view-table.is-table-controlled thead th[data-sort-key]:is(:hover, :focus-visible) {
   color: var(--color-accent);
   outline: none;
   background: color-mix(in srgb, var(--color-accent-soft) 70%, transparent);
@@ -53,8 +53,8 @@
   color: var(--color-muted);
   font-size: 10px;
 }
-.style-skill-view-table.is-v3-controlled th[aria-sort="ascending"] .style-sort-indicator,
-.style-skill-view-table.is-v3-controlled th[aria-sort="descending"] .style-sort-indicator { color: var(--color-accent); }
+.style-skill-view-table.is-table-controlled th[aria-sort="ascending"] .style-sort-indicator,
+.style-skill-view-table.is-table-controlled th[aria-sort="descending"] .style-sort-indicator { color: var(--color-accent); }
 
 .style-col-resizer {
   position: absolute;
