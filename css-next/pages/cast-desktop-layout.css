@@ -145,7 +145,7 @@
   }
 
   body[data-page="cast.html"] .identity-grid > div:not(.cast-character-sheet-link) {
-    padding: 7px 12px 8px;
+    padding: 7px 12px 10px;
     border: 0;
     border-right: 1px solid color-mix(in srgb, var(--color-border) 54%, transparent);
     border-bottom: 1px solid color-mix(in srgb, var(--color-border) 46%, transparent);
@@ -162,12 +162,16 @@
   }
 
   body[data-page="cast.html"] .identity-grid dt {
-    font-size: .62rem;
+    font-size: .7rem;
     letter-spacing: .08em;
   }
 
+  body[data-page="cast.html"] .identity-grid dt small {
+    font-size: .72em;
+  }
+
   body[data-page="cast.html"] .identity-grid dd {
-    margin-top: 3px;
+    margin-top: 7px;
     font-size: .9rem;
   }
 

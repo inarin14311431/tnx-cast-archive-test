@@ -9,7 +9,7 @@ const castUi = await readFile(new URL("../js/cast-ui.js", import.meta.url), "utf
 
 test("desktop cast layout is a canonical final cascade layer", () => {
   assert.match(entry, /cast-transfer, cast-troop-modal, cast-desktop, cast-style-table;/);
-  assert.match(entry, /cast-desktop-layout\.css\?v=2/);
+  assert.match(entry, /cast-desktop-layout\.css\?v=3/);
   assert.doesNotMatch(entry, /polish/);
   assert.match(css, /@media \(min-width: 1200px\)/);
   assert.doesNotMatch(css, /@media\s*\([^)]*max-width/i);
@@ -20,6 +20,15 @@ test("identity header uses the same bilingual section grammar as styles and divi
   assert.match(castHtml, /id="cast-name-heading" class="cast-name-heading"><h2>名前 <small>NAME<\/small><\/h2>/);
   assert.match(css, /\.cast-name-heading[\s\S]*min-height: 30px;[\s\S]*margin-bottom: 6px;/);
   assert.match(css, /\.identity-grid[\s\S]*margin: 24px 10px 10px;/);
+});
+
+test("primary and secondary identity labels share one accent hierarchy", () => {
+  assert.match(castHtml, /class="identity-label">プレイヤー <small>PLAYER<\/small>/);
+  assert.match(castHtml, /class="identity-label">所属 <small>AFFILIATION<\/small>/);
+  assert.match(castHtml, /class="identity-label">市民ランク <small>CITIZEN RANK<\/small>/);
+  assert.match(castHtml, /class="identity-label">消費経験点 <small>EXP<\/small>/);
+  assert.match(css, /\.identity-grid dt[\s\S]*font-size: \.7rem;/);
+  assert.match(css, /\.identity-grid dt small[\s\S]*font-size: \.72em;/);
 });
 
 test("desktop cast layout retains the four approved review targets", () => {
@@ -36,7 +45,7 @@ test("desktop cast layout remains theme-driven", () => {
   assert.match(css, /var\(--color-text\)/);
   assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b/i);
   assert.doesNotMatch(css, /body\[data-page="account\.html"\]/);
-  const pageCssIndex = castHtml.indexOf('./css-next/pages/cast-entry.css?v=11');
+  const pageCssIndex = castHtml.indexOf('./css-next/pages/cast-entry.css?v=12');
   const themeCssIndex = castHtml.indexOf('./css-next/themes/index.css?v=1');
   assert.ok(pageCssIndex >= 0 && themeCssIndex > pageCssIndex);
 });
