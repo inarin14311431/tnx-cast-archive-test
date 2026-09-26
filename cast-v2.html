@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <script src="./js/theme-registry.js?v=1"></script>
+  <script src="./js/css-next-theme.js?v=8"></script>
+  <script src="./js/theme-scope.js?v=1"></script>
+  <link rel="stylesheet" href="./css-next/pages/cast-v2-entry.css?v=1" data-css-system="next">
+  <link rel="stylesheet" href="./css-next/themes/index.css?v=1" data-theme-system="1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>閲覧画面V2サンプル // N◎VA ARCHIVE</title>
+</head>
+<body data-page="cast-v2.html">
+  <div class="background-grid"></div>
+  <div class="scanlines"></div>
+
+  <header class="cast-v2-topbar">
+    <a class="cast-v2-back" href="./index.html">
+      <span>‹ キャスト一覧</span>
+      <small>CAST ARCHIVE</small>
+    </a>
+    <div class="cast-v2-topbar__identity">
+      <span class="cast-v2-sample-badge">V2 DESIGN SAMPLE</span>
+      <strong id="cast-v2-public-id">CONNECTING...</strong>
+    </div>
+    <a id="cast-v2-current-link" class="cast-v2-current-link" href="./cast.html">
+      <span>現行表示</span>
+      <small>CURRENT VIEW</small>
+    </a>
+  </header>
+
+  <main id="cast-v2-root" class="cast-v2-shell" hidden>
+    <section id="cast-v2-hero" class="cast-v2-hero"></section>
+
+    <nav class="cast-v2-nav" aria-label="キャスト情報V2">
+      <button type="button" class="is-active" data-v2-tab="overview" aria-selected="true">
+        <span>概要</span><small>OVERVIEW</small>
+      </button>
+      <button type="button" data-v2-tab="skills" aria-selected="false">
+        <span>技能</span><small>SKILLS</small>
+      </button>
+      <button type="button" data-v2-tab="outfits" aria-selected="false">
+        <span>装備</span><small>OUTFITS</small>
+      </button>
+      <button type="button" data-v2-tab="runtime" aria-selected="false">
+        <span>アクト</span><small>ACT RUNTIME</small>
+      </button>
+    </nav>
+
+    <section id="cast-v2-overview" class="cast-v2-view is-active" data-v2-panel="overview"></section>
+    <section id="cast-v2-skills" class="cast-v2-view" data-v2-panel="skills" hidden></section>
+    <section id="cast-v2-outfits" class="cast-v2-view" data-v2-panel="outfits" hidden></section>
+    <section id="cast-v2-runtime" class="cast-v2-view" data-v2-panel="runtime" hidden></section>
+  </main>
+
+  <section id="cast-v2-status" class="cast-v2-status" aria-live="polite">
+    <span>CAST DATA LINK</span>
+    <strong>SCANNING...</strong>
+  </section>
+
+  <section id="cast-v2-error" class="cast-v2-error" hidden>
+    <span>ACCESS FAILED</span>
+    <h1>キャストデータを表示できません</h1>
+    <p id="cast-v2-error-message"></p>
+    <a href="./index.html">キャスト一覧へ戻る</a>
+  </section>
+
+  <footer class="cast-v2-footer">
+    <span>N◎VA MUNICIPAL DATABASE // VIEW PROTOTYPE 02</span>
+    <span>現行閲覧画面とは独立したデザイン検証ページです。</span>
+  </footer>
+
+  <script type="module" src="./js/cast-v2.js?v=1"></script>
+</body>
+</html>
