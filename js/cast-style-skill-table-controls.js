@@ -1,4 +1,4 @@
-/* cast-v3.html only: spreadsheet-like controls for the public style skill table.
+/* Public cast viewer (cast.html): spreadsheet-like controls for the style skill table.
  * Presentation only. Data rendering stays in cast-style-skills.js; this module
  * reorders existing rows and changes column widths after "tnx:style-skills-rendered".
  *
@@ -11,6 +11,7 @@
   if (window.TNXCastStyleSkillTableControlsLoaded) return;
   window.TNXCastStyleSkillTableControlsLoaded = true;
 
+  // Key kept from the cast-v3.html trial so widths saved there carry over.
   const STORAGE_KEY = "tnx.castV3.styleSkillColumnWidths.v1";
   const MIN_WIDTH = 32;
   const MAX_WIDTH = 1200;
@@ -69,13 +70,13 @@
   }
 
   function enhanceTable(table) {
-    if (!table || table.dataset.v3Controls === "1") return;
+    if (!table || table.dataset.tableControls === "1") return;
     const headerRow = table.tHead?.rows?.[0];
     const tbody = table.tBodies?.[0];
     const cols = [...table.querySelectorAll(":scope > colgroup > col")];
     if (!headerRow || !tbody || cols.length !== headerRow.cells.length) return;
-    table.dataset.v3Controls = "1";
-    table.classList.add("is-v3-controlled");
+    table.dataset.tableControls = "1";
+    table.classList.add("is-table-controlled");
 
     const headers = [...headerRow.cells];
     const labels = headers.map(th => (th.querySelector(":scope > span")?.textContent || th.textContent || "").trim());
