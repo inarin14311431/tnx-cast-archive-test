@@ -25,8 +25,8 @@ const rawSupabase = createClient(
  */
 const hasDocument = typeof document !== "undefined";
 const hasLocation = typeof location !== "undefined";
-const isPublicCastView = (hasDocument && ["cast.html", "cast-v2.html"].includes(document.body?.dataset.page))
-  || (hasLocation && /(?:^|\/)cast(?:-v2)?\.html$/.test(location.pathname));
+const isPublicCastView = (hasDocument && document.body?.dataset.page === "cast.html")
+  || (hasLocation && /(?:^|\/)cast\.html$/.test(location.pathname));
 const publicReadCache = new Map();
 const WRITE_METHODS = new Set(["insert", "update", "upsert", "delete"]);
 const SHARED_BUNDLE_KEYS = new Map([
