@@ -36,7 +36,8 @@ test("V2 hero and overview preserve identity and escape user content", () => {
   const character = {
     public_id: "TNX-SAMPLE",
     character_name: "テスト<script>",
-    handle: "灰街の灯",
+    handle: "“灰街の灯”",
+    handle_kana: "“はいがいのあかり”",
     summary: "一言",
     style_1: "フェイト",
     style_1_mark: "◎●",
@@ -50,6 +51,8 @@ test("V2 hero and overview preserve identity and escape user content", () => {
 
   assert.match(hero, /TNX-SAMPLE/);
   assert.match(hero, /“灰街の灯”/);
+  assert.match(hero, /“はいがいのあかり”/);
+  assert.doesNotMatch(hero, /““/);
   assert.match(hero, /フェイト/);
   assert.match(hero, /真実/);
   assert.match(hero, /テスト&lt;script&gt;/);
