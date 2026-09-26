@@ -9,10 +9,17 @@ const castUi = await readFile(new URL("../js/cast-ui.js", import.meta.url), "utf
 
 test("desktop cast layout is a canonical final cascade layer", () => {
   assert.match(entry, /cast-transfer, cast-troop-modal, cast-desktop, cast-style-table;/);
-  assert.match(entry, /cast-desktop-layout\.css\?v=1/);
+  assert.match(entry, /cast-desktop-layout\.css\?v=2/);
   assert.doesNotMatch(entry, /polish/);
   assert.match(css, /@media \(min-width: 1200px\)/);
   assert.doesNotMatch(css, /@media\s*\([^)]*max-width/i);
+});
+
+test("identity header uses the same bilingual section grammar as styles and divine works", () => {
+  assert.match(castHtml, /class="cast-name-section"[^>]+aria-labelledby="cast-name-heading"/);
+  assert.match(castHtml, /id="cast-name-heading" class="cast-name-heading"><h2>名前 <small>NAME<\/small><\/h2>/);
+  assert.match(css, /\.cast-name-heading[\s\S]*min-height: 30px;[\s\S]*margin-bottom: 6px;/);
+  assert.match(css, /\.identity-grid[\s\S]*margin: 24px 10px 10px;/);
 });
 
 test("desktop cast layout retains the four approved review targets", () => {
@@ -29,7 +36,7 @@ test("desktop cast layout remains theme-driven", () => {
   assert.match(css, /var\(--color-text\)/);
   assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b/i);
   assert.doesNotMatch(css, /body\[data-page="account\.html"\]/);
-  const pageCssIndex = castHtml.indexOf('./css-next/pages/cast-entry.css?v=10');
+  const pageCssIndex = castHtml.indexOf('./css-next/pages/cast-entry.css?v=11');
   const themeCssIndex = castHtml.indexOf('./css-next/themes/index.css?v=1');
   assert.ok(pageCssIndex >= 0 && themeCssIndex > pageCssIndex);
 });
