@@ -1,0 +1,5 @@
+/* Standalone design sample for the second-generation public cast view. */
+@layer app, cast-v2;
+
+@import url("../index.css?v=64") layer(app);
+@import url("./cast-v2.css?v=1") layer(cast-v2);
