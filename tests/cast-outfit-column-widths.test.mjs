@@ -31,5 +31,5 @@ test("cast page loads the refreshed outfit definitions and layout assets", () =>
   assert.match(outfits, /cast-view-definitions\.js\?v=3/);
   assert.match(entry, /cast-outfit-column-widths\.css\?v=1/);
   assert.match(castHtml, /cast-entry\.css\?v=9/);
-  assert.match(castHtml, /cast-outfits\.js\?v=6/);
+  assert.match(castHtml, /cast-outfits\.js\?v=7/);
 });
