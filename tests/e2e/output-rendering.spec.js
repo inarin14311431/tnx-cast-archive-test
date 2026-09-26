@@ -48,6 +48,14 @@ test('簡易印刷の生成・解説切替・継続ページ・再表示でデ�
   await expect(page.locator('#quick-sheet')).toBeVisible();
   await expect(page.locator('.quick-sheet__combo-grid')).toContainText('使用 2/3');
   await expect(page.locator('.quick-sheet__style-table tbody tr')).toHaveCount(45);
+  await page.addStyleTag({ content: `
+    #quick-sheet .quick-sheet__page {
+      height: 420px;
+      min-height: 420px;
+      max-height: 420px;
+      overflow: hidden;
+    }
+  ` });
   await page.locator('#quick-sheet-detail-toggle').click();
   await expect(page.locator('#quick-sheet')).toHaveClass(/is-notes-expanded/);
   await expect(page.locator('[data-quick-sheet-section="style-skills-continuation"]')).toHaveCount(1);
