@@ -8,6 +8,7 @@
         "tests/e2e/audit-public.spec.js",
         "tests/e2e/smoke.spec.js",
         "tests/e2e/cast-view.spec.js",
+        "tests/e2e/output-rendering.spec.js",
         "tests/e2e/troop-view.spec.js",
         "tests/e2e/editor-help.spec.js",
         "tests/e2e/direct-transfer.spec.js",

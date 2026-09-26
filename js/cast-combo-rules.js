@@ -51,3 +51,11 @@ export function getComboValue(...values) {
   return "";
 }
 
+
+export const COMBO_ABILITY_LABELS = {
+  reason: "♠ 理性",
+  passion: "♣ 感情",
+  life: "♥ 生命",
+  mundane: "♦ 外界"
+};
+
