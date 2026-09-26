@@ -37,7 +37,7 @@ export function createCastV2Hero(character) {
       <p class="cast-v2-eyebrow"><span>N◎VA CAST PROFILE</span><span>${escapeHtml(character.public_id || "NO ID")}</span></p>
       <p class="cast-v2-reading">${escapeHtml(joinReading(character.handle_kana, character.character_kana))}</p>
       <h1 class="cast-v2-name">${escapeHtml(displayValue(character.character_name))}</h1>
-      <p class="cast-v2-handle">${escapeHtml(formatHandle(character.handle))}</p>
+      <p class="cast-v2-handle">${escapeHtml(formatV2Handle(character.handle))}</p>
       <p class="cast-v2-summary">${escapeHtml(character.summary || "キャストの一言は登録されていません。")}</p>
       <div class="cast-v2-style-grid">
         ${styles.map((style, index) => `
@@ -147,7 +147,19 @@ function identityFact(jp, en, value) {
 }
 
 function joinReading(handleKana, characterKana) {
-  return [handleKana ? `“${handleKana}”` : "", characterKana].filter(Boolean).join(" / ");
+  return [handleKana ? formatV2Handle(handleKana) : "", characterKana].filter(Boolean).join(" / ");
+}
+
+function formatV2Handle(value) {
+  const text = String(value ?? "").trim();
+  const quotePairs = [["“", "”"], ["「", "」"], ["『", "』"], ['"', '"']];
+  const normalized = quotePairs.reduce((result, [open, close]) => {
+    if (result.startsWith(open) && result.endsWith(close) && result.length > open.length + close.length) {
+      return result.slice(open.length, -close.length).trim();
+    }
+    return result;
+  }, text);
+  return formatHandle(normalized);
 }
 
 function section(title, subtitle, content) {
