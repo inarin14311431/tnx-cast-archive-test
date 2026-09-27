@@ -38,6 +38,15 @@ test("public cast ability hover lives on general, social, connection and style s
   assert.match(cast, /data-ability-key=/);
 });
 
+test("editor suit headers allow ability tooltips to escape compact header cells", async () => {
+  const [generalCss, styleCss] = await Promise.all([
+    read("css-next/editor/skills.css"),
+    read("css-next/editor/style-skills.css")
+  ]);
+  assert.match(generalCss, /th\.suit-col:has\(\.ability-value-trigger\)[\s\S]*overflow: visible/);
+  assert.match(styleCss, /th\.suit-col:has\(\.ability-value-trigger\)[\s\S]*overflow: visible/);
+});
+
 test("ability tooltip presentation stays PC hover-only and is not tied to ability cards", async () => {
   const css = await read("css-next/components/ability-value-tooltip.css");
   assert.match(css, /th \.ability-value-trigger/);
