@@ -25,3 +25,4 @@
 @import url("../components/armor-totals.css?v=3") layer(sheet-enhancements);
 @import url("../components/sheet-import-help.css?v=3") layer(sheet-enhancements);
 @import url("../components/skill-display.css?v=1") layer(sheet-enhancements);
+@import url("../components/ability-value-tooltip.css?v=1") layer(sheet-enhancements);
