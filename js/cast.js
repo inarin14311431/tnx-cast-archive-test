@@ -455,28 +455,24 @@ function renderAbilities(character) {
   const abilities = [
     {
       key: "REASON",
-      jp: "理性",
       symbol: "♠",
       value: character.reason_value,
       control: character.reason_control
     },
     {
       key: "PASSION",
-      jp: "感情",
       symbol: "♣",
       value: character.passion_value,
       control: character.passion_control
     },
     {
       key: "LIFE",
-      jp: "生命",
       symbol: "♥",
       value: character.life_value,
       control: character.life_control
     },
     {
       key: "MUNDANE",
-      jp: "外界",
       symbol: "♦",
       value: character.mundane_value,
       control: character.mundane_control
@@ -489,14 +485,7 @@ function renderAbilities(character) {
         <article class="ability-card">
           <header>
             <span>${ability.symbol}</span>
-            <span class="ability-value-trigger">
-              ${ability.jp} <small>${ability.key}</small>
-              <span class="ability-value-tooltip" role="tooltip">
-                <span class="ability-value-tooltip__eyebrow">CAST ABILITY</span>
-                <span class="ability-value-tooltip__row">能力値 <strong>${displayValue(ability.value)}</strong></span>
-                <span class="ability-value-tooltip__row">制御値 <strong>${displayValue(ability.control)}</strong></span>
-              </span>
-            </span>
+            <span>${ability.key}</span>
           </header>
 
           <div class="ability-card__numbers">
