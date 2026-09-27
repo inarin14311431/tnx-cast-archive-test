@@ -16,7 +16,7 @@ function initializeCastCompactSkills() {
   };
   const abilityHeaderMarkup = (label, key) => {
     const { value, control } = readAbilitySnapshot(key);
-    return `<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__eyebrow">CAST ABILITY</span><span class="ability-value-tooltip__row">能力値 <strong>${value}</strong></span><span class="ability-value-tooltip__row">制御値 <strong>${control}</strong></span></span></span>`;
+    return `<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__row">能力 <strong>${value}</strong></span><span class="ability-value-tooltip__row">制御 <strong>${control}</strong></span></span></span>`;
   };
   const normalizeName = value => String(value || "").trim().replace(/[;；]/g, "：");
   const familyName = value => {
@@ -55,7 +55,7 @@ function initializeCastCompactSkills() {
       COMPACT_SKILL_HEADERS.forEach((label, index) => {
         const cell = header.cells[index];
         if (!cell) return;
-        if (category === "general" && index >= 2) {
+        if (index >= 2) {
           cell.innerHTML = abilityHeaderMarkup(label, ABILITY_KEYS[index - 2]);
         } else {
           cell.textContent = label;
