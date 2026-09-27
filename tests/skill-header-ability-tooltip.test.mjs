@@ -31,11 +31,10 @@ test("public cast ability hover lives on general and style skill headers", async
   assert.doesNotMatch(cast, /ability-value-trigger/);
   assert.match(compact, /category === "general"/);
   assert.match(compact, /abilityHeaderMarkup/);
-  assert.match(compact, /getCharacter/);
+  assert.match(compact, /readAbilitySnapshot/);
   assert.match(style, /data-ability-tooltip=/);
-  assert.match(style, /getCharacter/);
-  assert.match(style, /\$\{key\}_value/);
-  assert.match(style, /\$\{key\}_control/);
+  assert.match(style, /readAbilitySnapshot/);
+  assert.match(cast, /data-ability-key=/);
 });
 
 test("ability tooltip presentation stays PC hover-only and is not tied to ability cards", async () => {
