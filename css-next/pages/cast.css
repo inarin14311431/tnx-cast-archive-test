@@ -34,13 +34,13 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 /* Name: handle | real name on one line, wrapping between them (never inside a name). The
  * divider belongs to each item and is clipped by the section when the item starts a line. */
 .cast-name-section { margin: 30px 10px 0; padding: 4px 6px 0; overflow: hidden; }
-.cast-name-primary { --cast-name-gap: 26px; display: flex; flex-wrap: wrap; align-items: flex-end; row-gap: 4px; margin-left: calc(var(--cast-name-gap) * -1); font-size: clamp(1.3rem, 1.65vw, 1.75rem); line-height: 1.2; }
+.cast-name-primary { --cast-name-gap: 26px; display: flex; flex-wrap: wrap; align-items: flex-end; row-gap: 4px; margin-left: calc(var(--cast-name-gap) * -1); line-height: 1.2; }
 .cast-name-primary > * { position: relative; min-width: 0; padding-left: var(--cast-name-gap); word-break: keep-all; overflow-wrap: anywhere; }
 .cast-name-primary > *::before { position: absolute; bottom: .2em; left: calc(var(--cast-name-gap) / 2); width: 1px; height: .95em; content: ""; background: color-mix(in srgb, var(--color-accent) 45%, var(--color-border)); }
-.cast-handle { color: var(--color-accent); font: inherit; font-weight: 800; text-shadow: var(--shadow-glow); }
-.cast-name { margin: 0; color: var(--color-text); font: inherit; font-weight: 800; letter-spacing: .025em; text-shadow: var(--shadow-glow); }
+.cast-handle { color: var(--color-accent); font: inherit; font-size: clamp(1.875rem, 4.8cqi, 2.875rem); font-weight: 800; text-shadow: var(--shadow-glow); }
+.cast-name { margin: 0; color: var(--color-text); font: inherit; font-size: clamp(2rem, 5.45cqi, 3.25rem); font-weight: 800; letter-spacing: .025em; text-shadow: var(--shadow-glow); }
 .cast-name-primary ruby { ruby-position: over; }
-.cast-name-primary rt { padding-bottom: 2px; font-size: .44em; font-weight: 700; letter-spacing: .2em; text-shadow: none; }
+.cast-name-primary rt { padding-bottom: 2px; font-size: clamp(10px, .44em, 13px); font-weight: 700; letter-spacing: .2em; text-shadow: none; }
 .cast-handle rt { color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text)); }
 .cast-name rt { color: color-mix(in srgb, var(--color-text) 62%, var(--color-muted)); }
 
@@ -71,6 +71,7 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-style-slot.is-dual { --style-local: var(--color-style-dual); }
 .cast-style-slot.is-standard { border-block: 1px solid color-mix(in srgb, var(--color-accent) 36%, transparent); background: color-mix(in srgb, var(--color-accent) 5%, transparent); }
 .cast-style-slot.is-featured { flex-grow: 1.25; filter: drop-shadow(0 0 7px color-mix(in srgb, var(--style-local) 32%, transparent)); }
+.cast-style-slot.is-featured .cast-style-slot__name { font-size: clamp(1.1rem, 3.1cqi, 1.875rem); }
 .cast-style-slot.is-featured::before,
 .cast-style-slot.is-featured::after { position: absolute; z-index: -1; content: ""; pointer-events: none; }
 .cast-style-slot.is-featured::before { inset: 0; background: color-mix(in srgb, var(--style-local) 82%, transparent); clip-path: polygon(0 0, calc(100% - var(--slot-cut)) 0, 100% var(--slot-cut), 100% 100%, 0 100%); }
@@ -79,7 +80,7 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-style-slot.is-featured .cast-style-slot__role { right: calc(var(--slot-cut) + 4px); }
 .cast-style-slot.is-standard .cast-style-slot__role { color: color-mix(in srgb, var(--color-muted) 82%, var(--color-text)); }
 .cast-style-slot__index { flex: 0 0 auto; color: color-mix(in srgb, var(--style-local) 70%, var(--color-text)); font: 700 .74rem/1 var(--font-data); letter-spacing: .08em; }
-.cast-style-slot__name { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--color-text); font-size: clamp(1.05rem, 1.35vw, 1.3rem); font-weight: 900; line-height: 1.15; letter-spacing: .03em; text-overflow: ellipsis; white-space: nowrap; }
+.cast-style-slot__name { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--color-text); font-size: clamp(1rem, 2.7cqi, 1.625rem); font-weight: 900; line-height: 1.15; letter-spacing: .03em; text-overflow: ellipsis; white-space: nowrap; }
 .cast-style-slot__mark { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin-left: -4px; color: var(--color-text); }
 .cast-style-slot .style-mark-glyph { position: relative; display: block; box-sizing: border-box; width: 17px; min-width: 17px; height: 17px; min-height: 17px; flex: 0 0 17px; }
 .cast-style-slot .style-mark-glyph::before,
@@ -98,7 +99,7 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-divine-slot.is-dual { --divine-local: var(--color-style-dual); }
 .cast-divine-slot__code { position: absolute; top: 6px; right: 8px; color: color-mix(in srgb, var(--divine-local) 76%, var(--color-text)); font: 700 .56rem/1 var(--font-data); letter-spacing: .1em; }
 .cast-divine-slot__yomi { min-height: 1.2em; overflow: hidden; color: color-mix(in srgb, var(--divine-local) 45%, var(--color-text)); font: 700 .66rem/1.2 var(--font-data); letter-spacing: .16em; text-overflow: ellipsis; white-space: nowrap; }
-.cast-divine-slot__name { min-width: 0; overflow: hidden; color: var(--color-text); font-size: clamp(1rem, 1.3vw, 1.2rem); font-weight: 900; line-height: 1.15; letter-spacing: .02em; text-overflow: ellipsis; white-space: nowrap; }
+.cast-divine-slot__name { min-width: 0; overflow: hidden; color: var(--color-text); font-size: clamp(1rem, 2.7cqi, 1.625rem); font-weight: 900; line-height: 1.15; letter-spacing: .02em; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Identity facts: one row, unequal columns, vertical rules; 2 x 2 in narrow identity columns. */
 .identity-grid { display: grid; grid-template-columns: 1fr 1.7fr .8fr 1fr; margin: 18px 10px 0; border-block: 1px solid color-mix(in srgb, var(--color-border) 62%, transparent); }
@@ -114,6 +115,10 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-character-sheet-link small { color: color-mix(in srgb, var(--color-muted) 82%, var(--color-text)); font: 700 .6rem/1 var(--font-data); letter-spacing: .12em; }
 .cast-character-sheet-link:is(:hover, :focus-visible) { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 14%, transparent); }
 
+@container cast-identity (max-width: 470px) {
+  .cast-handle { font-size: min(1.625rem, 5.8cqi); }
+  .cast-name { font-size: min(1.75rem, 6.2cqi); }
+}
 @container cast-identity (max-width: 640px) {
   .identity-grid { grid-template-columns: 1fr 1fr; }
   .identity-grid > div:nth-child(odd) { border-left: 0; }
@@ -589,7 +594,6 @@ body[data-page="cast.html"].is-quick-sheet-open > :is(.cast-header, .cast-conten
 
 @media (min-width: 1200px) {
   body[data-page="cast.html"] .cast-name-section { margin-top: 22px; }
-  body[data-page="cast.html"] .cast-name-primary { font-size: clamp(1.18rem, 1.5vw, 1.58rem); }
 }
 
 

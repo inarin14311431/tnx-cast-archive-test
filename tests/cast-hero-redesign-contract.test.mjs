@@ -126,3 +126,13 @@ test("heading meta text truncates instead of wrapping the bilingual heading", ()
   assert.match(castCss, /\.cast-hero-heading h2 \{[^}]*white-space: nowrap;/);
   assert.match(castCss, /\.cast-hero-heading__meta \{[^}]*text-overflow: ellipsis; white-space: nowrap; \}/);
 });
+
+test("hero type scale follows the design and the identity column width", () => {
+  assert.match(castCss, /\.cast-handle \{[^}]*font-size: clamp\(1\.875rem, 4\.8cqi, 2\.875rem\);/);
+  assert.match(castCss, /\.cast-name \{[^}]*font-size: clamp\(2rem, 5\.45cqi, 3\.25rem\);/);
+  assert.match(castCss, /\.cast-name-primary rt \{[^}]*font-size: clamp\(10px, \.44em, 13px\);/);
+  assert.match(castCss, /\.cast-style-slot\.is-featured \.cast-style-slot__name \{ font-size: clamp\(1\.1rem, 3\.1cqi, 1\.875rem\); \}/);
+  assert.match(castCss, /\.cast-style-slot__name \{[^}]*font-size: clamp\(1rem, 2\.7cqi, 1\.625rem\);/);
+  assert.match(castCss, /\.cast-divine-slot__name \{[^}]*font-size: clamp\(1rem, 2\.7cqi, 1\.625rem\);/);
+  assert.doesNotMatch(castCss, /\.cast-name-primary \{[^}]*font-size/);
+});
