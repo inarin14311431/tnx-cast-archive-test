@@ -10,7 +10,7 @@ const castUi = await readFile(new URL("../js/cast-ui.js", import.meta.url), "utf
 
 test("desktop cast layout is a canonical final cascade layer", () => {
   assert.match(entry, /cast-transfer, cast-troop-modal, cast-desktop, cast-style-table;/);
-  assert.match(entry, /cast-desktop-layout\.css\?v=4/);
+  assert.match(entry, /cast-desktop-layout\.css\?v=5/);
   assert.doesNotMatch(entry, /polish/);
   assert.match(css, /@media \(min-width: 1200px\)/);
   assert.doesNotMatch(css, /@media\s*\([^)]*max-width/i);
@@ -37,10 +37,11 @@ test("primary and secondary identity labels share one accent hierarchy", () => {
   assert.match(castCss, /\.identity-grid dt small \{ color: var\(--color-accent\); font: 700 \.72em\/1 var\(--font-data\);/);
 });
 
-test("desktop cast layout retains the approved header and portrait targets", () => {
+test("desktop cast layout retains the approved header target; the hero column width is owned by cast.css", () => {
   assert.match(css, /\.cast-header__actions #cast-edit-button/);
-  assert.match(css, /\.cast-hero[\s\S]*grid-template-columns: minmax\(280px, 360px\) minmax\(0, 1fr\);/);
-  assert.match(css, /\.cast-hero__image-frame[\s\S]*aspect-ratio: 3 \/ 4;/);
+  assert.doesNotMatch(css, /grid-template-columns:\s*minmax\(280px/);
+  assert.match(castCss, /\.cast-hero \{[^}]*grid-template-columns: minmax\(280px, 360px\) minmax\(0, 1fr\);/);
+  assert.match(castCss, /@media \(min-width: 1200px\) \{[\s\S]*\.cast-hero \{ align-items: start; gap: 24px; \}[\s\S]*\.cast-hero__image-panel \{ width: 100%; max-width: 360px;[\s\S]*\.cast-hero__image-frame \{ width: 100%; height: auto; min-height: 0; aspect-ratio: 3 \/ 4; \}/);
 });
 
 test("desktop cast layout remains theme-driven", () => {
@@ -49,7 +50,7 @@ test("desktop cast layout remains theme-driven", () => {
   assert.match(css, /var\(--color-text\)/);
   assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b/i);
   assert.doesNotMatch(css, /body\[data-page="account\.html"\]/);
-  const pageCssIndex = castHtml.indexOf('./css-next/pages/cast-entry.css?v=16');
+  const pageCssIndex = castHtml.indexOf('./css-next/pages/cast-entry.css?v=17');
   const themeCssIndex = castHtml.indexOf('./css-next/themes/index.css?v=1');
   assert.ok(pageCssIndex >= 0 && themeCssIndex > pageCssIndex);
 });

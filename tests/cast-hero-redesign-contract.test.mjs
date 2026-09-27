@@ -10,7 +10,7 @@ const castCss = await read("css-next/pages/cast.css");
 const runtimeCss = await read("css-next/pages/cast-cyber-runtime.css");
 const effectsCss = await read("css-next/pages/cast-cyber-effects.css");
 const detailsCss = await read("css-next/pages/cast-view-details.css");
-const archetypeView = await read("js/cast-archetype-view.js");
+const styleSkillsJs = await read("js/cast-style-skills.js");
 const cyberTrigger = await read("js/cast-cyber-trigger.js");
 
 const hero = castHtml.slice(castHtml.indexOf('<div class="cast-hero__identity">'), castHtml.indexOf('<nav class="cast-tabs"'));
@@ -109,7 +109,7 @@ test("style slots stay visible without the effect script and animate only with i
   assert.doesNotMatch(runtimeCss + effectsCss, /cast-style-card-simple/);
   assert.match(runtimeCss, /#cast-styles \.cast-style-slot\.cast-style-verify\{animation:castStyleVerifyStrong/);
   assert.match(cyberTrigger, /querySelectorAll\('#cast-styles \.cast-style-slot'\)/);
-  assert.doesNotMatch(archetypeView, /enhanceStyles|enhanceDivines|cast-divine-card/);
+  assert.doesNotMatch(styleSkillsJs, /enhanceStyles|enhanceDivines|cast-divine-card/);
 });
 
 test("identity facts: one row with unequal columns, 2 x 2 in narrow identity columns, clipped values keep a title", () => {
