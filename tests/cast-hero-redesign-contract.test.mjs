@@ -36,11 +36,11 @@ test("names render as ruby with quotes outside the handle ruby and no empty rt",
   assert.equal(stripOuterQuotes("「“歌わない小夜啼鳥”」"), "歌わない小夜啼鳥");
 });
 
-test("name line wraps only between handle and name and keeps the divider on the same line", () => {
+test("name line wraps only between handle and name using a plain gap, no divider", () => {
   assert.match(castCss, /\.cast-name-section \{[^}]*overflow: hidden;/);
-  assert.match(castCss, /\.cast-name-primary \{[^}]*flex-wrap: wrap;[^}]*margin-left: calc\(var\(--cast-name-gap\) \* -1\);/);
+  assert.match(castCss, /\.cast-name-primary \{[^}]*flex-wrap: wrap;[^}]*gap: 4px \.45em;/);
   assert.match(castCss, /\.cast-name-primary > \* \{[^}]*word-break: keep-all;/);
-  assert.match(castCss, /\.cast-name-primary > \*::before \{[^}]*left: calc\(var\(--cast-name-gap\) \/ 2\);/);
+  assert.doesNotMatch(castCss, /\.cast-name-primary > \*::before/);
 });
 
 test("summary sits under the name without the SCAN SUMMARY heading and clamps at three lines", () => {

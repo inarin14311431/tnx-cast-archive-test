@@ -31,16 +31,15 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-hero__image-label small { display: block; color: var(--color-muted); font-size: .62rem; }
 .cast-hero__identity { min-width: 0; padding: 0 12px 14px; border-left: 3px solid var(--color-accent); background: linear-gradient(135deg, var(--color-accent-soft), transparent 48%, color-mix(in srgb, var(--color-accent-strong) 5%, transparent)); container: cast-identity / inline-size; }
 
-/* Name: handle | real name on one line, wrapping between them (never inside a name). The
- * divider belongs to each item and is clipped by the section when the item starts a line. */
+/* Name: handle / real name on one line, wrapping between them (never inside a name).
+ * The flex gap only falls between items, so a wrapped second line has no leading space. */
 .cast-name-section { margin: 30px 10px 0; padding: 4px 6px 0; overflow: hidden; }
-.cast-name-primary { --cast-name-gap: 26px; display: flex; flex-wrap: wrap; align-items: flex-end; row-gap: 4px; margin-left: calc(var(--cast-name-gap) * -1); line-height: 1.2; }
-.cast-name-primary > * { position: relative; min-width: 0; padding-left: var(--cast-name-gap); word-break: keep-all; overflow-wrap: anywhere; }
-.cast-name-primary > *::before { position: absolute; bottom: .2em; left: calc(var(--cast-name-gap) / 2); width: 1px; height: .95em; content: ""; background: color-mix(in srgb, var(--color-accent) 45%, var(--color-border)); }
+.cast-name-primary { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px .45em; line-height: 1.2; }
+.cast-name-primary > * { min-width: 0; word-break: keep-all; overflow-wrap: anywhere; }
 .cast-handle { color: var(--color-accent); font: inherit; font-size: clamp(1.875rem, 4.8cqi, 2.875rem); font-weight: 800; text-shadow: var(--shadow-glow); }
 .cast-name { margin: 0; color: var(--color-text); font: inherit; font-size: clamp(2rem, 5.45cqi, 3.25rem); font-weight: 800; letter-spacing: .025em; text-shadow: var(--shadow-glow); }
 .cast-name-primary ruby { ruby-position: over; }
-.cast-name-primary rt { padding-bottom: 2px; font-size: clamp(10px, .44em, 13px); font-weight: 700; letter-spacing: .2em; text-shadow: none; }
+.cast-name-primary rt { padding-bottom: 6px; font-size: clamp(10px, .44em, 13px); font-weight: 700; letter-spacing: .2em; text-shadow: none; }
 .cast-handle rt { color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text)); }
 .cast-name rt { color: color-mix(in srgb, var(--color-text) 62%, var(--color-muted)); }
 
