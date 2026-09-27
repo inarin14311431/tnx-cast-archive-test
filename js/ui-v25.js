@@ -94,7 +94,7 @@ function replaceSuitHeaders(){
     const [key,label]=hit;
     const value=document.querySelector(`#${key}-final`)?.textContent?.trim()||"0";
     const control=document.querySelector(`#${key}-control-final`)?.textContent?.trim()||"0";
-    cell.innerHTML=`<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__eyebrow">CURRENT ABILITY</span><span class="ability-value-tooltip__row">能力値 <strong data-ability-tooltip-value>${value}</strong></span><span class="ability-value-tooltip__row">制御値 <strong data-ability-tooltip-control>${control}</strong></span></span></span>`;
+    cell.innerHTML=`<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__row">能力 <strong data-ability-tooltip-value>${value}</strong></span><span class="ability-value-tooltip__row">制御 <strong data-ability-tooltip-control>${control}</strong></span></span></span>`;
   });
 }
 

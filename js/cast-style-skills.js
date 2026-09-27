@@ -78,7 +78,7 @@ function readAbilitySnapshot(key) {
 }
 function abilityHeaderMarkup(key, label) {
   const { value, control } = readAbilitySnapshot(key);
-  return `<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__eyebrow">CAST ABILITY</span><span class="ability-value-tooltip__row">能力値 <strong>${value}</strong></span><span class="ability-value-tooltip__row">制御値 <strong>${control}</strong></span></span></span>`;
+  return `<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__row">能力 <strong>${value}</strong></span><span class="ability-value-tooltip__row">制御 <strong>${control}</strong></span></span></span>`;
 }
 function renderTable(section, skills) {
   section.classList.add("style-skill-section-v47", "style-skill-view-editorlike");
