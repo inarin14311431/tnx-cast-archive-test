@@ -38,7 +38,7 @@ test("names render as ruby with quotes outside the handle ruby and no empty rt",
 
 test("name line wraps only between handle and name using a plain gap, no divider", () => {
   assert.match(castCss, /\.cast-name-section \{[^}]*overflow: hidden;/);
-  assert.match(castCss, /\.cast-name-primary \{[^}]*flex-wrap: wrap;[^}]*gap: 4px \.45em;/);
+  assert.match(castCss, /\.cast-name-primary \{[^}]*flex-wrap: wrap;[^}]*row-gap: 4px; column-gap: clamp\(14px, 2cqi, 24px\);/);
   assert.match(castCss, /\.cast-name-primary > \* \{[^}]*word-break: keep-all;/);
   assert.doesNotMatch(castCss, /\.cast-name-primary > \*::before/);
 });

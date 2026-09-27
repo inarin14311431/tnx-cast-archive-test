@@ -34,7 +34,7 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 /* Name: handle / real name on one line, wrapping between them (never inside a name).
  * The flex gap only falls between items, so a wrapped second line has no leading space. */
 .cast-name-section { margin: 30px 10px 0; padding: 4px 6px 0; overflow: hidden; }
-.cast-name-primary { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px .45em; line-height: 1.2; }
+.cast-name-primary { display: flex; flex-wrap: wrap; align-items: flex-end; row-gap: 4px; column-gap: clamp(14px, 2cqi, 24px); line-height: 1.2; }
 .cast-name-primary > * { min-width: 0; word-break: keep-all; overflow-wrap: anywhere; }
 .cast-handle { color: var(--color-accent); font: inherit; font-size: clamp(1.875rem, 4.8cqi, 2.875rem); font-weight: 800; text-shadow: var(--shadow-glow); }
 .cast-name { margin: 0; color: var(--color-text); font: inherit; font-size: clamp(2rem, 5.45cqi, 3.25rem); font-weight: 800; letter-spacing: .025em; text-shadow: var(--shadow-glow); }
