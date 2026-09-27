@@ -1,5 +1,5 @@
 /*
- * Experimental desktop polish for the public cast viewer.
+ * Desktop layout for the public cast viewer.
  *
  * This file is intentionally isolated from cast.css so the experiment can be
  * rolled back by removing one import from cast-entry.css. Keep mobile rules
@@ -251,4 +251,53 @@
     min-height: 0;
     aspect-ratio: 3 / 4;
   }
+}
+
+/* Readable identity composition: separate style and divine cards, paired readings. */
+@media (min-width: 1200px) {
+  body[data-page="cast.html"] .cast-hero .cast-hero__identity {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    padding: 24px;
+    gap: 0;
+    background: transparent;
+  }
+  body[data-page="cast.html"] .cast-hero .cast-name-section { order: -3; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; row-gap: 6px; }
+  .cast-hero .cast-name-heading { display: none; }
+  .cast-hero .cast-name-readings, .cast-hero .cast-name-primary { display: contents; }
+  .cast-hero #cast-handle-kana { grid-column: 1; grid-row: 1; }
+  .cast-hero #cast-kana { grid-column: 2; grid-row: 1; }
+  .cast-hero :is(#cast-handle-kana, #cast-kana) { min-width: 0; color: var(--color-muted); font-size: 14px; line-height: 1.5; letter-spacing: .04em; text-shadow: none; overflow-wrap: anywhere; }
+  .cast-hero #cast-handle { grid-column: 1; grid-row: 2; font-size: clamp(22px, 1.9vw, 30px); line-height: 1.4; overflow-wrap: anywhere; text-shadow: none; }
+  .cast-hero #cast-name { grid-column: 2; grid-row: 2; font-size: clamp(26px, 2.2vw, 36px); line-height: 1.3; overflow-wrap: anywhere; text-shadow: none; }
+  body[data-page="cast.html"] .cast-hero #cast-summary-panel { order: -2; margin: 16px 0 28px; padding: 0; border: 0; background: transparent; }
+  .cast-hero #cast-summary-heading { display: none; }
+  body[data-page="cast.html"] .cast-hero #cast-summary { font-size: 16px; line-height: 1.7; color: var(--color-muted); max-height: 5.1em; }
+  body[data-page="cast.html"] .cast-hero #cast-summary-panel.is-expanded #cast-summary { max-height: none; }
+  .cast-hero #cast-summary-toggle { font-size: 14px; }
+  body[data-page="cast.html"] .cast-hero :is(.cast-style-heading-simple, .cast-divine-authority > header) { min-height: 32px; margin: 16px 0 12px; padding: 0 0 8px; border-color: var(--color-border); }
+  body[data-page="cast.html"] .cast-hero :is(.cast-style-heading-simple strong, .cast-divine-authority > header h2) { display: flex; align-items: baseline; gap: 12px; padding: 0; font-size: 16px; color: var(--color-text); }
+  body[data-page="cast.html"] .cast-hero :is(.cast-style-heading-simple small, .cast-divine-authority > header h2 small) { margin: 0; font-size: 14px; color: var(--color-muted); }
+  .cast-hero :is(.cast-style-heading-simple, .cast-divine-authority > header)::before,
+  .cast-hero .cast-style-heading-simple::after,
+  .cast-hero :is(.cast-style-heading-simple strong, .cast-divine-authority > header h2)::before,
+  .cast-hero .cast-style-card-simple::after,
+  .cast-hero .cast-style-card-simple::before { display: none; }
+  .cast-hero :is(.cast-divine-authority__status, .style-chip__index, .cast-divine-card__code, .divine-card__label, .divine-card__number) { display: none; }
+  body[data-page="cast.html"] .cast-hero :is(#cast-styles.cast-style-grid-simple, .cast-divine-authority .hero-divine-list) { padding: 0; gap: 12px; }
+  body[data-page="cast.html"] .cast-hero #cast-styles .cast-style-card-simple { padding: 16px; min-height: 70px; border-width: 1px; border-top: 2px solid var(--style-local); box-shadow: none; background: var(--color-surface); }
+  body[data-page="cast.html"] .cast-hero #cast-styles .style-chip__name { font-size: 20px; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; }
+  body[data-page="cast.html"] .cast-hero .cast-divine-authority { margin-top: 8px; }
+  body[data-page="cast.html"] .cast-hero .cast-divine-authority .cast-divine-card { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; gap: 4px; padding: 16px; min-height: 90px; border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: none; }
+  body[data-page="cast.html"] .cast-hero .cast-divine-authority .divine-card__yomi { grid-column: 1; grid-row: 1; padding: 0; font-size: 14px; line-height: 1.5; color: var(--color-muted); overflow-wrap: anywhere; }
+  body[data-page="cast.html"] .cast-hero .cast-divine-authority .divine-card__name { grid-column: 1; grid-row: 2; font-size: 20px; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; }
+  body[data-page="cast.html"] .cast-hero .identity-grid { margin: 28px 0 0; padding-top: 20px; border-top: 1px solid var(--color-border); grid-template-columns: 1fr 1.4fr 1fr 1fr; gap: 16px; }
+  body[data-page="cast.html"] .cast-hero .identity-grid > div:not(.cast-character-sheet-link) { padding: 0; border: 0; }
+  body[data-page="cast.html"] .cast-hero .identity-grid dt { display: block; padding: 0; border: 0; font-size: 14px; line-height: 1.5; font-weight: 500; color: var(--color-muted); white-space: normal; }
+  .cast-hero .identity-grid dt::before, .cast-hero .identity-grid dt small { display: none; }
+  body[data-page="cast.html"] .cast-hero .identity-grid dd { display: block; margin-top: 8px; font-size: 16px; line-height: 1.5; overflow: visible; overflow-wrap: anywhere; }
+  body[data-page="cast.html"] .cast-hero .identity-grid > .cast-character-sheet-link { grid-column: 1 / -1; grid-row: 2; padding: 0; margin-top: 4px; }
+  .cast-hero .cast-character-sheet-link dt { display: none; }
+  .cast-hero .cast-character-sheet-link a { font-size: 14px; }
 }
