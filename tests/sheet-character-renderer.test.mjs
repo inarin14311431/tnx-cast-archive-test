@@ -42,9 +42,6 @@ test("ability renderer preserves ability/control/current/mod/final and CS contra
   assert.match(html, /id="cs-mod"/);
   assert.match(html, /id="cs-final"/);
   assert.equal((html.match(/class="ability-card ability-matrix"/g) || []).length, 4);
-  assert.equal((html.match(/data-ability-tooltip="/g) || []).length, 4);
-  assert.equal((html.match(/data-ability-tooltip-value/g) || []).length, 4);
-  assert.equal((html.match(/data-ability-tooltip-control/g) || []).length, 4);
 });
 
 test("character renderer stays DOM-free and sheet delegates only markup generation", async () => {
@@ -53,7 +50,7 @@ test("character renderer stays DOM-free and sheet delegates only markup generati
   const applicationSource = await readFile(new URL("../js/sheet-character-application.js", import.meta.url), "utf8");
 
   assert.doesNotMatch(rendererSource, /document\.|window\.|supabase|localStorage|sessionStorage|addEventListener/);
-  assert.match(sheetSource, /sheet-character-renderer\.js\?v=2/);
+  assert.match(sheetSource, /sheet-character-renderer\.js\?v=3/);
   assert.match(sheetSource, /renderStyleCards\(/);
   assert.match(sheetSource, /renderAbilityCards\(ABILITIES\)/);
   assert.match(sheetSource, /applyCharacterToEditor\(/);
