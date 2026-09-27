@@ -298,6 +298,8 @@
   .cast-hero .identity-grid dt::before, .cast-hero .identity-grid dt small { display: none; }
   body[data-page="cast.html"] .cast-hero .identity-grid dd { display: block; margin-top: 8px; font-size: 16px; line-height: 1.5; overflow: visible; overflow-wrap: anywhere; }
   body[data-page="cast.html"] .cast-hero .identity-grid > .cast-character-sheet-link { grid-column: 1 / -1; grid-row: 2; padding: 0; margin-top: 4px; }
-  .cast-hero .cast-character-sheet-link dt { display: none; }
+  body[data-page="cast.html"] .cast-hero .identity-grid .cast-character-sheet-link dt { display: none; }
   .cast-hero .cast-character-sheet-link a { font-size: 14px; }
+  body[data-page="cast.html"] .cast-hero #cast-styles .cast-style-card-simple,
+  body[data-page="cast.html"] .cast-hero #cast-styles .cast-style-card-simple > * { opacity: 1; visibility: visible; animation: none; transform: none; }
 }
