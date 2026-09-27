@@ -21,7 +21,7 @@ export function renderStyleCards({
 
 export function renderAbilityCards(abilities = []) {
   return abilities.map(([key, jp, en]) => `
-    <article class="ability-card ability-matrix"><h3><span class="ability-value-trigger" data-ability-tooltip="${esc(key)}">${esc(jp)} <small>${esc(en)}</small><span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__eyebrow">CURRENT ABILITY</span><span class="ability-value-tooltip__row">能力値 <strong data-ability-tooltip-value>0</strong></span><span class="ability-value-tooltip__row">制御値 <strong data-ability-tooltip-control>0</strong></span></span></span></h3>
+    <article class="ability-card ability-matrix"><h3>${esc(jp)} <small>${esc(en)}</small></h3>
       <div class="ability-matrix__header"><span></span><strong>能力値</strong><strong>制御値</strong></div>
       <div class="ability-matrix__row"><span>現在値</span><input id="${esc(key)}-base" type="number" min="0" value="0"><input id="${esc(key)}-control-base" type="number" min="0" value="0"></div>
       <div class="ability-matrix__row"><span>補正値</span><input id="${esc(key)}-mod" type="number" value="0"><input id="${esc(key)}-control-mod" type="number" value="0"></div>
