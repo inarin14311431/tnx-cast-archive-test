@@ -4,16 +4,18 @@ import {
   SKILL_SUITS,
   COMPACT_SKILL_HEADERS
 } from "./cast-view-definitions.js";
-import { getCharacter } from "./cast-data-store.js";
 
 /* Public compact skill renderer/layout.
  * Owns General / Social / Connection tables and their final placement.
  */
 function initializeCastCompactSkills() {
   const ABILITY_KEYS = ["reason", "passion", "life", "mundane"];
-  const abilityHeaderMarkup = (label, key, character) => {
-    const value = character?.[`${key}_value`] ?? "—";
-    const control = character?.[`${key}_control`] ?? "—";
+  const readAbilitySnapshot = key => {
+    const values = document.querySelectorAll(`[data-ability-key="${key}"] .ability-card__numbers strong`);
+    return { value: values[0]?.textContent?.trim() || "—", control: values[1]?.textContent?.trim() || "—" };
+  };
+  const abilityHeaderMarkup = (label, key) => {
+    const { value, control } = readAbilitySnapshot(key);
     return `<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__eyebrow">CAST ABILITY</span><span class="ability-value-tooltip__row">能力値 <strong>${value}</strong></span><span class="ability-value-tooltip__row">制御値 <strong>${control}</strong></span></span></span>`;
   };
   const normalizeName = value => String(value || "").trim().replace(/[;；]/g, "：");
@@ -40,7 +42,7 @@ function initializeCastCompactSkills() {
     });
   }
 
-  function normalizeTable(section, category, character = null) {
+  function normalizeTable(section, category) {
     const wrapper = section.querySelector(":scope > .data-table-wrapper");
     const table = wrapper?.querySelector(":scope > table");
     if (!table) return null;
@@ -54,7 +56,7 @@ function initializeCastCompactSkills() {
         const cell = header.cells[index];
         if (!cell) return;
         if (category === "general" && index >= 2) {
-          cell.innerHTML = abilityHeaderMarkup(label, ABILITY_KEYS[index - 2], character);
+          cell.innerHTML = abilityHeaderMarkup(label, ABILITY_KEYS[index - 2]);
         } else {
           cell.textContent = label;
         }
@@ -125,10 +127,10 @@ function initializeCastCompactSkills() {
     section.querySelector(":scope > h3")?.insertAdjacentElement("afterend", columns);
   }
 
-  function finalizeGeneral(section, character) {
+  function finalizeGeneral(section) {
     if (!section || section.dataset.compactFinalized === "1") return;
     section.classList.add("is-general");
-    const tbody = normalizeTable(section, "general", character);
+    const tbody = normalizeTable(section, "general");
     if (!tbody) return;
     ensureRequiredFamilies(tbody);
     [...tbody.rows].forEach(normalizeRow);
@@ -157,15 +159,13 @@ function initializeCastCompactSkills() {
     }
   }
 
-  async function finalize() {
+  function finalize() {
     const container = document.querySelector("#skills-container");
     if (!container) return;
-    let character = null;
-    try { character = await getCharacter(); } catch (error) { console.warn("Ability tooltip data could not be loaded", error); }
     const general = container.querySelector(".skill-section--general");
     const social = container.querySelector(".skill-section--social");
     const connection = container.querySelector(".skill-section--connection");
-    finalizeGeneral(general, character);
+    finalizeGeneral(general);
     finalizeSide(social, "social", "is-social");
     finalizeSide(connection, "connection", "is-connection");
     placeSections(container, general, social, connection);
@@ -174,7 +174,7 @@ function initializeCastCompactSkills() {
   const content = document.querySelector("#cast-content");
   if (!content || content.dataset.castCompactSkillsInitialized === "1") return;
   content.dataset.castCompactSkillsInitialized = "1";
-  const applyAfterCastRender = () => { void finalize(); };
+  const applyAfterCastRender = () => finalize();
   if (!content.hidden) {
     applyAfterCastRender();
   } else {
