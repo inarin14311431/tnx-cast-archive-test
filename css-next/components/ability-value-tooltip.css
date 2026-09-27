@@ -10,6 +10,11 @@
   color: var(--color-muted);
   font-size: .64rem;
 }
+th .ability-value-trigger {
+  width: 100%;
+  min-height: 1.2em;
+  cursor: help;
+}
 .ability-value-tooltip {
   position: absolute;
   z-index: 30;
@@ -28,9 +33,6 @@
   pointer-events: none;
   transform: translate(-50%, 5px);
   transition: opacity .12s ease, transform .12s ease;
-}
-.ability-card:has(.ability-value-trigger) {
-  overflow: visible;
 }
 .ability-value-tooltip::after {
   position: absolute;
