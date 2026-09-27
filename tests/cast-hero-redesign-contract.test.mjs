@@ -43,6 +43,12 @@ test("name line wraps only between handle and name using a plain gap, no divider
   assert.doesNotMatch(castCss, /\.cast-name-primary > \*::before/);
 });
 
+test("the real name itself never wraps, and the 901-1199px band narrows the portrait column so it fits", () => {
+  assert.match(castCss, /\.cast-name \{[^}]*white-space: nowrap;/);
+  const narrowBand = castCss.slice(castCss.indexOf("@media (max-width: 1199px)"), castCss.indexOf("@media (max-width: 767px)"));
+  assert.match(narrowBand, /body\[data-page="cast\.html"\] \.cast-hero \{ grid-template-columns: minmax\(240px, 300px\) minmax\(0, 1fr\); \}/);
+});
+
 test("summary sits under the name without the SCAN SUMMARY heading and clamps at three lines", () => {
   assert.doesNotMatch(castHtml, /SCAN SUMMARY|cast-summary-heading/);
   assert.match(hero, /<section id="cast-summary-panel" class="cast-hero-summary" aria-label="一言" hidden><p id="cast-summary" class="cast-summary"><\/p><button id="cast-summary-toggle"/);
@@ -128,8 +134,8 @@ test("heading meta text truncates instead of wrapping the bilingual heading", ()
 });
 
 test("hero type scale follows the design and the identity column width", () => {
-  assert.match(castCss, /\.cast-handle \{[^}]*font-size: clamp\(1\.875rem, 4\.8cqi, 2\.875rem\);/);
-  assert.match(castCss, /\.cast-name \{[^}]*font-size: clamp\(2rem, 5\.45cqi, 3\.25rem\);/);
+  assert.match(castCss, /\.cast-handle \{[^}]*font-size: clamp\(1\.375rem, 4\.8cqi, 2\.875rem\);/);
+  assert.match(castCss, /\.cast-name \{[^}]*font-size: clamp\(1\.5rem, 5\.45cqi, 3\.25rem\);[^}]*white-space: nowrap;/);
   assert.match(castCss, /\.cast-name-primary rt \{[^}]*font-size: clamp\(10px, \.44em, 13px\);/);
   assert.match(castCss, /\.cast-style-slot\.is-featured \.cast-style-slot__name \{ font-size: clamp\(1\.1rem, 3\.1cqi, 1\.875rem\); \}/);
   assert.match(castCss, /\.cast-style-slot__name \{[^}]*font-size: clamp\(1rem, 2\.7cqi, 1\.625rem\);/);
