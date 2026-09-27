@@ -95,9 +95,15 @@ for (const [file, source] of jsSources) {
 
 hotspots.sort((a, b) => b.score - a.score || a.file.localeCompare(b.file));
 
-console.log(JSON.stringify({
+const report = {
   schema: 1,
   pages,
   aggregate,
   hotspots: hotspots.slice(0, 25)
-}, null, 2));
+};
+
+if (process.argv.includes("--verbose")) {
+  console.log(JSON.stringify(report, null, 2));
+} else {
+  console.log(`JS baseline audit: ${aggregate.files} files, ${pages.length} pages, ${report.hotspots.length} hotspots (use --verbose for the full report)`);
+}
