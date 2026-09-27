@@ -14,7 +14,7 @@
   position: absolute;
   z-index: 30;
   left: 50%;
-  bottom: calc(100% + 10px);
+  top: calc(100% + 10px);
   display: grid;
   width: max-content;
   min-width: 148px;
@@ -29,17 +29,20 @@
   transform: translate(-50%, 5px);
   transition: opacity .12s ease, transform .12s ease;
 }
+.ability-card:has(.ability-value-trigger) {
+  overflow: visible;
+}
 .ability-value-tooltip::after {
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 50%;
   width: 8px;
   height: 8px;
   content: "";
-  border-right: 1px solid color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
-  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
+  border-top: 1px solid color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
+  border-left: 1px solid color-mix(in srgb, var(--color-accent) 58%, var(--color-border));
   background: color-mix(in srgb, var(--color-surface) 96%, transparent);
-  transform: translate(-50%, -4px) rotate(45deg);
+  transform: translate(-50%, 4px) rotate(45deg);
 }
 .ability-value-tooltip__eyebrow {
   color: var(--color-accent);
