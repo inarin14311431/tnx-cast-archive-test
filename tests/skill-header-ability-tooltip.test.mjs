@@ -18,7 +18,7 @@ test("editor ability hover lives on general/style skill headers and follows live
   assert.match(ui, /data-ability-tooltip-control/);
   assert.match(ui, /#\$\{key\}-final/);
   assert.match(ui, /#\$\{key\}-control-final/);
-  assert.match(presentation, /querySelectorAll\(\`\[data-ability-tooltip=/);
+  assert.match(presentation, /querySelectorAll\?\.\(\`\[data-ability-tooltip=/);
 });
 
 test("public cast ability hover lives on general and style skill headers", async () => {
