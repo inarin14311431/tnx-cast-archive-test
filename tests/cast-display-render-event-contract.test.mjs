@@ -5,7 +5,6 @@ import { readFileSync } from "node:fs";
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 for (const [path, initializer] of [
-  ["js/cast-archetype-view.js", "enhanceBase"],
   ["js/cast-compact-skills.js", "finalize"],
   ["js/cast-style-skills.js", "whenCastReady"],
   ["js/cast-outfits.js", "waitForCastReady"]
