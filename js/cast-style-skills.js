@@ -1,6 +1,6 @@
 import { escapeHtml } from "./dom-escape.js";
 const esc = escapeHtml;
-import { getStyleSkills } from "./cast-data-store.js";
+import { getCharacter, getStyleSkills } from "./cast-data-store.js";
 import "./skill-display-enhancements.js?v=1";
 
 const PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
@@ -72,10 +72,10 @@ function createSkillRow(skill) {
   const kind = { none: "なし", normal: "通常", secret: "秘技", ultimate: "奥義", direction: "演出" }[skill.skill_kind] || skill.skill_kind || "";
   return `<tr>${fieldCell(skill.name, "name")}${fieldCell(kind, "kind")}${fieldCell(skill.level, "level")}${SUITS.map(([key,,mark]) => `<td class="style-suit-cell"><span class="style-suit-mark ${skill[key] ? "is-active" : ""}">${mark}</span></td>`).join("")}${FIELDS.map(([key]) => fieldCell(detail[key], key)).join("")}</tr>`;
 }
-function renderTable(section, skills) {
+function renderTable(section, skills, character) {
   section.classList.add("style-skill-section-v47", "style-skill-view-editorlike");
   const heading = section.querySelector("h3");
-  section.innerHTML = `<div class="data-table-wrapper style-skill-view-wrapper"><table class="data-table style-skill-detail-table style-skill-view-table"><colgroup><col class="style-col-name"><col class="style-col-kind"><col class="style-col-level">${SUITS.map(() => '<col class="style-col-suit">').join("")}<col class="style-col-skill"><col class="style-col-limit"><col class="style-col-timing"><col class="style-col-target"><col class="style-col-range"><col class="style-col-difficulty"><col class="style-col-confrontation"><col class="style-col-description"><col class="style-col-page"></colgroup><thead><tr><th>名称</th><th>種別</th><th>LV</th>${SUITS.map(([, label]) => `<th>${label}</th>`).join("")}${FIELDS.map(([key, label]) => headerCell(key, label)).join("")}</tr></thead><tbody>${skills.map(createSkillRow).join("")}</tbody></table></div>`;
+  section.innerHTML = `<div class="data-table-wrapper style-skill-view-wrapper"><table class="data-table style-skill-detail-table style-skill-view-table"><colgroup><col class="style-col-name"><col class="style-col-kind"><col class="style-col-level">${SUITS.map(() => '<col class="style-col-suit">').join("")}<col class="style-col-skill"><col class="style-col-limit"><col class="style-col-timing"><col class="style-col-target"><col class="style-col-range"><col class="style-col-difficulty"><col class="style-col-confrontation"><col class="style-col-description"><col class="style-col-page"></colgroup><thead><tr><th>名称</th><th>種別</th><th>LV</th>${SUITS.map(([key, label]) => `<th><span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__eyebrow">CAST ABILITY</span><span class="ability-value-tooltip__row">能力値 <strong>${character?.[`${key}_value`] ?? "—"}</strong></span><span class="ability-value-tooltip__row">制御値 <strong>${character?.[`${key}_control`] ?? "—"}</strong></span></span></span></th>`).join("")}${FIELDS.map(([key, label]) => headerCell(key, label)).join("")}</tr></thead><tbody>${skills.map(createSkillRow).join("")}</tbody></table></div>`;
   if (heading) { heading.hidden = true; section.prepend(heading); }
   document.dispatchEvent(new CustomEvent("tnx:style-skills-rendered"));
 }
@@ -92,13 +92,19 @@ async function initializeCastStyleSkills() {
   root.dataset.castStyleSkillsInitialized = "1";
 
   let skills = [];
-  try { skills = await getStyleSkills(); } catch (error) { console.error("Style skill view data load failed", error); return; }
+  let character = null;
+  try {
+    [skills, character] = await Promise.all([getStyleSkills(), getCharacter()]);
+  } catch (error) {
+    console.error("Style skill view data load failed", error);
+    return;
+  }
   if (!skills.length) return;
   whenCastReady(() => {
     const section = findSection();
     if (!section) return;
     ensureDedicatedPanel(section);
-    renderTable(section, skills);
+    renderTable(section, skills, character);
   });
 }
 initializeCastStyleSkills();
