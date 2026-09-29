@@ -25,8 +25,16 @@ async function runWithFakePlaywright({ desktopExitCode, mobileExitCode }) {
         FAKE_RUNNER_MOBILE_EXIT_CODE: String(mobileExitCode)
       }
     });
-    const invocations = await readFile(markerFile, "utf8").catch(() => "");
-    return { status: result.status, invocations: invocations.trim().split("\n").filter(Boolean) };
+    const raw = await readFile(markerFile, "utf8").catch(() => "");
+    const records = raw
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map(line => {
+        const [project, outputDir, reportDir] = line.split("|");
+        return { project, outputDir, reportDir };
+      });
+    return { status: result.status, records, invocations: records.map(record => record.project) };
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
@@ -48,4 +56,17 @@ test("both projects run and the overall exit code succeeds when both pass", asyn
   const { status, invocations } = await runWithFakePlaywright({ desktopExitCode: 0, mobileExitCode: 0 });
   assert.deepEqual(invocations, ["visual-desktop", "visual-mobile"]);
   assert.equal(status, 0);
+});
+
+test("desktop and mobile write to distinct --output and HTML report directories, so a failing project's screenshots survive the other project's run", async () => {
+  const { records } = await runWithFakePlaywright({ desktopExitCode: 1, mobileExitCode: 0 });
+  const [desktop, mobile] = records;
+
+  assert.ok(desktop.outputDir, "desktop run must pass --output=<dir>");
+  assert.ok(mobile.outputDir, "mobile run must pass --output=<dir>");
+  assert.notEqual(desktop.outputDir, mobile.outputDir, "desktop and mobile must not share an --output directory");
+
+  assert.ok(desktop.reportDir, "desktop run must set PLAYWRIGHT_HTML_REPORT");
+  assert.ok(mobile.reportDir, "mobile run must set PLAYWRIGHT_HTML_REPORT");
+  assert.notEqual(desktop.reportDir, mobile.reportDir, "desktop and mobile must not share an HTML report directory");
 });
