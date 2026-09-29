@@ -6,6 +6,7 @@ import { withRequestTimeout } from "./async-timeout.js?v=1";
 import "./archive-id-code.js?v=1";
 const VISIBILITY_LABELS = {
   public: "公開 / PUBLIC",
+  unlisted: "限定公開 / UNLISTED",
   private: "非公開 / PRIVATE"
 };
 
