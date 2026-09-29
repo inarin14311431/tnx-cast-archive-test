@@ -6,6 +6,7 @@ const account = await readFile(new URL("../js/account.js", import.meta.url), "ut
 const cast = await readFile(new URL("../cast.html", import.meta.url), "utf8");
 const transfer = await readFile(new URL("../transfer.html", import.meta.url), "utf8");
 const transferLink = await readFile(new URL("../js/cast-transfer-link.js", import.meta.url), "utf8");
+const accountActionsCss = await readFile(new URL("../css-next/pages/account-actions.css", import.meta.url), "utf8");
 
 test("account cast card links to the transfer page with the internal id", () => {
   assert.match(
@@ -33,6 +34,15 @@ test("cast-transfer-link.js fills in the internal id from the page's own URL", a
   await import(`../js/cast-transfer-link.js?test=${Date.now()}`);
   assert.equal(link.href, "./transfer.html?id=TNX-000117");
   assert.equal(link.removed, false);
+});
+
+test("owned-cast card action grid has one column per link, so the new transfer link doesn't wrap to its own row", () => {
+  const linkCount = [...account.matchAll(/<a href="\$\{SITE_BASE_PATH\}[^"]+">\$\{actionLabel\(/g)].length;
+  const columnMatch = accountActionsCss.match(
+    /\.owned-cast__links\s*\{\s*grid-template-columns:\s*repeat\((\d+),\s*minmax\(0,\s*1fr\)\);/
+  );
+  assert.ok(columnMatch, "expected a repeat(N, minmax(0, 1fr)) grid-template-columns rule for .owned-cast__links");
+  assert.equal(Number(columnMatch[1]), linkCount);
 });
 
 test("cast-transfer-link.js removes the link when the page has no id", async () => {
