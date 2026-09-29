@@ -237,10 +237,10 @@ function createOwnedCastItem(character) {
           <a href="${SITE_BASE_PATH}cast.html?id=${id}">${actionLabel("閲覧", "OPEN")}</a>
           <a href="${SITE_BASE_PATH}sheet.html?id=${id}">${actionLabel("シート編集", "EDIT SHEET")}</a>
           <a href="${SITE_BASE_PATH}sheet-mobile.html?id=${id}">${actionLabel("モバイル編集", "MOBILE EDIT")}</a>
-          <a href="${SITE_BASE_PATH}transfer.html?id=${id}">${actionLabel("データ転記", "TRANSFER")}</a>
         </div>
         <div class="owned-cast__management" aria-label="管理操作">
           <a class="owned-cast__acts" href="${SITE_BASE_PATH}acts.html?character=${id}">${actionLabel("参加アクト", "ACTS")}</a>
+          <a class="owned-cast__transfer" href="${SITE_BASE_PATH}transfer.html?id=${id}">${actionLabel("データ転記", "TRANSFER")}</a>
           <span class="owned-cast__management-label">管理機能 <small>MANAGEMENT</small></span>
           <button type="button" data-duplicate="${escapeHtml(character.public_id)}">${actionLabel("複製", "DUPLICATE")}</button>
           <button type="button" data-delete="${escapeHtml(character.public_id)}">${actionLabel("削除", "DELETE")}</button>
