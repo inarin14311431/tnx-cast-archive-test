@@ -12,7 +12,8 @@ test("cast announces render completion after content becomes visible", () => {
 test("cast UI waits for the explicit render event instead of observing hidden", () => {
   const ui = read("js/cast-ui.js");
   const start = ui.indexOf("function whenCastReady");
-  const end = ui.indexOf("\n}\n", start) + 3;
+  const closingBrace = /\r?\n\}\r?\n/.exec(ui.slice(start));
+  const end = closingBrace ? start + closingBrace.index + closingBrace[0].length : ui.length;
   const initializer = ui.slice(start, end);
 
   assert.match(initializer, /tnx:cast-rendered/);
