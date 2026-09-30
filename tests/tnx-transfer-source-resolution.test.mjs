@@ -42,8 +42,32 @@ test("internal id (TNX-数字) passes through unchanged, uppercased", async () =
   assert.equal(await resolveTransferSourceId("tnx-000117"), "TNX-000117");
 });
 
+test("internal id (TNX- + 32桁hex, legacy random format) passes through unchanged", async () => {
+  const id = "TNX-1234567890ABCDEF1234567890ABCDEF";
+  assert.equal(await resolveTransferSourceId(id), id);
+});
+
+test("internal id (TNX- + 32桁hex) accepts lowercase input and returns uppercase", async () => {
+  assert.equal(
+    await resolveTransferSourceId("tnx-1234567890abcdef1234567890abcdef"),
+    "TNX-1234567890ABCDEF1234567890ABCDEF"
+  );
+});
+
+test("URL with ?id= carrying a 32桁hex internal id resolves to that id", async () => {
+  assert.equal(
+    await resolveTransferSourceId("https://example.test/cast.html?id=TNX-1234567890ABCDEF1234567890ABCDEF"),
+    "TNX-1234567890ABCDEF1234567890ABCDEF"
+  );
+});
+
 test("URL with ?id= resolves to the internal id it carries", async () => {
   assert.equal(await resolveTransferSourceId("https://example.test/cast.html?id=TNX-000117"), "TNX-000117");
+});
+
+test("a short/invalid hex string is not accepted as an internal id", async () => {
+  assert.equal(await resolveTransferSourceId("TNX-1234567890ABCDEF"), "");
+  assert.equal(await resolveTransferSourceId("TNX-1234567890ABCDEF1234567890ABCDEFAB"), "");
 });
 
 test("unrecognized text resolves to an empty string", async () => {
