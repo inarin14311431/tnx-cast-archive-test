@@ -27,6 +27,7 @@
   <script src="./js/css-next-theme.js?v=9"></script>
   <script src="./js/theme-scope.js?v=1"></script>
   <script src="./js/cast-view-mode.js?v=2"></script>
+  <script src="./js/ability-values-toggle.js?v=1"></script>
   <link rel="stylesheet" href="./css-next/pages/cast-entry.css?v=20" data-css-system="next">
   <link rel="stylesheet" href="./css-next/themes/index.css?v=1" data-theme-system="1">
   <meta charset="utf-8">
@@ -37,7 +38,7 @@
 <body data-page="cast.html">
   <div class="background-grid"></div><div class="scanlines"></div>
   <header class="cast-header app-header">
-    <div class="cast-header__actions"><div class="cast-header__primary-actions"><a class="cast-header__back app-back-link" href="./index.html"><span>&lt; キャスト一覧へ</span><small>RETURN TO ARCHIVE</small></a><a id="cast-edit-button" class="cast-edit-link" hidden><span>キャストを編集</span><small>EDIT CAST</small></a><button id="cast-quick-sheet-button" class="cast-quick-sheet-link" type="button" aria-controls="quick-sheet" aria-expanded="false" hidden><span>簡易表示</span><small>QUICK SHEET</small></button></div><div class="cast-header__export-panel" role="group" aria-label="データ出力"><span class="cast-header__export-label">データ出力 <small>EXPORT / TRANSFER</small></span><div class="cast-header__export-actions"><a id="cast-transfer-page-link" class="direct-transfer-button direct-transfer-button--desktop" href="./transfer.html"><span>データ転記</span><small>TRANSFER PAGE</small></a><button id="direct-transfer-button" class="direct-transfer-button direct-transfer-button--desktop" type="button" data-direct-transfer-trigger><span>データ転記</span><small>CHARACTER SHEETS</small></button></div></div></div>
+    <div class="cast-header__actions"><div class="cast-header__primary-actions"><a class="cast-header__back app-back-link" href="./index.html"><span>&lt; キャスト一覧へ</span><small>RETURN TO ARCHIVE</small></a><a id="cast-edit-button" class="cast-edit-link" hidden><span>キャストを編集</span><small>EDIT CAST</small></a><button id="cast-quick-sheet-button" class="cast-quick-sheet-link" type="button" aria-controls="quick-sheet" aria-expanded="false" hidden><span>簡易表示</span><small>QUICK SHEET</small></button><button id="cast-ability-values-toggle" class="cast-quick-sheet-link ability-values-toggle" type="button" data-ability-values-toggle aria-pressed="false"><span>能力値表示</span><small>ABILITY VALUES</small></button></div><div class="cast-header__export-panel" role="group" aria-label="データ出力"><span class="cast-header__export-label">データ出力 <small>EXPORT / TRANSFER</small></span><div class="cast-header__export-actions"><a id="cast-transfer-page-link" class="direct-transfer-button direct-transfer-button--desktop" href="./transfer.html"><span>データ転記</span><small>TRANSFER PAGE</small></a><button id="direct-transfer-button" class="direct-transfer-button direct-transfer-button--desktop" type="button" data-direct-transfer-trigger><span>データ転記</span><small>CHARACTER SHEETS</small></button></div></div></div>
     <div class="cast-header__record"><p id="cast-status" class="cast-header__status">キャストデータへアクセス中…</p><p id="cast-public-id" class="cast-public-id cast-header__public-id"></p></div>
   </header>
   <section id="mobile-cast-view" hidden aria-label="iPhone向けキャスト表示"></section>
@@ -59,10 +60,10 @@
   <script type="module" src="./js/cast.js?v=101"></script>
   <script src="./js/cast-quick-sheet-compact.js?v=4"></script>
   <script src="./js/quick-sheet-paper-layout.js?v=1"></script>
-  <script type="module" src="./js/cast-compact-skills.js?v=6"></script>
+  <script type="module" src="./js/cast-compact-skills.js?v=7"></script>
   <script src="./js/cast-view-controls.js?v=6"></script>
   <script type="module" src="./js/cast-ui.js?v=79"></script>
-  <script type="module" src="./js/cast-style-skills.js?v=10"></script>
+  <script type="module" src="./js/cast-style-skills.js?v=11"></script>
   <script src="./js/cast-style-skill-table-controls.js?v=2"></script>
   <script type="module" src="./js/cast-outfits.js?v=7"></script>
   <script src="./js/cast-cyber-trigger.js?v=3"></script>
