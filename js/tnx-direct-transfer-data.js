@@ -74,10 +74,14 @@ export async function fetchTransferBundle(publicId) {
   return { character, skills: skills || [], outfits: (outfits || []).map(normalizeOutfitForView) };
 }
 
+// レガシーの連番ID（TNX-数字）と、128bitランダム値を32桁hexで表す新形式ID
+// （TNX- + 32桁hex、大文字小文字は問わない）の両方を内部IDとして受理する。
+const INTERNAL_ID_PATTERN = /^TNX-(?:\d+|[0-9A-F]{32})$/i;
+
 export function resolvePublicId(raw) {
   const value = text(raw);
   if (!value) return "";
-  if (/^TNX-\d+$/i.test(value)) return value.toUpperCase();
+  if (INTERNAL_ID_PATTERN.test(value)) return value.toUpperCase();
   try {
     const url = new URL(value, location.href);
     return text(url.searchParams.get("id"));
@@ -107,7 +111,7 @@ async function fetchOwnedPublicIds(ownerId) {
 export async function resolveTransferSourceId(raw) {
   const value = text(raw);
   if (!value) return "";
-  if (/^TNX-\d+$/i.test(value)) return value.toUpperCase();
+  if (INTERNAL_ID_PATTERN.test(value)) return value.toUpperCase();
   if (isDisplayCode(value)) {
     const displayCode = value.toUpperCase();
     const user = await getCurrentUser();

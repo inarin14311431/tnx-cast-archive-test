@@ -234,6 +234,9 @@ function createOwnedCastItem(character) {
           <span class="owned-cast__visibility">${escapeHtml(visibilityLabel(character.visibility))}</span>
           <span class="owned-cast__serial">${escapeHtml(displayId)}</span>
         </div>
+        ${String(character.visibility ?? "").toLowerCase() === "unlisted" ? `
+        <p class="owned-cast__hint">限定公開の共有URLは編集画面の「URLをコピー」から取得できます。この「閲覧」リンクはログイン中の本人専用で、第三者に共有しても閲覧できません。</p>
+        ` : ""}
         <div class="owned-cast__links" aria-label="主要操作">
           <a href="${SITE_BASE_PATH}cast.html?id=${id}">${actionLabel("閲覧", "OPEN")}</a>
           <a href="${SITE_BASE_PATH}sheet.html?id=${id}">${actionLabel("シート編集", "EDIT SHEET")}</a>

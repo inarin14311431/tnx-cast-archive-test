@@ -1,4 +1,4 @@
-import { fetchTransferBundle, resolvePublicId, resolveTransferSourceId, buildCharacterSheetsPayload } from "./tnx-direct-transfer-data.js?v=5";
+import { fetchTransferBundle, resolvePublicId, resolveTransferSourceId, buildCharacterSheetsPayload } from "./tnx-direct-transfer-data.js?v=6";
 
 const REGISTER_URL = "https://character-sheets.appspot.com/tnx/register";
 const TARGET_EDIT_URL = "https://character-sheets.appspot.com/tnx/edit.html";
