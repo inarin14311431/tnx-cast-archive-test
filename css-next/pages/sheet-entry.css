@@ -10,7 +10,7 @@
 @import url("../components/character-sheet-compare.css?v=3") layer(sheet-components);
 @import url("../components/character-share.css?v=2") layer(sheet-components);
 
-@import url("../editor/editor.css?v=31") layer(sheet-editor);
+@import url("../editor/editor.css?v=30") layer(sheet-editor);
 @import url("../editor/divine-layout.css?v=1") layer(sheet-editor);
 @import url("../editor/sidebar-actions.css?v=2") layer(sheet-editor);
 @import url("../editor/skills.css?v=4") layer(sheet-editor);
@@ -25,4 +25,4 @@
 @import url("../components/armor-totals.css?v=3") layer(sheet-enhancements);
 @import url("../components/sheet-import-help.css?v=3") layer(sheet-enhancements);
 @import url("../components/skill-display.css?v=1") layer(sheet-enhancements);
-@import url("../components/ability-value-tooltip.css?v=4") layer(sheet-enhancements);
+@import url("../components/ability-value-tooltip.css?v=3") layer(sheet-enhancements);

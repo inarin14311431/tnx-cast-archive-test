@@ -2,7 +2,6 @@
 .ability-value-trigger {
   position: relative;
   display: inline-flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
@@ -76,17 +75,4 @@ body[data-page="sheet.html"] th .ability-value-trigger {
   .ability-value-tooltip {
     display: none;
   }
-}
-.ability-value-inline {
-  display: none;
-  flex-basis: 100%;
-  margin-top: 2px;
-  color: var(--color-muted);
-  font-size: .56rem;
-  font-weight: 700;
-  line-height: 1.05;
-  text-align: center;
-}
-body.is-ability-values-visible .ability-value-inline {
-  display: block;
 }

@@ -16,7 +16,7 @@ function initializeCastCompactSkills() {
   };
   const abilityHeaderMarkup = (label, key) => {
     const { value, control } = readAbilitySnapshot(key);
-    return `<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__row">能力 <strong>${value}</strong></span><span class="ability-value-tooltip__row">制御 <strong>${control}</strong></span></span><span class="ability-value-inline">${value}/${control}</span></span>`;
+    return `<span class="ability-value-trigger" data-ability-tooltip="${key}">${label}<span class="ability-value-tooltip" role="tooltip"><span class="ability-value-tooltip__row">能力 <strong>${value}</strong></span><span class="ability-value-tooltip__row">制御 <strong>${control}</strong></span></span></span>`;
   };
   const normalizeName = value => String(value || "").trim().replace(/[;；]/g, "：");
   const familyName = value => {
