@@ -18,6 +18,7 @@ test("editor ability hover lives on general/style skill headers and follows live
   assert.match(ui, /data-ability-tooltip-control/);
   assert.match(ui, /#\$\{key\}-final/);
   assert.match(ui, /#\$\{key\}-control-final/);
+  assert.match(ui, /ability-value-inline/);
   assert.match(presentation, /querySelectorAll\?\.\(\`\[data-ability-tooltip=/);
 });
 
@@ -36,6 +37,8 @@ test("public cast ability hover lives on general, social, connection and style s
   assert.match(style, /data-ability-tooltip=/);
   assert.match(style, /readAbilitySnapshot/);
   assert.match(cast, /data-ability-key=/);
+  assert.match(compact, /ability-value-inline/);
+  assert.match(style, /ability-value-inline/);
 });
 
 test("editor suit headers allow ability tooltips to escape compact header cells", async () => {

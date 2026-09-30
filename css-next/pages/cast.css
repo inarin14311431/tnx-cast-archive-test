@@ -14,6 +14,8 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-header__actions .cast-quick-sheet-link small { color: var(--color-muted); font: .62rem/1.1 var(--font-data); letter-spacing: .08em; }
 .cast-header__actions .cast-quick-sheet-link:is(:hover, :focus-visible) { border-color: var(--color-accent); color: var(--color-bg); background: var(--color-accent); box-shadow: var(--shadow-glow); }
 .cast-header__actions .cast-quick-sheet-link:is(:hover, :focus-visible) small { color: inherit; }
+.cast-header__actions .ability-values-toggle[aria-pressed="true"] { border-color: var(--color-accent); color: var(--color-bg); background: var(--color-accent); box-shadow: var(--shadow-glow); }
+.cast-header__actions .ability-values-toggle[aria-pressed="true"] small { color: inherit; }
 .cast-header__record { display: grid; min-width: 0; align-content: center; justify-items: start; }
 .cast-header__record p { margin: 0; }
 .cast-header__public-id { display: inline-block; justify-self: end; margin: 9px 0 0; padding: 7px 11px 6px; border: 1px solid color-mix(in srgb, var(--color-accent) 52%, transparent); border-bottom-width: 2px; color: var(--color-accent); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 15%, transparent), color-mix(in srgb, var(--color-accent) 3.5%, transparent)); font: 800 .72rem/1 var(--font-data); letter-spacing: .13em; text-shadow: var(--shadow-glow); box-shadow: 0 0 14px color-mix(in srgb, var(--color-accent) 12%, transparent), inset 0 0 10px color-mix(in srgb, var(--color-accent) 5%, transparent); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
