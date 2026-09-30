@@ -234,6 +234,9 @@ function createOwnedCastItem(character) {
           <span class="owned-cast__visibility">${escapeHtml(visibilityLabel(character.visibility))}</span>
           <span class="owned-cast__serial">${escapeHtml(displayId)}</span>
         </div>
+        ${String(character.visibility ?? "").toLowerCase() === "unlisted" ? `
+        <p class="owned-cast__hint">限定公開の共有URLは編集画面の「URLをコピー」から取得できます。この「閲覧」リンクはログイン中の本人専用で、第三者に共有しても閲覧できません。</p>
+        ` : ""}
         <div class="owned-cast__links" aria-label="主要操作">
           <a href="${SITE_BASE_PATH}cast.html?id=${id}">${actionLabel("閲覧", "OPEN")}</a>
           <a href="${SITE_BASE_PATH}sheet.html?id=${id}">${actionLabel("シート編集", "EDIT SHEET")}</a>
@@ -241,7 +244,6 @@ function createOwnedCastItem(character) {
         </div>
         <div class="owned-cast__management" aria-label="管理操作">
           <a class="owned-cast__acts" href="${SITE_BASE_PATH}acts.html?character=${id}">${actionLabel("参加アクト", "ACTS")}</a>
-          <a class="owned-cast__transfer" href="${SITE_BASE_PATH}transfer.html?id=${id}">${actionLabel("データ転記", "TRANSFER")}</a>
           <span class="owned-cast__management-label">管理機能 <small>MANAGEMENT</small></span>
           <button type="button" data-duplicate="${escapeHtml(character.public_id)}">${actionLabel("複製", "DUPLICATE")}</button>
           <button type="button" data-delete="${escapeHtml(character.public_id)}">${actionLabel("削除", "DELETE")}</button>
