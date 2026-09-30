@@ -22,10 +22,6 @@ for (const theme of THEMES) {
     await page.goto("/account.html");
     await expect(page.locator("#owned-casts .owned-cast")).toHaveCount(1);
     await expect(page.locator(".owned-cast__transfer")).toHaveCount(0);
-    // The retired POST-transfer button was present in the legacy spectrum-neon
-    // desktop baseline. Keep structural coverage here until that binary baseline
-    // is regenerated; nova still covers the full account-page screenshot.
-    if (theme === "spectrum-neon" && testInfo.project.name === "visual-desktop") return;
     await capture(page, `account-${theme}-${testInfo.project.name}`);
   });
 
