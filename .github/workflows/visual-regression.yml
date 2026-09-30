@@ -3,6 +3,11 @@ name: Visual Regression
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      update_snapshots_grep:
+        description: "TEMPORARY: when set, regenerate (instead of compare) reference screenshots matching this --grep filter and upload them as an artifact. Leave empty for the normal compare run."
+        required: false
+        default: ""
 
 jobs:
   compare:
@@ -35,9 +40,24 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Compare screenshots
+        if: ${{ github.event.inputs.update_snapshots_grep == '' }}
         run: npm run test:visual:production
+      - name: Regenerate screenshots (desktop)
+        if: ${{ github.event.inputs.update_snapshots_grep != '' }}
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-desktop --update-snapshots --grep "${{ github.event.inputs.update_snapshots_grep }}"
+      - name: Regenerate screenshots (mobile)
+        if: ${{ github.event.inputs.update_snapshots_grep != '' }}
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-mobile --update-snapshots --grep "${{ github.event.inputs.update_snapshots_grep }}"
+      - name: Upload regenerated screenshots
+        if: ${{ always() && github.event.inputs.update_snapshots_grep != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: updated-visual-screenshots
+          path: tests/visual/__screenshots__/
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload visual report and image diffs
-        if: always()
+        if: ${{ always() && github.event.inputs.update_snapshots_grep == '' }}
         uses: actions/upload-artifact@v7
         with:
           name: visual-regression-report
