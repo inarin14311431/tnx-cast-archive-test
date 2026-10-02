@@ -83,10 +83,12 @@ function createRow(category, schema, item) {
 }
 
 // Shown only at tablet widths (CSS), where the category and description columns are hidden.
+// Items without a description get no row.
 // The colspan is the number of columns left visible there, so it must not exceed that count.
 function createDescriptionRow(schema, item) {
   const text = displayValue(item.description);
-  const value = text === "—" ? "" : text;
+  if (text === "—") return "";
+  const value = text;
   const colspan = schema.length - 2;
   return `<tr class="cast-outfit-description-row"><td colspan="${colspan}" class="cast-outfit-description-cell style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable outfit-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${escapeHtml(value)}</textarea></td></tr>`;
 }

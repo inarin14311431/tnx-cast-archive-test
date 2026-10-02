@@ -29,9 +29,15 @@ test("tron CS modifier stays compact and description receives remaining width", 
 
 test("cast page loads the refreshed outfit definitions and layout assets", () => {
   assert.match(outfits, /cast-view-definitions\.js\?v=3/);
-  assert.match(entry, /cast-outfit-column-widths\.css\?v=2/);
-  assert.match(castHtml, /cast-entry\.css\?v=22/);
-  assert.match(castHtml, /cast-outfits\.js\?v=8/);
+  assert.match(entry, /cast-outfit-column-widths\.css\?v=3/);
+  assert.match(castHtml, /cast-entry\.css\?v=23/);
+  assert.match(castHtml, /cast-outfits\.js\?v=9/);
+});
+
+test("items without a description get no tablet description row, and name/slot cells wrap on tablet", () => {
+  assert.match(outfits, /if \(text === "—"\) return "";/);
+  assert.match(layout, /td\.cast-outfit-col--name, td\.cast-outfit-col--slot\) \{ white-space: normal;/);
+  assert.match(layout, /\.cast-outfit-value \{ white-space: normal;/);
 });
 
 const castCss = await readFile(new URL("../css-next/pages/cast.css", import.meta.url), "utf8");
