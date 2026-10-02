@@ -42,7 +42,7 @@ test("cinematic-polish's typography loop leaves the NeoTokyo act title to finale
   // cinematic-polish.js's own typography pass is requestAnimationFrame-debounced and would settle one
   // frame later, briefly leaving dataset.fit unset on that first visible frame, so it must not also target
   // this element (classify()/fit()'s "title" classification thresholds themselves stay shared/duplicated
-  // between the two files intentionally: see docs/CURRENT_STATE.md).
+  // between the two files intentionally: see docs/archive/CURRENT_STATE_20260925.md).
   assert.doesNotMatch(polish, /intro\.querySelectorAll\("\.neotokyo-sequence__act-title"\)/);
   assert.match(enhancer, /title\.dataset\.fit = classifyTitleFit\(titleText\)/);
 });

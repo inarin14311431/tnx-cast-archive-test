@@ -77,7 +77,7 @@ test("resolveParentReturnHref returns the parsed destination's local href when p
   assert.equal(resolveParentReturnHref(destination, { fallback: "./index.html" }), "/troop.html?id=5");
 });
 
-// PC/Mobile parity contract (CURRENT_STATE.md section 4, priority 4): both
+// PC/Mobile parity contract (docs/archive/CURRENT_STATE_20260925.md section 4, priority 4): both
 // adapters now drive their "return to parent" href from this same core, so a
 // given `return` query value must resolve to the same destination and href
 // no matter which adapter's label field (PC's `label`/`enLabel` vs Mobile's
