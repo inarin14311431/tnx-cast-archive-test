@@ -69,9 +69,9 @@ test("style roles keep the PERSONA / KEY / PERSONA=KEY / SHADOW rules", () => {
 
 test("divine work n takes the role state of style n and keeps its slot number", () => {
   const slots = buildDivineSlots({ style_1: "カブキ", style_1_mark: "◎", style_2: "マヤカシ", style_2_mark: "●", style_3: "カタナ", style_3_mark: "", divine_1: "チャイ", divine_2: "守護神", divine_3: "死の舞踏" });
-  assert.deepEqual(slots.map(({ code, state }) => [code, state]), [["MIRACLE-01", "is-persona"], ["MIRACLE-02", "is-key"], ["MIRACLE-03", "is-standard"]]);
+  assert.deepEqual(slots.map(({ code, state }) => [code, state]), [["DIVINE WORK 01", "is-persona"], ["DIVINE WORK 02", "is-key"], ["DIVINE WORK 03", "is-standard"]]);
   const gap = buildDivineSlots({ style_1: "カブキ", style_3: "カタナ", divine_1: "チャイ", divine_3: "死の舞踏" });
-  assert.deepEqual(gap.map(({ code }) => code), ["MIRACLE-01", "MIRACLE-03"]);
+  assert.deepEqual(gap.map(({ code }) => code), ["DIVINE WORK 01", "DIVINE WORK 03"]);
 });
 
 test("divine readings: official spelling, then the stored reading; readings equal to the name are hidden", () => {

@@ -255,7 +255,7 @@ function createOwnedCastItem(character) {
 
 async function deleteCharacter(publicId, button) {
   const displayId = window.TNXArchiveId.format(publicId);
-  if (!window.confirm(`${displayId} を削除します。関連する技能・装備・コンボ・参加アクト記録も削除されます。`)) return;
+  if (!window.confirm(`${displayId} を削除します。関連する技能・アウトフィット・コンボ・参加アクト記録も削除されます。`)) return;
 
   await runAccountWrite(button, async () => {
     const { error } = await withRequestTimeout(
