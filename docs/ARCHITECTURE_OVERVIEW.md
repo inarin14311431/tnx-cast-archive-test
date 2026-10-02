@@ -263,8 +263,8 @@ live-write E2E     -> 実DB保存/復元（明示実行のみ）
 ```
 
 この分類は設計方針である。manifestを使った分類runnerの導入状況、runtime同期とCI/テスト構成同期の
-差は`docs/CURRENT_STATE.md`を確認する。runtimeが同期済みでも、npm scriptsやCIの実行対象が同じ
-とは限らない。
+差は`docs/TESTING_STRATEGY.md`第6節を確認する。runtimeが同期済みでも、npm scriptsやCIの実行対象が
+同じとは限らない。
 
 詳細: `docs/TESTING_STRATEGY.md` 第6節（環境差を含む）。
 

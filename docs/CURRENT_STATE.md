@@ -36,6 +36,9 @@ task aggregationが中心)。無理に統合するとUI依存がshared coreへ�
 アウトフィット等のDOM描画)との切り分けは未調査。詳細・推奨手順は
 `docs/archive/CURRENT_STATE_20260925.md`第10節。
 
+act-showcaseの「本体が作ったものを削除して作り直す」重複(`js/act-showcase-board-layout.js`等)も
+未着手。詳細は`docs/archive/CURRENT_STATE_20260925.md`第11節。
+
 ## 5. 既知の制限
 
 - `js/sheet-mobile-image.js`はサムネイル生成未対応。画像差し替え・解除時は旧サムネイルを削除
@@ -47,7 +50,7 @@ task aggregationが中心)。無理に統合するとUI依存がshared coreへ�
 - Navigation共通化(09-19): `js/sheet-navigation-core.js`
 - Snapshot共通化(09-19): `js/sheet-snapshot-service.js`
 - Public ID utility共通化(09-20): `js/public-id-param.js`
-- act-showcase重複ロジック整理(09-21〜22): タグライン正規化/ハンドアウト解析/タイトルfont
-  分類/credits・act-metaパネル統合/overviewボックス/trailer definitionの重複排除
+- act-showcase重複ロジック整理(09-21〜22、一部): タグライン/ハンドアウト/タイトルfont分類/
+  credits・act-metaパネル/overview/trailerの重複排除
 - Supabase画像変換API依存廃止・自前サムネイル生成への切替(09-25): `image_thumbnail_url`列追加、
   バックフィル108/125件完了

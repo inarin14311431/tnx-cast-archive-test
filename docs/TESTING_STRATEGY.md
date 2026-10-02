@@ -12,8 +12,7 @@
 - 実ブラウザ操作はPlaywrightで確認する。
 - 見た目はVisual Regressionへ寄せる。
 - accessibility/performanceはQuality workflowで扱う。
-- live DBへの書込みは通常CIから分離する方針とする。本番側の分離状況は`docs/CURRENT_STATE.md`
-  と第6節を確認する。
+- live DBへの書込みは通常CIから分離する方針とする。本番側の分離状況は第6節を確認する。
 - テスト失敗を消すために契約を弱めない。
 
 ## 2. 品質契約

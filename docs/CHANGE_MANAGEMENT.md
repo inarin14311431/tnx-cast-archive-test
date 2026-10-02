@@ -108,7 +108,7 @@ PR本文では最低限以下を明示する。
 - quality contract parityを維持する。
 - runtime・資料・テスト構成の同期範囲を区別する。テスト構成(検証専用E2Eコマンド等)は意図的に
   同期しない運用であり、資料同期だけでテスト構成まで同期した扱いにしない。現状は
-  `docs/CURRENT_STATE.md` を確認する。
+  `docs/TESTING_STRATEGY.md` 第6節を確認する。
 - CI greenを確認してからmergeする。
 
 「検証で動いたので本番CIは不要」としない。
