@@ -9,7 +9,7 @@ const enhancer = readFileSync(new URL("../js/act-showcase-finale-enhancer.js", i
 const css = readFileSync(new URL("../css-next/pages/act-showcase-cinematic-readability.css", import.meta.url), "utf8");
 
 test("cinematic readability and polish keep their explicit entry order", () => {
-  assert.match(entry, /act-showcase-cinematic-readability\.css\?v=20260908a/);
+  assert.match(entry, /act-showcase-cinematic-readability\.css\?v=20260908b/);
   assert.match(bootstrap, /act-showcase-cinematic-polish\.js\?v=20260910b/);
   assert.ok(entry.indexOf("act-showcase-finale.css") < entry.indexOf("act-showcase-cinematic-readability.css"));
   assert.ok(bootstrap.indexOf("act-showcase-cinematic-polish.js") < bootstrap.indexOf("act-showcase-page.js"));
