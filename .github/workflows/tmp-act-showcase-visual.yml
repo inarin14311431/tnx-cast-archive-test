@@ -1,0 +1,65 @@
+name: Temp ACT SHOWCASE visual baseline
+
+on:
+  push:
+    branches: [tmp/act-showcase-visual-baseline]
+
+jobs:
+  run:
+    name: Regenerate or compare ACT SHOWCASE references
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Checkout visual reference branch
+        uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: test/visual-act-showcase
+          path: .visual-reference
+      - name: Sync visual test contract
+        run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+          cat > playwright.visual.strict.config.js <<'CFG'
+          import base from "./playwright.visual.config.js";
+          export default {
+            ...base,
+            expect: { ...base.expect, toHaveScreenshot: { ...base.expect.toHaveScreenshot, maxDiffPixelRatio: 0, maxDiffPixels: 0, threshold: 0 } }
+          };
+          CFG
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Generate references (only when none are committed yet)
+        run: |
+          if ls tests/visual/__screenshots__/*/act-showcase-*.spec.js 2>/dev/null | grep -q .; then
+            echo "references exist: compare mode"; echo "MODE=compare" >> "$GITHUB_ENV"
+          else
+            echo "MODE=update" >> "$GITHUB_ENV"
+            npx playwright test --config=playwright.visual.config.js --project=visual-desktop --update-snapshots --grep "アクト紹介\("
+            npx playwright test --config=playwright.visual.config.js --project=visual-mobile --update-snapshots --grep "アクト紹介\("
+          fi
+      - name: Compare (strict, pass 1)
+        run: |
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --grep "アクト紹介\("
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-mobile --grep "アクト紹介\("
+      - name: Compare (strict, pass 2)
+        run: |
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --grep "アクト紹介\("
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-mobile --grep "アクト紹介\("
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: act-showcase-screenshots
+          path: |
+            tests/visual/__screenshots__/
+            test-results/visual/
+          if-no-files-found: ignore
+          retention-days: 7
