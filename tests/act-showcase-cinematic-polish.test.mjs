@@ -72,7 +72,7 @@ test("act title uses cinematic reveal while multiline fitting is owned by cinema
   assert.match(css, /act-title--logo\.showcase-fit-title\{[\s\S]*white-space:normal/);
 });
 
-test("SYSTEM ACCESS uses a dedicated cinematic access treatment", async () => {
+test("ACT FILE ACCESS uses a dedicated cinematic access treatment", async () => {
   const [enhancer, builder, layout, css] = await Promise.all([
     read("js/act-showcase-cinematic-enhancer.js"),
     read("js/act-showcase-neotokyo.js"),
@@ -84,7 +84,10 @@ test("SYSTEM ACCESS uses a dedicated cinematic access treatment", async () => {
   assert.match(builder, /title: "ACT FILE \/\/ ACCESS"/);
   assert.match(builder, /sub: "ESTABLISHING PUBLIC SESSION"/);
   assert.match(builder, /textNode\("span", "", "NODE \/\/ TOKYO N◎VA"\)/);
-  assert.doesNotMatch(builder, /01 \/\/ SYSTEM ACCESS|NODE \/\/ NEOTOKYO/);
+  assert.match(builder, /title\.textContent = "ACT FILE \/\/ ACCESS"/);
+  assert.match(builder, /sub\.textContent = "CONNECTING TO PUBLIC ACT FILE…"/);
+  assert.match(builder, /setProgress\(state, 5, "ACT FILE ACCESS"\)/);
+  assert.doesNotMatch(builder, /SYSTEM ACCESS|公開アクトファイルへ接続中|NODE \/\/ NEOTOKYO/);
   assert.doesNotMatch(enhancer, /ACT FILE \/\/ ACCESS|ESTABLISHING PUBLIC SESSION|opening-title|opening-sub/);
   assert.doesNotMatch(layout, /normalizeNodeLabel|NEOTOKYO/);
   assert.match(enhancer, /is-cinematic-access/);

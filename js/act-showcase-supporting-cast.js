@@ -1,5 +1,6 @@
 import { loadPublicShowcase, loadPublicShowcaseGuests, normalizeShowcaseSlug } from "./public-showcase-service.js?v=1";
 import { normalizeStyleKey, roleForCast } from "./act-showcase-visual-caption.js?v=1";
+import { normalizeShowcaseDisplayQuotes } from "./showcase-display-format.js?v=1";
 
 const params = new URLSearchParams(location.search);
 const slug = normalizeShowcaseSlug(params.get("id"));
@@ -49,8 +50,12 @@ function hasStructuralElementMutation(records) {
 }
 
 function normalizeGuest(row) {
+  const handle = clean(row?.handle);
+  const name = clean(row?.name);
   return {
-    sortOrder: Number(row?.sort_order || 0), handle: clean(row?.handle), name: clean(row?.name),
+    sortOrder: Number(row?.sort_order || 0), handle, name,
+    // The displayed name is composed and quote-normalized here, when the row is read; the cards are built from it.
+    displayName: normalizeShowcaseDisplayQuotes([handle ? `“${handle}”` : "", name].filter(Boolean).join(" ")),
     personaStyle: clean(row?.persona_style), affiliation: clean(row?.affiliation), gender: clean(row?.gender),
     age: clean(row?.age), tagline: clean(row?.tagline), summary: clean(row?.summary), imageUrl: safeImageUrl(row?.image_url)
   };
@@ -199,12 +204,12 @@ function createPosterGuestCard(guest, index) {
   visual.className = "poster-supporting-card__visual";
   const image = document.createElement("img");
   image.src = guest.imageUrl || "./assets/placeholders/scan-failed.webp";
-  image.alt = fullGuestName(guest);
+  image.alt = guest.displayName;
   image.loading = "lazy";
   visual.append(image, textNode("span", `GUEST ${String(index + 1).padStart(2, "0")}`));
   const body = document.createElement("div");
   body.className = "poster-supporting-card__body";
-  body.append(textNode("small", "SUPPORTING CAST // PERSONA FILE"), textNode("h3", fullGuestName(guest)), textNode("b", guest.personaStyle || "PERSONA UNREGISTERED"));
+  body.append(textNode("small", "SUPPORTING CAST // PERSONA FILE"), textNode("h3", guest.displayName), textNode("b", guest.personaStyle || "PERSONA UNREGISTERED"));
   const meta = [guest.affiliation, guest.age && `AGE ${guest.age}`, guest.gender].filter(Boolean).join(" / ");
   if (meta) body.append(textNode("p", meta, "poster-supporting-card__meta"));
   if (guest.tagline) body.append(textNode("blockquote", `「${guest.tagline}」`));
@@ -220,13 +225,12 @@ function createSummaryGuestCard(guest, index) {
   image.src = guest.imageUrl || "./assets/placeholders/scan-failed.webp";
   image.alt = "";
   const body = document.createElement("div");
-  body.append(textNode("span", `G${String(index + 1).padStart(2, "0")} // GUEST`), textNode("strong", fullGuestName(guest)), textNode("b", guest.personaStyle || "UNREGISTERED"));
+  body.append(textNode("span", `G${String(index + 1).padStart(2, "0")} // GUEST`), textNode("strong", guest.displayName), textNode("b", guest.personaStyle || "UNREGISTERED"));
   if (guest.tagline) body.append(textNode("small", `「${guest.tagline}」`));
   card.append(image, body);
   return card;
 }
 
-function fullGuestName(guest) { return [guest.handle ? `“${guest.handle}”` : "", guest.name].filter(Boolean).join(" "); }
 function textNode(tag, value, className = "") { const node = document.createElement(tag); if (className) node.className = className; node.textContent = value; return node; }
 function normalizeName(value) { return clean(value).replace(/[“”"「」『』\s　]+/g, "").toLocaleLowerCase("ja-JP"); }
 function clean(value) { return String(value ?? "").trim(); }

@@ -74,10 +74,11 @@ test("standard showcase explicitly loads and renders public guests", async () =>
     read("act-showcase-standard.html"),
     read("js/act-showcase-standard-guests.js")
   ]);
-  assert.match(html, /act-showcase-standard-guests\.js\?v=1/);
+  assert.match(html, /act-showcase-standard-guests\.js\?v=\d+/);
   assert.match(guestJs, /loadPublicShowcaseGuests/);
   assert.match(guestJs, /standard-showcase-guests/);
   assert.match(guestJs, /formatShowcaseFullName/);
+  assert.match(guestJs, /displayName: normalizeShowcaseDisplayQuotes\(/);
   assert.match(guestJs, /formatShowcaseTagline/);
 });
 
@@ -87,9 +88,10 @@ test("both public showcase modes load the display normalizer", async () => {
     read("js/act-showcase-bootstrap.js"),
     read("js/act-showcase-display-normalizer.js")
   ]);
-  assert.match(standardHtml, /act-showcase-display-normalizer\.js\?v=1/);
-  assert.match(cinematicBootstrap, /act-showcase-display-normalizer\.js\?v=1/);
-  assert.match(normalizer, /poster-supporting-card h3/);
+  assert.match(standardHtml, /act-showcase-display-normalizer\.js\?v=\d+/);
+  assert.match(cinematicBootstrap, /act-showcase-display-normalizer\.js\?v=\d+/);
+  // Names are normalized when the data is read (see showcase-name-normalization.test.mjs); only taglines remain here.
+  assert.doesNotMatch(normalizer, /NAME_SELECTORS|normalizeShowcaseDisplayQuotes|poster-supporting-card h3/);
   assert.match(normalizer, /poster-supporting-card blockquote/);
   assert.match(normalizer, /formatShowcaseTagline/);
 });

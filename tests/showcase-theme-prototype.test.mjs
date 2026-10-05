@@ -82,7 +82,7 @@ assert.match(standardPage, /TNX_SHOWCASE_THEME\?\.applySaved\(data\?\.theme\)/);
 
 assert.match(dedicatedCss, /STANDARD \+ generated standalone HTML/);
 assert.match(dedicatedCss, /CINEMATIC \/ deluxe/);
-assert.match(dedicatedCss, /SYSTEM ACCESS \/ title \/ trailer readout/);
+assert.match(dedicatedCss, /ACT FILE ACCESS \/ title \/ trailer readout/);
 assert.match(dedicatedCss, /HANDOUT -> CAST ASSIGN/);
 assert.match(dedicatedCss, /Final ACT TRAILER stage/);
 assert.match(dedicatedCss, /#act-showcase-standard-page/);

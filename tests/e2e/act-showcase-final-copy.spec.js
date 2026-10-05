@@ -39,12 +39,12 @@ async function mockRpc(route, body) {
   await route.fulfill({ status: 200, headers: corsHeaders, body: JSON.stringify(body) });
 }
 
-test("アクセス画面の3行とNODEラベルは書き換え前の文言を一度も出さない", async ({ page }) => {
+test("読み込み画面・アクセス画面の3行・進捗ラベル・NODEラベルは書き換え前の文言を一度も出さない", async ({ page }) => {
   test.setTimeout(30_000);
   // The observer is installed before any page script runs, so it sees every text the page ever
   // puts into these elements, including a draft that is overwritten in a later microtask.
   await page.addInitScript(() => {
-    const seen = { eyebrow: new Set(), title: new Set(), sub: new Set(), node: new Set() };
+    const seen = { eyebrow: new Set(), title: new Set(), sub: new Set(), node: new Set(), loadTitle: new Set(), loadSub: new Set(), progress: new Set() };
     window.__accessCopySeen = seen;
     const scan = () => {
       const opening = document.querySelector(".neotokyo-sequence__screen--opening");
@@ -55,13 +55,25 @@ test("アクセス画面の3行とNODEラベルは書き換え前の文言を一
       read(opening, ".neotokyo-sequence__opening-title", "title");
       read(opening, ".neotokyo-sequence__opening-sub", "sub");
       read(document, ".neotokyo-sequence__system span", "node");
+      read(document, ".cinematic-intro__title", "loadTitle");
+      read(document, ".cinematic-intro__sub", "loadSub");
+      read(document, ".neotokyo-sequence__footer > span", "progress");
     };
     new MutationObserver(scan).observe(document, { subtree: true, childList: true, characterData: true });
   });
 
-  await page.route("**/rest/v1/rpc/get_public_act_showcase", route => mockRpc(route, showcase));
+  // Hold the showcase RPC so the loading screen stays up until it has been observed.
+  let releaseShowcase;
+  const held = new Promise(resolve => { releaseShowcase = resolve; });
+  await page.route("**/rest/v1/rpc/get_public_act_showcase", async route => {
+    await held;
+    await mockRpc(route, showcase);
+  });
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => mockRpc(route, []));
   await page.goto("/act-showcase.html?id=e2e-final-copy", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".cinematic-intro__title")).toHaveText("ACT FILE // ACCESS");
+  await expect(page.locator(".cinematic-intro__sub")).toHaveText("CONNECTING TO PUBLIC ACT FILE…");
+  releaseShowcase();
 
   // The access screen lasts a few seconds; the first NEXT button means it has been replaced.
   await expect(page.locator(".neotokyo-sequence__advance")).toHaveText("NEXT // ACT TRAILER", { timeout: 15_000 });
@@ -71,5 +83,11 @@ test("アクセス画面の3行とNODEラベルは書き換え前の文言を一
   expect(seen.title).toEqual(["ACT FILE // ACCESS"]);
   expect(seen.sub).toEqual(["ESTABLISHING PUBLIC SESSION"]);
   expect(seen.node).toContain("NODE // TOKYO N◎VA");
-  for (const text of Object.values(seen).flat()) expect(text).not.toMatch(/NEOTOKYO|SYSTEM ACCESS/i);
+  // The loading screen never shows the pre-5c wording (it starts from the static HTML, then the final copy).
+  expect(seen.loadTitle).not.toContain("SYSTEM ACCESS");
+  expect(seen.loadSub).not.toContain("公開アクトファイルへ接続中…");
+  expect(seen.loadSub).toContain("CONNECTING TO PUBLIC ACT FILE…");
+  // The progress label starts at INITIALIZING and the first stage is ACT FILE ACCESS // 05%.
+  expect(seen.progress).toContain("ACT FILE ACCESS // 05%");
+  for (const text of Object.values(seen).flat()) expect(text).not.toMatch(/NEOTOKYO|SYSTEM ACCESS|公開アクトファイルへ接続中/i);
 });
