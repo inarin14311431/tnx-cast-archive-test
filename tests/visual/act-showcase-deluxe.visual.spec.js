@@ -31,6 +31,13 @@ async function playSequence(page, theme, projectName) {
   await installActShowcaseRoutes(page);
   await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}`);
   await expect(page.locator("html")).toHaveAttribute("data-showcase-theme", theme);
+  if (projectName === "visual-desktop") {
+    // ACCESS screen (01 // ...). It is timer-driven (about 2.9s), so capture as soon as the access seal
+    // has finished its own 620ms authorization transition; everything else on it is static copy.
+    await expect(page.locator(".neotokyo-sequence__screen--opening")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(".neotokyo-sequence__access-seal")).toHaveClass(/is-authorized/, { timeout: 5_000 });
+    await capture(page, `act-showcase-opening-${theme}-${projectName}`);
+  }
   const advance = page.locator(".neotokyo-sequence__advance");
   for (const { scene, label } of SCENES) {
     await expect(advance).toHaveText(label, { timeout: 15_000 });
