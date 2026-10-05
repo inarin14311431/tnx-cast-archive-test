@@ -1,0 +1,36 @@
+name: Temp existing visual references check
+
+on:
+  push:
+    branches: [tmp/act-showcase-visual-baseline]
+    paths: ['.github/workflows/tmp-existing-visual-check.yml']
+
+jobs:
+  run:
+    name: Existing references vs current main (including the excluded cast-spectrum-neon desktop)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: inarin14311431/tnx-cast-archive-test
+          ref: visual-regression-baseline
+          path: .visual-reference
+      - run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Compare every existing reference (desktop)
+        continue-on-error: true
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-desktop --reporter=line
+      - name: Compare every existing reference (mobile)
+        continue-on-error: true
+        run: npx playwright test --config=playwright.visual.config.js --project=visual-mobile --reporter=line
