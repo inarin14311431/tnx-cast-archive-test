@@ -182,7 +182,7 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 |---|---|---|---|
 | アクセス画面の見出し3行 | act-showcase-neotokyo | cinematic-enhancer `enhanceAccess`(textContent上書き) | 現存 |
 | `NEOTOKYO` ラベル | act-showcase-neotokyo | cinematic-layout-v2 `normalizeNodeLabel` | 現存 |
-| poster の visual caption | act-showcase-page | visual-caption-code(span/strong上書き) | 現存 |
+| poster の visual caption | act-showcase-page | visual-caption-code(span/strong上書き) | 現存。supporting-cast(担当スタイルの印付け)と競合し、表示文言が非決定的。視覚テストではマスク中 |
 | サマリーの style 行 | act-showcase-neotokyo | story-flow `replaceChildren` → supporting-cast `replaceChildren`(2段) | 現存 |
 | handout の context cells | story-flow(ROLEセル) | writing-patterns `replaceChildren` | 現存(story-flow は枠だけ作る設計に整理済み) |
 | ROLE スロット/チップ | act-showcase-neotokyo / page | supporting-cast `repairNeoTokyoRoles` / `emphasizePosterRoles` | 現存 |
