@@ -54,13 +54,13 @@ async function playSequence(page, theme, projectName) {
   await expect(page.locator("#cinematic-intro")).toHaveAttribute("aria-hidden", "true", { timeout: 8_000 });
   const board = page.locator(".poster-v2-board");
   await expect(board).toBeVisible();
-  // The board frame fades in as a function of scroll position; wait for the final value.
-  await board.evaluate(element => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY));
-  await expect.poll(() => page.locator(".poster-v2-frame").evaluate(element =>
+  await settleVisualPage(page);
+  // The cast frame fades in as a function of scroll position; scroll to it and wait for the final value.
+  const frame = page.locator(".poster-v2-frame");
+  await frame.evaluate(element => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY));
+  await expect.poll(() => frame.evaluate(element =>
     element.style.getPropertyValue("--poster-v2-frame-opacity")
   ), { timeout: 5_000 }).toMatch(/^1(\.0+)?$/);
-  await settleVisualPage(page);
-  await board.evaluate(element => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY));
   await settleFrames(page);
   await expect(page).toHaveScreenshot(`act-showcase-board-${theme}-${projectName}.png`, { fullPage: false });
 }
