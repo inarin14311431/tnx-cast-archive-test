@@ -64,10 +64,14 @@ test("trailer patterns preserve author line breaks and adapt typography", async 
 });
 
 test("writing pattern title rules remain responsive without important declarations", async () => {
+  // The base and data-fit title sizes in this file were fully shadowed by act-showcase-cinematic-v2.css
+  // (same selector, same property, loaded later) and were removed; the effective sizes live there.
   const css = await read("css-next/pages/act-showcase-writing-patterns.css");
-  assert.match(css, /font-size:clamp\(5\.6rem,8\.6vw,10\.2rem\)/);
-  assert.match(css, /data-fit=\"medium\"/);
-  assert.match(css, /data-fit=\"long\"/);
-  assert.match(css, /data-fit=\"xlong\"/);
+  const effective = await read("css-next/pages/act-showcase-cinematic-v2.css");
+  assert.match(effective, /font-size:clamp\(2\.7rem,5vw,6\.2rem\)/);
+  assert.match(effective, /data-fit=\"medium\"/);
+  assert.match(effective, /data-fit=\"long\"/);
+  assert.match(effective, /data-fit=\"xlong\"/);
   assert.doesNotMatch(css, /!important/);
+  assert.doesNotMatch(effective, /!important/);
 });

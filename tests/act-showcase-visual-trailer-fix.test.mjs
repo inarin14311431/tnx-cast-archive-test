@@ -20,8 +20,12 @@ test("trailer frame grows to full text and stage owns overflow", async () => {
   const css = await read("css-next/pages/act-showcase-visual-trailer-fix.css");
   assert.match(css, /stage:has\(> \.neotokyo-sequence__screen--trailer\.is-visible\)/);
   assert.match(css, /overflow-y:auto/);
-  assert.match(css, /screen--trailer \.neotokyo-sequence__readout\{[\s\S]*max-height:none;[\s\S]*overflow:visible/);
+  // The readout's max-height/overflow in this file were fully shadowed by act-showcase-cinematic-v2.css
+  // (same selector, loaded later) and were removed; the effective rule lives there.
+  const effective = await read("css-next/pages/act-showcase-cinematic-v2.css");
+  assert.match(effective, /screen--trailer \.neotokyo-sequence__readout\{[\s\S]*max-height:none;[\s\S]*overflow:visible/);
   assert.doesNotMatch(css, /max-height:calc\(100svh/);
+  assert.doesNotMatch(effective, /max-height:calc\(100svh/);
 });
 
 test("visual caption replaces duplicated cast content with archive metadata and deterministic code", async () => {
