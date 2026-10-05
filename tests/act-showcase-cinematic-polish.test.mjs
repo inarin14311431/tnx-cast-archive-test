@@ -73,11 +73,21 @@ test("act title uses cinematic reveal while multiline fitting is owned by cinema
 });
 
 test("SYSTEM ACCESS uses a dedicated cinematic access treatment", async () => {
-  const [enhancer, css] = await Promise.all([
+  const [enhancer, builder, layout, css] = await Promise.all([
     read("js/act-showcase-cinematic-enhancer.js"),
+    read("js/act-showcase-neotokyo.js"),
+    read("js/act-showcase-cinematic-layout-v2.js"),
     read("css-next/pages/act-showcase-cinematic.css")
   ]);
-  assert.match(enhancer, /ACT FILE \/\/ ACCESS/);
+  // The builder emits the final access copy and NODE label itself; the enhancers no longer overwrite them.
+  assert.match(builder, /eyebrow: "01 \/\/ N◎VA MUNICIPAL DATABASE"/);
+  assert.match(builder, /title: "ACT FILE \/\/ ACCESS"/);
+  assert.match(builder, /sub: "ESTABLISHING PUBLIC SESSION"/);
+  assert.match(builder, /textNode\("span", "", "NODE \/\/ TOKYO N◎VA"\)/);
+  assert.doesNotMatch(builder, /01 \/\/ SYSTEM ACCESS|NODE \/\/ NEOTOKYO/);
+  assert.doesNotMatch(enhancer, /ACT FILE \/\/ ACCESS|ESTABLISHING PUBLIC SESSION|opening-title|opening-sub/);
+  assert.doesNotMatch(layout, /normalizeNodeLabel|NEOTOKYO/);
+  assert.match(enhancer, /is-cinematic-access/);
   assert.match(enhancer, /PUBLIC ACCESS \/\/ AUTHORIZED/);
   assert.match(css, /cinematic-aperture/);
   assert.match(css, /cinematic-access-scan/);
