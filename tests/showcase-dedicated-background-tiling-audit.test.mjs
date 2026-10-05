@@ -22,7 +22,7 @@ function ruleBodyFor(css, selector) {
 }
 
 test("deluxe ACT TRAILER stage (poster-v2-trailer-stage) theme override no longer tiles the ACT photo", async () => {
-  const css = await read("css-next/pages/act-showcase-dedicated-themes.css");
+  const css = await read("css-next/pages/act-showcase-theme-surface-system.css");
   // This selector's `background` shorthand carries 2 decorative gradient layers plus
   // var(--showcase-background) (the photo) and used to omit size/position/repeat entirely,
   // which is exactly what caused the reported tiling on the final ACT TRAILER screen.
@@ -40,8 +40,8 @@ test("deluxe ACT TRAILER stage base rule (act-showcase-final-trailer.css) states
   assert.match(rule, /background-repeat:no-repeat/);
 });
 
-test("deluxe ambient stage theme override (act-showcase-dedicated-themes.css) no longer relies on implicit background-size/repeat", async () => {
-  const css = await read("css-next/pages/act-showcase-dedicated-themes.css");
+test("deluxe ambient stage theme override (act-showcase-theme-surface-system.css, dedicated section) no longer relies on implicit background-size/repeat", async () => {
+  const css = await read("css-next/pages/act-showcase-theme-surface-system.css");
   const rule = ruleBodyFor(css, ":root[data-showcase-theme] body.has-showcase-background .ambient-stage:before");
   assert.match(rule, /background-position:center/);
   assert.match(rule, /background-size:cover/);

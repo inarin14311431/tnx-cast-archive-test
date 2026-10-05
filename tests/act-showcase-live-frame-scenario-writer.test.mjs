@@ -77,7 +77,7 @@ test("RULER and SCENARIO WRITER title labels use the same compact horizontal cre
 test("showcase entry keeps the final theme layers wired without pinning cache revisions here", () => {
   assert.match(entryCss, /act-showcase-neotokyo-hierarchy\.css\?v=/);
   assert.match(entryCss, /act-showcase-handout-live-frame\.css\?v=/);
-  assert.match(entryCss, /act-showcase-dedicated-themes\.css\?v=/);
+  assert.doesNotMatch(entryCss, /act-showcase-dedicated-themes/, "dedicated tokens now live at the head of the surface-system stylesheet");
   assert.match(entryCss, /act-showcase-theme-surface-system\.css\?v=/);
   assert.match(entryCss, /act-showcase-theme-phase-contract\.css\?v=/);
   assert.match(entryCss, /act-showcase-theme-legibility\.css\?v=/);
