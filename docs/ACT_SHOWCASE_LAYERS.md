@@ -182,7 +182,7 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 |---|---|---|---|
 | アクセス画面の見出し3行 | act-showcase-neotokyo | cinematic-enhancer `enhanceAccess`(textContent上書き) | 現存 |
 | `NEOTOKYO` ラベル | act-showcase-neotokyo | cinematic-layout-v2 `normalizeNodeLabel` | 現存 |
-| poster の visual caption | act-showcase-page | visual-caption-code(span/strong上書き) | 現存 |
+| poster の visual caption | act-showcase-page | visual-caption-code(span/strong上書き) | 現存。supporting-cast(担当スタイルの印付け)と競合し、表示文言が非決定的。視覚テストではマスク中 |
 | サマリーの style 行 | act-showcase-neotokyo | story-flow `replaceChildren` → supporting-cast `replaceChildren`(2段) | 現存 |
 | handout の context cells | story-flow(ROLEセル) | writing-patterns `replaceChildren` | 現存(story-flow は枠だけ作る設計に整理済み) |
 | ROLE スロット/チップ | act-showcase-neotokyo / page | supporting-cast `repairNeoTokyoRoles` / `emphasizePosterRoles` | 現存 |
@@ -209,8 +209,13 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 
 - 実体は `visual-regression-baseline` ブランチの `tests/visual/*`(CI の `visual-regression.yml` が main に上書きコピー)。`run-visual-regression.mjs` は desktop / mobile の2プロジェクトを実行するだけ。
 - 撮影対象: login / archive / cast / troops / troop / sheet / account / acts / showcase-generator / sheet-mobile(各 `nova`・`spectrum-neon` のアプリテーマ)+ テーマ見本(`index.html`)。
-- **未カバー**: `act-showcase.html`、`act-showcase-standard.html`、ACT用4テーマ(nova / intron / vlad / lutetia)、公開出力HTML(`showcases/*.html`)、各シーン(opening / title / trailer / handout / assign / summary / finale / poster board)。`showcase-generator.html` は撮っているが、プレビュー iframe 内の描画内容は対象外(未確認)。
-- 基準画像は別ブランチにあり、この調査では基準画像の鮮度は未確認(最終更新 2026-09-30)。
+- **ACT SHOWCASE のカバー済み(38枚、PR #486。`act-showcase-fixtures.js` の固定データ、CIコンテナで生成、厳密比較で差分0を確認)**:
+  - スタンダード版 `act-showcase-standard.html`: ACT用4テーマ(nova / intron / vlad / lutetia)× desktop / mobile、ページ全体(8枚)。
+  - 豪華版 `act-showcase.html` desktop: 4テーマ × title / trailer / handout(PC1)/ assign(PC1)/ summary / 最終ボード(24枚)。場面の進行は NEXT ボタンのラベルで待つ。
+  - 豪華版 mobile: nova のみ、同6場面(6枚)。
+- **マスク中**: 最終ボードの `.poster-v2-visual`(キャラ画像+キャプション)。キャプション文言を supporting-cast と visual-caption-code の2つの observer が書き換え、表示が非決定的なため(§3.3)。
+- **未カバーで残る**: ダウンロード出力HTML(`showcases/*.html`、`showcase-dedicated-output.js` の生成物)、豪華版 mobile の3テーマ(intron / vlad / lutetia)、opening / finale の単独場面、PC2 以降の handout / assign、trailer の追従スクロール中の状態、reduced-motion 無効時の見た目。`showcase-generator.html` は撮っているが、プレビュー iframe 内の描画内容は対象外(未確認)。
+- 既存の基準画像54枚は 2026-10-05 時点で main と一致。ただし `cast-spectrum-neon-visual-desktop.png` だけは約20%ずれていて、CI が比較対象外にしている。
 
 ### 4.2 E2E(`tests/e2e/test-suites.json` 登録)
 
@@ -227,7 +232,7 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 
 | # | PR | 対象ファイル | 期待できる削減量 | 壊れやすい点 | 使えるテスト |
 |---|---|---|---|---|---|
-| 1 | 視覚テストの追加(コード変更なし、`visual-regression-baseline` ブランチ側) | `tests/visual/*` に act-showcase / standard × 4テーマ × (opening/title/trailer/handout/summary/board) | 0(安全網) | アニメーション中の撮影は不安定。`stabilize.css` と状態固定が必要。基準画像は別ブランチ運用 | これ自体が以降のPRの安全網 |
+| 1 | 視覚テストの追加(**追加済み: PR #486**。コード変更なし、`visual-regression-baseline` ブランチ側) | `tests/visual/*` に act-showcase / standard × 4テーマ × (opening/title/trailer/handout/summary/board) | 0(安全網) | アニメーション中の撮影は不安定。`stabilize.css` と状態固定が必要。基準画像は別ブランチ運用 | これ自体が以降のPRの安全網 |
 | 2 | 確実に死んでいる宣言の削除(CSSのみ) | §1.2 の14ファイル | 237宣言 ≒ 11.4KB(全体の3%)、ファイル数は変わらない | キー一致は @コンテキスト込みだが、`@media` の文字列表記違い・同一ファイル内の再定義が混ざる(237 vs 234)。ダウンロード出力に埋め込まれる3ファイル(dedicated / surface / legibility)を含む | 1 のvisual、`act-showcase-*` E2E 4本、`showcase-theme-*` 契約テスト、`audit:css` |
 | 3 | dedicated-themes と theme-surface-system の統合(隣接2本) | 2ファイル + entry + standard.html + `showcase-dedicated-output.js` の import 配列 | 1ファイル減、重複45キー(同値21)。バイトは 2 とほぼ同じ分 | スタンダード版・ダウンロードHTMLに同時に効く。`?v=` の更新漏れ(`showcase-asset-version-contract`)。値が違う24キーは後段の値を採る | 1、`showcase-theme-surface-system`、`act-showcase-standard-loading` |
 | 4 | 死んだJSの削除と本体呼び出しの整理 | `board-layout` の credits 削除経路、`scenario-writer.syncPosterCredit`(第11節で判断待ち: 削除か、act-meta への機能追加か) | 約30行(未確認) | 削除でなく機能復活を選ぶ場合は別PR | `act-showcase-observer-stability`(observe 引数の固定を要修正)、E2E 4本 |
