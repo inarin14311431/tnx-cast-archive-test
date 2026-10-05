@@ -59,7 +59,7 @@ jobs:
         with:
           name: act-showcase-screenshots
           path: |
-            tests/visual/__screenshots__/
-            test-results/visual/
+            tests/visual/__screenshots__/*/act-showcase-*
+            test-results/visual/**/*-diff.png
           if-no-files-found: ignore
           retention-days: 7
