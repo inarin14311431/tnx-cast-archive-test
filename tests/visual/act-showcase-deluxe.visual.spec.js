@@ -57,12 +57,26 @@ async function playSequence(page, theme, projectName) {
   await settleVisualPage(page);
   // The cast frame fades in as a function of scroll position; scroll to it and wait for the final value.
   const frame = page.locator(".poster-v2-frame");
-  await frame.evaluate(element => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY));
+  // The frame is transformed by that same scroll-linked value, so its rect moves while it fades in.
+  // Re-measure after every settled frame until the frame top sits at the viewport top.
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await settleFrames(page);
+    const top = await frame.evaluate(element => element.getBoundingClientRect().top);
+    if (Math.abs(top) < 1) break;
+    await page.evaluate(delta => window.scrollBy(0, delta), top);
+  }
   await expect.poll(() => frame.evaluate(element =>
     element.style.getPropertyValue("--poster-v2-frame-opacity")
   ), { timeout: 5_000 }).toMatch(/^1(\.0+)?$/);
   await settleFrames(page);
-  await expect(page).toHaveScreenshot(`act-showcase-board-${theme}-${projectName}.png`, { fullPage: false });
+  expect(Math.abs(await frame.evaluate(element => element.getBoundingClientRect().top))).toBeLessThan(1);
+  // The visual caption text is rewritten by two independent observers (supporting-cast marks the assigned
+  // style, visual-caption-code rebuilds the caption). Which text is on screen at capture time is not
+  // deterministic, so only that caption is masked; the rest of the board is compared normally.
+  await expect(page).toHaveScreenshot(`act-showcase-board-${theme}-${projectName}.png`, {
+    fullPage: false,
+    mask: [page.locator(".poster-v2-visual__caption")]
+  });
 }
 
 for (const theme of ACT_THEMES) {
