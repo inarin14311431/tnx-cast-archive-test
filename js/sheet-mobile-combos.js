@@ -1,8 +1,9 @@
 import { supabase } from "./supabase-client.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2";
+import { escapeHtml as esc } from "./dom-escape.js?v=2";
 
 const $=s=>document.querySelector(s);
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
 const SUITS=[["reason","♠理性"],["passion","♣感情"],["life","♥生命"],["mundane","♦外界"]];
 const CATS={general:"一般技能",social:"社会",connection:"コネ",style:"スタイル技能"};
 const TIMING_OPTIONS=["常時","常時（選択）","セットアッププロセス","イニシアチブプロセス","ムーブ","マイナー","メジャー","リアクション","オートアクション","クリンナッププロセス","舞台裏判定","登場判定","判定の直前","判定の直後","ダメージ算出","ダメージ算出の直前","ダメージ適用の直前","ダメージ適用の直後","神業","解説参照","任意","―"];

@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2";
 import { getImageFocusX,getImageFocusY,getImageZoom,setImageFocusX,setImageFocusY,setImageZoom } from "./image-focus.js?v=4";
 
 const $=s=>document.querySelector(s);

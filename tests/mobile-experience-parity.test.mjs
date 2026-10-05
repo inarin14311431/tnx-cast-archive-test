@@ -48,5 +48,5 @@ test("mobile app loads skill-kind normalization before experience calculation",(
   const normalizeIndex=app.indexOf("sheet-mobile-skill-kind-normalizer.js");
   const expIndex=app.indexOf("sheet-mobile-header-exp.js");
   assert.ok(normalizeIndex>=0&&normalizeIndex<expIndex);
-  assert.match(app,/sheet-mobile-header-exp\.js\?v=20260824-1/);
+  assert.match(app,/sheet-mobile-header-exp\.js\?v=20260824-2/);
 });
