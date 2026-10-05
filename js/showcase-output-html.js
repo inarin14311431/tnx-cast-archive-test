@@ -1,4 +1,4 @@
-import { normalizeShowcaseTheme, createOutputCss } from "./showcase-output-css.js?v=1";
+import { normalizeShowcaseTheme, createOutputCss } from "./showcase-output-css.js?v=2";
 import { STYLE_COLORS } from "./style-colors.js";
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=4";
 import { formatShowcaseHandle, formatShowcaseFullName } from "./showcase-display-format.js?v=1";

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { compactSource } from "./helpers/compact-source.mjs";
 import { readFileSync } from "node:fs";
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -17,6 +18,6 @@ test("mobile cast mode toggle waits for the mobile render event", () => {
 });
 
 test("mobile cast view dispatches its render completion event after rendering", () => {
-  const source = read("js/cast-mobile.js");
+  const source = compactSource(read("js/cast-mobile.js"));
   assert.match(source, /render\(root,c,s,o,b\);window\.dispatchEvent\(new CustomEvent\(["']tnx:mobile-cast-rendered["']\)\)/);
 });

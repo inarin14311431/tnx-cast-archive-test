@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { compactSource } from "./helpers/compact-source.mjs";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -55,7 +56,7 @@ test("help-ui.js guards event.target.matches against non-Element targets", async
 });
 
 test("sheet-mobile-style.js guards event.target.matches against non-Element targets", async () => {
-  const source = await read("js/sheet-mobile-style.js");
-  assert.match(source, /event\.target\?\.matches\?\.\("\[data-mobile-style-name\], \[data-mobile-style-attribute\]"\)/);
+  const source = compactSource(await read("js/sheet-mobile-style.js"));
+  assert.match(source, /event\.target\?\.matches\?\.\("\[data-mobile-style-name\],\s?\[data-mobile-style-attribute\]"\)/);
   assert.doesNotMatch(source, /event\.target\.matches\(/);
 });
