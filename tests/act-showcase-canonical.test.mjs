@@ -75,10 +75,10 @@ test("poster builds its final PUBLIC DATA bar and showcase3 grid directly, witho
   assert.match(source, /createActMetaCell\("KEY STYLE", styles\.slice\(0, 3\)\.join\(" × "\) \|\| "—", "is-style"\)/);
   assert.match(source, /el\("div", "poster-v2-grid poster-v2-grid--showcase3"\)/);
   assert.doesNotMatch(source, /poster-v2-grid--4/);
-  // board-layout.js itself is intentionally left untouched: its credits-panel handling now simply
-  // never triggers (no poster-v2-panel--credits panel is ever created), acting as a no-op safety
-  // net rather than dead code that had to be deleted.
-  assert.match(boardLayout, /poster-v2-panel--credits/);
+  // No poster-v2-panel--credits panel is ever created, so board-layout.js no longer reads or
+  // removes one; only the showcase3 normalization of other grids remains.
+  assert.doesNotMatch(boardLayout, /poster-v2-panel--credits|poster-v2-credit-row|readCreditRows|credits\.remove/);
+  assert.match(boardLayout, /ensureActMeta = frame =>/);
   assert.match(boardLayout, /poster-v2-grid--showcase3/);
 });
 

@@ -151,7 +151,7 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 | cinematic-enhancer | `#cinematic-intro` childList/subtree/characterData | アクセス画面の見出し3行を上書き、access-seal追加、trailerをterminal化、キャスト名の引用符重複の正規化(`normalizeVisibleQuotes`) |
 | finale-enhancer | intro(同上) | タイトルロゴ構造(meta/ghost/rule)と `dataset.fit`、最終ブリーフィング構造、body class `showcase-neotokyo-title-logo-active` / `-finale-active` |
 | cinematic-polish | pageRoot+intro(characterData含む)/ intro | rAF で `data-fit`・`nameFit`、ACT ENTRY ボタンをフッターに追加 |
-| board-layout | `#showcase-story` と intro | act-metaバー、`polishAccess` マーカー。`credits.remove()` は現在 no-op |
+| board-layout | `#showcase-story` と intro | act-metaバー、`polishAccess` マーカー。credits パネルの取得・削除経路は削除済み(手順4) |
 | story-flow | intro(class 属性) | link-bridge、ROLEセル、assigned-route、trailer outro、サマリーのスタイルを `replaceChildren`、entry-vectors |
 | writing-patterns | intro(class)+ readout(characterData) | ハンドアウト解析、context cells を `replaceChildren`、assigned-route の文言 |
 | visual-caption-code | `#showcase-story` | poster の visual caption(span/strong)を meta/code に書き換え |
@@ -188,8 +188,8 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 | handout の context cells | story-flow(ROLEセル) | writing-patterns `replaceChildren` | 現存(story-flow は枠だけ作る設計に整理済み) |
 | ROLE スロット/チップ | act-showcase-neotokyo / page | supporting-cast `repairNeoTokyoRoles` / `emphasizePosterRoles` | 現存 |
 | キャスト名の引用符 | page / neotokyo | cinematic-enhancer `normalizeVisibleQuotes` と display-normalizer `NAME_SELECTORS` | **2箇所で同じ対象を書き換え**(第11節で統合したのはタグラインのみ。両関数の正規化内容が同等かは未確認) |
-| credits パネルの削除 | - | board-layout `credits.remove()` | 作る側を除去済みで no-op(安全網として残置) |
-| poster クレジット行 | - | scenario-writer `syncPosterCredit` | 対象要素が無く常に失敗(第11節、判断待ち) |
+| credits パネルの削除 | - | board-layout `credits.remove()` | **削除済み(手順4)**。生成経路なし(page.js の `createCastGrid` は常に `poster-v2-grid--showcase3`。`createCreditsPanel` は cd8ca299 で除去) |
+| poster クレジット行 | - | scenario-writer `syncPosterCredit` | **削除済み(手順4)**。`.poster-v2-credit-table` を生成する経路なし。最終ボードへの SCENARIO WRITER 表示の復活は未実施 |
 
 ### 3.4 描画順・タイミングに依存する箇所(統合で壊れやすい。根拠のE2E/テスト付き)
 
@@ -236,7 +236,7 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 | 1 | 視覚テストの追加(**追加済み: PR #486**。コード変更なし、`visual-regression-baseline` ブランチ側) | `tests/visual/*` に act-showcase / standard × 4テーマ × (opening/title/trailer/handout/summary/board) | 0(安全網) | アニメーション中の撮影は不安定。`stabilize.css` と状態固定が必要。基準画像は別ブランチ運用 | これ自体が以降のPRの安全網 |
 | 2 | **済(#487)** 確実に死んでいる宣言の削除(CSSのみ) | §1.2 の14ファイル | 237宣言 ≒ 11.4KB(全体の3%)、ファイル数は変わらない | キー一致は @コンテキスト込みだが、`@media` の文字列表記違い・同一ファイル内の再定義が混ざる(237 vs 234)。ダウンロード出力に埋め込まれる3ファイル(dedicated / surface / legibility)を含む | 1 のvisual、`act-showcase-*` E2E 4本、`showcase-theme-*` 契約テスト、`audit:css` |
 | 3 | **済** dedicated-themes と theme-surface-system の統合(隣接2本) | 2ファイル + entry + standard.html + `showcase-dedicated-output.js` の import 配列 | 1ファイル減、重複45キー(同値21)。バイトは 2 とほぼ同じ分 | スタンダード版・ダウンロードHTMLに同時に効く。`?v=` の更新漏れ(`showcase-asset-version-contract`)。値が違う24キーは後段の値を採る | 1、`showcase-theme-surface-system`、`act-showcase-standard-loading` |
-| 4 | 死んだJSの削除と本体呼び出しの整理 | `board-layout` の credits 削除経路、`scenario-writer.syncPosterCredit`(第11節で判断待ち: 削除か、act-meta への機能追加か) | 約30行(未確認) | 削除でなく機能復活を選ぶ場合は別PR | `act-showcase-observer-stability`(observe 引数の固定を要修正)、E2E 4本 |
+| 4 | **済** 死んだJSの削除(動作は変えない) | `board-layout` の credits 取得・`remove()`・`readCreditRows`、`scenario-writer.syncPosterCredit`(呼び出しごと)、対応CSSのセレクタ33個(`.poster-v2-panel--credits` / `-credit-table` / `-row` / `-kicker` / `-note`) | JS 約37行、CSS 約37行 | `act-showcase-observer-stability`(observe 引数は不変)、`canonical` / `live-frame-scenario-writer` / `layout-polish` / `ornament-plus` の検査は「存在しないこと」を見る形に変更 | 視覚テスト38枚(許容差0)、E2E 4本 |
 | 5 | 本体(builder)が最初から最終文言を作る | アクセス画面の3行(cinematic-enhancer)、NODE ラベル(layout-v2)、visual caption(visual-caption-code)、キャスト名の引用符正規化の二重実行の一本化 | 数十行 + observer 1〜2本(未確認) | 初回描画のちらつき・初期フレームの文言。第11節と同様に修正前後でDOM比較。名前の引用符は display-normalizer と enhancer の両方が走る点に注意(正規化内容の差は未確認) | E2E title-render-order / neotokyo-stability、`act-showcase-neotokyo`、`act-showcase-cinematic-polish` |
 | 6 | CSS 上書きの畳み込み(値の統合) | poster-v2 ← ornament(44)、cinematic-readability ← layout-polish(26)、supporting-cast ← presentation-tuning(23)、最後に theme 3本(phase / legibility / scene) | 最大でテーマ3本 65KB のうち重複150キー分(量は未確認)。@import が減る | 特異度戦(接頭辞違い)で勝敗が変わる。1つずつ別PRに分ける。theme 3本は豪華版のみで最もリスクが高い | 1(全項目)、E2E 4本、`showcase-theme-phase-contract` |
 
