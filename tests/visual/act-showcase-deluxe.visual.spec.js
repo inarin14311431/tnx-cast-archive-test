@@ -72,10 +72,10 @@ async function playSequence(page, theme, projectName) {
   expect(Math.abs(await frame.evaluate(element => element.getBoundingClientRect().top))).toBeLessThan(1);
   // The visual caption text is rewritten by two independent observers (supporting-cast marks the assigned
   // style, visual-caption-code rebuilds the caption). Which text is on screen at capture time is not
-  // deterministic, so only that caption is masked; the rest of the board is compared normally.
+  // deterministic, so the whole cast visual (its caption changes the element height) is masked; the rest of the board is compared normally.
   await expect(page).toHaveScreenshot(`act-showcase-board-${theme}-${projectName}.png`, {
     fullPage: false,
-    mask: [page.locator(".poster-v2-visual__caption")]
+    mask: [page.locator(".poster-v2-visual")]
   });
 }
 
