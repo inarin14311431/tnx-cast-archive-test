@@ -130,3 +130,16 @@ export async function installActShowcaseRoutes(page) {
   await page.route("**/rest/v1/rpc/get_public_act_showcase", route => fulfill(route, showcaseData));
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => fulfill(route, guestData));
 }
+
+// Same routes, but the showcase RPC is held until release() is called, so the loading screen can be captured.
+export async function installHeldActShowcaseRoutes(page) {
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
+  await page.route("**/rest/v1/rpc/get_public_act_showcase", async route => {
+    await held;
+    await fulfill(route, showcaseData);
+  });
+  await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => fulfill(route, guestData));
+  return release;
+}

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { settleVisualPage } from "./visual-fixtures.js";
-import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes } from "./act-showcase-fixtures.js";
+import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, installHeldActShowcaseRoutes } from "./act-showcase-fixtures.js";
 
 // The cinematic sequence advances only on the NEXT button. Its label names the scene that has just
 // finished typing, so each capture waits for a label instead of a timer.
@@ -87,5 +87,18 @@ for (const theme of ACT_THEMES) {
     test.skip(testInfo.project.name !== "visual-desktop" && theme !== "nova", "モバイルは nova のみ");
     test.setTimeout(90_000);
     await playSequence(page, theme, testInfo.project.name);
+  });
+}
+
+// LOADING screen: shown while the showcase data is still being fetched. The RPC is held so the screen stays up.
+for (const theme of ACT_THEMES) {
+  test(`アクト紹介(豪華版・読み込み中) ${theme}`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "visual-desktop", "読み込み画面は desktop のみ");
+    const release = await installHeldActShowcaseRoutes(page);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}`);
+    await expect(page.locator(".cinematic-intro__title")).toHaveText("ACT FILE // ACCESS");
+    await expect(page.locator(".cinematic-intro__sub")).toHaveText("CONNECTING TO PUBLIC ACT FILE…");
+    await capture(page, `act-showcase-loading-${theme}-${testInfo.project.name}`);
+    release();
   });
 }
