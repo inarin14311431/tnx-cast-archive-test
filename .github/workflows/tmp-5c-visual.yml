@@ -1,0 +1,130 @@
+name: Temp 5c visual (remove before merge)
+
+on:
+  push:
+    branches: [refactor/act-showcase-quotes-and-copy]
+
+permissions:
+  contents: write
+
+env:
+  A_SHA: 1ae1543c8929f1c29e2c3d6752976b0447bf5cd4
+  BASE_BRANCH: test/visual-act-showcase-5c
+
+jobs:
+  generate:
+    name: Generate (code = commit A)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.A_SHA }}
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+          path: .visual-reference
+      - run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+          cat > playwright.visual.strict.config.js <<'CFG'
+          import base from "./playwright.visual.config.js";
+          export default {
+            ...base,
+            expect: { ...base.expect, toHaveScreenshot: { ...base.expect.toHaveScreenshot, maxDiffPixelRatio: 0, maxDiffPixels: 0, threshold: 0 } }
+          };
+          CFG
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Strict compare before update (expect only opening to differ, loading is missing)
+        continue-on-error: true
+        run: npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介" --reporter=list 2>&1 | tee /tmp/before.log
+      - name: Where do the failing screenshots differ
+        continue-on-error: true
+        run: |
+          cat > /tmp/bbox.cjs <<'JS'
+          const fs = require("fs"); const path = require("path");
+          const { PNG } = require("playwright-core/lib/utilsBundle");
+          const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+          for (const actual of walk("test-results/visual").filter(f => f.endsWith("-actual.png"))) {
+            const expected = actual.replace(/-actual\.png$/, "-expected.png");
+            if (!fs.existsSync(expected)) { console.log("NO EXPECTED", actual); continue; }
+            const a = PNG.sync.read(fs.readFileSync(actual)); const e = PNG.sync.read(fs.readFileSync(expected));
+            if (a.width !== e.width || a.height !== e.height) { console.log("SIZE", actual, a.width, a.height, e.width, e.height); continue; }
+            let minX = 1e9, minY = 1e9, maxX = -1, maxY = -1, count = 0;
+            for (let y = 0; y < a.height; y++) for (let x = 0; x < a.width; x++) {
+              const i = (y * a.width + x) * 4;
+              if (a.data[i] !== e.data[i] || a.data[i+1] !== e.data[i+1] || a.data[i+2] !== e.data[i+2] || a.data[i+3] !== e.data[i+3]) {
+                count++; if (x < minX) minX = x; if (y < minY) minY = y; if (x > maxX) maxX = x; if (y > maxY) maxY = y;
+              }
+            }
+            console.log("BBOX", path.basename(actual), "pixels=" + count, "x=" + minX + ".." + maxX, "y=" + minY + ".." + maxY, "size=" + a.width + "x" + a.height);
+          }
+          JS
+          node /tmp/bbox.cjs | tee /tmp/bbox.log
+      - name: Update (missing + changed), deluxe desktop only
+        run: |
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --grep "アクト紹介\(豪華版" --update-snapshots=missing --reporter=list 2>&1 | tail -3 || true
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --grep "アクト紹介\(豪華版" --update-snapshots=changed --reporter=list 2>&1 | tail -3 || true
+      - name: Commit changed baselines
+        run: |
+          cp -R tests/visual/__screenshots__/. .visual-reference/tests/visual/__screenshots__/
+          cd .visual-reference
+          git status --short
+          git status --short | sed 's#^...##' | sort > /tmp/changed.txt
+          cat /tmp/changed.txt
+          # only the 4 opening and the 4 new loading images may differ
+          bad=$(grep -vE 'act-showcase-(opening|loading)-(nova|intron|vlad|lutetia)-visual-desktop.png$' /tmp/changed.txt || true)
+          if [ -n "$bad" ]; then echo "UNEXPECTED CHANGES:"; echo "$bad"; exit 1; fi
+          git config user.name "claude"; git config user.email "noreply@anthropic.com"
+          git add -A
+          git commit -m "chore(visual): update ACCESS (opening) references for the progress label and add LOADING references (4 themes, desktop)"
+          git push origin HEAD:${{ env.BASE_BRANCH }}
+
+  verify:
+    name: Verify strict (${{ matrix.label }})
+    needs: generate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: A
+            ref: 1ae1543c8929f1c29e2c3d6752976b0447bf5cd4
+          - label: A+B
+            ref: refactor/act-showcase-quotes-and-copy
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ matrix.ref }}
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+          path: .visual-reference
+      - run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+          cat > playwright.visual.strict.config.js <<'CFG'
+          import base from "./playwright.visual.config.js";
+          export default {
+            ...base,
+            expect: { ...base.expect, toHaveScreenshot: { ...base.expect.toHaveScreenshot, maxDiffPixelRatio: 0, maxDiffPixels: 0, threshold: 0 } }
+          };
+          CFG
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Strict compare, all act showcase, x2
+        run: npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介" --repeat-each=2 --reporter=list 2>&1 | tee /tmp/verify.log
