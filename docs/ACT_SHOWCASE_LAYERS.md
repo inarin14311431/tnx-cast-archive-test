@@ -5,10 +5,10 @@
 
 ## 0. 要点
 
-- 豪華版 `act-showcase.html` = CSS 30本(`act-showcase-entry.css` の `@import`、レイヤー指定なし)+ JS 21本(bootstrap から `await import` 連鎖)。
+- 豪華版 `act-showcase.html` = CSS 29本(`act-showcase-entry.css` の `@import`、レイヤー指定なし。調査時は30本、dedicated-themes を theme-surface-system に統合して1本減)+ JS 21本(bootstrap から `await import` 連鎖)。
 - スタンダード版 `act-showcase-standard.html` = CSS 5本 + JS 7本。同じ5本のCSSは `js/showcase-dedicated-output.js` がダウンロード用HTMLにも埋め込む。
 - 同一(@コンテキスト+セレクタ+プロパティ)の重複: **204キー / 234件の追加定義**(厳密)。接頭辞(`body…`・`.cinematic-intro.neotokyo-sequence`)を除いて数えると **335キー / 389件**(緩い)。
-- そのうち「後段が同一キーを再定義していて確実に死んでいる宣言」は **237個 ≒ 11.4KB**(全体348KBの3%)。削減の大半は死んだ宣言ではなく、セレクタ違いの上書きの整理になる。
+- そのうち「後段が同一キーを再定義していて確実に死んでいる宣言」は調査時 **237個 ≒ 11.4KB**(全体348KBの3%)。**#487 で187キー(165宣言、11,162B)を削除済み**。残り50キー: スタンダード版で生きている theme-legibility 30、`!important`・同一ファイル内再定義 3、セレクタ群の一部のみ上書き17(うち8キーは統合後の theme-surface-system 内)。削減の大半は死んだ宣言ではなく、セレクタ違いの上書きの整理になる。
 - 視覚テスト(`visual-regression-baseline` ブランチ)は豪華版・スタンダード版・ACT用4テーマを**1枚も撮っていない**。統合前に最優先で補う。
 
 ## 1. CSS の層(豪華版、`@import` 順)
@@ -42,8 +42,7 @@
 | 22 | followup-v1 | 5.7 | フォローアップ修正 | 上書き(小) | supporting-cast 10, top-background-only 2 | 1/0 | 13/0 | - |
 | 23 | final-trailer | 6.4 | 最終ボード上部の `.poster-v2-trailer-stage` | 新規 | - | 0/0 | 0/0 | ○ |
 | 24 | handout-live-frame | 1.7 | handout 読み上げ中のstage overflow所有 | 新規 | - | 0/0 | 0/0 | ○ |
-| 25 | dedicated-themes | 25.6 | 4テーマのパレット変数と基本面 | 新規 | - | 0/45 | 0/45 | - |
-| 26 | theme-surface-system | 36.0 | 面の色の所有 | **上書き** | dedicated-themes 45 | 45/0 | 45/0 | - |
+| 25 | theme-surface-system(旧 dedicated-themes を先頭に統合、**済**) | 56.6 | 4テーマのパレット変数と基本面(先頭)+ 面の色の所有(後半) | 新規 | - | 0/0 | 0/0 | - |
 | 27 | theme-phase-contract | 24.8 | 旧cinematicセレクタのテーマ化(title/trailer/handout/assign/summary/finale) | 新規 | - | 0/92 | 0/92 | - |
 | 28 | theme-legibility | 20.3 | 可読面の保証 | **上書き** | phase-contract 52 | 52/30 | 52/30 | - |
 | 29 | theme-scene-contract | 20.0 | 旧シーン部品にテーマを反映 | **上書き** | phase-contract 38, legibility 30 | 68/0 | 68/0 | - |
@@ -58,7 +57,7 @@
 | 組 | 厳密 | 緩い | 値が同一(厳密) |
 |---|---|---|---|
 | theme-phase-contract ↔ theme-legibility | 52 | 52 | 9 |
-| dedicated-themes ↔ theme-surface-system | 45 | 45 | 21 |
+| ~~dedicated-themes ↔ theme-surface-system~~(統合済み。#487 で同値の宣言を除去、残りは1ファイル内) | 0 | 0 | - |
 | poster-v2 ↔ ornament | 44 | 44 | 3 |
 | theme-phase-contract ↔ theme-scene-contract | 38 | 38 | 3 |
 | theme-legibility ↔ theme-scene-contract | 30 | 30 | 3 |
@@ -73,9 +72,11 @@
 | ornament ↔ cinematic-v2 | 2 | 7 | 0 |
 
 残りの組は各6件以下(全組の一覧は集計スクリプトで再生成できる。`postcss` で `@コンテキスト|セレクタ|プロパティ` をキーに集計)。
-スタンダード版の5本は 45件のみ(dedicated-themes ↔ surface-system、同値21)。
+スタンダード版の4本(統合後)に残る重複は、統合した theme-surface-system 内のセレクタ群の一部のみ上書き8キーだけ。
 
 ### 1.2 確実に死んでいる宣言(後段が同一キーを再定義)
+
+調査時の数値。#487 で187キー(165宣言、11,162B)を削除済み。theme-legibility の30は、スタンダード版が scene-contract を読まないため残している。
 
 | ファイル | 個数 | ≒バイト |
 |---|---|---|
@@ -93,7 +94,7 @@
 
 | 候補 | 根拠 | 注意 |
 |---|---|---|
-| dedicated-themes → surface-system(隣接) | 45キー重複、同値21。スタンダード版も同じ組を読む | ダウンロードHTMLにも埋め込まれる(`showcase-dedicated-output.js`) |
+| ~~dedicated-themes → surface-system(隣接)~~ **済(統合)** | 45キー重複(#487 で38キー除去、残りは統合後のファイル内) | 統合時、同一セレクタのルール11組を併合(audit:css の重複セレクタ禁止のため) |
 | ornament → poster-v2 | 44キーを上書き(同値3 = ほぼ実質的な上書き) | 値を畳み込む作業が必要 |
 | layout-polish → cinematic-readability(隣接) | 緩い26 | 同上 |
 | presentation-tuning → supporting-cast | 緩い23 | 間に挟まる層なし(隣接) |
@@ -105,15 +106,15 @@
 
 | ファイル | 何を決めるか | スタンダード | 豪華版 |
 |---|---|---|---|
-| dedicated-themes (25.6KB) | `data-showcase-theme` ごとのパレット変数(`--showcase-primary-rgb` 等)と基本面。定義源は本ファイルのみ | ○ | ○ |
-| theme-surface-system (36.0KB) | 面(surface)の色・境界・影。変数 `--showcase-surface-*` と各部品への適用 | ○ | ○ |
+| theme-surface-system 前半(旧 dedicated-themes、22.6KB) | `data-showcase-theme` ごとのパレット変数(`--showcase-primary-rgb` 等)と基本面。定義源は本ファイルのみ | ○ | ○ |
+| theme-surface-system 後半(36.0KB) | 面(surface)の色・境界・影。変数 `--showcase-surface-*` と各部品への適用 | ○ | ○ |
 | theme-phase-contract (24.8KB) | 旧cinematicセレクタと同じ特異度で、title/trailer/handout/assign/summary/finale をテーマ化 | - | ○ |
 | theme-legibility (20.3KB) | 可読面の保証(`--showcase-readable-*`)。テーマの個性は変えない | ○ | ○ |
 | theme-scene-contract (20.0KB) | 旧シーン部品が旧cyan/pinkパレットを使わないように反映(`--showcase-scene-*`) | - | ○ |
 
-- 上書き関係: dedicated → surface(45) / phase → legibility(52) → scene(30)、phase → scene(38)。順序は legibility が phase の後、scene が legibility の後(コメントの「Loaded last」「final」が3ファイルとも主張していて矛盾)。
+- 上書き関係: 前半(dedicated)→ 後半(surface)は統合済み(1ファイル、ルール併合後も有効宣言は不変)/ phase → legibility(52) → scene(30)、phase → scene(38)。順序は legibility が phase の後、scene が legibility の後(コメントの「Loaded last」「final」が3ファイルとも主張していて矛盾)。
 - 差: スタンダード版は phase-contract / scene-contract(計44.8KB)と visual-emphasis を読まない。テーマIDは nova / intron / vlad / lutetia(保存IDは互換のため旧名、`act-showcase-theme-runtime.js` が `<html data-showcase-theme>` を設定、スタンダード版では classic script、豪華版では bootstrap が `import`)。
-- スタンダード版は legibility を読むが phase / scene は読まない → スタンダードで効いている上書きの組は dedicated ↔ surface の1組のみ(45件)。
+- スタンダード版は legibility を読むが phase / scene は読まない → スタンダードで効いている上書きの組は、統合した theme-surface-system 内の8キーのみ。
 - 3ファイルの順序依存は `tests/showcase-theme-phase-contract.test.mjs` `showcase-theme-surface-system.test.mjs` `showcase-cinematic-theme-coverage.test.mjs` がCSS文字列を固定(値まで見ているかは未確認)。
 
 ## 3. JS の層
@@ -233,8 +234,8 @@ bootstrap から到達するのは21ファイル。`act-showcase*.js` + `showcas
 | # | PR | 対象ファイル | 期待できる削減量 | 壊れやすい点 | 使えるテスト |
 |---|---|---|---|---|---|
 | 1 | 視覚テストの追加(**追加済み: PR #486**。コード変更なし、`visual-regression-baseline` ブランチ側) | `tests/visual/*` に act-showcase / standard × 4テーマ × (opening/title/trailer/handout/summary/board) | 0(安全網) | アニメーション中の撮影は不安定。`stabilize.css` と状態固定が必要。基準画像は別ブランチ運用 | これ自体が以降のPRの安全網 |
-| 2 | 確実に死んでいる宣言の削除(CSSのみ) | §1.2 の14ファイル | 237宣言 ≒ 11.4KB(全体の3%)、ファイル数は変わらない | キー一致は @コンテキスト込みだが、`@media` の文字列表記違い・同一ファイル内の再定義が混ざる(237 vs 234)。ダウンロード出力に埋め込まれる3ファイル(dedicated / surface / legibility)を含む | 1 のvisual、`act-showcase-*` E2E 4本、`showcase-theme-*` 契約テスト、`audit:css` |
-| 3 | dedicated-themes と theme-surface-system の統合(隣接2本) | 2ファイル + entry + standard.html + `showcase-dedicated-output.js` の import 配列 | 1ファイル減、重複45キー(同値21)。バイトは 2 とほぼ同じ分 | スタンダード版・ダウンロードHTMLに同時に効く。`?v=` の更新漏れ(`showcase-asset-version-contract`)。値が違う24キーは後段の値を採る | 1、`showcase-theme-surface-system`、`act-showcase-standard-loading` |
+| 2 | **済(#487)** 確実に死んでいる宣言の削除(CSSのみ) | §1.2 の14ファイル | 237宣言 ≒ 11.4KB(全体の3%)、ファイル数は変わらない | キー一致は @コンテキスト込みだが、`@media` の文字列表記違い・同一ファイル内の再定義が混ざる(237 vs 234)。ダウンロード出力に埋め込まれる3ファイル(dedicated / surface / legibility)を含む | 1 のvisual、`act-showcase-*` E2E 4本、`showcase-theme-*` 契約テスト、`audit:css` |
+| 3 | **済** dedicated-themes と theme-surface-system の統合(隣接2本) | 2ファイル + entry + standard.html + `showcase-dedicated-output.js` の import 配列 | 1ファイル減、重複45キー(同値21)。バイトは 2 とほぼ同じ分 | スタンダード版・ダウンロードHTMLに同時に効く。`?v=` の更新漏れ(`showcase-asset-version-contract`)。値が違う24キーは後段の値を採る | 1、`showcase-theme-surface-system`、`act-showcase-standard-loading` |
 | 4 | 死んだJSの削除と本体呼び出しの整理 | `board-layout` の credits 削除経路、`scenario-writer.syncPosterCredit`(第11節で判断待ち: 削除か、act-meta への機能追加か) | 約30行(未確認) | 削除でなく機能復活を選ぶ場合は別PR | `act-showcase-observer-stability`(observe 引数の固定を要修正)、E2E 4本 |
 | 5 | 本体(builder)が最初から最終文言を作る | アクセス画面の3行(cinematic-enhancer)、NODE ラベル(layout-v2)、visual caption(visual-caption-code)、キャスト名の引用符正規化の二重実行の一本化 | 数十行 + observer 1〜2本(未確認) | 初回描画のちらつき・初期フレームの文言。第11節と同様に修正前後でDOM比較。名前の引用符は display-normalizer と enhancer の両方が走る点に注意(正規化内容の差は未確認) | E2E title-render-order / neotokyo-stability、`act-showcase-neotokyo`、`act-showcase-cinematic-polish` |
 | 6 | CSS 上書きの畳み込み(値の統合) | poster-v2 ← ornament(44)、cinematic-readability ← layout-polish(26)、supporting-cast ← presentation-tuning(23)、最後に theme 3本(phase / legibility / scene) | 最大でテーマ3本 65KB のうち重複150キー分(量は未確認)。@import が減る | 特異度戦(接頭辞違い)で勝敗が変わる。1つずつ別PRに分ける。theme 3本は豪華版のみで最もリスクが高い | 1(全項目)、E2E 4本、`showcase-theme-phase-contract` |
