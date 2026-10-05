@@ -29,7 +29,6 @@
     if (!(root instanceof Element)) return;
     const screens = root.matches(".neotokyo-sequence__screen") ? [root] : [...root.querySelectorAll(".neotokyo-sequence__screen")];
     for (const screen of screens) enhanceScreen(screen);
-    normalizeVisibleQuotes(root);
   }
 
   function enhanceScreen(screen) {
@@ -73,30 +72,6 @@
     );
     copy.parentNode.insertBefore(terminal, copy);
     terminal.append(bar, copy);
-  }
-
-  function normalizeVisibleQuotes(root) {
-    const selectors = [
-      ".neotokyo-sequence__cast-detail h3",
-      ".neotokyo-sequence__summary-cast-body h3",
-      ".poster-v2-name",
-      ".poster-v2-visual__caption strong",
-      ".poster-v2-roster__name"
-    ];
-    const nodes = root.matches?.(selectors.join(",")) ? [root] : [...root.querySelectorAll?.(selectors.join(",")) || []];
-    for (const node of nodes) {
-      const normalized = normalizeDuplicateHandleQuotes(node.textContent);
-      if (normalized !== node.textContent) node.textContent = normalized;
-    }
-  }
-
-  function normalizeDuplicateHandleQuotes(value) {
-    return String(value ?? "")
-      .replace(/“\s*[“"「『‘']+/g, "“")
-      .replace(/[”"」』’']+\s*”/g, "”")
-      .replace(/“{2,}/g, "“")
-      .replace(/”{2,}/g, "”")
-      .replace(/"{2,}/g, '"');
   }
 
   function pulseTyping(target) {

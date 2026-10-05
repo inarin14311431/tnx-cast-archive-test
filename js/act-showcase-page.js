@@ -2,6 +2,7 @@ import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "
 import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=6";
 import { loadPublicShowcase, normalizeShowcaseSlug } from "./public-showcase-service.js?v=1";
 import { buildVisualCaption } from "./act-showcase-visual-caption.js?v=1";
+import { normalizeShowcaseDisplayQuotes } from "./showcase-display-format.js?v=1";
 
 const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city-v2.svg";
 const HANDOUT_PLACEHOLDERS = new Set([
@@ -68,8 +69,8 @@ function createShowcaseModel(data) {
   const casts = Array.isArray(data.casts)
     ? data.casts.slice(0, 6).map(cast => ({
         ...cast,
-        fullName: normalizeDisplayQuotes(cast?.fullName || cast?.full_name || cast?.name),
-        reading: normalizeDisplayQuotes(cast?.reading)
+        fullName: normalizeShowcaseDisplayQuotes(cast?.fullName || cast?.full_name || cast?.name),
+        reading: normalizeShowcaseDisplayQuotes(cast?.reading)
       }))
     : [];
   if (!casts.length) throw new Error("このアクト紹介には表示できるキャストがありません。");
@@ -512,16 +513,6 @@ function escapeCssString(value) {
     "\n": "",
     "\r": ""
   }[character]));
-}
-
-function normalizeDisplayQuotes(value) {
-  return String(value ?? "")
-    .replace(/“\s*[“"「『‘']+/g, "“")
-    .replace(/[”"」』’']+\s*”/g, "”")
-    .replace(/“{2,}/g, "“")
-    .replace(/”{2,}/g, "”")
-    .replace(/"{2,}/g, '"')
-    .trim();
 }
 
 function smoothstep(a, b, value) {

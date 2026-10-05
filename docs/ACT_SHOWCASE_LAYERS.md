@@ -147,7 +147,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 
 | ファイル | 監視 | 書き換え |
 |---|---|---|
-| cinematic-enhancer | `#cinematic-intro` childList/subtree/characterData | access-seal追加(アクセス画面の見出し3行は neotokyo.js が最初から最終文言で出す)、trailerをterminal化、キャスト名の引用符重複の正規化(`normalizeVisibleQuotes`) |
+| cinematic-enhancer | `#cinematic-intro` childList/subtree/characterData | access-seal追加(アクセス画面の見出し3行は neotokyo.js が最初から最終文言で出す)、trailerをterminal化(キャスト名の引用符正規化は手順5cで削除。名前は読み込み時点で正規化済み) |
 | finale-enhancer | intro(同上) | タイトルロゴ構造(meta/ghost/rule)と `dataset.fit`、最終ブリーフィング構造、body class `showcase-neotokyo-title-logo-active` / `-finale-active` |
 | cinematic-polish | pageRoot+intro(characterData含む)/ intro | rAF で `data-fit`・`nameFit`、ACT ENTRY ボタンをフッターに追加 |
 | board-layout | `#showcase-story` と intro | act-metaバー、`polishAccess` マーカー。credits パネルの取得・削除経路は削除済み(手順4) |
@@ -158,7 +158,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 | scenario-writer | `document.body` childList/subtree | 開始/タイトル/サマリーに SCENARIO WRITER 行を追加 |
 | supporting-cast | `document.body` childList/subtree | ゲストを取得し、role修正、サマリーのスタイルを `replaceChildren`、poster の role chip 強調 |
 | final-trailer | `document.documentElement` childList/subtree | 最終ボード上部に `#poster-final-act-trailer` を生成して挿入 |
-| display-normalizer | `document.body` childList/subtree | キャスト名の引用符(`normalizeShowcaseDisplayQuotes`)とタグライン(`formatShowcaseTagline`)の正規化 |
+| display-normalizer | `document.body` childList/subtree | タグライン(`formatShowcaseTagline`)の正規化のみ(名前側の `NAME_SELECTORS` は手順5cで削除) |
 
 ジェネレーター(8、豪華版・スタンダード版では読まれない。ジェネレーター画面用):
 
@@ -185,7 +185,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 | サマリーの style 行 | act-showcase-neotokyo | story-flow `replaceChildren` → supporting-cast `replaceChildren`(2段) | 現存 |
 | handout の context cells | story-flow(ROLEセル) | writing-patterns `replaceChildren` | 現存(story-flow は枠だけ作る設計に整理済み) |
 | ROLE スロット/チップ | act-showcase-neotokyo / page | supporting-cast `repairNeoTokyoRoles` / `emphasizePosterRoles` | 現存 |
-| キャスト名の引用符 | page / neotokyo | cinematic-enhancer `normalizeVisibleQuotes` と display-normalizer `NAME_SELECTORS` | **2箇所で同じ対象を書き換え**(第11節で統合したのはタグラインのみ。両関数の正規化内容が同等かは未確認) |
+| キャスト名の引用符 | showcase-display-format `normalizeShowcaseDisplayQuotes`(規則はここに1つだけ) | - | **解消済み(手順5c)**。名前はデータを読む時点で正規化し、DOMは正規化済みの値から作る: 豪華版 `createShowcaseModel`(cast の `fullName`/`reading`)、スタンダード版 `act-showcase-standard.js`(同)、ゲストは行を読む時点で `displayName`(豪華版 `supporting-cast`、スタンダード版 `standard-guests`)。cinematic-enhancer `normalizeVisibleQuotes`/`normalizeDuplicateHandleQuotes` と display-normalizer の名前側を削除。3つの旧関数は前後空白の trim 以外は同一の結果で、その差はどの経路でも既に trim 済みの値しか来ないため表示に影響しなかった。スタンダード版のナビ/alt は以前は重複引用符のまま出ていたが、いまは正規化済み。単体テスト `showcase-name-normalization`、E2E `act-showcase-name-quotes` |
 | credits パネルの削除 | - | board-layout `credits.remove()` | **削除済み(手順4)**。生成経路なし(page.js の `createCastGrid` は常に `poster-v2-grid--showcase3`。`createCreditsPanel` は cd8ca299 で除去) |
 | poster クレジット行 | - | scenario-writer `syncPosterCredit` | **削除済み(手順4)**。`.poster-v2-credit-table` を生成する経路なし。最終ボードへの SCENARIO WRITER 表示の復活は未実施 |
 
@@ -219,6 +219,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 ### 4.2 E2E(`tests/e2e/test-suites.json` 登録)
 
 - 豪華版のみ4本: `act-showcase-neotokyo-stability`(進行・公開背景・trailer追従)/ `-title-render-order` / `-reduced-motion` / `-final-trailer`。いずれもテーマを切り替えない(4本とも `theme` 参照0)。viewport は既定のみ。
+- 文言・正規化の「書き換え前の表示が一度も出ない」検査(MutationObserver を初期スクリプトで仕込み、全表示を記録): `act-showcase-final-copy`(読み込み画面・アクセス画面3行・進捗ラベル・NODE ラベル。手順5b/5c)と `act-showcase-name-quotes`(重複引用符の名前。豪華版+スタンダード版+ゲスト。手順5c。スタンダード版のE2Eはこれが初)。
 - スタンダード版のE2E: なし。ダウンロード出力HTMLの実描画テスト: なし(`showcase-output-css.test.mjs` は旧出力のハッシュ一致のみ)。
 
 ### 4.3 文字列正規表現のみのテスト(見た目の退行を検出できない)
@@ -235,7 +236,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 | 2 | **済(#487)** 確実に死んでいる宣言の削除(CSSのみ) | §1.2 の14ファイル | 237宣言 ≒ 11.4KB(全体の3%)、ファイル数は変わらない | キー一致は @コンテキスト込みだが、`@media` の文字列表記違い・同一ファイル内の再定義が混ざる(237 vs 234)。ダウンロード出力に埋め込まれる3ファイル(dedicated / surface / legibility)を含む | 1 のvisual、`act-showcase-*` E2E 4本、`showcase-theme-*` 契約テスト、`audit:css` |
 | 3 | **済** dedicated-themes と theme-surface-system の統合(隣接2本) | 2ファイル + entry + standard.html + `showcase-dedicated-output.js` の import 配列 | 1ファイル減、重複45キー(同値21)。バイトは 2 とほぼ同じ分 | スタンダード版・ダウンロードHTMLに同時に効く。`?v=` の更新漏れ(`showcase-asset-version-contract`)。値が違う24キーは後段の値を採る | 1、`showcase-theme-surface-system`、`act-showcase-standard-loading` |
 | 4 | **済** 死んだJSの削除(動作は変えない) | `board-layout` の credits 取得・`remove()`・`readCreditRows`、`scenario-writer.syncPosterCredit`(呼び出しごと)、対応CSSのセレクタ33個(`.poster-v2-panel--credits` / `-credit-table` / `-row` / `-kicker` / `-note`) | JS 約37行、CSS 約37行 | `act-showcase-observer-stability`(observe 引数は不変)、`canonical` / `live-frame-scenario-writer` / `layout-polish` / `ornament-plus` の検査は「存在しないこと」を見る形に変更 | 視覚テスト38枚(許容差0)、E2E 4本 |
-| 5 | 本体(builder)が最初から最終文言を作る | アクセス画面の3行・NODE ラベル(**済: 手順5b**)、visual caption(**済: 手順5a**)、キャスト名の引用符正規化の二重実行の一本化 | 数十行 + observer 1〜2本(未確認) | 初回描画のちらつき・初期フレームの文言。第11節と同様に修正前後でDOM比較。名前の引用符は display-normalizer と enhancer の両方が走る点に注意(正規化内容の差は未確認) | E2E title-render-order / neotokyo-stability、`act-showcase-neotokyo`、`act-showcase-cinematic-polish` |
+| 5 | 本体(builder)が最初から最終文言を作る | アクセス画面の3行・NODE ラベル(**済: 手順5b**)、visual caption(**済: 手順5a**)、キャスト名の引用符正規化の二重実行の一本化(**済: 手順5c**。読み込み時点の正規化に一本化)、読み込み画面・進捗ラベルの旧文言(**済: 手順5c**) | 数十行 + observer 1〜2本(未確認) | 初回描画のちらつき・初期フレームの文言。第11節と同様に修正前後でDOM比較。名前の引用符は3関数を実行して比較済み(trim 以外は同一) | E2E title-render-order / neotokyo-stability、`act-showcase-neotokyo`、`act-showcase-cinematic-polish` |
 | 6 | CSS 上書きの畳み込み(値の統合) | poster-v2 ← ornament(44)、cinematic-readability ← layout-polish(26)、supporting-cast ← presentation-tuning(23)、最後に theme 3本(phase / legibility / scene) | 最大でテーマ3本 65KB のうち重複150キー分(量は未確認)。@import が減る | 特異度戦(接頭辞違い)で勝敗が変わる。1つずつ別PRに分ける。theme 3本は豪華版のみで最もリスクが高い | 1(全項目)、E2E 4本、`showcase-theme-phase-contract` |
 
 - 手順2・3は「見た目が変わらないこと」を機械的に説明できる(同一キーの後勝ち / 同値)。手順5・6は値や順序を変えるので、1 のvisualが先に必要。

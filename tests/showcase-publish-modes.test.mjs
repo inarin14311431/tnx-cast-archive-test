@@ -33,7 +33,7 @@ test("standard public view shares the public service and accepts the current tra
     read("js/act-showcase-standard.js"),
     read("js/public-showcase-service.js")
   ]);
-  assert.match(html, /act-showcase-standard\.js\?v=3/);
+  assert.match(html, /act-showcase-standard\.js\?v=\d+/);
   assert.match(source, /public-showcase-service\.js/);
   assert.match(source, /loadPublicShowcase\(slug\)/);
   assert.match(source, /data\.trailer\.body/);
