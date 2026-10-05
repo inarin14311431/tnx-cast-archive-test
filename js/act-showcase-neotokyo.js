@@ -106,7 +106,7 @@ function createSequenceShell(state) {
   const system = node("div", "neotokyo-sequence__system");
   system.append(
     textNode("span", "", "CONNECTION // SECURE"),
-    textNode("span", "", "NODE // NEOTOKYO")
+    textNode("span", "", "NODE // TOKYO N◎VA")
   );
 
   const skip = textNode("button", "neotokyo-sequence__skip", "SKIP SEQUENCE");
@@ -146,9 +146,9 @@ function createSequenceShell(state) {
 async function showOpening(state) {
   setProgress(state, 5, "SYSTEM ACCESS");
   replaceStage(state, {
-    eyebrow: "01 // SYSTEM ACCESS",
-    title: "ACT FILE",
-    sub: "公開アクトファイルへ接続中…",
+    eyebrow: "01 // N◎VA MUNICIPAL DATABASE",
+    title: "ACT FILE // ACCESS",
+    sub: "ESTABLISHING PUBLIC SESSION",
     status: ["PUBLIC ACT FILE // DETECTED", "SHOWCASE DATA // VERIFIED", "TITLE & CREDITS // READY"]
   });
   await wait(state, 2900);

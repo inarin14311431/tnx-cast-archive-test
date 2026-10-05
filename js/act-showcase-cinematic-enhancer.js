@@ -43,12 +43,6 @@
 
   function enhanceAccess(screen) {
     screen.classList.add("is-cinematic-access");
-    const eyebrow = screen.querySelector(".neotokyo-sequence__eyebrow");
-    const title = screen.querySelector(".neotokyo-sequence__opening-title");
-    const sub = screen.querySelector(".neotokyo-sequence__opening-sub");
-    if (eyebrow) eyebrow.textContent = "01 // N◎VA MUNICIPAL DATABASE";
-    if (title) title.textContent = "ACT FILE // ACCESS";
-    if (sub) sub.textContent = "ESTABLISHING PUBLIC SESSION";
     if (!screen.querySelector(".neotokyo-sequence__access-seal")) {
       const seal = document.createElement("div");
       seal.className = "neotokyo-sequence__access-seal";
