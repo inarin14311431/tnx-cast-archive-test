@@ -209,9 +209,10 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 
 - 実体は `visual-regression-baseline` ブランチの `tests/visual/*`(CI の `visual-regression.yml` が main に上書きコピー)。`run-visual-regression.mjs` は desktop / mobile の2プロジェクトを実行するだけ。
 - 撮影対象: login / archive / cast / troops / troop / sheet / account / acts / showcase-generator / sheet-mobile(各 `nova`・`spectrum-neon` のアプリテーマ)+ テーマ見本(`index.html`)。
-- **ACT SHOWCASE のカバー済み(42枚、PR #486 + opening 4枚。`act-showcase-fixtures.js` の固定データ、CIコンテナで生成、厳密比較で差分0を確認)**:
+- **ACT SHOWCASE のカバー済み(46枚、PR #486 + opening 4枚 + 読み込み画面4枚(手順5c)。`act-showcase-fixtures.js` の固定データ、CIコンテナで生成、厳密比較で差分0を確認)**:
   - スタンダード版 `act-showcase-standard.html`: ACT用4テーマ(nova / intron / vlad / lutetia)× desktop / mobile、ページ全体(8枚)。
   - 豪華版 `act-showcase.html` desktop: 4テーマ × opening / title / trailer / handout(PC1)/ assign(PC1)/ summary / 最終ボード(28枚)。場面の進行は NEXT ボタンのラベルで待つ。
+  - 豪華版 desktop の**読み込み画面**(手順5c、4テーマ、4枚): データ取得 RPC を保留して固定(`installHeldActShowcaseRoutes`)。opening 4枚は手順5c-A で進捗ラベルが `ACT FILE ACCESS // 05%` になったため基準を更新(差分は進捗ラベル行 y=960〜977 のみ、それ以外は0px)。
   - 豪華版 mobile: nova のみ、同6場面(6枚)。
 - **マスクなし(手順5a で解除)**: 最終ボードの `.poster-v2-visual` を含めて比較する。キャプションは page.js が最終形で生成するため決定的(マスク解除前に3回連続撮影で差分0を確認し、最終ボード5枚の基準画像だけ更新した)。
 - **未カバーで残る**: ダウンロード出力HTML(`showcases/*.html`、`showcase-dedicated-output.js` の生成物)、豪華版 mobile の3テーマ(intron / vlad / lutetia)、finale の単独場面(opening は desktop 4テーマをカバー済み。mobile は未)、PC2 以降の handout / assign、trailer の追従スクロール中の状態、reduced-motion 無効時の見た目。`showcase-generator.html` は撮っているが、プレビュー iframe 内の描画内容は対象外(未確認)。
