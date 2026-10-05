@@ -1,6 +1,7 @@
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=4";
 import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=4";
 import { loadPublicShowcase, normalizeShowcaseSlug } from "./public-showcase-service.js?v=1";
+import { buildVisualCaption } from "./act-showcase-visual-caption.js?v=1";
 
 const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city-v2.svg";
 const HANDOUT_PLACEHOLDERS = new Set([
@@ -259,7 +260,6 @@ function createCastGrid(cast) {
 
 function createVisualPanel(cast) {
   const name = text(cast?.fullName) || "CAST";
-  const tagline = text(cast?.tagline);
   const visual = createPanel("01 / CAST", "CAST VISUAL", "poster-v2-panel--visual");
   const visualImage = el("div", "poster-v2-visual");
   const image = document.createElement("img");
@@ -276,8 +276,17 @@ function createVisualPanel(cast) {
   });
   visualImage.append(image);
 
+  // The caption is built in its final form here (assigned style, affiliation, identity code), so
+  // nothing rewrites it afterwards. Rules live in act-showcase-visual-caption.js.
+  const { meta, code } = buildVisualCaption(cast, name);
   const caption = el("div", "poster-v2-visual__caption");
-  caption.append(textEl("span", "", tagline || "PUBLIC CAST ARCHIVE"), textEl("strong", "", name));
+  const metaLine = textEl("span", "poster-v2-visual__meta", meta);
+  metaLine.dataset.visualMetaApplied = "true";
+  metaLine.setAttribute("aria-label", "キャスト公開ビジュアル情報");
+  const codeLine = textEl("strong", "poster-v2-visual__code", code);
+  codeLine.dataset.visualCodeApplied = "true";
+  codeLine.setAttribute("aria-label", "公開ビジュアル識別コード");
+  caption.append(metaLine, codeLine);
   visualImage.append(caption);
   visual.querySelector(".poster-v2-panel__body").append(visualImage);
   return visual;

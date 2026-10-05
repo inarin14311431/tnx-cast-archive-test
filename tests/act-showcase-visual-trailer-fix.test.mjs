@@ -13,7 +13,7 @@ test("final visual/trailer fix loads after presentation tuning through the page 
   const tuning = entry.indexOf("act-showcase-presentation-tuning.css");
   const fix = entry.indexOf("act-showcase-visual-trailer-fix.css");
   assert.ok(tuning >= 0 && fix > tuning);
-  assert.match(bootstrap, /act-showcase-visual-caption-code\.js\?v=[^\"']+/);
+  assert.doesNotMatch(bootstrap, /act-showcase-visual-caption-code/);
 });
 
 test("trailer frame grows to full text and stage owns overflow", async () => {
@@ -29,10 +29,12 @@ test("trailer frame grows to full text and stage owns overflow", async () => {
 });
 
 test("visual caption replaces duplicated cast content with archive metadata and deterministic code", async () => {
-  const js = await read("js/act-showcase-visual-caption-code.js");
-  assert.match(js, /VISUAL TRACE \/\/ NX-/);
-  assert.match(js, /NODE:PUBLIC/);
-  assert.match(js, /poster-v2-visual__meta/);
-  assert.match(js, /poster-v2-visual__code/);
-  assert.match(js, /MutationObserver/);
+  const [rules, page] = await Promise.all([read("js/act-showcase-visual-caption.js"), read("js/act-showcase-page.js")]);
+  assert.match(rules, /VISUAL TRACE \/\/ NX-/);
+  assert.match(rules, /NODE:PUBLIC/);
+  assert.match(page, /poster-v2-visual__meta/);
+  assert.match(page, /poster-v2-visual__code/);
+  // The caption is built once in its final form; no observer rewrites it afterwards.
+  assert.doesNotMatch(rules, /MutationObserver/);
+  assert.match(page, /buildVisualCaption\(cast, name\)/);
 });
