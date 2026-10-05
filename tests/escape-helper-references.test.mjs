@@ -46,6 +46,6 @@ test("runtime files only call escape helpers they define or import", async () =>
 test("cast outfit view uses its newline-safe attribute helper", async () => {
   const source = await readFile(new URL("cast-outfits.js", jsRoot), "utf8");
   assert.match(source, /title="\$\{escapeAttribute\(text\)\}"/);
-  assert.match(source, /function escapeAttribute\(value\)/);
+  assert.match(source, /import \{[^}]*escapeAttributeMultiline as escapeAttribute[^}]*\} from "\.\/dom-escape\.js/);
   assert.doesNotMatch(source, /escapeAttributeWithNewlines/);
 });

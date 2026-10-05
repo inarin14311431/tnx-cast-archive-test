@@ -24,14 +24,14 @@ test("error-state renderer never interpolates a container without an explicit fa
 });
 
 test("archive.js routes its DB-failure catch through the shared error-state helpers", () => {
-  assert.match(archive, /from "\.\/error-state\.js\?v=1"/);
+  assert.match(archive, /from "\.\/error-state\.js\?v=2"/);
   assert.match(archive, /const message = toUserFacingErrorMessage\(error\);/);
   assert.match(archive, /renderErrorState\(castGrid,\s*\{\s*message,\s*onRetry:\s*loadCharacters\s*\}\)/);
   assert.doesNotMatch(archive, /データベースへの接続に失敗しました。/);
 });
 
 test("cast.js never forwards a raw Supabase/PostgREST error.message to the UI", () => {
-  assert.match(cast, /from "\.\/error-state\.js\?v=1"/);
+  assert.match(cast, /from "\.\/error-state\.js\?v=2"/);
   assert.match(cast, /showError\(toUserFacingErrorMessage\(error\), loadCharacter\)/);
   assert.doesNotMatch(cast, /error instanceof Error\s*\n?\s*\?\s*error\.message/);
   assert.match(cast, /throw new AppError\("キャストIDが指定されていません。"\);/);

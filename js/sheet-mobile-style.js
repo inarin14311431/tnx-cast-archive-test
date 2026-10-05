@@ -1,7 +1,8 @@
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2";
+import { escapeHtml as esc } from "./dom-escape.js?v=2";
 const ABILITIES=["reason","passion","life","mundane"],MARKS=["","◎","●","◎●"];
-const $=selector=>document.querySelector(selector);const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));const num=value=>Number(value||0);
+const $=selector=>document.querySelector(selector);const num=value=>Number(value||0);
 let user=null,character=null,draft=null,repairingSummary=false;
 init();
 async function init(){const context=await getMobileEditorContext();user=context.user;character=context.character;if(!user||!character)return;injectDialog();bind();normalizeLoadedMarks(character);renderSummary();observeSummaryOwner();}

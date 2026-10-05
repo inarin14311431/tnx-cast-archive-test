@@ -1,4 +1,4 @@
-import { escapeHtml } from "./dom-escape.js";
+import { escapeHtml } from "./dom-escape.js?v=2";
 const esc = escapeHtml;
 import { getCharacter, getSkills, getOutfits, getCombos } from "./cast-data-store.js?v=2";
 import { formatPurchasePair, formatConcealmentPair } from "./outfit-view-model.js?v=3";

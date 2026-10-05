@@ -1,5 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=1";
+import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2";
 import { STYLE_DATA, UTSUWA_ATTRIBUTES } from "./style-data.js";
 import { isInitialGeneralSkill } from "./general-skill-catalog.js?v=2";
 import { CREATION_ALLOWANCE, paidFixedInitialGeneralLevel, paidSocialConnectionInitialCost, paidSkillLevel, resolveCanonicalCurrent, steppedExperienceCost } from "./sheet-experience-rules.js?v=6";
