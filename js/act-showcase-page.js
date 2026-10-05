@@ -213,8 +213,8 @@ function renderPoster(model) {
 // poster-v2-panel--credits panel was created here just so js/act-showcase-board-layout.js's
 // polishBoard() could scrape RULER/KEY STYLE off it a frame later, then delete it; that transient
 // panel is gone now. board-layout.js's polishBoard()/ensureActMeta() are intentionally left in
-// place unmodified as a no-op safety net (they only act on a poster-v2-panel--credits panel or a
-// grid that isn't already poster-v2-grid--showcase3, neither of which this file produces anymore).
+// place as a no-op safety net (they only act on a grid that isn't already poster-v2-grid--showcase3,
+// which this file no longer produces; the credits-panel handling itself was removed).
 function createActMetaBar(model) {
   const bar = el("section", "poster-v2-act-meta");
   bar.setAttribute("aria-label", "アクト公開情報");
