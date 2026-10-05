@@ -18,7 +18,8 @@ const [surface, phase, legibility, scene, emphasis, entry, standardHtml, output,
 ]);
 
 test("shared surface system is followed by phase behavior, legibility, scene completion, and visual emphasis", () => {
-  assert.ok(entry.indexOf("act-showcase-dedicated-themes.css") < entry.indexOf("act-showcase-theme-surface-system.css"));
+  assert.equal(entry.indexOf("act-showcase-dedicated-themes.css"), -1);
+  assert.ok(surface.indexOf("ACT SHOWCASE dedicated themes.") < surface.indexOf("ACT SHOWCASE surface system."));
   assert.ok(entry.indexOf("act-showcase-theme-surface-system.css") < entry.indexOf("act-showcase-theme-phase-contract.css"));
   assert.ok(entry.indexOf("act-showcase-theme-phase-contract.css") < entry.indexOf("act-showcase-theme-legibility.css"));
   assert.ok(entry.indexOf("act-showcase-theme-legibility.css") < entry.indexOf("act-showcase-theme-scene-contract.css"));
