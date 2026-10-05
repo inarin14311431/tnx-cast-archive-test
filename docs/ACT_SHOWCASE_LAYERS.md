@@ -181,6 +181,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 |---|---|---|---|
 | アクセス画面の見出し3行 | act-showcase-neotokyo(最終文言で生成) | - | **解消済み(手順5b)**。cinematic-enhancer `enhanceAccess` の文言上書きを削除(is-cinematic-access と access-seal は残す)。E2E `act-showcase-final-copy` が書き換え前文言の不在を検査 |
 | `NODE // TOKYO N◎VA` ラベル | act-showcase-neotokyo(最終文言で生成) | - | **解消済み(手順5b)**。cinematic-layout-v2 `normalizeNodeLabel` を削除 |
+| 読み込み画面・進捗ラベルの文言 | act-showcase-neotokyo(`prepareNeoTokyoLoading` / `showOpening`) | - | **文言を統一(手順5c-A)**。旧 `SYSTEM ACCESS` と日本語sub を `ACT FILE // ACCESS` / `CONNECTING TO PUBLIC ACT FILE…` / 進捗 `ACT FILE ACCESS // 05%` に変更(表示が変わる意図した変更)。E2E `act-showcase-final-copy` が旧文言の不在を検査 |
 | poster の visual caption | act-showcase-page(最終形で生成。文言規則は act-showcase-visual-caption.js) | - | **解消済み(手順5a)**。担当スタイル・所属・公開名から1回で組み立て、以後だれも書き換えない。supporting-cast とは role/style の判定関数を共有。`visual-caption-code` は削除 |
 | サマリーの style 行 | act-showcase-neotokyo | story-flow `replaceChildren` → supporting-cast `replaceChildren`(2段) | 現存 |
 | handout の context cells | story-flow(ROLEセル) | writing-patterns `replaceChildren` | 現存(story-flow は枠だけ作る設計に整理済み) |
