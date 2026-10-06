@@ -228,6 +228,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
 
 - 豪華版のみ4本: `act-showcase-neotokyo-stability`(進行・公開背景・trailer追従)/ `-title-render-order` / `-reduced-motion` / `-final-trailer`。いずれもテーマを切り替えない(4本とも `theme` 参照0)。viewport は既定のみ。
 - 表示の修正(polish)の検査: `act-showcase-contrast`(全場面×4テーマ+スタンダード版+読み込み画面の文字コントラスト。文字を透明にして撮った画素と実際の文字色で測る。`::before/::after` の生成文字は CDP で矩形を取る。対象外=装飾: 記号だけの生成文字、巨大な透かし文字 `HO`、サマリーの N◎VA スタンプ)/ `act-showcase-clipping`(代替画像の文字・サマリーの名前・識別コード・空の枠)/ `act-showcase-key-style`(最終ボードの KEY STYLE: 3人・担当なし・6人×3幅)/ `showcase-background-preset-legacy`(偽セッション+モックで、旧プリセットURLのアクトを編集画面で開く)。共通のフィクスチャは `tests/e2e/fixtures/act-showcase-data.js`(visual-regression-baseline の `act-showcase-fixtures.js` と同内容)。
+- 実行時間(polish で判明): 上の polish の検査(特に `act-showcase-contrast` の豪華版×4テーマと `act-showcase-key-style`)は1本が長く、CI の `Public and smoke E2E`(`ci-public`、57本・1 worker)が従来の `timeout-minutes: 8` を超えて途中でキャンセルされた。上限を 20 分に引き上げた(テストは削っていない)。
 - 文言・正規化の「書き換え前の表示が一度も出ない」検査(MutationObserver を初期スクリプトで仕込み、全表示を記録): `act-showcase-final-copy`(読み込み画面・アクセス画面3行・進捗ラベル・NODE ラベル。手順5b/5c)と `act-showcase-name-quotes`(重複引用符の名前。豪華版+スタンダード版+ゲスト。手順5c。スタンダード版のE2Eはこれが初)。
 - スタンダード版のE2E: なし。ダウンロード出力HTMLの実描画テスト: なし(`showcase-output-css.test.mjs` は旧出力のハッシュ一致のみ)。
 
