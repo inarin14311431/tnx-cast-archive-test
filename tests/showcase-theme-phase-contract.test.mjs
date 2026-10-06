@@ -61,7 +61,8 @@ test("assigned casts and guest casts share the same theme token family", () => {
 
 test("legibility layer changes contrast only and keeps phase layout ownership intact", () => {
   assert.match(legibility, /final legibility layer/i);
-  assert.match(legibility, /neotokyo-sequence__screen--title/);
+  // the ACT TITLE screen surface is owned by the scene contract; the superseded legibility copy was removed
+  assert.match(scene, /neotokyo-sequence__screen--title/);
   assert.match(legibility, /neotokyo-sequence__ruler-credit/);
   assert.doesNotMatch(legibility, /stage\.is-trailer-scroll[\s\S]*overflow/);
   assert.doesNotMatch(legibility, /screen--trailer[\s\S]*height:min\(92svh,760px\)/);
