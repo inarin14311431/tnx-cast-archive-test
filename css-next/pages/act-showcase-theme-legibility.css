@@ -388,6 +388,9 @@
   color:var(--showcase-readable-accent-2);
 }
 
+/* Loading screen: the sub line uses the theme's label accent (it hands over to the ACCESS screen's sub line). */
+:root[data-showcase-theme] body.showcase-neotokyo .cinematic-intro__sub{color:var(--showcase-readable-accent)}
+
 /* intron: cinematic sequence */
 :root[data-showcase-theme="intron"] body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__advance{
   border-color:var(--showcase-primary);
