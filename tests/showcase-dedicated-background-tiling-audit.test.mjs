@@ -1,3 +1,4 @@
+import { actShowcaseCss } from "./helpers/act-showcase-css.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -33,7 +34,7 @@ test("deluxe ACT TRAILER stage (poster-v2-trailer-stage) theme override no longe
 });
 
 test("deluxe ACT TRAILER stage base rule (act-showcase-final-trailer.css) states background-repeat explicitly", async () => {
-  const css = await read("css-next/pages/act-showcase-final-trailer.css");
+  const css = await actShowcaseCss("act-showcase-final-trailer");
   const rule = ruleBodyFor(css, "body.showcase-poster-v2-ready .poster-v2-trailer-stage");
   assert.match(rule, /background-position:center/);
   assert.match(rule, /background-size:cover/);
@@ -49,7 +50,7 @@ test("deluxe ambient stage theme override (act-showcase-theme-surface-system.css
 });
 
 test("deluxe poster board theme override (act-showcase-ornament.css) no longer relies on implicit background-size/repeat", async () => {
-  const css = await read("css-next/pages/act-showcase-ornament.css");
+  const css = await actShowcaseCss("act-showcase-ornament");
   const rule = ruleBodyFor(css, "body.showcase-poster-v2-ready .poster-v2-board:before");
   assert.match(rule, /background-position:center top/);
   assert.match(rule, /background-size:cover/);
@@ -80,7 +81,7 @@ test("deluxe opening hero + poster board theme overrides (act-showcase-theme-sur
 });
 
 test("deluxe opening hero visual-emphasis overrides (act-showcase-visual-emphasis.css) state background-size/repeat explicitly", async () => {
-  const css = await read("css-next/pages/act-showcase-visual-emphasis.css");
+  const css = await actShowcaseCss("act-showcase-visual-emphasis");
   const base = ruleBodyFor(css, ":root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .scene-opening:before");
   assert.match(base, /background-size:cover,contain/);
   assert.match(base, /background-repeat:no-repeat,no-repeat/);
@@ -92,7 +93,7 @@ test("deluxe opening hero visual-emphasis overrides (act-showcase-visual-emphasi
 });
 
 test("deluxe opening hero mobile override (act-showcase-cinematic-v2.css) is self-contained for background-repeat", async () => {
-  const css = await read("css-next/pages/act-showcase-cinematic-v2.css");
+  const css = await actShowcaseCss("act-showcase-cinematic-v2");
   const mediaBlock = css.slice(css.indexOf("@media (max-width:760px)"));
   const rule = ruleBodyFor(mediaBlock, "body.showcase-poster-v2-ready.showcase-published-background-restored .scene-opening:before");
   assert.match(rule, /background-size:cover,contain/);

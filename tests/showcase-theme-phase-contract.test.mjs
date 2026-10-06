@@ -1,3 +1,4 @@
+import { actShowcaseCssEntry, actShowcaseCss } from "./helpers/act-showcase-css.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -5,11 +6,11 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 const [entry, phase, legibility, scene, emphasis] = await Promise.all([
-  read("css-next/pages/act-showcase-entry.css"),
+  actShowcaseCssEntry(),
   read("css-next/pages/act-showcase-theme-phase-contract.css"),
   read("css-next/pages/act-showcase-theme-legibility.css"),
-  read("css-next/pages/act-showcase-theme-scene-contract.css"),
-  read("css-next/pages/act-showcase-visual-emphasis.css")
+  actShowcaseCss("act-showcase-theme-scene-contract"),
+  actShowcaseCss("act-showcase-visual-emphasis")
 ]);
 
 test("phase contract is followed by legibility, scene completion, and final visual emphasis", () => {
