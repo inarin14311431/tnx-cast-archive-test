@@ -82,7 +82,6 @@ test("legibility layer owns the broad screenshot-critical contrast surfaces", ()
   assert.match(legibility, /opening-ruler/);
   assert.match(legibility, /poster-ornament__orbit/);
   assert.match(legibility, /poster-v2-aside/);
-  assert.match(legibility, /neotokyo-sequence__screen--title/);
   assert.match(legibility, /neotokyo-sequence__act-title/);
   assert.match(legibility, /neotokyo-sequence__ruler-credit/);
   assert.match(legibility, /neotokyo-sequence__cast-tagline/);
@@ -91,6 +90,8 @@ test("legibility layer owns the broad screenshot-critical contrast surfaces", ()
 
 test("scene completion contract covers all eight reported cinematic regressions", () => {
   assert.match(sceneContract, /neotokyo-story__title-note/);
+  // the ACT TITLE screen surface is owned here; the superseded legibility copy was removed
+  assert.match(sceneContract, /neotokyo-sequence__screen--title/);
   assert.match(sceneContract, /neotokyo-sequence__ruler-name/);
   assert.match(sceneContract, /neotokyo-title-logo__meta/);
   assert.match(sceneContract, /neotokyo-sequence__readout:after/);
