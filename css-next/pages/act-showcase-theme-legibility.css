@@ -11,6 +11,12 @@
   --showcase-readable-border:rgba(var(--showcase-primary-rgb),.38);
   --showcase-readable-border-secondary:rgba(var(--showcase-secondary-rgb),.52);
   --showcase-readable-shadow:0 22px 64px rgba(var(--showcase-bg-rgb),.34);
+  --showcase-readable-accent:var(--showcase-tertiary);
+  --showcase-readable-accent-2:var(--showcase-secondary);
+  --showcase-on-dark-text:#f4fdff;
+  --showcase-on-dark-muted:#c4d6dc;
+  --showcase-on-dark-accent:#9fe8ff;
+  --showcase-on-dark-accent-2:#ffb3e6;
 }
 :root[data-showcase-theme="nova"]{
   --showcase-readable-text:#f4fdff;
@@ -28,36 +34,6 @@
   --showcase-readable-border:rgba(23,23,23,.30);
   --showcase-readable-border-secondary:rgba(143,49,91,.48);
   --showcase-readable-shadow:0 22px 54px rgba(23,23,23,.14);
-}
-:root[data-showcase-theme="vlad"]{
-  --showcase-readable-text:#fff4f5;
-  --showcase-readable-muted:#cfabb0;
-  --showcase-readable-surface:rgba(26,8,12,.95);
-  --showcase-readable-surface-strong:rgba(12,3,5,.985);
-  --showcase-readable-page:#070203;
-}
-:root[data-showcase-theme="lutetia"]{
-  --showcase-readable-text:#f3f8ff;
-  --showcase-readable-muted:#b9cbe8;
-  --showcase-readable-surface:rgba(12,25,48,.95);
-  --showcase-readable-surface-strong:rgba(6,13,28,.985);
-  --showcase-readable-page:#050b18;
-}
-
-/* Text tokens for the places the legacy cinematic / poster CSS hard-coded a dark-palette colour (white, cyan,
-   pale blue). --showcase-readable-accent / -accent-2 are the label accents on the theme's own surface;
-   --showcase-on-dark-* are for the dark slate plates (roster cards, visual caption, footer) that every theme keeps. */
-:root[data-showcase-theme]{
-  --showcase-readable-accent:var(--showcase-tertiary);
-  --showcase-readable-accent-2:var(--showcase-secondary);
-  --showcase-on-dark-text:#f4fdff;
-  --showcase-on-dark-muted:#c4d6dc;
-  --showcase-on-dark-accent:#9fe8ff;
-  --showcase-on-dark-accent-2:#ffb3e6;
-}
-:root[data-showcase-theme="vlad"]{--showcase-on-dark-accent:#ff9fae;--showcase-on-dark-accent-2:#ffc2cc}
-:root[data-showcase-theme="lutetia"]{--showcase-on-dark-accent:#9fc7ff;--showcase-on-dark-accent-2:#c8b8ff}
-:root[data-showcase-theme="intron"]{
   --showcase-readable-accent:#285440;
   --showcase-readable-accent-2:#7a2650;
   --showcase-on-dark-text:#f5f7f9;
@@ -65,6 +41,29 @@
   --showcase-on-dark-accent:#bfeaf8;
   --showcase-on-dark-accent-2:#ffc2e8;
 }
+:root[data-showcase-theme="vlad"]{
+  --showcase-readable-text:#fff4f5;
+  --showcase-readable-muted:#cfabb0;
+  --showcase-readable-surface:rgba(26,8,12,.95);
+  --showcase-readable-surface-strong:rgba(12,3,5,.985);
+  --showcase-readable-page:#070203;
+  --showcase-on-dark-accent:#ff9fae;
+  --showcase-on-dark-accent-2:#ffc2cc;
+}
+:root[data-showcase-theme="lutetia"]{
+  --showcase-readable-text:#f3f8ff;
+  --showcase-readable-muted:#b9cbe8;
+  --showcase-readable-surface:rgba(12,25,48,.95);
+  --showcase-readable-surface-strong:rgba(6,13,28,.985);
+  --showcase-readable-page:#050b18;
+  --showcase-on-dark-accent:#9fc7ff;
+  --showcase-on-dark-accent-2:#c8b8ff;
+}
+
+/* Text tokens for the places the legacy cinematic / poster CSS hard-coded a dark-palette colour (white, cyan,
+   pale blue). --showcase-readable-accent / -accent-2 are the label accents on the theme's own surface;
+   --showcase-on-dark-* are for the dark slate plates (roster cards, visual caption, footer) that every theme keeps.
+   They are declared in the per-theme token blocks above. */
 
 /* ---------- STANDARD + generated HTML ---------- */
 :root[data-showcase-theme] body#act-showcase-standard-page{

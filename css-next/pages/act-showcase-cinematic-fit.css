@@ -70,6 +70,5 @@ body#act-showcase-page .poster-v2-visual .poster-v2-visual__caption .poster-v2-v
     max-width:none;
     transform:translate(-50%,-50%);
     object-fit:cover;
-    object-position:50% 50% !important;
   }
 }
