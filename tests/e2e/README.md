@@ -33,6 +33,7 @@ $env:E2E_TROOP_ID="TRP-56F796299BEC"
 E2Eの正規分類は `tests/e2e/test-suites.json` で一元管理します。新しい `.spec.js` は必ずいずれかのグループへ追加します。`npm run audit:e2e` が未分類・存在しないspec参照・CI実行漏れを検出します。
 
 - `ci-public`: PRごとに実行する公開画面・smoke。実DBへの意図的な書込みは行わない。
+- `ci-act-showcase`: ACT SHOWCASE(公開ページ・生成画面の背景プリセット)の検査。長いので**関係するPRのときだけ**実行する(下記)。
 - `ci-editor`: PRごとに実行する認証編集画面。SKDマスタ検索を含み、意図的なlive-writeは行わない。
 - `ci-mobile`: PRごとに実行するモバイル回帰。
 - `live-write`: 承認済みテスト所有者の実DBへ書込み・復元まで行う高コスト確認。通常PR CIから分離する。
@@ -40,6 +41,7 @@ E2Eの正規分類は `tests/e2e/test-suites.json` で一元管理します。�
 
 ```powershell
 npm.cmd run e2e:ci-public
+npm.cmd run e2e:ci-act-showcase
 npm.cmd run e2e:ci-editor
 npm.cmd run e2e:ci-mobile
 npm.cmd run e2e:live-write
@@ -89,7 +91,7 @@ npx.cmd playwright show-report
 
 ## GitHub Actions
 
-`.github/workflows/playwright.yml` は `ci-public` / `ci-editor` / `ci-mobile` の3グループだけを実行します。workflowへ個別 `.spec.js` を直接列挙せず、manifest-backed npm scriptsを呼び出します。
+`.github/workflows/playwright.yml` は `ci-public` / `ci-act-showcase` / `ci-editor` / `ci-mobile` の4グループだけを実行します。`ci-act-showcase` は `tests/e2e/test-suites.json` の `triggerPaths` に一致するファイルを変えたPRと、手動実行(`workflow_dispatch`)のときだけ動きます。判定は `scripts/e2e-changed-groups.mjs` がジョブ単位で行い(ワークフロー全体の `on.pull_request.paths` は使わない。他の必須ジョブまで止まるため)、動かないときは `Act showcase E2E` が skipped になります(必須チェックでは成功扱い)。workflowへ個別 `.spec.js` を直接列挙せず、manifest-backed npm scriptsを呼び出します。
 
 認証必須テストもCIで実行する場合、Repository Settings > Secrets and variables > Actions に以下を登録します。
 
