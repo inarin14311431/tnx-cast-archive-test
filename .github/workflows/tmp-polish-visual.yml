@@ -1,0 +1,53 @@
+name: Temp polish visual (remove before merge)
+
+on:
+  push:
+    branches: [fix/act-showcase-polish]
+
+permissions:
+  contents: write
+
+env:
+  BASE_BRANCH: test/visual-act-showcase-polish
+
+jobs:
+  verify:
+    name: Verify strict x3 (updated baselines)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+          path: .visual-reference
+      - run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+          cat > playwright.visual.strict.config.js <<'CFG'
+          import base from "./playwright.visual.config.js";
+          export default {
+            ...base,
+            expect: { ...base.expect, toHaveScreenshot: { ...base.expect.toHaveScreenshot, maxDiffPixelRatio: 0, maxDiffPixels: 0, threshold: 0 } }
+          };
+          CFG
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Strict compare x3, deluxe + standard + loading, desktop + mobile
+        shell: bash
+        run: |
+          set -o pipefail
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介\((豪華版|スタンダード|豪華版・読み込み中)\)" --repeat-each=3 --reporter=list 2>&1 | grep -E "✓|✘|  -  |passed|failed|skipped" | tee /tmp/verify.log
+      - name: Repository normal-tolerance compare of the generator page
+        shell: bash
+        run: |
+          set -o pipefail
+          npx playwright test --config=playwright.visual.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介生成" --reporter=list 2>&1 | grep -E "✓|✘|passed|failed" | tee /tmp/generator.log
