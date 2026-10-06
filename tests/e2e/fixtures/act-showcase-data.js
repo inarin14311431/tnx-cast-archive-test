@@ -126,10 +126,10 @@ async function fulfill(route, body) {
   return route.fulfill({ status: 200, headers: corsHeaders, body: JSON.stringify(body) });
 }
 
-export async function installActShowcaseRoutes(page) {
+export async function installActShowcaseRoutes(page, data = showcaseData) {
   // Remote web fonts would make the first frame depend on the network.
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
-  await page.route("**/rest/v1/rpc/get_public_act_showcase", route => fulfill(route, showcaseData));
+  await page.route("**/rest/v1/rpc/get_public_act_showcase", route => fulfill(route, data));
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => fulfill(route, guestData));
 }
 
