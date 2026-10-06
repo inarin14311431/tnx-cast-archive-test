@@ -218,6 +218,7 @@ bootstrap から到達するのは21ファイル(visual-caption-code を削除�
   - 豪華版 `act-showcase.html` desktop: 4テーマ × opening / title / trailer / handout(PC1)/ assign(PC1)/ summary / 最終ボード(28枚)。場面の進行は NEXT ボタンのラベルで待つ。
   - 豪華版 desktop の**読み込み画面**(手順5c、4テーマ、4枚): データ取得 RPC を保留して固定(`installHeldActShowcaseRoutes`)。opening 4枚は手順5c-A で進捗ラベルが `ACT FILE ACCESS // 05%` になったため基準を更新(差分は進捗ラベル行 y=960〜977 のみ、それ以外は0px)。
   - 豪華版 mobile: nova のみ、同6場面(6枚)。
+- **表示の修正(polish)での基準更新**: intron の可読性(A)・読み込み画面の書体(B)・サマリー/最終ボード/代替画像の切れ(D)で、見た目が変わった28枚だけを基準更新(変更領域は基準更新PRの本文に1枚ずつ記載)。背景プリセット差し替え(C)は `showcase-generator.html` の撮影範囲にプリセット一覧が入らないため、generator の基準画像は更新なし。
 - **マスクなし(手順5a で解除)**: 最終ボードの `.poster-v2-visual` を含めて比較する。キャプションは page.js が最終形で生成するため決定的(マスク解除前に3回連続撮影で差分0を確認し、最終ボード5枚の基準画像だけ更新した)。
 - **未カバーで残る**: ダウンロード出力HTML(`showcases/*.html`、`showcase-dedicated-output.js` の生成物)、豪華版 mobile の3テーマ(intron / vlad / lutetia)、finale の単独場面(opening は desktop 4テーマをカバー済み。mobile は未)、PC2 以降の handout / assign、trailer の追従スクロール中の状態、reduced-motion 無効時の見た目。`showcase-generator.html` は撮っているが、プレビュー iframe 内の描画内容は対象外(未確認)。
 - 既存の基準画像54枚は 2026-10-05 時点で main と一致。ただし `cast-spectrum-neon-visual-desktop.png` だけは約20%ずれていて、CI が比較対象外にしている。
