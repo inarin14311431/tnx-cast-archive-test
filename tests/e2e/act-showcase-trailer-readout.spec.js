@@ -19,6 +19,7 @@ async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) 
     const samples = [];
     window.__trailerSamples = samples;
     const watched = new Map();
+    window.__trailerWatched = watched;
     // Measured inside the animation frame, right after the frame loop of js/act-showcase-cinematic-layout-v2.js has
     // run (this sampler starts its own loop only after the trailer exists, so its callback is registered later and
     // runs later in every frame). That is the state that is painted: typing timers run before the animation-frame
@@ -65,6 +66,7 @@ async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) 
           height: terminal ? terminal.getBoundingClientRect().height : null,
           frameBottom: terminal ? terminal.getBoundingClientRect().bottom : null,
           inlineHeight: terminal?.style.height || "",
+          type: { pattern: readout.closest(".neotokyo-sequence__screen--trailer")?.dataset.trailerPattern || "", fontSize: style.fontSize, lineHeight: style.lineHeight, padding: style.padding },
           lineHeight, length, caretTop, caretBottom, viewport: innerHeight, scrollY: Math.round(scrollY), moved
         });
       }
@@ -93,7 +95,29 @@ async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) 
   const samples = await page.evaluate(() => window.__trailerSamples);
   // the frame's height once the reading has ended (the frame is released to its natural height)
   const finalHeight = await page.locator(".neotokyo-sequence__trailer-terminal").evaluate(element => element.getBoundingClientRect().height);
-  return Object.assign(samples, { finalHeight });
+  // the type and the position of every watched character once the reading has ended, to compare with while typing
+  const after = await page.evaluate(() => {
+    const readout = document.querySelector(".neotokyo-sequence__readout--split");
+    const style = getComputedStyle(readout);
+    const text = readout.querySelector(".neotokyo-sequence__readout-read").firstChild;
+    const box = readout.getBoundingClientRect();
+    const lineHeight = parseFloat(style.lineHeight);
+    const moved = [];
+    for (const [index, before] of window.__trailerWatched) {
+      const range = document.createRange();
+      range.setStart(text, index);
+      range.setEnd(text, index + 1);
+      const rect = [...range.getClientRects()].filter(item => item.height > 0)[0];
+      if (!rect) continue;
+      const position = [(rect.top - box.top) / lineHeight, (rect.left - box.left) / box.width];
+      if (Math.abs(before[0] - position[0]) > 0.3 || Math.abs(before[1] - position[1]) > 0.006) moved.push({ index, before, position });
+    }
+    return {
+      type: { pattern: readout.closest(".neotokyo-sequence__screen--trailer")?.dataset.trailerPattern || "", fontSize: style.fontSize, lineHeight: style.lineHeight, padding: style.padding },
+      moved
+    };
+  });
+  return Object.assign(samples, { finalHeight, after });
 }
 
 // The caret line's bottom may hang at most one line below the frame's bottom edge: the frame never falls so far behind
@@ -178,3 +202,24 @@ test("ACT TRAILER 読み上げ後: 枠は自然な最終の高さに戻り、全
   // the frame is released: no inline height / overflow left on it
   await expect(page.locator(".neotokyo-sequence__trailer-terminal")).not.toHaveAttribute("style", /height/);
 });
+
+// The writing pattern (font size, line height, padding) is decided from the whole text before the reading starts, so the
+// reading does not change the type when it ends: nothing is re-laid out and the frame does not jump.
+for (const [label, size] of [["PC 1440x1000", { width: 1440, height: 1000 }], ["スマホ 390x844", { width: 390, height: 844 }]]) {
+  for (const [bodyLabel, body] of [["短文", SHORT_BODY], ["長文", LONG_BODY]]) {
+    test(`ACT TRAILER 読み上げ(${label}, ${bodyLabel}): 型は読み上げ前から確定し、終了の前後で文字サイズ・行間・余白が変わらない`, async ({ page }) => {
+      test.setTimeout(90_000);
+      await page.setViewportSize(size);
+      const samples = await typeTrailerAndSample(page, body);
+      expect(samples.length, "typing is sampled over several frames").toBeGreaterThan(5);
+      expect(samples[0].type.pattern, "the pattern is set from the first reading frame").not.toBe("");
+      const types = new Set([...samples.map(sample => JSON.stringify(sample.type)), JSON.stringify(samples.after.type)]);
+      expect([...types], "same pattern / font-size / line-height / padding at the start, while reading and after").toHaveLength(1);
+      // the shown text keeps its place when the reading ends
+      expect(samples.after.moved.slice(0, 3), "shown characters keep their place at the end").toEqual([]);
+      // the frame is released to its natural height: it differs from the last frame by at most one line
+      const last = samples.at(-1);
+      expect(Math.abs(samples.finalHeight - last.height), `last ${last.height} -> final ${samples.finalHeight}`).toBeLessThanOrEqual(last.lineHeight + 0.5);
+    });
+  }
+}
