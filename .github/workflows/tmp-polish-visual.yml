@@ -54,6 +54,10 @@ jobs:
               const i = (y * a.width + x) * 4; const d = Math.max(Math.abs(a.data[i]-e.data[i]), Math.abs(a.data[i+1]-e.data[i+1]), Math.abs(a.data[i+2]-e.data[i+2]));
               if (d) { count++; max = Math.max(max, d); minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); const b = Math.floor(y / 100) * 100; rows.set(b, (rows.get(b) || 0) + 1); }
             }
+            let lighter = 0, darker = 0, sa = [0,0,0], se = [0,0,0];
+            for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) { const i = (y * a.width + x) * 4; const la = a.data[i]+a.data[i+1]+a.data[i+2], le = e.data[i]+e.data[i+1]+e.data[i+2]; if (la > le) lighter++; else if (la < le) darker++; for (let c = 0; c < 3; c++) { sa[c] += a.data[i+c]; se[c] += e.data[i+c]; } }
+            const n = Math.max(1, (maxX-minX+1)*(maxY-minY+1));
+            console.log("DIAG-DETAIL", path.basename(path.dirname(actual)), `actualLighter=${lighter} actualDarker=${darker} meanActual=${sa.map(v=>Math.round(v/n))} meanExpected=${se.map(v=>Math.round(v/n))}`);
             console.log("DIAG", path.basename(path.dirname(actual)), "pixels=" + count, "maxDelta=" + max, `x=${minX}..${maxX} y=${minY}..${maxY}`, "rows:", [...rows.entries()].map(([k, v]) => `${k}:${v}`).join(" "));
           }
           JS
@@ -65,7 +69,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --grep "アクト紹介\(スタンダード\) (nova|vlad|lutetia)" --repeat-each=15 --reporter=list 2>&1 | grep -E "✓|✘|passed|failed" | tee /tmp/diag.log
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --grep "アクト紹介\(スタンダード\) (nova|vlad|lutetia)" --repeat-each=40 --reporter=list 2>&1 | grep -E "✓|✘|passed|failed" | tee /tmp/diag.log
       - name: Where the failing screenshots differ
         continue-on-error: true
         run: node diag.cjs
