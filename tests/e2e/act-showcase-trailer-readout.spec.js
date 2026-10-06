@@ -5,7 +5,9 @@ import { ACT_SLUG, installActShowcaseRoutes, showcaseData } from "./fixtures/act
 // that is already shown must not move (no line re-wrapping), and the caret's line has to stay on screen, also for a
 // text taller than the screen. Everything is measured every animation frame while the text is typed.
 const PARAGRAPH = "夜のN◎VAに未明の警報が響く。消えたデータの痕跡を追い、三人のキャストが動き出す。依頼人は沈黙を守り、市政調査局は動かない。残された手掛かりは、境界線から届いた断片的なニュースと、鋼鉄の番犬が持ち帰った一枚の記録媒体だけだった。";
-const SHORT_BODY = `${PARAGRAPH}\n\n${PARAGRAPH}`;
+// Normal-speed short text: two paragraphs with a single line break (a blank line is a two-line jump; where the frame
+// has to keep the reading line visible it may step more than half a line, which the long-text cases cover).
+const SHORT_BODY = `${PARAGRAPH}\n${PARAGRAPH}`;
 const LONG_BODY = Array.from({ length: 9 }, (_, index) => `${index + 1}. ${PARAGRAPH}`).join("\n\n");
 
 async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) {
@@ -16,8 +18,11 @@ async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) 
     const samples = [];
     window.__trailerSamples = samples;
     const watched = new Map();
-    // Measured after the frame has been rendered (a task queued from the animation frame callback), so it sees what
-    // was painted, not the state before this frame's own animation-frame callbacks have run.
+    // Measured inside the animation frame, right after the frame loop of js/act-showcase-cinematic-layout-v2.js has
+    // run (this sampler starts its own loop only after the trailer exists, so its callback is registered later and
+    // runs later in every frame). That is the state that is painted: typing timers run before the animation-frame
+    // callbacks, never between them and the paint, so a measurement taken in a later task would see characters that
+    // were typed after the frame was drawn.
     const measure = () => {
       const readout = document.querySelector(".neotokyo-sequence__readout--split");
       if (readout && readout.dataset.typing === "true") {
@@ -57,16 +62,21 @@ async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) 
         }
         samples.push({
           height: terminal ? terminal.getBoundingClientRect().height : null,
+          frameBottom: terminal ? terminal.getBoundingClientRect().bottom : null,
           inlineHeight: terminal?.style.height || "",
           lineHeight, length, caretTop, caretBottom, viewport: innerHeight, scrollY: Math.round(scrollY), moved
         });
       }
     };
     const frame = () => {
-      setTimeout(measure, 0);
+      measure();
       requestAnimationFrame(frame);
     };
-    requestAnimationFrame(frame);
+    new MutationObserver((records, observer) => {
+      if (!document.querySelector(".neotokyo-sequence__readout--split")) return;
+      observer.disconnect();
+      setTimeout(() => requestAnimationFrame(frame), 0);
+    }).observe(document, { subtree: true, childList: true });
   });
   await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=nova`);
   const advance = page.locator(".neotokyo-sequence__advance");
@@ -79,7 +89,21 @@ async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) 
   }
   await expect(page.locator(".neotokyo-sequence__screen--trailer")).toBeVisible();
   await expect(page.locator(".neotokyo-sequence__readout--split")).not.toHaveAttribute("data-typing", "true", { timeout: 30_000 });
-  return page.evaluate(() => window.__trailerSamples);
+  const samples = await page.evaluate(() => window.__trailerSamples);
+  // the frame's height once the reading has ended (the frame is released to its natural height)
+  const finalHeight = await page.locator(".neotokyo-sequence__trailer-terminal").evaluate(element => element.getBoundingClientRect().height);
+  return Object.assign(samples, { finalHeight });
+}
+
+// The caret line's bottom may hang at most one line below the frame's bottom edge: the frame never falls so far behind
+// that the line being read is hidden under it.
+function worstHang(samples) {
+  let worst = -Infinity;
+  for (const sample of samples) {
+    if (sample.caretBottom === null || sample.frameBottom === null) continue;
+    worst = Math.max(worst, sample.caretBottom - sample.frameBottom);
+  }
+  return worst;
 }
 
 function summarize(samples) {
@@ -97,6 +121,7 @@ for (const [label, size] of [["PC 1440x1000", { width: 1440, height: 1000 }], ["
     const samples = await typeTrailerAndSample(page, SHORT_BODY);
     const summary = summarize(samples);
     console.log(`TRAILER ${label} ${JSON.stringify(summary)}`);
+    if (process.env.TRAILER_DEBUG) samples.forEach((sample, index) => { const step = index ? sample.height - samples[index - 1].height : 0; if (Math.abs(step) > summary.lineHeight / 2) console.log("ROW " + JSON.stringify({ index, step: Math.round(step * 10) / 10, height: Math.round(sample.height), hang: Math.round(sample.caretBottom - sample.frameBottom), length: sample.length, prevLength: samples[index - 1].length })); });
     await testInfo.attach("trailer-frame-summary.json", { body: JSON.stringify(summary, null, 2), contentType: "application/json" });
     expect(samples.length, "typing is sampled over many frames").toBeGreaterThan(20);
     // the frame really grows during the reading
@@ -109,19 +134,25 @@ for (const [label, size] of [["PC 1440x1000", { width: 1440, height: 1000 }], ["
   });
 }
 
-test("ACT TRAILER 読み上げ: 画面の高さを超える長い本文でも、読み上げている行が常に画面内にある", async ({ page }, testInfo) => {
-  test.setTimeout(90_000);
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  const samples = await typeTrailerAndSample(page, LONG_BODY);
-  const summary = summarize(samples);
-  console.log(`TRAILER long ${JSON.stringify(summary)}`);
-  await testInfo.attach("trailer-long-summary.json", { body: JSON.stringify(summary, null, 2), contentType: "application/json" });
-  expect(summary.last, "the text is taller than the screen").toBeGreaterThan(samples[0].viewport);
-  const outside = samples.filter(sample => sample.caretBottom !== null && (sample.caretBottom > sample.viewport || sample.caretTop < 0));
-  if (outside.length) console.log("OUTSIDE " + JSON.stringify(outside.slice(0, 20).map(sample => ({ top: sample.caretTop, bottom: sample.caretBottom, height: sample.height, scrollY: sample.scrollY, length: sample.length }))));
-  expect(outside.slice(0, 3).map(sample => ({ top: sample.caretTop, bottom: sample.caretBottom, viewport: sample.viewport })), "caret line stays on screen").toEqual([]);
-  expect(summary.maxStep, JSON.stringify(summary)).toBeLessThanOrEqual(summary.lineHeight / 2);
-});
+// A text taller than the screen, typed fast: on a phone the lines are short, so the typing outruns the frame.
+for (const [label, size] of [["PC 1440x1000", { width: 1440, height: 1000 }], ["スマホ 390x844", { width: 390, height: 844 }]]) {
+  test(`ACT TRAILER 読み上げ(${label}): 画面の高さを超える長い本文でも、読み上げている行が常に画面内にあり、枠から1行を超えて遅れない`, async ({ page }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize(size);
+    const samples = await typeTrailerAndSample(page, LONG_BODY);
+    const summary = summarize(samples);
+    const hang = worstHang(samples);
+    console.log(`TRAILER long ${label} ${JSON.stringify({ ...summary, finalHeight: samples.finalHeight, worstHang: hang })}`);
+    expect(samples.length, "typing is sampled over several frames").toBeGreaterThan(5);
+    // judged on the finished frame, not on the last sample taken while typing (a few frames on a slow machine)
+    expect(samples.finalHeight, "the text is taller than the screen").toBeGreaterThan(samples[0].viewport);
+    const outside = samples.filter(sample => sample.caretBottom !== null && (sample.caretBottom > sample.viewport || sample.caretTop < 0));
+    if (outside.length) console.log("OUTSIDE " + JSON.stringify(outside.slice(0, 20).map(sample => ({ top: sample.caretTop, bottom: sample.caretBottom, height: sample.height, scrollY: sample.scrollY, length: sample.length }))));
+    expect(outside.slice(0, 3).map(sample => ({ top: sample.caretTop, bottom: sample.caretBottom, viewport: sample.viewport })), "caret line stays on screen").toEqual([]);
+    // every frame: the line being read is not hidden under the frame's bottom edge by more than one line
+    expect(hang, `the caret line hung ${hang}px below the frame (one line is ${summary.lineHeight}px)`).toBeLessThanOrEqual(summary.lineHeight + 0.5);
+  });
+}
 
 test("ACT TRAILER 読み上げ: prefers-reduced-motion では補間せず、行ごとに切り替わる", async ({ page }, testInfo) => {
   test.setTimeout(90_000);

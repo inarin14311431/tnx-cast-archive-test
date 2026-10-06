@@ -1,4 +1,4 @@
-import { settleHeight } from "./act-showcase-trailer-settle.js?v=1";
+import { settleHeight } from "./act-showcase-trailer-settle.js?v=2";
 
 (() => {
   if (document.body?.id !== "act-showcase-page") return;
@@ -151,9 +151,11 @@ import { settleHeight } from "./act-showcase-trailer-settle.js?v=1";
     const extra = terminalStyle.boxSizing === "border-box"
       ? 0
       : parseFloat(terminalStyle.paddingTop) + parseFloat(terminalStyle.paddingBottom) + parseFloat(terminalStyle.borderTopWidth) + parseFloat(terminalStyle.borderBottomWidth);
+    const paddingBottom = parseFloat(readoutStyle.paddingBottom);
     return {
-      height: lineBottom - terminalRect.top + parseFloat(readoutStyle.paddingBottom) + parseFloat(terminalStyle.borderBottomWidth) - extra,
-      lineHeight
+      height: lineBottom - terminalRect.top + paddingBottom + parseFloat(terminalStyle.borderBottomWidth) - extra,
+      lineHeight,
+      paddingBottom
     };
   }
 
@@ -164,11 +166,13 @@ import { settleHeight } from "./act-showcase-trailer-settle.js?v=1";
     document.body.classList.add("showcase-trailer-document-scroll");
     readout.scrollTop = 0;
 
-    const { height: target, lineHeight } = frameHeightForCaret(readout, terminal);
+    const { height: target, lineHeight, paddingBottom } = frameHeightForCaret(readout, terminal);
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const elapsed = now - loop.last;
     loop.last = now;
-    loop.current = settleHeight(loop.current, target, elapsed, { reduced, maxStep: lineHeight * 0.45 });
+    // The reading line must stay in view: its bottom may hang at most one line below the frame's bottom edge
+    // (target includes the readout's bottom padding, which is why that padding is added to the allowed lag).
+    loop.current = settleHeight(loop.current, target, elapsed, { reduced, maxStep: lineHeight * 0.45, maxLag: lineHeight + paddingBottom });
     terminal.style.height = `${loop.current}px`;
     // The line being typed can be a little ahead of the frame while it catches up: clip to the frame's own bottom edge
     // (clip-path, so the frame's overflow stays visible and the page keeps owning the scrolling; the other three sides

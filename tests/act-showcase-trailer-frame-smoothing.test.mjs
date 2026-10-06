@@ -11,11 +11,15 @@ import { settleHeight, TRAILER_SETTLE_TAU_MS } from "../js/act-showcase-trailer-
 // tests/e2e/act-showcase-trailer-readout.spec.js.
 const LINE = 40;
 
+// The readout's bottom padding, which the frame's height includes below the caret line (the real maxLag is one line
+// plus this padding: the caret line's bottom may hang one line below the frame's bottom edge, no more).
+const PADDING = 34;
+
 function simulate({ from, to, frameMs = 1000 / 60, reduced = false, maxStepFraction = 0.45 }) {
   const heights = [from];
   let current = from;
   for (let elapsed = 0; elapsed < 1000; elapsed += frameMs) {
-    current = settleHeight(current, to, frameMs, { reduced, maxStep: LINE * maxStepFraction });
+    current = settleHeight(current, to, frameMs, { reduced, maxStep: LINE * maxStepFraction, maxLag: LINE + PADDING });
     heights.push(current);
     if (current === to) break;
   }
@@ -41,6 +45,62 @@ test("ACT TRAILER frame: a two-line jump (blank line) and slow frames never move
   }
 });
 
+// A text typed faster than the frame can follow (a phone's short lines, a long text, a slow device) must not push the
+// reading line under the frame's bottom edge: the frame is never more than maxLag behind, whatever maxStep says.
+function followFastTarget({ frameMs, linesPerSecond, maxLag, durationMs = 3000 }) {
+  let current = 100;
+  let worstLag = 0;
+  let worstStep = 0;
+  let target = 100;
+  for (let time = 0; time < durationMs; time += frameMs) {
+    target = 100 + LINE * (Math.floor((time / 1000) * linesPerSecond) + 1);
+    const next = settleHeight(current, target, frameMs, { maxStep: LINE * 0.45, maxLag });
+    worstStep = Math.max(worstStep, Math.abs(next - current));
+    current = next;
+    worstLag = Math.max(worstLag, target - current);
+  }
+  // the text ends: the frame arrives
+  for (let index = 0; index < 200 && current !== target; index += 1) current = settleHeight(current, target, frameMs, { maxStep: LINE * 0.45, maxLag });
+  return { worstLag, worstStep, current, target };
+}
+
+test("ACT TRAILER frame: a fast target (25 lines a second) is never more than one line ahead of the frame, at any frame interval", () => {
+  for (const frameMs of [16, 33, 64, 120]) {
+    const result = followFastTarget({ frameMs, linesPerSecond: 25, maxLag: LINE });
+    assert.ok(result.worstLag <= LINE + 1e-6, `${frameMs}ms frames: the frame fell ${result.worstLag}px behind (one line is ${LINE}px)`);
+    assert.equal(result.current, result.target, `${frameMs}ms frames: the frame arrives when the text ends`);
+  }
+});
+
+test("ACT TRAILER frame: the lag rule does not touch normal reading (one line every 1.5s, 60fps)", () => {
+  const result = followFastTarget({ frameMs: 1000 / 60, linesPerSecond: 1 / 1.5, maxLag: LINE + PADDING, durationMs: 9000 });
+  assert.ok(result.worstStep <= LINE / 2, `largest step ${result.worstStep}`);
+  assert.ok(result.worstLag <= LINE + PADDING);
+});
+
+test("ACT TRAILER frame: a paragraph break (a two-line jump) at 60fps still moves at most half a line per frame", () => {
+  // desktop line + padding, and a phone's shorter line with its smaller padding
+  for (const [line, padding] of [[40, 34], [32, 18]]) {
+    let current = 100;
+    let target = 100 + line * 2;
+    let worstStep = 0;
+    for (let frame = 0; frame < 120 && current !== target; frame += 1) {
+      const next = settleHeight(current, target, 1000 / 60, { maxStep: line * 0.45, maxLag: line + padding });
+      worstStep = Math.max(worstStep, Math.abs(next - current));
+      current = next;
+    }
+    assert.ok(worstStep <= line / 2, `line ${line}: largest step ${worstStep}`);
+    assert.equal(current, target);
+  }
+});
+
+test("ACT TRAILER frame: a fast target moves the frame faster than maxStep rather than hide the reading line", () => {
+  const slow = followFastTarget({ frameMs: 120, linesPerSecond: 25, maxLag: LINE });
+  assert.ok(slow.worstStep > LINE * 0.45, "with long frames the lag rule has to take bigger steps than maxStep");
+  const capped = followFastTarget({ frameMs: 120, linesPerSecond: 25, maxLag: Infinity });
+  assert.ok(capped.worstLag > LINE, "without the lag rule the same target leaves the frame more than a line behind");
+});
+
 test("ACT TRAILER frame: prefers-reduced-motion switches line by line, without interpolation", () => {
   assert.equal(settleHeight(100, 140, 16, { reduced: true }), 140);
   assert.deepEqual(simulate({ from: 100, to: 140, reduced: true }), [100, 140]);
@@ -60,7 +120,7 @@ test("ACT TRAILER is one frame loop: the frame height and the page scroll follow
   assert.match(layout, /function startTrailerLoop\(readout\)/);
   assert.match(layout, /readout\.dataset\.typing !== "true"[\s\S]*followTrailerEnd\(readout\)/);
   // the frame's height is the interpolated value, and the page scroll is computed from the same value
-  assert.match(layout, /loop\.current = settleHeight\(loop\.current, target, elapsed, \{ reduced, maxStep: lineHeight \* 0\.45 \}\)/);
+  assert.match(layout, /loop\.current = settleHeight\(loop\.current, target, elapsed, \{ reduced, maxStep: lineHeight \* 0\.45, maxLag: lineHeight \+ paddingBottom \}\)/);
   assert.match(layout, /followFrameBottom\(terminal, loop\.current\)/);
   // the old second mechanism (smooth scrollTo throttled by a timer, characterData / ResizeObserver scheduling) is gone
   assert.doesNotMatch(layout, /TRAILER_SCROLL_THROTTLE_MS|scrollTrailerReadoutIntoView|scheduleTrailerFrame|trailerPageTargets/);
