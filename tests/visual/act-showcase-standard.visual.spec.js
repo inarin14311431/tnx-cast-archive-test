@@ -9,6 +9,10 @@ for (const theme of ACT_THEMES) {
     await expect(page.locator("html")).toHaveAttribute("data-showcase-theme", theme);
     await expect(page.locator("#act-showcase-standard-root")).toBeVisible();
     await expect(page.locator("#showcase-casts > *")).toHaveCount(3, { timeout: 10_000 });
+    // The guest card and its navigation item are added after the guest RPC resolves, separately from the casts.
+    // Wait for both before capturing so the screenshot never races their rendering.
+    await expect(page.locator("#standard-showcase-guests .standard-showcase-guest")).toHaveCount(1, { timeout: 10_000 });
+    await expect(page.locator("#showcase-navigation a[href='#guest-1']")).toBeVisible({ timeout: 10_000 });
     await settleVisualPage(page);
     await expect(page).toHaveScreenshot(`act-showcase-standard-${theme}-${testInfo.project.name}.png`, { fullPage: true });
   });
