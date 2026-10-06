@@ -1,15 +1,16 @@
+import { actShowcaseCssEntry, actShowcaseCss } from "./helpers/act-showcase-css.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const entry = await readFile(new URL("../css-next/pages/act-showcase-entry.css", import.meta.url), "utf8");
+const entry = actShowcaseCssEntry();
 const surfaceSystem = await readFile(new URL("../css-next/pages/act-showcase-theme-surface-system.css", import.meta.url), "utf8");
 // The dedicated theme tokens were merged into the head of the surface-system stylesheet.
 const dedicatedTheme = surfaceSystem;
 const phaseContract = await readFile(new URL("../css-next/pages/act-showcase-theme-phase-contract.css", import.meta.url), "utf8");
 const legibility = await readFile(new URL("../css-next/pages/act-showcase-theme-legibility.css", import.meta.url), "utf8");
-const sceneContract = await readFile(new URL("../css-next/pages/act-showcase-theme-scene-contract.css", import.meta.url), "utf8");
-const visualEmphasis = await readFile(new URL("../css-next/pages/act-showcase-visual-emphasis.css", import.meta.url), "utf8");
+const sceneContract = actShowcaseCss("act-showcase-theme-scene-contract");
+const visualEmphasis = actShowcaseCss("act-showcase-visual-emphasis");
 const combinedTheme = `${surfaceSystem}\n${phaseContract}\n${legibility}\n${sceneContract}\n${visualEmphasis}`;
 
 const ids = ["nova", "intron", "vlad", "lutetia"];
