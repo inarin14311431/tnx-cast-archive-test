@@ -1,0 +1,134 @@
+name: Temp polish visual (remove before merge)
+
+on:
+  push:
+    branches: [fix/act-showcase-polish]
+
+permissions:
+  contents: write
+
+env:
+  BASE_BRANCH: test/visual-act-showcase-polish
+
+jobs:
+  generate:
+    name: Generate baselines (code = branch head)
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+          path: .visual-reference
+      - run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+          cat > playwright.visual.strict.config.js <<'CFG'
+          import base from "./playwright.visual.config.js";
+          export default {
+            ...base,
+            expect: { ...base.expect, toHaveScreenshot: { ...base.expect.toHaveScreenshot, maxDiffPixelRatio: 0, maxDiffPixels: 0, threshold: 0 } }
+          };
+          CFG
+          cat > bbox.cjs <<'JS'
+          const { execSync } = require("child_process");
+          const fs = require("fs");
+          const { PNG } = require("playwright-core/lib/utilsBundle");
+          const ref = ".visual-reference";
+          const changed = execSync("git status --porcelain", { cwd: ref }).toString().split("\n").filter(Boolean);
+          for (const line of changed) {
+            const file = line.slice(3);
+            if (!file.endsWith(".png")) continue;
+            if (line.startsWith("??")) { console.log("NEW      ", file.split("__screenshots__/")[1]); continue; }
+            const before = PNG.sync.read(execSync(`git show HEAD:${file}`, { cwd: ref, maxBuffer: 1 << 28 }));
+            const after = PNG.sync.read(fs.readFileSync(`${ref}/${file}`));
+            if (before.width !== after.width || before.height !== after.height) { console.log("SIZE     ", file.split("__screenshots__/")[1], `${before.width}x${before.height} -> ${after.width}x${after.height}`); continue; }
+            let minX = 1e9, minY = 1e9, maxX = -1, maxY = -1, count = 0;
+            for (let y = 0; y < after.height; y++) for (let x = 0; x < after.width; x++) {
+              const i = (y * after.width + x) * 4;
+              if (before.data[i] !== after.data[i] || before.data[i+1] !== after.data[i+1] || before.data[i+2] !== after.data[i+2]) { count++; minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); }
+            }
+            console.log("CHANGED  ", file.split("__screenshots__/")[1], `pixels=${count} x=${minX}..${maxX} y=${minY}..${maxY} size=${after.width}x${after.height}`);
+          }
+          JS
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Strict compare BEFORE update (names only)
+        continue-on-error: true
+        shell: bash
+        run: npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介" --reporter=list 2>&1 | grep -E "✓|✘|  -  |passed|failed|skipped" | tee /tmp/before.log
+      - name: Update act showcase images (strict, changed only)
+        continue-on-error: true
+        run: |
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介\((豪華版|スタンダード|豪華版・読み込み中)\)" --update-snapshots=changed --reporter=list 2>&1 | tail -5
+      - name: Update generator images (the repository's normal tolerance, changed only)
+        continue-on-error: true
+        run: |
+          npx playwright test --config=playwright.visual.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介生成" --update-snapshots=changed --reporter=list 2>&1 | tail -5
+      - name: What changed
+        run: |
+          cp -R tests/visual/__screenshots__/. .visual-reference/tests/visual/__screenshots__/
+          node bbox.cjs | tee /tmp/changed.log
+      - name: Commit to the baseline branch
+        run: |
+          cd .visual-reference
+          git config user.name "claude"; git config user.email "noreply@anthropic.com"
+          git add -A
+          git commit -m "chore(visual): update loading (centre line) and final board (KEY STYLE) references" || echo "nothing to commit"
+          git push origin HEAD:${{ env.BASE_BRANCH }}
+
+  verify:
+    name: Verify strict x3 (updated baselines)
+    needs: generate
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      options: --user 1001
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+          path: .visual-reference
+      - run: |
+          rm -rf tests/visual
+          cp -R .visual-reference/tests/visual tests/visual
+          cp .visual-reference/playwright.visual.config.js playwright.visual.config.js
+          cat > playwright.visual.strict.config.js <<'CFG'
+          import base from "./playwright.visual.config.js";
+          export default {
+            ...base,
+            expect: { ...base.expect, toHaveScreenshot: { ...base.expect.toHaveScreenshot, maxDiffPixelRatio: 0, maxDiffPixels: 0, threshold: 0 } }
+          };
+          CFG
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Strict compare x3, deluxe + standard + loading, desktop + mobile
+        shell: bash
+        run: |
+          set -o pipefail
+          npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介\((豪華版|スタンダード|豪華版・読み込み中)\)" --repeat-each=3 --reporter=list 2>&1 | grep -E "✓|✘|  -  |passed|failed|skipped" | tee /tmp/verify.log
+      - name: Standard intron desktop x5 (strict)
+        shell: bash
+        run: |
+          set -o pipefail
+          for i in 1 2 3 4 5; do npx playwright test --config=playwright.visual.strict.config.js --project=visual-desktop --grep "アクト紹介\(スタンダード\) intron" --reporter=list 2>&1 | grep -E "✓|✘|passed|failed" | tee -a /tmp/intron5.log; done
+      - name: Repository normal-tolerance compare of the generator page
+        shell: bash
+        run: |
+          set -o pipefail
+          npx playwright test --config=playwright.visual.config.js --project=visual-desktop --project=visual-mobile --grep "アクト紹介生成" --reporter=list 2>&1 | grep -E "✓|✘|passed|failed" | tee /tmp/generator.log
