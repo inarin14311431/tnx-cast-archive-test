@@ -8,7 +8,8 @@ const PARAGRAPH = "夜のN◎VAに未明の警報が響く。消えたデータ�
 // Normal-speed short text: two paragraphs with a single line break (a blank line is a two-line jump; where the frame
 // has to keep the reading line visible it may step more than half a line, which the long-text cases cover).
 const SHORT_BODY = `${PARAGRAPH}\n${PARAGRAPH}`;
-const LONG_BODY = Array.from({ length: 9 }, (_, index) => `${index + 1}. ${PARAGRAPH}`).join("\n\n");
+// 12 paragraphs: with the CI fonts the text is ~950px (phone) / ~1250px (PC) tall, above the 844 / 1000 screens; fewer left it below the PC/phone screen
+const LONG_BODY = Array.from({ length: 12 }, (_, index) => `${index + 1}. ${PARAGRAPH}`).join("\n\n");
 
 async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) {
   if (reducedMotion) await page.emulateMedia({ reducedMotion: "reduce" });
@@ -88,7 +89,7 @@ async function typeTrailerAndSample(page, body, { reducedMotion = false } = {}) 
     await page.waitForTimeout(500);
   }
   await expect(page.locator(".neotokyo-sequence__screen--trailer")).toBeVisible();
-  await expect(page.locator(".neotokyo-sequence__readout--split")).not.toHaveAttribute("data-typing", "true", { timeout: 30_000 });
+  await expect(page.locator(".neotokyo-sequence__readout--split")).not.toHaveAttribute("data-typing", "true", { timeout: 60_000 });
   const samples = await page.evaluate(() => window.__trailerSamples);
   // the frame's height once the reading has ended (the frame is released to its natural height)
   const finalHeight = await page.locator(".neotokyo-sequence__trailer-terminal").evaluate(element => element.getBoundingClientRect().height);
