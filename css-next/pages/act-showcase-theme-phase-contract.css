@@ -189,3 +189,22 @@
   :root[data-showcase-theme] body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__trailer-terminal{height:auto;max-height:none}
   :root[data-showcase-theme] body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__readout.is-terminal-readout{max-height:none;overflow:visible;scrollbar-gutter:auto}
 }
+/* ---------- Finale access button (ENTER ACT) palette ----------
+   act-showcase-core.css reads these with the NeoTokyo (nova) colours as fallbacks, so nova defines nothing and keeps its
+   current look. The other themes keep the dark plate (the button sits on a dark footer in every theme) and swap the
+   accent families: accent = mint role, cyan = sweep/edge role, pink = chroma/secondary role. */
+:root[data-showcase-theme="intron"]{
+  --finale-access-text:#bfeaf8;--finale-access-line:#c9d3da;--finale-access-edge:#d5dbe0;
+  --finale-access-accent-rgb:191,234,248;--finale-access-cyan-rgb:213,219,224;--finale-access-pink-rgb:255,194,232;
+  --finale-access-plate-a-rgb:52,56,60;--finale-access-plate-b-rgb:22,23,25;--finale-access-plate-c-rgb:58,40,50;
+}
+:root[data-showcase-theme="vlad"]{
+  --finale-access-text:#ff9fae;--finale-access-line:var(--showcase-primary);--finale-access-edge:var(--showcase-secondary);
+  --finale-access-accent-rgb:var(--showcase-primary-rgb);--finale-access-cyan-rgb:var(--showcase-secondary-rgb);--finale-access-pink-rgb:var(--showcase-tertiary-rgb);
+  --finale-access-plate-a-rgb:70,14,22;--finale-access-plate-b-rgb:25,8,11;--finale-access-plate-c-rgb:60,38,14;
+}
+:root[data-showcase-theme="lutetia"]{
+  --finale-access-text:#9fc7ff;--finale-access-line:var(--showcase-primary);--finale-access-edge:var(--showcase-tertiary);
+  --finale-access-accent-rgb:var(--showcase-primary-rgb);--finale-access-cyan-rgb:var(--showcase-tertiary-rgb);--finale-access-pink-rgb:var(--showcase-secondary-rgb);
+  --finale-access-plate-a-rgb:20,48,92;--finale-access-plate-b-rgb:12,25,48;--finale-access-plate-c-rgb:44,30,88;
+}
