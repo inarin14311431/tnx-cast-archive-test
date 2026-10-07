@@ -37,3 +37,21 @@ test("PC badge sits in front of the cast name, at 10px or larger", () => {
   assert.ok(size >= 10, `badge font ${size}px`);
   assert.doesNotMatch(css, /neotokyo-finale__cast-card:before/);
 });
+
+test("assignment reveal scrolls with rAF, once, and never against the reader", () => {
+  assert.match(bootstrap, /act-showcase-scroll-cue\.js\?v=2/);
+  assert.match(cue, /const REVEAL_MS = 800/);
+  assert.match(cue, /classList\.contains\("is-assigned"\) && !revealed\.has\(screen\)/);
+  assert.match(cue, /neotokyo-sequence__link-bridge/);
+  assert.match(cue, /requestAnimationFrame\(stepReveal\)/);
+  assert.match(cue, /screen\.scrollTop = job\.from \+ \(job\.to - job\.from\) \* eased/);
+  assert.doesNotMatch(cue, /scrollTo\(|scrollIntoView|behavior: ?"smooth"|scroll-behavior/);
+  // Stops: reader's hand, reduced motion, skipped/finished intro, advancing, a screen that does not scroll.
+  for (const type of ["touchstart", "wheel", "pointerdown"]) assert.match(cue, new RegExp(`"${type}"`));
+  assert.match(cue, /manual\.has\(screen\) \|\| reduced\(\) \|\| finished\(\)/);
+  assert.match(cue, /showcase-neotokyo-reduced/);
+  assert.match(cue, /aria-hidden"\) === "true"/);
+  assert.match(cue, /addEventListener\("click"/);
+  assert.match(cue, /\^\(auto\|scroll\)\$/);
+  assert.match(cue, /if \(maxTop <= ROOM\) return/);
+});
