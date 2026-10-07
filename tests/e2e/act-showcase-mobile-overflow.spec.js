@@ -206,6 +206,30 @@ for (const width of WIDTHS) {
       }
       expect(await layoutOverflow(page, width), "final board").toBeLessThanOrEqual(0);
 
+      // Hero card (character-select layout): the portrait fills the grid width at 4:5, the caption plate stays at
+      // two lines or fewer on the top edge, and the name block sits inside the portrait without touching the caption.
+      // Rectangles only, so it holds on any engine regardless of how it resolves aspect-ratio against grid stretch.
+      const hero = await page.evaluate(() => {
+        const box = element => { const r = element.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; };
+        const frame = document.querySelector(".poster-v2-frame--select");
+        const grid = frame.querySelector(".poster-v2-grid--select");
+        const panel = frame.querySelector(".poster-v2-panel--visual");
+        const caption = frame.querySelector(".poster-v2-visual__caption");
+        const identity = frame.querySelector(".poster-v2-identity");
+        const captionLine = parseFloat(getComputedStyle(caption.querySelector(".poster-v2-visual__meta")).lineHeight);
+        panel.scrollIntoView({ block: "center" });
+        return { grid: box(grid), panel: box(panel), caption: box(caption), identity: box(identity), captionLine, name: box(identity.querySelector(".poster-v2-name")) };
+      });
+      expect(hero.panel.width, "hero portrait spans the grid width").toBeGreaterThanOrEqual(hero.grid.width - 1);
+      expect(Math.abs(hero.panel.height - hero.panel.width * 1.25), "hero portrait is 4:5").toBeLessThanOrEqual(4);
+      expect(hero.caption.height, "caption plate is two lines or fewer").toBeLessThanOrEqual(hero.captionLine * 2 + 24);
+      expect(hero.caption.top, "caption sits on the top edge").toBeLessThanOrEqual(hero.panel.top + 24);
+      expect(hero.caption.right, "caption stays inside the portrait").toBeLessThanOrEqual(hero.panel.right + 1);
+      expect(hero.identity.top, "name block starts below the caption").toBeGreaterThanOrEqual(hero.caption.bottom - 1);
+      expect(hero.identity.bottom, "name block ends on the portrait's bottom edge").toBeLessThanOrEqual(hero.panel.bottom + 1);
+      expect(hero.identity.left, "name block inside the portrait (left)").toBeGreaterThanOrEqual(hero.panel.left - 1);
+      expect(hero.identity.right, "name block inside the portrait (right)").toBeLessThanOrEqual(hero.panel.right + 1);
+
       // Guest portraits are drawn (not an empty black column) and the text column keeps a usable width.
       const guests = await page.evaluate(() => [...document.querySelectorAll(".poster-supporting-card")].map(card => {
         const image = card.querySelector(".poster-supporting-card__visual img");

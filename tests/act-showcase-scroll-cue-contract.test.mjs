@@ -63,3 +63,15 @@ test("phone opening stacks the credit chips and the tagline block instead of ove
   assert.match(phone, /\.poster-v2-aside strong[^{]*\{font-size:max\(10px,\.57rem\)\}/);
   assert.doesNotMatch(phone, /!important/);
 });
+
+test("phone hero card does not depend on aspect-ratio against grid stretch (WebKit), and keeps caption and name apart", () => {
+  const core = actShowcaseSources().find(source => /core/.test(source.name || source.path || ""))?.text || css;
+  const phone = core.slice(core.indexOf("/* The portrait is a ratio box"), core.indexOf("@media(prefers-reduced-motion:reduce){", core.indexOf("/* The portrait is a ratio box")));
+  assert.match(phone, /\.poster-v2-panel--visual\{[^}]*width:100%;height:0;[^}]*padding-top:125%;aspect-ratio:auto\}/);
+  assert.doesNotMatch(phone, /subgrid/);
+  assert.match(phone, /\.poster-v2-panel--profile[^{]*\{display:contents\}/);
+  assert.match(phone, /\.poster-v2-grid--select\{container-type:inline-size\}/);
+  assert.match(phone, /\.poster-v2-identity\{position:relative;z-index:1;[^}]*align-self:end;[^}]*max-height:calc\(125cqw - 64px\)/);
+  assert.match(phone, /-webkit-line-clamp:1/);
+  assert.doesNotMatch(phone, /!important/);
+});
