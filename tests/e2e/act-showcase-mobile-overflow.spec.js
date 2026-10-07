@@ -124,6 +124,15 @@ for (const width of WIDTHS) {
           // The assigned cast stacks under the handout at full width (it used to be squeezed into a ~2px column).
           const assigned = await assignPanel.evaluate(element => element.getBoundingClientRect().width);
           expect(assigned, `assign panel width after "${label}"`).toBeGreaterThan(width * 0.7);
+          // The screen scrolls inside itself: a cue shows while more is below and goes away at the end.
+          const screen = page.locator(".neotokyo-sequence__screen--linked.is-splitting");
+          if (await screen.evaluate(element => element.scrollHeight > element.clientHeight + 12)) {
+            await expect(screen, "scroll cue while more is below").toHaveAttribute("data-scroll-cue", "1");
+            expect(await screen.evaluate(element => getComputedStyle(element, "::after").content)).toContain("▼");
+            await screen.evaluate(element => { element.scrollTop = element.scrollHeight; });
+            await expect(screen, "scroll cue gone at the end").not.toHaveAttribute("data-scroll-cue", /.*/);
+            await screen.evaluate(element => { element.scrollTop = 0; });
+          }
         }
         await advance.click({ force: true });
         await expect(advance).not.toHaveText(label, { timeout: 15_000 }).catch(() => {});
@@ -140,6 +149,18 @@ for (const width of WIDTHS) {
         return { top: before?.top ?? 0, labelTop: label?.getBoundingClientRect().top ?? 0, position: bay ? getComputedStyle(bay, "::before").position : "" };
       });
       expect(captions.position, "bay caption flows with the roster caption").toBe("static");
+
+      // PC badges sit in front of each cast name (not on the portrait), at 10px or larger.
+      const badges = await page.evaluate(() => [...document.querySelectorAll(".neotokyo-finale__cast-card .neotokyo-sequence__summary-cast-body h3[data-pc]")].map(h3 => {
+        const badge = getComputedStyle(h3, "::before");
+        return { pc: h3.dataset.pc, text: badge.content, size: parseFloat(badge.fontSize), display: badge.display };
+      }));
+      expect(badges.length).toBeGreaterThan(0);
+      for (const badge of badges) {
+        expect(badge.text).toContain(badge.pc);
+        expect(badge.size, `${badge.pc} badge font size`).toBeGreaterThanOrEqual(10);
+        expect(badge.display).toBe("inline-block");
+      }
 
       await access.click({ force: true });
       await expect(page.locator(".poster-v2-frame").first()).toBeVisible({ timeout: 30_000 });
@@ -170,3 +191,26 @@ for (const width of WIDTHS) {
     });
   });
 }
+
+test.describe("scroll cue under reduced motion", () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
+
+  test("スクロールの合図は動かない(prefers-reduced-motion)", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    const advance = page.locator(".neotokyo-sequence__advance");
+    const screen = page.locator(".neotokyo-sequence__screen--linked.is-splitting");
+    for (let step = 0; step < 20; step += 1) {
+      await expect(advance).toBeVisible({ timeout: 15_000 });
+      const label = ((await advance.textContent()) || "").trim();
+      if (label.startsWith("NEXT // HANDOUT") && await screen.count()) break;
+      await advance.click({ force: true });
+      await expect(advance).not.toHaveText(label, { timeout: 15_000 }).catch(() => {});
+    }
+    expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches), "reduced motion is on").toBe(true);
+    await expect(screen).toHaveAttribute("data-scroll-cue", "1", { timeout: 10_000 });
+    expect(await screen.evaluate(element => getComputedStyle(element, "::after").animationName)).toBe("none");
+  });
+});
