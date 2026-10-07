@@ -61,18 +61,19 @@ const corsHeaders = {
   "content-type": "application/json"
 };
 
-async function installRoutes(page, origin) {
+async function installRoutes(page, origin, { longHandout = false } = {}) {
   const art = [1, 2, 3, 4].map(artPng);
   const data = {
     ...showcaseData,
     pageTitle: TITLE,
     actName: TITLE,
+    scenarioWriterName: "芳賀琉",
     casts: showcaseData.casts.map((cast, index) => ({
       ...cast,
       imageUrl: `${origin}/__art/${index}.png`,
       fullName: ["“ブルー・モーメント” 夜明けを駆け抜けるネオン街の運び屋", cast.fullName, cast.fullName][index],
       tagline: index === 0 ? "NEON-AFTERIMAGE-SIGNAL-CHASER" : cast.tagline,
-      handout: { ...cast.handout, body: `${cast.handout.body}\nhttps://example.com/very/long/unbroken/url/for/the/handout/body/text` }
+      handout: { ...cast.handout, body: `${cast.handout.body}\nhttps://example.com/very/long/unbroken/url/for/the/handout/body/text${longHandout ? "\n" + "夜の街に残る光の跡を追い、依頼人の過去と向き合う。\n".repeat(40) : ""}` }
     }))
   };
   const guests = [0, 1].map(index => ({ ...guestData[0], sort_order: index + 1, name: `協力者 ${index + 1}`, image_url: `${origin}/__art/3.png` }));
@@ -169,6 +170,35 @@ for (const width of WIDTHS) {
       expect(titleBox.right, "opening title right edge").toBeLessThanOrEqual(width);
       expect(titleBox.scrollWidth, "opening title text fits its box").toBeLessThanOrEqual(titleBox.clientWidth + 1);
 
+      // Opening: the credit chips and the tagline block never overlap, also with the wider real display fonts
+      // (letter-spacing, title and chip size enlarged here) and a long scenario writer's name; their text stays at 10px or larger.
+      for (const writer of ["芳賀琉", "長い名前の脚本家"]) {
+        const overlaps = await page.evaluate(name => {
+          const style = document.createElement("style");
+          // Stand-ins for the wider real fonts: more letter-spacing, a larger title (more wrapped lines pushes the chips down)
+          // and larger chips. The injected rules are test-only.
+          style.textContent = ".scene-opening *{letter-spacing:.08em} #opening-act-name{font-size:54px !important} .scene-opening .opening-ruler{font-size:1.15em}";
+          document.head.append(style);
+          document.querySelector("#opening-scenario-writer").textContent = `SCENARIO WRITER // ${name}`;
+          const boxes = ["#opening-ruler", "#opening-scenario-writer", ".poster-v2-aside"].map(selector => {
+            const element = document.querySelector(selector);
+            const rect = element.getBoundingClientRect();
+            const sizes = [element, ...element.querySelectorAll("*")].filter(node => node.textContent.trim()).map(node => parseFloat(getComputedStyle(node).fontSize));
+            return { selector, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, minSize: Math.min(...sizes) };
+          });
+          style.remove();
+          const found = [];
+          for (let a = 0; a < boxes.length; a += 1) for (let b = a + 1; b < boxes.length; b += 1) {
+            const x = boxes[a], y = boxes[b];
+            if (x.left < y.right - 1 && y.left < x.right - 1 && x.top < y.bottom - 1 && y.top < x.bottom - 1) found.push(`${x.selector} x ${y.selector}`);
+          }
+          return { found, tooSmall: boxes.filter(box => box.minSize < 10).map(box => `${box.selector} ${box.minSize}px`), outside: boxes.filter(box => box.right > innerWidth + 1).map(box => box.selector) };
+        }, writer);
+        expect(overlaps.found, `opening overlaps (${writer})`).toEqual([]);
+        expect(overlaps.tooSmall, `opening text size (${writer})`).toEqual([]);
+        expect(overlaps.outside, `opening inside the screen (${writer})`).toEqual([]);
+      }
+
       const height = await page.evaluate(() => document.documentElement.scrollHeight);
       for (let y = 0; y < height; y += 500) {
         await page.evaluate(top => window.scrollTo(0, top), y);
@@ -212,5 +242,102 @@ test.describe("scroll cue under reduced motion", () => {
     expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches), "reduced motion is on").toBe(true);
     await expect(screen).toHaveAttribute("data-scroll-cue", "1", { timeout: 10_000 });
     expect(await screen.evaluate(element => getComputedStyle(element, "::after").animationName)).toBe("none");
+  });
+});
+
+
+// Handout reading and assignment on a phone: the screen follows the reading, then brings the assigned card into
+// view, and leaves the reader alone once they scroll by hand (or ask for reduced motion).
+async function advanceUntil(page, startsWith) {
+  const advance = page.locator(".neotokyo-sequence__advance");
+  for (let step = 0; step < 20; step += 1) {
+    await expect(advance).toBeVisible({ timeout: 15_000 });
+    const label = ((await advance.textContent()) || "").trim();
+    if (label.startsWith(startsWith)) return label;
+    await advance.click({ force: true });
+    await expect(advance).not.toHaveText(label, { timeout: 15_000 }).catch(() => {});
+  }
+  throw new Error(`never reached "${startsWith}"`);
+}
+
+const assignedScreen = page => page.locator(".neotokyo-sequence__screen--linked.is-splitting");
+const reveal = screen => screen.evaluate(element => {
+  const panel = element.querySelector(".neotokyo-sequence__assign-panel").getBoundingClientRect();
+  const frame = element.getBoundingClientRect();
+  return { scrollTop: element.scrollTop, maxTop: element.scrollHeight - element.clientHeight, panelTop: panel.top, frameTop: frame.top, frameBottom: frame.bottom };
+});
+
+test.describe("handout follow and assignment reveal (phone)", () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 });
+
+  test("読み上げの完了後、アサインカードの上端が画面内に入る", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "ASSIGN // PC1");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await page.waitForTimeout(1400);
+    const state = await reveal(assignedScreen(page));
+    expect(state.maxTop, "the screen scrolls inside itself").toBeGreaterThan(12);
+    expect(state.scrollTop, "scrolled toward the assigned card").toBeGreaterThan(20);
+    expect(state.panelTop, "card top is inside the screen").toBeGreaterThanOrEqual(state.frameTop);
+    expect(state.panelTop, "card top is not at the very bottom").toBeLessThan(state.frameBottom - 40);
+  });
+
+  test("手動でスクロールしたら、アサインカードへ動かさない", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "ASSIGN // PC1");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    const screen = assignedScreen(page);
+    await expect(screen).toBeVisible();
+    await screen.evaluate(element => element.dispatchEvent(new Event("touchstart", { bubbles: true })));
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await page.waitForTimeout(1400);
+    expect((await reveal(screen)).scrollTop).toBe(0);
+  });
+
+  test("reduced-motion では動かさない", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "ASSIGN // PC1");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await page.waitForTimeout(1400);
+    expect((await reveal(assignedScreen(page))).scrollTop).toBe(0);
+  });
+
+  test("読み上げ中は末尾に追従し、手動スクロールの後は追従しない", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await installRoutes(page, baseURL, { longHandout: true });
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "NEXT // HANDOUT 01");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    await advanceUntil(page, "ASSIGN // PC1");
+    const stage = page.locator(".neotokyo-sequence__stage");
+    const state = () => stage.evaluate(element => ({ top: element.scrollTop, max: element.scrollHeight - element.clientHeight }));
+    expect((await state()).max, "the handout is taller than the screen").toBeGreaterThan(100);
+    // The follow runs a short interpolation behind the typing; it settles on the end of the text.
+    await expect.poll(async () => { const { top, max } = await state(); return max - top; }, { message: "caret end is in view", timeout: 3000 }).toBeLessThanOrEqual(12);
+    expect((await state()).top, "followed the reading").toBeGreaterThan(40);
+  });
+
+  test("読み上げ中に手で触れたら、その後は追従しない", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await installRoutes(page, baseURL, { longHandout: true });
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "NEXT // HANDOUT 01");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    const readout = page.locator(".neotokyo-sequence__screen--linked .neotokyo-sequence__readout");
+    await expect(readout).toBeVisible();
+    await page.locator(".neotokyo-sequence__stage").evaluate(stage => stage.dispatchEvent(new Event("touchstart", { bubbles: true })));
+    await advanceUntil(page, "ASSIGN // PC1");
+    const gap = await page.locator(".neotokyo-sequence__stage").evaluate(stage => ({ max: stage.scrollHeight - stage.clientHeight, top: stage.scrollTop }));
+    expect(gap.max, "the handout is taller than the screen").toBeGreaterThan(100);
+    expect(gap.max - gap.top, "not dragged to the end").toBeGreaterThan(40);
   });
 });
