@@ -197,6 +197,7 @@
   --finale-access-text:#bfeaf8;--finale-access-line:#c9d3da;--finale-access-edge:#d5dbe0;
   --finale-access-accent-rgb:191,234,248;--finale-access-cyan-rgb:213,219,224;--finale-access-pink-rgb:255,194,232;
   --finale-access-plate-a-rgb:52,56,60;--finale-access-plate-b-rgb:22,23,25;--finale-access-plate-c-rgb:58,40,50;
+  --finale-heading-glow-rgb:var(--showcase-secondary-rgb);--finale-heading-glow-k:.4;
 }
 :root[data-showcase-theme="vlad"]{
   --finale-access-text:#ff9fae;--finale-access-line:var(--showcase-primary);--finale-access-edge:var(--showcase-secondary);
@@ -208,3 +209,7 @@
   --finale-access-accent-rgb:var(--showcase-primary-rgb);--finale-access-cyan-rgb:var(--showcase-tertiary-rgb);--finale-access-pink-rgb:var(--showcase-secondary-rgb);
   --finale-access-plate-a-rgb:20,48,92;--finale-access-plate-b-rgb:12,25,48;--finale-access-plate-c-rgb:44,30,88;
 }
+
+/* ---------- Finale heading glow (ACT READY / title lockup) ----------
+   core.css pulses text-shadow and sweeps a scan layer with --finale-heading-glow-rgb (set in the intron block above). intron is a light theme whose headings are dark
+   ink (surface-system keeps their shadow off for legibility), so it glows in its secondary and at a fraction of the strength. */
