@@ -73,7 +73,7 @@ async function installRoutes(page, origin, { longHandout = false } = {}) {
       imageUrl: `${origin}/__art/${index}.png`,
       fullName: ["“ブルー・モーメント” 夜明けを駆け抜けるネオン街の運び屋", cast.fullName, cast.fullName][index],
       tagline: index === 0 ? "NEON-AFTERIMAGE-SIGNAL-CHASER" : cast.tagline,
-      handout: { ...cast.handout, body: `${cast.handout.body}\nhttps://example.com/very/long/unbroken/url/for/the/handout/body/text${longHandout ? "\n" + "夜の街に残る光の跡を追い、依頼人の過去と向き合う。\n".repeat(10) : ""}` }
+      handout: { ...cast.handout, body: `${cast.handout.body}\nhttps://example.com/very/long/unbroken/url/for/the/handout/body/text${longHandout ? "\n" + "夜の街に残る光の跡を追い、依頼人の過去と向き合う。\n".repeat(40) : ""}` }
     }))
   };
   const guests = [0, 1].map(index => ({ ...guestData[0], sort_order: index + 1, name: `協力者 ${index + 1}`, image_url: `${origin}/__art/3.png` }));
@@ -318,9 +318,12 @@ test.describe("handout follow and assignment reveal (phone)", () => {
     await advanceUntil(page, "NEXT // HANDOUT 01");
     await page.locator(".neotokyo-sequence__advance").click({ force: true });
     await advanceUntil(page, "ASSIGN // PC1");
-    const gap = await page.locator(".neotokyo-sequence__stage").evaluate(stage => ({ top: stage.scrollTop, left: stage.scrollHeight - stage.clientHeight - stage.scrollTop }));
-    expect(gap.top, "followed the reading").toBeGreaterThan(40);
-    expect(gap.left, "caret end is in view").toBeLessThanOrEqual(12);
+    const stage = page.locator(".neotokyo-sequence__stage");
+    const state = () => stage.evaluate(element => ({ top: element.scrollTop, max: element.scrollHeight - element.clientHeight }));
+    expect((await state()).max, "the handout is taller than the screen").toBeGreaterThan(100);
+    // The follow runs a short interpolation behind the typing; it settles on the end of the text.
+    await expect.poll(async () => { const { top, max } = await state(); return max - top; }, { message: "caret end is in view", timeout: 3000 }).toBeLessThanOrEqual(12);
+    expect((await state()).top, "followed the reading").toBeGreaterThan(40);
   });
 
   test("読み上げ中に手で触れたら、その後は追従しない", async ({ page, baseURL }) => {
