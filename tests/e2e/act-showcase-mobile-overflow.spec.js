@@ -334,7 +334,7 @@ test.describe("handout follow and assignment reveal (phone)", () => {
 
   test("手でスクロールした後でも、アサインカードが画面外なら一度だけ動く", async ({ page, baseURL }) => {
     test.setTimeout(240_000);
-    await page.setViewportSize({ width: 390, height: 600 });
+    await page.setViewportSize({ width: 390, height: 420 });
     await installRoutes(page, baseURL);
     await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
     await advanceUntil(page, "ASSIGN // PC1");
