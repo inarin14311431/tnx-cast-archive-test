@@ -125,7 +125,7 @@ body.showcase-neotokyo-intro-active{overflow:hidden}
 .neotokyo-sequence__system span:first-child{color:#79ffd0}
 .neotokyo-sequence__skip{min-width:112px;margin:0;padding:9px 12px;border:1px solid rgba(126,202,255,.35);border-radius:0;background:rgba(4,13,29,.72);color:#ccecff;font:700 .56rem/1 Orbitron,sans-serif;letter-spacing:.1em;cursor:pointer;appearance:none}
 .neotokyo-sequence__skip:hover,.neotokyo-sequence__skip:focus-visible{border-color:#72e9ff;background:rgba(14,45,76,.72);outline:none;box-shadow:0 0 22px rgba(0,221,255,.14)}
-.neotokyo-sequence__stage{position:relative;grid-row:2;display:grid;place-items:center;min-width:0;min-height:0;padding:clamp(28px,5vw,72px);overflow:hidden}
+.neotokyo-sequence__stage{--neotokyo-swap-duration:150ms;--neotokyo-swap-strength:.55;--neotokyo-swap-shift:5px;position:relative;grid-row:2;display:grid;place-items:center;min-width:0;min-height:0;padding:clamp(28px,5vw,72px);overflow:hidden}
 .neotokyo-sequence__stage:before{position:absolute;inset:8% 5%;content:"";border:1px solid rgba(104,208,255,.09);clip-path:polygon(0 18px,18px 0,92% 0,100% 16%,100% 100%,8% 100%,0 84%);pointer-events:none}
 .neotokyo-sequence__stage.is-awaiting-advance{cursor:pointer}
 .neotokyo-sequence__screen{position:relative;width:min(1120px,100%);opacity:0}
@@ -133,7 +133,6 @@ body.showcase-neotokyo-intro-active{overflow:hidden}
 /* ブラウン管の点灯風フェードイン。最終状態は opacity:1 / transform:none / filter:none(.is-visible の静的値)と同一 */
 @keyframes neotokyo-screen-power-on{0%{opacity:0;filter:brightness(2.6) saturate(1.5)}12%{opacity:1;filter:brightness(2.3) saturate(1.4)}28%{opacity:.35;filter:brightness(1.5)}44%{opacity:1;filter:brightness(1.9) saturate(1.2)}66%{opacity:.8;filter:brightness(1.2)}84%{opacity:1;filter:brightness(1.08)}100%{opacity:1;filter:none}}
 /* 画面切り替えノイズ(swapScreen が .is-screen-swap を付け外し)。調整は --neotokyo-swap-duration / --neotokyo-swap-strength */
-.neotokyo-sequence__stage{--neotokyo-swap-duration:150ms;--neotokyo-swap-strength:.55;--neotokyo-swap-shift:5px}
 .neotokyo-sequence__stage:after{position:absolute;inset:0;z-index:9;content:"";opacity:0;pointer-events:none;mix-blend-mode:screen;background:linear-gradient(rgba(255,255,255,.2),rgba(255,255,255,.2)),repeating-linear-gradient(0deg,rgba(var(--showcase-primary-rgb,0,239,255),.5) 0 1px,transparent 1px 4px),linear-gradient(90deg,rgba(var(--showcase-secondary-rgb,255,78,174),.22),transparent 28%,transparent 72%,rgba(var(--showcase-primary-rgb,0,239,255),.18))}
 .neotokyo-sequence__stage.is-screen-swap:after{animation:neotokyo-screen-swap-noise var(--neotokyo-swap-duration) steps(1,end) 1}
 .neotokyo-sequence__stage.is-screen-swap>.neotokyo-sequence__screen{animation:neotokyo-screen-swap-shift var(--neotokyo-swap-duration) steps(1,end) 1}
