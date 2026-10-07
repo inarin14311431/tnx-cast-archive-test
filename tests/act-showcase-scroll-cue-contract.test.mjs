@@ -55,3 +55,11 @@ test("assignment reveal scrolls with rAF, once, and never against the reader", (
   assert.match(cue, /\^\(auto\|scroll\)\$/);
   assert.match(cue, /if \(maxTop <= ROOM\) return/);
 });
+
+test("phone opening stacks the credit chips and the tagline block instead of overlapping them", () => {
+  const phone = css.slice(css.indexOf("/* Opening: the credit chips"));
+  assert.match(phone, /\.poster-v2-aside\{position:relative;top:auto;right:auto;bottom:auto/);
+  assert.match(phone, /\.opening-ruler\{max-width:calc\(100% - 8px\);white-space:normal;overflow-wrap:anywhere\}/);
+  assert.match(phone, /\.poster-v2-aside strong[^{]*\{font-size:max\(10px,\.57rem\)\}/);
+  assert.doesNotMatch(phone, /!important/);
+});

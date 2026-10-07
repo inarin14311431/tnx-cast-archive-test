@@ -1184,4 +1184,11 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   .poster-supporting-card__visual{min-height:120px}
   .poster-supporting-card__visual img{position:absolute;inset:0}
   .poster-supporting-card__body{min-width:0;overflow-wrap:anywhere}
+
+  /* Opening: the credit chips and the tagline block share one flow instead of the tagline floating over the chips. The
+     real display fonts (Orbitron / Share Tech Mono) run wider than the test fallbacks, so chips may wrap and nothing
+     here relies on a fixed width. */
+  body.showcase-poster-v2-ready .scene-opening .opening-ruler{max-width:calc(100% - 8px);white-space:normal;overflow-wrap:anywhere}
+  body.showcase-poster-v2-ready .poster-v2-aside{position:relative;top:auto;right:auto;bottom:auto;justify-self:end;align-self:start;margin:12px 18px 28px 18px;max-width:calc(100% - 36px)}
+  body.showcase-poster-v2-ready .poster-v2-aside strong,body.showcase-poster-v2-ready .poster-v2-aside span,body.showcase-poster-v2-ready .poster-v2-aside small{font-size:max(10px,.57rem)}
 }

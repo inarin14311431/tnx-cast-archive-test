@@ -67,6 +67,7 @@ async function installRoutes(page, origin, { longHandout = false } = {}) {
     ...showcaseData,
     pageTitle: TITLE,
     actName: TITLE,
+    scenarioWriterName: "芳賀琉",
     casts: showcaseData.casts.map((cast, index) => ({
       ...cast,
       imageUrl: `${origin}/__art/${index}.png`,
@@ -168,6 +169,35 @@ for (const width of WIDTHS) {
       const titleBox = await page.locator("#opening-act-name").evaluate(element => { const r = element.getBoundingClientRect(); return { right: r.right, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }; });
       expect(titleBox.right, "opening title right edge").toBeLessThanOrEqual(width);
       expect(titleBox.scrollWidth, "opening title text fits its box").toBeLessThanOrEqual(titleBox.clientWidth + 1);
+
+      // Opening: the credit chips and the tagline block never overlap, also with the wider real display fonts
+      // (letter-spacing, title and chip size enlarged here) and a long scenario writer's name; their text stays at 10px or larger.
+      for (const writer of ["芳賀琉", "長い名前の脚本家"]) {
+        const overlaps = await page.evaluate(name => {
+          const style = document.createElement("style");
+          // Stand-ins for the wider real fonts: more letter-spacing, a larger title (more wrapped lines pushes the chips down)
+          // and larger chips. The injected rules are test-only.
+          style.textContent = ".scene-opening *{letter-spacing:.08em} #opening-act-name{font-size:54px !important} .scene-opening .opening-ruler{font-size:1.15em}";
+          document.head.append(style);
+          document.querySelector("#opening-scenario-writer").textContent = `SCENARIO WRITER // ${name}`;
+          const boxes = ["#opening-ruler", "#opening-scenario-writer", ".poster-v2-aside"].map(selector => {
+            const element = document.querySelector(selector);
+            const rect = element.getBoundingClientRect();
+            const sizes = [element, ...element.querySelectorAll("*")].filter(node => node.textContent.trim()).map(node => parseFloat(getComputedStyle(node).fontSize));
+            return { selector, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, minSize: Math.min(...sizes) };
+          });
+          style.remove();
+          const found = [];
+          for (let a = 0; a < boxes.length; a += 1) for (let b = a + 1; b < boxes.length; b += 1) {
+            const x = boxes[a], y = boxes[b];
+            if (x.left < y.right - 1 && y.left < x.right - 1 && x.top < y.bottom - 1 && y.top < x.bottom - 1) found.push(`${x.selector} x ${y.selector}`);
+          }
+          return { found, tooSmall: boxes.filter(box => box.minSize < 10).map(box => `${box.selector} ${box.minSize}px`), outside: boxes.filter(box => box.right > innerWidth + 1).map(box => box.selector) };
+        }, writer);
+        expect(overlaps.found, `opening overlaps (${writer})`).toEqual([]);
+        expect(overlaps.tooSmall, `opening text size (${writer})`).toEqual([]);
+        expect(overlaps.outside, `opening inside the screen (${writer})`).toEqual([]);
+      }
 
       const height = await page.evaluate(() => document.documentElement.scrollHeight);
       for (let y = 0; y < height; y += 500) {
