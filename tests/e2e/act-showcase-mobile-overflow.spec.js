@@ -206,6 +206,30 @@ for (const width of WIDTHS) {
       }
       expect(await layoutOverflow(page, width), "final board").toBeLessThanOrEqual(0);
 
+      // Hero card (character-select layout): the portrait fills the grid width at 4:5, the caption plate stays at
+      // two lines or fewer on the top edge, and the name block sits inside the portrait without touching the caption.
+      // Rectangles only, so it holds on any engine regardless of how it resolves aspect-ratio against grid stretch.
+      const hero = await page.evaluate(() => {
+        const box = element => { const r = element.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height }; };
+        const frame = document.querySelector(".poster-v2-frame--select");
+        const grid = frame.querySelector(".poster-v2-grid--select");
+        const panel = frame.querySelector(".poster-v2-panel--visual");
+        const caption = frame.querySelector(".poster-v2-visual__caption");
+        const identity = frame.querySelector(".poster-v2-identity");
+        const captionLine = parseFloat(getComputedStyle(caption.querySelector(".poster-v2-visual__meta")).lineHeight);
+        panel.scrollIntoView({ block: "center" });
+        return { grid: box(grid), panel: box(panel), caption: box(caption), identity: box(identity), captionLine, name: box(identity.querySelector(".poster-v2-name")) };
+      });
+      expect(hero.panel.width, "hero portrait spans the grid width").toBeGreaterThanOrEqual(hero.grid.width - 1);
+      expect(Math.abs(hero.panel.height - hero.panel.width * 1.25), "hero portrait is 4:5").toBeLessThanOrEqual(4);
+      expect(hero.caption.height, "caption plate is two lines or fewer").toBeLessThanOrEqual(hero.captionLine * 2 + 24);
+      expect(hero.caption.top, "caption sits on the top edge").toBeLessThanOrEqual(hero.panel.top + 24);
+      expect(hero.caption.right, "caption stays inside the portrait").toBeLessThanOrEqual(hero.panel.right + 1);
+      expect(hero.identity.top, "name block starts below the caption").toBeGreaterThanOrEqual(hero.caption.bottom - 1);
+      expect(hero.identity.bottom, "name block ends on the portrait's bottom edge").toBeLessThanOrEqual(hero.panel.bottom + 1);
+      expect(hero.identity.left, "name block inside the portrait (left)").toBeGreaterThanOrEqual(hero.panel.left - 1);
+      expect(hero.identity.right, "name block inside the portrait (right)").toBeLessThanOrEqual(hero.panel.right + 1);
+
       // Guest portraits are drawn (not an empty black column) and the text column keeps a usable width.
       const guests = await page.evaluate(() => [...document.querySelectorAll(".poster-supporting-card")].map(card => {
         const image = card.querySelector(".poster-supporting-card__visual img");
@@ -285,7 +309,7 @@ test.describe("handout follow and assignment reveal (phone)", () => {
     expect(state.panelTop, "card top is not at the very bottom").toBeLessThan(state.frameBottom - 40);
   });
 
-  test("手動でスクロールしたら、アサインカードへ動かさない", async ({ page, baseURL }) => {
+  test("タップ(touchstart / pointerdown / click)だけでは止まらず、アサインカードへ動く", async ({ page, baseURL }) => {
     test.setTimeout(240_000);
     await installRoutes(page, baseURL);
     await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
@@ -293,10 +317,97 @@ test.describe("handout follow and assignment reveal (phone)", () => {
     await page.locator(".neotokyo-sequence__advance").click({ force: true });
     const screen = assignedScreen(page);
     await expect(screen).toBeVisible();
-    await screen.evaluate(element => element.dispatchEvent(new Event("touchstart", { bubbles: true })));
+    // The touch half of a tap (pointerdown, touchstart, a few px of jitter, touchend), without the click that would advance the stage.
+    await screen.evaluate(element => {
+      const touch = y => new Touch({ identifier: 1, target: element, clientX: 100, clientY: y });
+      element.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+      element.dispatchEvent(new TouchEvent("touchstart", { bubbles: true, touches: [touch(300)] }));
+      element.dispatchEvent(new TouchEvent("touchmove", { bubbles: true, touches: [touch(304)] }));
+      element.dispatchEvent(new TouchEvent("touchend", { bubbles: true }));
+    });
     await advanceUntil(page, "NEXT // HANDOUT");
-    await page.waitForTimeout(1400);
-    expect((await reveal(screen)).scrollTop).toBe(0);
+    await page.waitForTimeout(1600);
+    const state = await reveal(screen);
+    expect(state.scrollTop, "a tap does not stop the reveal").toBeGreaterThan(20);
+    expect(state.panelTop, "card top is inside the screen").toBeGreaterThanOrEqual(state.frameTop);
+  });
+
+  test("手でスクロールした後でも、アサインカードが画面外なら一度だけ動く", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await page.setViewportSize({ width: 390, height: 420 });
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "ASSIGN // PC1");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    const screen = assignedScreen(page);
+    await expect(screen).toBeVisible();
+    await screen.evaluate(element => element.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: 40 })));
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await page.waitForTimeout(2200);
+    const state = await reveal(screen);
+    expect(state.scrollTop, "revealed although the reader had scrolled").toBeGreaterThan(20);
+    expect(state.panelTop, "card top is inside the screen").toBeGreaterThanOrEqual(state.frameTop);
+  });
+
+  test("手でスクロールした結果アサインカードが見えているなら、動かさない", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}&debug=cue`);
+    await advanceUntil(page, "ASSIGN // PC1");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    const screen = assignedScreen(page);
+    await expect(screen).toBeVisible();
+    await expect(screen).toHaveClass(/is-assigned/, { timeout: 15_000 }).catch(() => {});
+    // The reader scrolls the card into view themselves (a scroll the script did not cause).
+    await screen.evaluate(element => {
+      element.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: 40 }));
+      const panel = element.querySelector(".neotokyo-sequence__assign-panel");
+      element.scrollTop += panel.getBoundingClientRect().top - element.getBoundingClientRect().top - 80;
+    });
+    const placed = (await reveal(screen)).scrollTop;
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await page.waitForTimeout(2200);
+    expect(Math.abs((await reveal(screen)).scrollTop - placed), "left where the reader put it").toBeLessThanOrEqual(2);
+    await expect(page.locator("[data-cue-debug]")).toHaveAttribute("data-cue-state", "skipped(manual)");
+  });
+
+  test("▼ をタップするとアサインカードの先頭まで動く(合図の高さは44px以上)", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "ASSIGN // PC1");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    const screen = assignedScreen(page);
+    await expect(screen).toBeVisible();
+    // Keep the automatic reveal out of the way so the cue is tapped from the top.
+    await screen.evaluate(element => element.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: 1 })));
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await screen.evaluate(element => { element.scrollTop = 0; });
+    await expect(screen).toHaveAttribute("data-scroll-cue", "1");
+    expect(await screen.evaluate(element => parseFloat(getComputedStyle(element, "::after").height)), "tap area height").toBeGreaterThanOrEqual(44);
+    const before = await reveal(screen);
+    const box = await screen.boundingBox();
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height - 20);
+    await page.waitForTimeout(900);
+    const state = await reveal(screen);
+    expect(state.scrollTop, "scrolled by the tap").toBeGreaterThan(20);
+    expect(state.panelTop, "the card moved up").toBeLessThan(before.panelTop - 20);
+    expect(state.panelTop, "card top is inside the screen").toBeGreaterThanOrEqual(state.frameTop);
+    await expect(screen, "the tap did not advance the stage").toBeVisible();
+  });
+
+  test("?debug=cue のときだけ自動スクロールの状態が出る", async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
+    await installRoutes(page, baseURL);
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}&debug=cue`);
+    await advanceUntil(page, "ASSIGN // PC1");
+    await page.locator(".neotokyo-sequence__advance").click({ force: true });
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await expect(page.locator("[data-cue-debug]")).toHaveAttribute("data-cue-state", "done", { timeout: 5000 });
+    await page.goto(`/act-showcase.html?id=${ACT_SLUG}`);
+    await advanceUntil(page, "NEXT // HANDOUT");
+    await page.waitForTimeout(1600);
+    await expect(page.locator("[data-cue-debug]")).toHaveCount(0);
   });
 
   test("reduced-motion では動かさない", async ({ page, baseURL }) => {

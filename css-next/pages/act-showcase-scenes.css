@@ -115,7 +115,7 @@ body.showcase-poster-v2-ready .poster-v2-meta[data-gender-id-split="1"] dt,body.
 @media(max-width:760px){
   /* Scroll cue: a fade and a down arrow pinned to the bottom of the handout -> assignment screen while more is below
      (act-showcase-scroll-cue.js sets data-scroll-cue; it goes away at the end of the scroll). */
-  .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--linked.is-splitting[data-scroll-cue]:after{content:"\25BC";position:sticky;bottom:0;z-index:4;flex:0 0 36px;height:36px;margin-top:-36px;display:grid;place-items:end center;padding-bottom:5px;box-sizing:border-box;color:var(--showcase-primary,#75f0ff);font:700 12px/1 "Share Tech Mono",monospace;background:linear-gradient(to top,rgba(var(--showcase-bg-rgb,2,5,11),.94),rgba(var(--showcase-bg-rgb,2,5,11),0));pointer-events:none;animation:act-showcase-scroll-cue 1.6s ease-in-out infinite}
+  .cinematic-intro.neotokyo-sequence .neotokyo-sequence__screen--linked.is-splitting[data-scroll-cue]:after{content:"\25BC";position:sticky;bottom:0;z-index:4;flex:0 0 48px;height:48px;margin-top:-48px;display:grid;place-items:end center;padding-bottom:8px;box-sizing:border-box;color:var(--showcase-primary,#75f0ff);font:700 12px/1 "Share Tech Mono",monospace;background:linear-gradient(to top,rgba(var(--showcase-bg-rgb,2,5,11),.94),rgba(var(--showcase-bg-rgb,2,5,11),0));pointer-events:auto;cursor:pointer;animation:act-showcase-scroll-cue 1.6s ease-in-out infinite}
 }
 @keyframes act-showcase-scroll-cue{0%,100%{opacity:.65;transform:translateY(0)}50%{opacity:1;transform:translateY(3px)}}
 @media(prefers-reduced-motion:reduce){
