@@ -328,6 +328,8 @@ body.showcase-neotokyo .neotokyo-sequence__screen--title:before{position:absolut
 body.showcase-neotokyo .neotokyo-sequence__screen--title .neotokyo-sequence__micro{margin-bottom:15px;color:#6f98a9;letter-spacing:.4em;animation:cinematic-fade-up .55s both}
 body.showcase-neotokyo .neotokyo-sequence__act-title{position:relative;width:100%;max-width:calc(100vw - 190px);margin:0 auto 24px;white-space:nowrap;overflow:visible;text-align:center;opacity:0;filter:blur(18px);transform:scale(1.08);letter-spacing:.22em;transform-origin:center;font-size:clamp(2rem,7.2vw,7rem);line-height:.98;text-shadow:0 0 46px rgba(79,224,255,.2)}
 body.showcase-neotokyo .neotokyo-sequence__act-title.is-cinematic-title{animation:cinematic-act-title 1.45s cubic-bezier(.16,.84,.24,1) forwards}
+/* 見出しが1行に収まる長さ(short/medium)は、字間アニメ(.22em→.035em)で一時的に幅が広がっても折り返さない。scenes.css の white-space:normal より前にアニメーションで nowrap を保持する */
+body.showcase-neotokyo .neotokyo-sequence__act-title.is-cinematic-title[data-fit="short"],body.showcase-neotokyo .neotokyo-sequence__act-title.is-cinematic-title[data-fit="medium"]{animation-name:cinematic-act-title-hold}
 body.showcase-neotokyo .neotokyo-sequence__ruler-credit{justify-self:center;text-align:left;opacity:0;transform:translateY(12px);animation:cinematic-credit-in .7s .95s ease forwards}
 body.showcase-neotokyo .neotokyo-sequence__act-overview{display:none}
 body.showcase-neotokyo .neotokyo-sequence__screen--title .neotokyo-sequence__terminal{margin-top:20px;opacity:0;animation:cinematic-fade-up .55s 1.18s forwards}
@@ -351,6 +353,7 @@ body.showcase-neotokyo .neotokyo-sequence__cast-detail h3,body.showcase-neotokyo
 @keyframes cinematic-access-scan{0%{opacity:0;transform:translateX(-42vw)}20%{opacity:1}75%{opacity:.85}100%{opacity:0;transform:translateX(42vw)}}
 @keyframes cinematic-access-title{0%{opacity:0;filter:blur(14px);letter-spacing:.32em;transform:scale(.94)}100%{opacity:1;filter:blur(0);letter-spacing:.08em;transform:scale(1)}}
 @keyframes cinematic-act-title{0%{opacity:0;filter:blur(18px);transform:scale(1.08);letter-spacing:.22em}42%{opacity:1;filter:blur(1px)}100%{opacity:1;filter:blur(0);transform:scale(1);letter-spacing:.035em}}
+@keyframes cinematic-act-title-hold{0%{opacity:0;filter:blur(18px);transform:scale(1.08);letter-spacing:.22em;white-space:nowrap;text-wrap:nowrap}42%{opacity:1;filter:blur(1px)}99.9%{white-space:nowrap;text-wrap:nowrap}100%{opacity:1;filter:blur(0);transform:scale(1);letter-spacing:.035em}}
 @keyframes cinematic-title-line{to{transform:scaleX(1)}}
 @keyframes cinematic-credit-in{to{opacity:1;transform:translateY(0)}}
 @keyframes cinematic-terminal-in{0%{opacity:0;transform:perspective(900px) rotateX(5deg) translateY(18px);filter:blur(6px)}100%{opacity:1;transform:none;filter:blur(0)}}
@@ -366,7 +369,7 @@ body.showcase-neotokyo .neotokyo-sequence__cast-detail h3,body.showcase-neotokyo
  body.showcase-neotokyo .neotokyo-sequence__terminal-bar{padding:0 9px;font-size:.42rem;letter-spacing:.08em}
 }
 @media(prefers-reduced-motion:reduce){
- body.showcase-neotokyo .neotokyo-sequence__screen--opening.is-cinematic-access:before,body.showcase-neotokyo .neotokyo-sequence__screen--opening.is-cinematic-access:after,body.showcase-neotokyo .neotokyo-sequence__act-title.is-cinematic-title,body.showcase-neotokyo .neotokyo-sequence__ruler-credit,body.showcase-neotokyo .neotokyo-sequence__trailer-terminal{animation:none;opacity:1;filter:none;transform:none}
+ body.showcase-neotokyo .neotokyo-sequence__screen--opening.is-cinematic-access:before,body.showcase-neotokyo .neotokyo-sequence__screen--opening.is-cinematic-access:after,body.showcase-neotokyo .neotokyo-sequence__act-title.is-cinematic-title,body.showcase-neotokyo .neotokyo-sequence__act-title.is-cinematic-title[data-fit="short"],body.showcase-neotokyo .neotokyo-sequence__act-title.is-cinematic-title[data-fit="medium"],body.showcase-neotokyo .neotokyo-sequence__ruler-credit,body.showcase-neotokyo .neotokyo-sequence__trailer-terminal{animation:none;opacity:1;filter:none;transform:none}
 }
 
 /* ==== from: act-showcase-ornament.css ==== */
