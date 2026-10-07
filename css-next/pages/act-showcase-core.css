@@ -801,7 +801,7 @@ body.showcase-neotokyo-finale-active .neotokyo-finale__access-button small{color
 /* --- 本体グリッド: 左=ヒーロー(2行ぶち抜き) / 右=スタイル・データ + ハンドアウト --- */
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-grid--select{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);grid-template-rows:auto 1fr;gap:0 var(--poster-select-gap);align-items:stretch;margin:0;padding:0}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-grid--select.poster-v2-grid--no-handout{grid-template-rows:1fr}
-:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select :where(.poster-v2-grid--select)>.poster-v2-panel{min-width:0;margin:0;padding:0;border:0;border-radius:var(--showcase-radius,0);background:none;box-shadow:none;clip-path:none}
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select :where(.poster-v2-grid--select)>.poster-v2-panel{min-width:0;margin:0;padding:0;border:0;border-radius:var(--showcase-radius,0);background:none;box-shadow:none;clip-path:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select :where(.poster-v2-grid--select)>.poster-v2-panel::before,:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select :where(.poster-v2-grid--select)>.poster-v2-panel::after{display:none}
 
 /* ヒーロー(ポートレート) */
@@ -810,6 +810,7 @@ body.showcase-neotokyo-finale-active .neotokyo-finale__access-button small{color
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual{position:absolute;inset:0;width:auto;height:auto;min-height:0;margin:0;padding:0;border:0;background:#06101a;box-shadow:none;overflow:hidden}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual::before,:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual::after{display:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual>img{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;padding:0;border:0;object-fit:cover;transform:scale(var(--tnx-image-scale,1));transform-origin:var(--tnx-image-origin,center);filter:none}
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual>img[src*="scan-failed.webp"]{bottom:auto;height:64%;object-fit:contain;object-position:center top;transform:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual__caption{position:absolute;top:14px;right:auto;bottom:auto;left:14px;z-index:2;display:grid;gap:3px;max-width:min(62%,400px);margin:0;padding:8px 12px;border:0;border-left:2px solid var(--poster-select-accent);background:rgba(2,7,11,.78);box-shadow:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual__caption::before{display:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual__caption .poster-v2-visual__meta{color:#bfeaf2;font:700 10px/1.5 "Share Tech Mono",monospace;letter-spacing:.06em}
@@ -829,6 +830,9 @@ body.showcase-neotokyo-finale-active .neotokyo-finale__access-button small{color
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-grid--no-handout .poster-v2-details{align-self:center}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0;background:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-tags span{margin:0;padding:6px 12px;border:1px solid var(--poster-select-line);border-radius:999px;background:rgba(var(--poster-select-surface-rgb),.82);color:var(--poster-select-ink);font:700 13px/1.3 "Noto Sans JP",sans-serif;letter-spacing:.02em}
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-tags span.is-assigned-style{padding:6px 13px 6px 78px;border-color:#72ffd2;background:linear-gradient(110deg,rgba(28,111,91,.95),rgba(20,48,72,.92));color:#b6ffe8;box-shadow:0 0 0 1px rgba(114,255,210,.2),0 0 22px rgba(81,255,204,.22)}
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-tags span::before{display:none}
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-tags span.is-assigned-style::before{content:"ASSIGNED";display:block;position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#65f7cc;font:900 10px/1 Orbitron,sans-serif;letter-spacing:.06em}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-meta{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:baseline;gap:10px 22px;margin:0;padding:0;border:0;background:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-meta::before{display:none}
 :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-meta dt{margin:0;padding:0;border:0;background:none;color:var(--poster-select-sub);font:700 11px/1.6 "Share Tech Mono",monospace;letter-spacing:.1em;text-transform:uppercase}
@@ -859,7 +863,8 @@ body.showcase-neotokyo-finale-active .neotokyo-finale__access-button small{color
   :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-identity{grid-column:1;grid-row:1;padding-top:clamp(64px,22vw,120px)}
   :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-details,:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-grid--no-handout .poster-v2-details{grid-column:1;grid-row:2;align-self:start;padding-top:var(--poster-select-gap)}
   :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-panel--handout{grid-column:1;grid-row:3}
-  :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual__caption{max-width:calc(100% - 28px)}
+  :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual>img[src*="scan-failed.webp"]{bottom:auto;height:64%;object-fit:contain;object-position:center top;transform:none}
+:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-visual__caption{max-width:calc(100% - 28px)}
 }
 @media(prefers-reduced-motion:reduce){
   :root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select .poster-v2-grid--select.is-cast-switch{animation:none}

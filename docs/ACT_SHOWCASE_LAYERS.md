@@ -218,6 +218,13 @@ bootstrap から到達するのは22ファイル(visual-caption-code を削除�
 | observer の再実行抑制(タイプライターの churn を無視) | `hasStructuralElementMutation` / `hasLinkedScreenStateMutation` と observe の引数 | `act-showcase-observer-stability.test.mjs`(observe 呼び出しを**文字列で固定**) |
 | 登録順 | 1〜10 は本体より前、12〜15 は後。同一 microtask 内の callback 順は登録順 | 順序依存の具体的な失敗例は未確認 |
 
+### 3.5 最終ボードのキャスト領域(キャラクターセレクト型)
+
+- DOM は page.js が最終形で生成する: `.poster-v2-frame--select` の中に act-meta → `.poster-v2-roster`(顔サムネ+名前+スタイルのカード。1人なら生成しない) → `.poster-v2-grid--select`。
+- パネル3枚(visual / profile / handout)の順序と `--poster-v2-panel-*` のスクロール連動は不変。visual がヒーロー、profile は同じセルへサブグリッドで重ねて名前ブロック(`.poster-v2-identity`)だけをポートレート下部に置き、スタイル/データ(`.poster-v2-details`)は右列に置く。supporting-cast / cinematic-polish が見る `.poster-v2-name` `.poster-v2-tags` は `.poster-v2-panel--profile` の中のまま。
+- CSS は act-showcase-core.css 末尾の「poster-v2 キャストセレクト型レイアウト」ブロックに集約し、既存の枠・見出し・テーマ上書きは `:root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready .poster-v2-frame--select` 接頭辞の特異度で上書きする。旧ルール(panel__head・角飾り・旧 roster)は未削除で、整理は別PR。
+- 画面比較(§4.1)の最終ボード基準画像はこの変更で意図的に変わる。基準ブランチ `visual-regression-baseline` の更新が別途必要。
+
 ## 4. 守りになっているテスト
 
 ### 4.1 画面比較(`scripts/run-visual-regression.mjs`)
