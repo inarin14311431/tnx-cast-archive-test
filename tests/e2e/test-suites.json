@@ -49,6 +49,7 @@
         "tests/e2e/act-showcase-final-copy.spec.js",
         "tests/e2e/act-showcase-name-quotes.spec.js",
         "tests/e2e/act-showcase-contrast.spec.js",
+        "tests/e2e/act-showcase-assign-cards.spec.js",
         "tests/e2e/act-showcase-clipping.spec.js",
         "tests/e2e/act-showcase-key-style.spec.js",
         "tests/e2e/act-showcase-trailer-readout.spec.js",
