@@ -1,3 +1,4 @@
+import { parseStyleLabel } from "./act-showcase-style-label.js?v=1";
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
 const SHOW_ACT_TITLE_SCREEN = true;
@@ -30,6 +31,7 @@ export async function runNeoTokyoIntro({ intro, model }) {
     if (state.finished) return;
     state.finished = true;
     state.skipRequested = true;
+    revealAllStyleCards(intro);
     state.resolveWaiters();
     state.resolveAdvance();
     document.body.classList.remove("showcase-neotokyo-intro-active");
@@ -283,11 +285,21 @@ async function showHandoutAndAssign(state, cast, index, total) {
   assignPanel.replaceChildren(castCard);
   sequence.classList.remove("is-searching");
   sequence.classList.add("is-assigned");
-  linkStatus.textContent = participationRole
-    ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
-    : `PC${pcNumber} // CAST ASSIGNED`;
-  setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
-  await wait(state, 700);
+  const announceAssigned = () => {
+    linkStatus.textContent = participationRole
+      ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
+      : `PC${pcNumber} // CAST ASSIGNED`;
+    setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
+  };
+  // The three style cards turn face-up one at a time; "CAST ASSIGNED" appears once the last one has turned.
+  // This replaces the former 700ms hold (the whole scene gets 320ms longer; reduced motion keeps the 700ms).
+  if (await flipStyleCards(state, castCard)) {
+    announceAssigned();
+    await wait(state, STYLE_CARD_HOLD_MS);
+  } else {
+    announceAssigned();
+    await wait(state, 700);
+  }
   if (state.finished) return;
 
   const nextLabel = pcNumber < total
@@ -341,14 +353,84 @@ function createRoleSlot(participationRole) {
   return slot;
 }
 
+// Timing of the style-card reveal (ms): lead-in, start-to-start gap, one card's turn, hold before NEXT.
+const STYLE_CARD_LEAD_MS = 120;
+const STYLE_CARD_GAP_MS = 140;
+const STYLE_CARD_TURN_MS = 320;
+const STYLE_CARD_HOLD_MS = 300;
+
+// Cards are div/b/i on purpose: the legacy chip rules and role markers target `.neotokyo-sequence__styles span`.
 function createStyleRow(cast, participationRole) {
-  const row = node("div", "neotokyo-sequence__styles");
-  for (const style of getStyleLabels(cast)) {
-    const chip = textNode("span", "", style);
-    if (participationRole && roleMatchesStyle(participationRole, style)) chip.classList.add("is-role");
-    row.append(chip);
+  const row = node("div", "neotokyo-sequence__styles neotokyo-sequence__style-cards");
+  const role = participationRole || handoutRoleLabel(cast);
+  const faceUp = prefersReducedMotion();
+  let primaryFound = false;
+  for (const label of getStyleLabels(cast)) {
+    const style = parseStyleLabel(label);
+    const card = node("div", "neotokyo-style-card");
+    card.style.setProperty("--style-name-chars", String(Math.max(3, Array.from(style.name).length)));
+    if (role && roleMatchesStyle(role, label)) {
+      card.classList.add("is-role");
+      card.classList.add(primaryFound ? "is-role-duplicate" : "is-role-primary");
+      primaryFound = true;
+    }
+    if (faceUp) card.classList.add("is-flipped");
+
+    const back = node("div", "neotokyo-style-card__back");
+    back.setAttribute("aria-hidden", "true");
+    const front = node("div", "neotokyo-style-card__front");
+    const marks = node("i", "neotokyo-style-card__marks");
+    marks.append(createStyleMark("persona", "◎", style.persona), createStyleMark("key", "●", style.key));
+    front.append(textNode("b", "neotokyo-style-card__name", style.name), marks);
+    const inner = node("div", "neotokyo-style-card__inner");
+    inner.append(back, front);
+    card.append(inner);
+    row.append(card);
   }
+  if (!faceUp && row.childElementCount) row.classList.add("is-face-down");
   return row;
+}
+
+// A lit mark is real text; an unlit one is a faint drawn shape that is hidden from assistive technology.
+function createStyleMark(kind, glyph, lit) {
+  const mark = node("i", `neotokyo-style-card__mark neotokyo-style-card__mark--${kind}`);
+  if (lit) {
+    mark.classList.add("is-lit");
+    mark.textContent = glyph;
+  } else {
+    mark.setAttribute("aria-hidden", "true");
+  }
+  return mark;
+}
+
+function handoutRoleLabel(cast) {
+  const style = Array.isArray(cast?.styles) ? cast.styles.find(item => item?.handoutRole || item?.handout_role) : null;
+  return clean(style?.label);
+}
+
+// Turns the cards over left to right. Resolves true when the reveal ran to the end, false when there was
+// nothing to animate (no cards, reduced motion). A skip turns every card over at once.
+async function flipStyleCards(state, castCard) {
+  const row = castCard.querySelector(".neotokyo-sequence__style-cards.is-face-down");
+  const cards = row ? [...row.querySelectorAll(".neotokyo-style-card")] : [];
+  if (!cards.length) return false;
+  castCard.classList.add("is-styles-pending");
+  await wait(state, STYLE_CARD_LEAD_MS);
+  for (let index = 0; index < cards.length && !state.finished; index += 1) {
+    cards[index].classList.add("is-flipped");
+    await wait(state, index < cards.length - 1 ? STYLE_CARD_GAP_MS : STYLE_CARD_TURN_MS);
+  }
+  revealAllStyleCards(castCard);
+  return true;
+}
+
+// Final state: every card face-up and "CAST ASSIGNED" shown. Safe to call at any time and more than once.
+function revealAllStyleCards(root) {
+  if (!root) return;
+  for (const card of root.querySelectorAll(".neotokyo-style-card")) card.classList.add("is-flipped");
+  root.classList.remove("is-styles-pending");
+  for (const cast of root.querySelectorAll(".is-styles-pending")) cast.classList.remove("is-styles-pending");
+  for (const row of root.querySelectorAll(".neotokyo-sequence__style-cards.is-face-down")) row.classList.remove("is-face-down");
 }
 
 async function showSummary(state, model) {

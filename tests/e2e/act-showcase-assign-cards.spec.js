@@ -1,0 +1,183 @@
+import { test, expect } from "@playwright/test";
+import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, showcaseData } from "./fixtures/act-showcase-data.js";
+
+// ASSIGN scene: the three assigned styles are cards that turn face-up left to right, then "CAST ASSIGNED" shows.
+const withStyles = labels => ({
+  ...showcaseData,
+  casts: showcaseData.casts.map(cast => ({ ...cast, styles: labels.map((label, index) => ({ label, handoutRole: index === 0 })) }))
+});
+const LONG_NAMES = withStyles(["カゲムシャ◎●", "エグゼク●", "クロマク◎"]);
+const EIGHT_CHARS = withStyles(["ブラックハウンド◎", "ミストレス●", "トーキー◎●"]);
+
+// Opens the act and clicks ASSIGN // PC1. `record` installs a frame-by-frame log of when each card turned.
+async function startAssign(page, { data = showcaseData, theme = "nova", record = false } = {}) {
+  await installActShowcaseRoutes(page, data);
+  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}`);
+  const advance = page.locator(".neotokyo-sequence__advance");
+  for (let step = 0; step < 6; step += 1) {
+    await expect(advance).toBeVisible({ timeout: 20_000 });
+    const label = ((await advance.textContent()) || "").trim();
+    if (label === "ASSIGN // PC1") break;
+    await advance.click({ force: true });
+    await expect(advance).not.toHaveText(label, { timeout: 15_000 });
+  }
+  await expect(advance).toHaveText("ASSIGN // PC1");
+  if (record) {
+    await page.evaluate(() => {
+      const log = { assigned: null, turned: [], done: null, advance: null, pendingHidden: null, faceDownVisibility: null };
+      window.__assignLog = log;
+      const tick = now => {
+        const sequence = document.querySelector(".neotokyo-sequence__screen--linked");
+        const cards = [...document.querySelectorAll(".neotokyo-sequence__cast--linked .neotokyo-style-card")];
+        const assigned = document.querySelector(".neotokyo-sequence__cast--linked .neotokyo-sequence__assigned");
+        if (sequence?.classList.contains("is-assigned") && cards.length && log.assigned === null) {
+          log.assigned = now;
+          log.faceDownVisibility = cards.map(card => getComputedStyle(card.querySelector(".neotokyo-style-card__front")).visibility);
+          log.pendingHidden = getComputedStyle(assigned).visibility === "hidden";
+        }
+        cards.forEach((card, index) => {
+          if (card.classList.contains("is-flipped") && log.turned[index] === undefined) log.turned[index] = now;
+        });
+        if (assigned && cards.length && log.turned.filter(Boolean).length === cards.length && log.done === null
+          && getComputedStyle(assigned).visibility !== "hidden") log.done = now;
+        const next = document.querySelector(".neotokyo-sequence__advance");
+        if (log.assigned !== null && next && !next.hidden && /NEXT/.test(next.textContent) && log.advance === null) log.advance = now;
+        if (log.advance === null) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+  await advance.click({ force: true });
+}
+
+test("ASSIGN: 3枚が左から順に表になり、3枚が終わってから CAST ASSIGNED が出る", async ({ page }, testInfo) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await startAssign(page, { record: true });
+  const advance = page.locator(".neotokyo-sequence__advance");
+  await expect(advance).toHaveText("NEXT // HANDOUT 02", { timeout: 15_000 });
+  await expect.poll(() => page.evaluate(() => window.__assignLog.advance !== null)).toBe(true);
+  const log = await page.evaluate(() => window.__assignLog);
+
+  expect(log.turned.filter(Boolean)).toHaveLength(3);
+  expect(log.turned[0]).toBeLessThan(log.turned[1]);
+  expect(log.turned[1]).toBeLessThan(log.turned[2]);
+  expect(log.turned[1] - log.turned[0]).toBeGreaterThan(90);
+  expect(log.turned[1] - log.turned[0]).toBeLessThan(260);
+  // before turning, the face (style name) is hidden and CAST ASSIGNED has not appeared
+  expect(log.faceDownVisibility).toEqual(["hidden", "hidden", "hidden"]);
+  expect(log.pendingHidden).toBe(true);
+  expect(log.done).toBeGreaterThanOrEqual(log.turned[2]);
+  // the scene used to hold for 700ms; the reveal may add at most 1.2s
+  const duration = log.advance - log.assigned;
+  testInfo.annotations.push({ type: "assign-scene-duration-ms", description: String(Math.round(duration)) });
+  expect(duration - 700).toBeLessThanOrEqual(1200);
+
+  const cards = page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card");
+  await expect(cards).toHaveCount(3);
+  for (let index = 0; index < 3; index += 1) {
+    await expect(cards.nth(index)).toHaveClass(/is-flipped/);
+    await expect(cards.nth(index).locator(".neotokyo-style-card__front")).toBeVisible();
+  }
+  await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-sequence__assigned")).toBeVisible();
+});
+
+test("ASSIGN: カードの表は今のラベル文字列のまま(印は付いているものだけ、裏面と薄い印は読み上げない)", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await startAssign(page);
+  const advance = page.locator(".neotokyo-sequence__advance");
+  await expect(advance).toHaveText("NEXT // HANDOUT 02", { timeout: 15_000 });
+  const row = page.locator(".neotokyo-sequence__cast--linked .neotokyo-sequence__styles");
+  await expect(row).toHaveText("カブキ◎カゼ●ニューロ");
+  const hidden = await row.evaluate(element => ({
+    backs: [...element.querySelectorAll(".neotokyo-style-card__back")].every(back => back.getAttribute("aria-hidden") === "true"),
+    unlit: [...element.querySelectorAll(".neotokyo-style-card__mark:not(.is-lit)")].every(mark => mark.getAttribute("aria-hidden") === "true" && mark.textContent === ""),
+    unlitCount: element.querySelectorAll(".neotokyo-style-card__mark:not(.is-lit)").length,
+    litCount: element.querySelectorAll(".neotokyo-style-card__mark.is-lit").length,
+    spans: element.querySelectorAll("span").length
+  }));
+  expect(hidden).toEqual({ backs: true, unlit: true, unlitCount: 4, litCount: 2, spans: 0 });
+  // the style that matches the participation slot is emphasised
+  await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card.is-role")).toHaveCount(1);
+  await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card.is-role .neotokyo-style-card__name")).toHaveText("カブキ");
+});
+
+test("ASSIGN: SKIP で即座に全カードが表になる", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await startAssign(page);
+  // Click SKIP in the same frame the cards first appear (they are still face down), then read the result synchronously.
+  const result = await page.evaluate(() => new Promise((resolve, reject) => {
+    const deadline = performance.now() + 15_000;
+    const tick = () => {
+      const cards = [...document.querySelectorAll(".neotokyo-style-card")];
+      if (cards.length) {
+        const before = cards.filter(card => card.classList.contains("is-flipped")).length;
+        document.querySelector(".neotokyo-sequence__skip").click();
+        resolve({ before, after: cards.map(card => card.classList.contains("is-flipped")) });
+      } else if (performance.now() > deadline) reject(new Error("style cards never appeared"));
+      else requestAnimationFrame(tick);
+    };
+    tick();
+  }));
+  expect(result.before).toBeLessThan(3);
+  expect(result.after).toEqual([true, true, true]);
+});
+
+test("ASSIGN: reduced-motion では最初から表(めくらない)", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await startAssign(page);
+  const cards = page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card");
+  await expect(cards).toHaveCount(3, { timeout: 15_000 });
+  const first = await page.evaluate(() => [...document.querySelectorAll(".neotokyo-style-card")].map(card => ({
+    flipped: card.classList.contains("is-flipped"),
+    face: getComputedStyle(card.querySelector(".neotokyo-style-card__front")).visibility,
+    turn: getComputedStyle(card.querySelector(".neotokyo-style-card__inner")).transitionDuration
+  })));
+  expect(first).toEqual(Array(3).fill({ flipped: true, face: "visible", turn: "0s" }));
+  await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-sequence__assigned")).toBeVisible();
+});
+
+for (const [width, height] of [[1440, 1000], [1024, 768], [444, 900], [390, 844]]) {
+  for (const [name, data] of [["標準", showcaseData], ["長いスタイル名", LONG_NAMES], ["8文字", EIGHT_CHARS]]) {
+    test(`ASSIGN: 3枚が枠からはみ出さず、スタイル名が1行 (${name}, ${width}px)`, async ({ page }) => {
+      test.setTimeout(60_000);
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.setViewportSize({ width, height });
+      await startAssign(page, { data, theme: ACT_THEMES[width % ACT_THEMES.length] });
+      await expect(page.locator(".neotokyo-style-card")).toHaveCount(3, { timeout: 15_000 });
+      await expect(page.locator(".neotokyo-sequence__advance")).toHaveText("NEXT // HANDOUT 02", { timeout: 15_000 });
+      const fit = await page.evaluate(() => {
+        const frame = document.querySelector(".neotokyo-sequence__cast--linked").getBoundingClientRect();
+        const panel = document.querySelector(".neotokyo-sequence__assign-panel").getBoundingClientRect();
+        const rows = [...document.querySelectorAll(".neotokyo-style-card")].map(card => {
+          const box = card.getBoundingClientRect();
+          const name = card.querySelector(".neotokyo-style-card__name");
+          const nameBox = name.getBoundingClientRect();
+          const face = card.querySelector(".neotokyo-style-card__front").getBoundingClientRect();
+          const lineHeight = parseFloat(getComputedStyle(name).lineHeight);
+          return {
+            inFrame: box.left >= frame.left - 0.5 && box.right <= frame.right + 0.5 && box.right <= panel.right + 0.5,
+            inViewport: box.left >= 0 && box.right <= innerWidth,
+            oneLine: nameBox.height <= lineHeight * 1.2 && name.scrollWidth <= name.clientWidth + 1,
+            nameInFace: nameBox.left >= face.left - 0.5 && nameBox.right <= face.right + 0.5,
+            fontPx: parseFloat(getComputedStyle(name).fontSize)
+          };
+        });
+        return { rows, scrollOverflow: document.documentElement.scrollWidth > innerWidth };
+      });
+      for (const row of fit.rows) {
+        expect(row.inFrame).toBe(true);
+        expect(row.inViewport).toBe(true);
+        expect(row.oneLine).toBe(true);
+        expect(row.nameInFace).toBe(true);
+        // 8-character names on a phone shrink to the floor (7px); everything up to 5 characters stays >= 10px
+        expect(row.fontPx).toBeGreaterThanOrEqual(width >= 1024 || data !== EIGHT_CHARS ? 10 : 7);
+      }
+      expect(fit.scrollOverflow).toBe(false);
+    });
+  }
+}
