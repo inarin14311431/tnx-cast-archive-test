@@ -10,9 +10,9 @@ const LONG_NAMES = withStyles(["カゲムシャ◎●", "エグゼク●", "ク�
 const EIGHT_CHARS = withStyles(["ブラックハウンド◎", "ミストレス●", "トーキー◎●"]);
 
 // Opens the act and clicks ASSIGN // PC1. `record` installs a frame-by-frame log of when each card turned.
-async function startAssign(page, { data = showcaseData, theme = "nova", record = false } = {}) {
+async function startAssign(page, { data = showcaseData, theme = "nova", record = false, flip = "" } = {}) {
   await installActShowcaseRoutes(page, data);
-  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}`);
+  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}${flip ? `&flip=${flip}` : ""}`);
   const advance = page.locator(".neotokyo-sequence__advance");
   for (let step = 0; step < 6; step += 1) {
     await expect(advance).toBeVisible({ timeout: 20_000 });
@@ -58,40 +58,65 @@ async function startAssign(page, { data = showcaseData, theme = "nova", record =
   await advance.click({ force: true });
 }
 
-test("ASSIGN: 3枚が左から順に表になり、3枚が終わってから CAST ASSIGNED が出る", async ({ page }, testInfo) => {
-  test.setTimeout(60_000);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await startAssign(page, { record: true });
-  const advance = page.locator(".neotokyo-sequence__advance");
-  await expect(advance).toHaveText("NEXT // HANDOUT 02", { timeout: 15_000 });
-  await expect.poll(() => page.evaluate(() => window.__assignLog.advance !== null)).toBe(true);
-  const log = await page.evaluate(() => window.__assignLog);
+// ?flip=fast|normal|slow picks the turn length and the gap between cards (anything else, or nothing, is normal).
+// The scene holds for the whole reveal plus 300ms; the first row is the default.
+const FLIPS = [
+  { flip: "", name: "指定なし(normal)", turn: 600, gap: 300 },
+  { flip: "normal", name: "normal", turn: 600, gap: 300 },
+  { flip: "fast", name: "fast", turn: 320, gap: 100 },
+  { flip: "slow", name: "slow", turn: 900, gap: 450 },
+  { flip: "bogus", name: "不正な値(normal)", turn: 600, gap: 300 }
+];
+for (const { flip, name, turn, gap } of FLIPS) {
+  test(`ASSIGN: 3枚が左から順に表になり、3枚が終わってから CAST ASSIGNED が出る (flip=${name})`, async ({ page }, testInfo) => {
+    test.setTimeout(60_000);
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await startAssign(page, { record: true, flip });
+    const advance = page.locator(".neotokyo-sequence__advance");
+    await expect(advance).toHaveText("NEXT // HANDOUT 02", { timeout: 20_000 });
+    await expect.poll(() => page.evaluate(() => window.__assignLog.advance !== null)).toBe(true);
+    const log = await page.evaluate(() => window.__assignLog);
 
-  expect(log.turned.filter(Boolean)).toHaveLength(3);
-  expect(log.turned[0]).toBeLessThan(log.turned[1]);
-  expect(log.turned[1]).toBeLessThan(log.turned[2]);
-  expect(log.turned[1] - log.turned[0]).toBeGreaterThan(60);
-  expect(log.turned[1] - log.turned[0]).toBeLessThan(180);
-  // before turning, the face (style name) is hidden and CAST ASSIGNED has not appeared
-  expect(log.faceDownVisibility).toEqual(["hidden", "hidden", "hidden"]);
-  expect(log.pendingHidden).toBe(true);
-  expect(log.done).toBeGreaterThanOrEqual(log.turned[2]);
-  // the whole reveal fits inside the former 700ms hold: the last card settles before NEXT, and the scene gets no longer
-  expect(log.settled.filter(Boolean)).toHaveLength(3);
-  expect(log.settled[2]).toBeLessThanOrEqual(log.advance);
-  const duration = log.advance - log.assigned;
-  testInfo.annotations.push({ type: "assign-scene-duration-ms", description: String(Math.round(duration)) });
-  expect(duration - 700).toBeLessThanOrEqual(150);
+    expect(log.turned.filter(Boolean)).toHaveLength(3);
+    expect(log.turned[0]).toBeLessThan(log.turned[1]);
+    expect(log.turned[1]).toBeLessThan(log.turned[2]);
+    const tolerance = Math.max(45, gap * 0.25); // frame quantisation of the edge-on detection
+    for (const [from, to] of [[0, 1], [1, 2]]) {
+      expect(log.turned[to] - log.turned[from], `gap ${from}->${to}`).toBeGreaterThan(gap - tolerance);
+      expect(log.turned[to] - log.turned[from], `gap ${from}->${to}`).toBeLessThan(gap + tolerance);
+    }
+    // before turning, the face (style name) is hidden and CAST ASSIGNED has not appeared
+    expect(log.faceDownVisibility).toEqual(["hidden", "hidden", "hidden"]);
+    expect(log.pendingHidden).toBe(true);
+    expect(log.done).toBeGreaterThanOrEqual(log.turned[2]);
+    // the last card settles, then CAST ASSIGNED shows, then the scene rests ~300ms before NEXT
+    expect(log.settled.filter(Boolean)).toHaveLength(3);
+    expect(log.settled[2]).toBeLessThanOrEqual(log.advance);
+    expect(log.done - log.turned[2], "badge waits for the last turn to finish").toBeGreaterThanOrEqual(turn * 0.5);
+    const hold = 2 * gap + turn + 300;
+    const duration = log.advance - log.assigned;
+    testInfo.annotations.push({ type: "assign-scene-duration-ms", description: `${name}: ${Math.round(duration)} (hold ${hold})` });
+    expect(duration - hold).toBeLessThanOrEqual(250);
+    expect(duration - hold).toBeGreaterThanOrEqual(-60);
 
-  const cards = page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card");
-  await expect(cards).toHaveCount(3);
-  for (let index = 0; index < 3; index += 1) {
-    await expect(cards.nth(index)).toHaveClass(/is-flipped/);
-    await expect(cards.nth(index).locator(".neotokyo-style-card__front")).toBeVisible();
-  }
-  await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-sequence__assigned")).toBeVisible();
-});
+    const cards = page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card");
+    await expect(cards).toHaveCount(3);
+    for (let index = 0; index < 3; index += 1) {
+      await expect(cards.nth(index)).toHaveClass(/is-flipped/);
+      await expect(cards.nth(index).locator(".neotokyo-style-card__front")).toBeVisible();
+    }
+    await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-sequence__assigned")).toBeVisible();
+    // the timing reaches the CSS through the row's variables (one source in the script)
+    const vars = await page.locator(".neotokyo-sequence__cast--linked .neotokyo-sequence__style-cards").evaluate(row => ({
+      turn: row.style.getPropertyValue("--flip-turn"),
+      gap: row.style.getPropertyValue("--flip-gap"),
+      duration: getComputedStyle(row.querySelector(".neotokyo-style-card__inner")).transitionDuration
+    }));
+    expect(vars.turn).toBe(`${turn}ms`);
+    expect(vars.gap).toBe(`${gap}ms`);
+  });
+}
 
 test("ASSIGN: カードの表は今のラベル文字列のまま(印は付いているものだけ、裏面と薄い印は読み上げない)", async ({ page }) => {
   test.setTimeout(60_000);
@@ -231,4 +256,42 @@ test("ASSIGN: スマホ幅でめくりの最中に自動スクロール(読み�
   expect(log.tops.length).toBeGreaterThan(10);
   expect(geometry.overflowX).toBeLessThanOrEqual(1);
   expect(geometry.page).toBeLessThanOrEqual(0);
+});
+
+test("ASSIGN: ?flip=slow でも reduced-motion は最初から表(めくらない)で、待ちも従来どおり", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await startAssign(page, { flip: "slow" });
+  const cards = page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card");
+  await expect(cards).toHaveCount(3, { timeout: 15_000 });
+  const first = await page.evaluate(() => [...document.querySelectorAll(".neotokyo-style-card")].map(card => ({
+    flipped: card.classList.contains("is-flipped"),
+    face: getComputedStyle(card.querySelector(".neotokyo-style-card__front")).visibility,
+    turn: getComputedStyle(card.querySelector(".neotokyo-style-card__inner")).transitionDuration
+  })));
+  expect(first).toEqual(Array(3).fill({ flipped: true, face: "visible", turn: "0s" }));
+  await expect(page.locator(".neotokyo-sequence__advance")).toHaveText("NEXT // HANDOUT 02", { timeout: 15_000 });
+});
+
+test("ASSIGN: ?flip=slow で SKIP すると、めくりの途中でも即座に全カードが表になる", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await startAssign(page, { flip: "slow" });
+  const result = await page.evaluate(() => new Promise((resolve, reject) => {
+    const deadline = performance.now() + 15_000;
+    const tick = () => {
+      const cards = [...document.querySelectorAll(".neotokyo-style-card")];
+      if (cards.length) {
+        const faceUp = () => cards.filter(card => getComputedStyle(card.querySelector(".neotokyo-style-card__front")).visibility === "visible").length;
+        const before = faceUp();
+        document.querySelector(".neotokyo-sequence__skip").click();
+        resolve({ before, faceUp: faceUp(), badge: getComputedStyle(document.querySelector(".neotokyo-sequence__cast--linked .neotokyo-sequence__assigned") || document.body).visibility });
+      } else if (performance.now() > deadline) reject(new Error("style cards never appeared"));
+      else requestAnimationFrame(tick);
+    };
+    tick();
+  }));
+  expect(result.before).toBeLessThan(3);
+  expect(result.faceUp).toBe(3);
+  expect(result.badge).not.toBe("hidden");
 });

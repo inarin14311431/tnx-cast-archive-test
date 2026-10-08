@@ -1211,7 +1211,7 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   inset:0;
   transform:rotateY(180deg);
   transform-style:preserve-3d;
-  transition:transform 320ms cubic-bezier(.3,.7,.2,1) calc(var(--flip-index,0) * 100ms);
+  transition:transform var(--flip-turn,600ms) cubic-bezier(.2,.8,.2,1) calc(var(--flip-index,0) * var(--flip-gap,300ms));
 }
 .neotokyo-style-card.is-flipped .neotokyo-style-card__inner{
   transform:rotateY(0deg);
@@ -1266,9 +1266,9 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   background:linear-gradient(145deg,rgba(18,35,67,.9),rgba(8,16,35,.94));
   color:#e6f4ff;
   text-align:center;
-  /* hidden until the card has turned over (the switch happens halfway through the turn) */
+  /* hidden until the card has turned over (the switch happens once it passes edge-on: about 14% of this ease) */
   visibility:hidden;
-  transition:visibility 0s linear calc(160ms + var(--flip-index,0) * 100ms);
+  transition:visibility 0s linear calc(var(--flip-turn,600ms) * .14 + var(--flip-index,0) * var(--flip-gap,300ms));
 }
 .neotokyo-style-card.is-flipped .neotokyo-style-card__front{
   visibility:visible;
@@ -1307,7 +1307,7 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
 .neotokyo-style-card.is-flipped .neotokyo-style-card__mark.is-lit{
   opacity:1;
   text-shadow:0 0 10px currentColor;
-  transition-delay:calc(240ms + var(--flip-index,0) * 100ms);
+  transition-delay:calc(var(--flip-turn,600ms) * .8 + var(--flip-index,0) * var(--flip-gap,300ms));
 }
 /* unlit mark: the same shape, drawn faintly */
 .neotokyo-style-card__mark:not(.is-lit){
