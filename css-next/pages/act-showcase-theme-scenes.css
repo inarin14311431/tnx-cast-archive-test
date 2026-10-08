@@ -550,9 +550,6 @@ body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-
   background:linear-gradient(145deg,rgba(var(--showcase-primary-rgb),.08),var(--showcase-scene-surface-strong));
   color:var(--showcase-scene-text);
 }
-:root[data-showcase-theme] body#act-showcase-page .neotokyo-style-card__mark:not(.is-lit){
-  color:rgba(var(--showcase-primary-rgb),.34);
-}
 :root[data-showcase-theme] body#act-showcase-page .neotokyo-style-card.is-role .neotokyo-style-card__front{
   border-color:var(--showcase-scene-accent-3);
   box-shadow:0 0 0 1px rgba(var(--showcase-tertiary-rgb),.22),0 0 22px rgba(var(--showcase-tertiary-rgb),.26);
