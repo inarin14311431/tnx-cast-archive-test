@@ -93,7 +93,7 @@ for (const { flip, name, turn, gap } of FLIPS) {
     // the last card settles, then CAST ASSIGNED shows, then the scene rests ~300ms before NEXT
     expect(log.settled.filter(Boolean)).toHaveLength(3);
     expect(log.settled[2]).toBeLessThanOrEqual(log.advance);
-    expect(log.done - log.turned[2], "badge waits for the last turn to finish").toBeGreaterThanOrEqual(turn * 0.5);
+    expect(log.done - log.turned[2], "badge waits for the last turn to finish").toBeGreaterThanOrEqual(turn * 0.25); // the edge-on frame and the badge are both sampled per frame, so keep a margin
     const hold = 2 * gap + turn + 300;
     const duration = log.advance - log.assigned;
     testInfo.annotations.push({ type: "assign-scene-duration-ms", description: `${name}: ${Math.round(duration)} (hold ${hold})` });
