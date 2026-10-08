@@ -1262,7 +1262,7 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   flex-direction:row;
   align-items:center;
   justify-content:center;
-  gap:.25em;
+  gap:.05em;
   padding:6px 2px;
   background:linear-gradient(145deg,rgba(18,35,67,.9),rgba(8,16,35,.94));
   color:#e6f4ff;
