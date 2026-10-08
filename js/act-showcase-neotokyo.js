@@ -285,20 +285,15 @@ async function showHandoutAndAssign(state, cast, index, total) {
   assignPanel.replaceChildren(castCard);
   sequence.classList.remove("is-searching");
   sequence.classList.add("is-assigned");
-  let announced = false;
-  const announceAssigned = () => {
-    if (announced) return;
-    announced = true;
-    linkStatus.textContent = participationRole
-      ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
-      : `PC${pcNumber} // CAST ASSIGNED`;
-    setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
-  };
-  // The three style cards turn face-up one at a time inside the existing 700ms hold (no extra wait, same total):
-  // "CAST ASSIGNED" appears once the last one has turned. Reduced motion has no face-down cards and announces at once.
-  if (!startStyleCardFlip(state, castCard, announceAssigned)) announceAssigned();
+  linkStatus.textContent = participationRole
+    ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
+    : `PC${pcNumber} // CAST ASSIGNED`;
+  setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
+  // The three style cards turn face-up one at a time inside the existing 700ms hold (no extra wait, same total).
+  // The status text above is set at once, as before: changing it later could re-wrap the header and move the scroll.
+  // Only the "CAST ASSIGNED" badge in the card waits for the last turn. Reduced motion has no face-down cards.
+  startStyleCardFlip(state, castCard);
   await wait(state, 700);
-  announceAssigned();
   revealAllStyleCards(castCard);
   if (state.finished) return;
 
@@ -414,9 +409,9 @@ function cardsStayFaceUp() {
 }
 
 // Turns the cards over left to right without waiting: the CSS delays stagger the turns and a timer lifts
-// "CAST ASSIGNED" after the last one. Returns false when there is nothing to animate (no cards, reduced motion).
+// the "CAST ASSIGNED" badge after the last one. Returns false when there is nothing to animate (no cards, reduced motion).
 // A skip or the end of the sequence calls revealAllStyleCards, which also cancels the timer's effect.
-function startStyleCardFlip(state, castCard, onDone) {
+function startStyleCardFlip(state, castCard) {
   const row = castCard.querySelector(".neotokyo-sequence__style-cards.is-face-down");
   const cards = row ? [...row.querySelectorAll(".neotokyo-style-card")] : [];
   if (!cards.length || state.finished) return false;
@@ -426,7 +421,6 @@ function startStyleCardFlip(state, castCard, onDone) {
   const done = () => {
     if (state.finished) return;
     castCard.classList.remove("is-styles-pending");
-    onDone();
   };
   window.setTimeout(done, (cards.length - 1) * STYLE_CARD_GAP_MS + STYLE_CARD_TURN_MS);
   return true;
