@@ -1,3 +1,4 @@
+import { parseStyleLabel } from "./act-showcase-style-label.js?v=1";
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
 const SHOW_ACT_TITLE_SCREEN = true;
@@ -30,6 +31,7 @@ export async function runNeoTokyoIntro({ intro, model }) {
     if (state.finished) return;
     state.finished = true;
     state.skipRequested = true;
+    revealAllStyleCards(intro);
     state.resolveWaiters();
     state.resolveAdvance();
     document.body.classList.remove("showcase-neotokyo-intro-active");
@@ -287,7 +289,12 @@ async function showHandoutAndAssign(state, cast, index, total) {
     ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
     : `PC${pcNumber} // CAST ASSIGNED`;
   setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
+  // The three style cards turn face-up one at a time inside the existing 700ms hold (no extra wait, same total).
+  // The status text above is set at once, as before: changing it later could re-wrap the header and move the scroll.
+  // Only the "CAST ASSIGNED" badge in the card waits for the last turn. Reduced motion has no face-down cards.
+  startStyleCardFlip(state, castCard);
   await wait(state, 700);
+  revealAllStyleCards(castCard);
   if (state.finished) return;
 
   const nextLabel = pcNumber < total
@@ -341,14 +348,94 @@ function createRoleSlot(participationRole) {
   return slot;
 }
 
+// Timing of the style-card reveal (ms): start-to-start gap and one card's turn. The turns are CSS transitions
+// (--flip-index x gap as transition-delay), so the reveal fits inside the existing 700ms hold: it ends at 2 x 100 + 320 = 520ms.
+const STYLE_CARD_GAP_MS = 100;
+const STYLE_CARD_TURN_MS = 320;
+
+// Cards are div/b/i on purpose: the legacy chip rules and role markers target `.neotokyo-sequence__styles span`.
 function createStyleRow(cast, participationRole) {
-  const row = node("div", "neotokyo-sequence__styles");
-  for (const style of getStyleLabels(cast)) {
-    const chip = textNode("span", "", style);
-    if (participationRole && roleMatchesStyle(participationRole, style)) chip.classList.add("is-role");
-    row.append(chip);
+  const row = node("div", "neotokyo-sequence__styles neotokyo-sequence__style-cards");
+  const role = participationRole || handoutRoleLabel(cast);
+  const faceUp = cardsStayFaceUp();
+  let primaryFound = false;
+  for (const label of getStyleLabels(cast)) {
+    const style = parseStyleLabel(label);
+    const card = node("div", "neotokyo-style-card");
+    card.style.setProperty("--style-name-chars", String(Math.max(3, Array.from(style.name).length)));
+    if (role && roleMatchesStyle(role, label)) {
+      card.classList.add("is-role");
+      card.classList.add(primaryFound ? "is-role-duplicate" : "is-role-primary");
+      primaryFound = true;
+    }
+    card.style.setProperty("--flip-index", String(row.childElementCount));
+    if (faceUp) card.classList.add("is-flipped");
+
+    const back = node("div", "neotokyo-style-card__back");
+    back.setAttribute("aria-hidden", "true");
+    const front = node("div", "neotokyo-style-card__front");
+    const marks = node("i", "neotokyo-style-card__marks");
+    marks.append(createStyleMark("persona", "◎", style.persona), createStyleMark("key", "●", style.key));
+    front.append(textNode("b", "neotokyo-style-card__name", style.name), marks);
+    const inner = node("div", "neotokyo-style-card__inner");
+    inner.append(back, front);
+    card.append(inner);
+    row.append(card);
   }
+  if (!faceUp && row.childElementCount) row.classList.add("is-face-down");
   return row;
+}
+
+// A lit mark is real text; an unlit one is a faint drawn shape that is hidden from assistive technology.
+function createStyleMark(kind, glyph, lit) {
+  const mark = node("i", `neotokyo-style-card__mark neotokyo-style-card__mark--${kind}`);
+  if (lit) {
+    mark.classList.add("is-lit");
+    mark.textContent = glyph;
+  } else {
+    mark.setAttribute("aria-hidden", "true");
+  }
+  return mark;
+}
+
+function handoutRoleLabel(cast) {
+  const style = Array.isArray(cast?.styles) ? cast.styles.find(item => item?.handoutRole || item?.handout_role) : null;
+  return clean(style?.label);
+}
+
+// Reduced motion (media query or the body flag set at the start of the sequence): cards are face-up from the start.
+function cardsStayFaceUp() {
+  return prefersReducedMotion() || document.body.classList.contains("showcase-neotokyo-reduced");
+}
+
+// Turns the cards over left to right without waiting: the CSS delays stagger the turns and a timer lifts
+// the "CAST ASSIGNED" badge after the last one. Returns false when there is nothing to animate (no cards, reduced motion).
+// A skip or the end of the sequence calls revealAllStyleCards, which also cancels the timer's effect.
+function startStyleCardFlip(state, castCard) {
+  const row = castCard.querySelector(".neotokyo-sequence__style-cards.is-face-down");
+  const cards = row ? [...row.querySelectorAll(".neotokyo-style-card")] : [];
+  if (!cards.length || state.finished) return false;
+  castCard.classList.add("is-styles-pending");
+  void row.offsetWidth; // commit the face-down state so the first turn is a transition, not a jump
+  for (const card of cards) card.classList.add("is-flipped");
+  const done = () => {
+    if (state.finished) return;
+    castCard.classList.remove("is-styles-pending");
+  };
+  window.setTimeout(done, (cards.length - 1) * STYLE_CARD_GAP_MS + STYLE_CARD_TURN_MS);
+  return true;
+}
+
+// Final state: every card face-up at once (no transition) and "CAST ASSIGNED" shown. Safe to call at any time and more than once.
+function revealAllStyleCards(root) {
+  if (!root) return;
+  for (const row of root.querySelectorAll(".neotokyo-sequence__style-cards")) {
+    row.classList.add("is-revealed");
+    row.classList.remove("is-face-down");
+  }
+  for (const card of root.querySelectorAll(".neotokyo-style-card")) card.classList.add("is-flipped");
+  root.classList.remove("is-styles-pending");
+  for (const cast of root.querySelectorAll(".is-styles-pending")) cast.classList.remove("is-styles-pending");
 }
 
 async function showSummary(state, model) {
