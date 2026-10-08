@@ -285,21 +285,21 @@ async function showHandoutAndAssign(state, cast, index, total) {
   assignPanel.replaceChildren(castCard);
   sequence.classList.remove("is-searching");
   sequence.classList.add("is-assigned");
+  let announced = false;
   const announceAssigned = () => {
+    if (announced) return;
+    announced = true;
     linkStatus.textContent = participationRole
       ? `PC${pcNumber} // ${participationRole} // CAST ASSIGNED`
       : `PC${pcNumber} // CAST ASSIGNED`;
     setProgress(state, progressBase + 10, `CAST ASSIGNED // PC${pcNumber}`);
   };
-  // The three style cards turn face-up one at a time; "CAST ASSIGNED" appears once the last one has turned.
-  // This replaces the former 700ms hold (the whole scene gets 320ms longer; reduced motion keeps the 700ms).
-  if (await flipStyleCards(state, castCard)) {
-    announceAssigned();
-    await wait(state, STYLE_CARD_HOLD_MS);
-  } else {
-    announceAssigned();
-    await wait(state, 700);
-  }
+  // The three style cards turn face-up one at a time inside the existing 700ms hold (no extra wait, same total):
+  // "CAST ASSIGNED" appears once the last one has turned. Reduced motion has no face-down cards and announces at once.
+  if (!startStyleCardFlip(state, castCard, announceAssigned)) announceAssigned();
+  await wait(state, 700);
+  announceAssigned();
+  revealAllStyleCards(castCard);
   if (state.finished) return;
 
   const nextLabel = pcNumber < total
@@ -353,17 +353,16 @@ function createRoleSlot(participationRole) {
   return slot;
 }
 
-// Timing of the style-card reveal (ms): lead-in, start-to-start gap, one card's turn, hold before NEXT.
-const STYLE_CARD_LEAD_MS = 120;
-const STYLE_CARD_GAP_MS = 140;
+// Timing of the style-card reveal (ms): start-to-start gap and one card's turn. The turns are CSS transitions
+// (--flip-index x gap as transition-delay), so the reveal fits inside the existing 700ms hold: it ends at 2 x 100 + 320 = 520ms.
+const STYLE_CARD_GAP_MS = 100;
 const STYLE_CARD_TURN_MS = 320;
-const STYLE_CARD_HOLD_MS = 300;
 
 // Cards are div/b/i on purpose: the legacy chip rules and role markers target `.neotokyo-sequence__styles span`.
 function createStyleRow(cast, participationRole) {
   const row = node("div", "neotokyo-sequence__styles neotokyo-sequence__style-cards");
   const role = participationRole || handoutRoleLabel(cast);
-  const faceUp = prefersReducedMotion();
+  const faceUp = cardsStayFaceUp();
   let primaryFound = false;
   for (const label of getStyleLabels(cast)) {
     const style = parseStyleLabel(label);
@@ -374,6 +373,7 @@ function createStyleRow(cast, participationRole) {
       card.classList.add(primaryFound ? "is-role-duplicate" : "is-role-primary");
       primaryFound = true;
     }
+    card.style.setProperty("--flip-index", String(row.childElementCount));
     if (faceUp) card.classList.add("is-flipped");
 
     const back = node("div", "neotokyo-style-card__back");
@@ -408,29 +408,40 @@ function handoutRoleLabel(cast) {
   return clean(style?.label);
 }
 
-// Turns the cards over left to right. Resolves true when the reveal ran to the end, false when there was
-// nothing to animate (no cards, reduced motion). A skip turns every card over at once.
-async function flipStyleCards(state, castCard) {
+// Reduced motion (media query or the body flag set at the start of the sequence): cards are face-up from the start.
+function cardsStayFaceUp() {
+  return prefersReducedMotion() || document.body.classList.contains("showcase-neotokyo-reduced");
+}
+
+// Turns the cards over left to right without waiting: the CSS delays stagger the turns and a timer lifts
+// "CAST ASSIGNED" after the last one. Returns false when there is nothing to animate (no cards, reduced motion).
+// A skip or the end of the sequence calls revealAllStyleCards, which also cancels the timer's effect.
+function startStyleCardFlip(state, castCard, onDone) {
   const row = castCard.querySelector(".neotokyo-sequence__style-cards.is-face-down");
   const cards = row ? [...row.querySelectorAll(".neotokyo-style-card")] : [];
-  if (!cards.length) return false;
+  if (!cards.length || state.finished) return false;
   castCard.classList.add("is-styles-pending");
-  await wait(state, STYLE_CARD_LEAD_MS);
-  for (let index = 0; index < cards.length && !state.finished; index += 1) {
-    cards[index].classList.add("is-flipped");
-    await wait(state, index < cards.length - 1 ? STYLE_CARD_GAP_MS : STYLE_CARD_TURN_MS);
-  }
-  revealAllStyleCards(castCard);
+  void row.offsetWidth; // commit the face-down state so the first turn is a transition, not a jump
+  for (const card of cards) card.classList.add("is-flipped");
+  const done = () => {
+    if (state.finished) return;
+    castCard.classList.remove("is-styles-pending");
+    onDone();
+  };
+  window.setTimeout(done, (cards.length - 1) * STYLE_CARD_GAP_MS + STYLE_CARD_TURN_MS);
   return true;
 }
 
-// Final state: every card face-up and "CAST ASSIGNED" shown. Safe to call at any time and more than once.
+// Final state: every card face-up at once (no transition) and "CAST ASSIGNED" shown. Safe to call at any time and more than once.
 function revealAllStyleCards(root) {
   if (!root) return;
+  for (const row of root.querySelectorAll(".neotokyo-sequence__style-cards")) {
+    row.classList.add("is-revealed");
+    row.classList.remove("is-face-down");
+  }
   for (const card of root.querySelectorAll(".neotokyo-style-card")) card.classList.add("is-flipped");
   root.classList.remove("is-styles-pending");
   for (const cast of root.querySelectorAll(".is-styles-pending")) cast.classList.remove("is-styles-pending");
-  for (const row of root.querySelectorAll(".neotokyo-sequence__style-cards.is-face-down")) row.classList.remove("is-face-down");
 }
 
 async function showSummary(state, model) {

@@ -1211,7 +1211,7 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   inset:0;
   transform:rotateY(180deg);
   transform-style:preserve-3d;
-  transition:transform 320ms cubic-bezier(.3,.7,.2,1);
+  transition:transform 320ms cubic-bezier(.3,.7,.2,1) calc(var(--flip-index,0) * 100ms);
 }
 .neotokyo-style-card.is-flipped .neotokyo-style-card__inner{
   transform:rotateY(0deg);
@@ -1268,7 +1268,7 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   text-align:center;
   /* hidden until the card has turned over (the switch happens halfway through the turn) */
   visibility:hidden;
-  transition:visibility 0s linear 160ms;
+  transition:visibility 0s linear calc(160ms + var(--flip-index,0) * 100ms);
 }
 .neotokyo-style-card.is-flipped .neotokyo-style-card__front{
   visibility:visible;
@@ -1307,7 +1307,7 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
 .neotokyo-style-card.is-flipped .neotokyo-style-card__mark.is-lit{
   opacity:1;
   text-shadow:0 0 10px currentColor;
-  transition-delay:320ms;
+  transition-delay:calc(240ms + var(--flip-index,0) * 100ms);
 }
 /* unlit mark: the same shape, drawn faintly */
 .neotokyo-style-card__mark:not(.is-lit){
@@ -1326,6 +1326,15 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
 .neotokyo-sequence__cast--linked.is-styles-pending .neotokyo-sequence__assigned{
   visibility:hidden;
 }
+/* SKIP / end of sequence (.is-revealed) and reduced motion: face-up at once, no turn. */
+.neotokyo-sequence__style-cards.is-revealed .neotokyo-style-card__inner,
+.neotokyo-sequence__style-cards.is-revealed .neotokyo-style-card__front,
+.neotokyo-sequence__style-cards.is-revealed .neotokyo-style-card__mark.is-lit,
+.neotokyo-sequence__style-cards.is-revealed .neotokyo-style-card.is-flipped .neotokyo-style-card__mark.is-lit,
+body.showcase-neotokyo-reduced .neotokyo-style-card__inner,
+body.showcase-neotokyo-reduced .neotokyo-style-card__front,
+body.showcase-neotokyo-reduced .neotokyo-style-card__mark.is-lit,
+body.showcase-neotokyo-reduced .neotokyo-style-card.is-flipped .neotokyo-style-card__mark.is-lit{transition:none}
 @media (prefers-reduced-motion:reduce){
   .neotokyo-style-card__inner,
   .neotokyo-style-card__front,
