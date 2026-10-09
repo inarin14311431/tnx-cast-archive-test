@@ -160,9 +160,8 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .data-panel__header h2::before, .cast-outfit-title h2::before { content: "[ "; color: var(--color-accent-strong); }
 .data-panel__header h2::after, .cast-outfit-title h2::after { content: " ]"; color: var(--color-accent-strong); }
 .data-panel__header small { color: var(--color-muted); font-size: .66rem; }
-.data-panel > .data-panel__header { cursor: pointer; user-select: none; }
+.data-panel > .data-panel__header { --chevron-color: var(--color-accent); cursor: pointer; user-select: none; }
 /* The fold chevron itself is components/disclosure-chevron.css; only its colour is set here. */
-.data-panel > .data-panel__header { --chevron-color: var(--color-accent); }
 .data-panel.is-collapsed > .data-panel__header { --chevron-color: var(--color-muted); }
 .data-panel.is-collapsed > :not(.data-panel__header) { display: none; }
 .data-panel > .data-panel__header:focus-visible { outline: 2px solid var(--color-accent-strong); outline-offset: -3px; }
