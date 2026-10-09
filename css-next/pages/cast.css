@@ -132,13 +132,17 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 
 .cast-tabs { position: sticky; top: var(--cast-sticky-header-offset); z-index: 40; display: flex; min-width: 0; margin-top: 18px; overflow: hidden; border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-bg) 92%, transparent); backdrop-filter: blur(12px); }
 .cast-tab-list { display: flex; min-width: 0; flex: 1 1 auto; gap: 8px; overflow-x: auto; }
-.cast-tab { position: relative; flex: 1 0 auto; min-width: max-content; padding: 9px 16px; overflow: hidden; border: 0; border-right: 1px solid var(--color-border); color: var(--color-accent); background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface-alt) 88%, var(--color-accent) 12%), var(--color-surface)); font-weight: 700; }
+.cast-tab { position: relative; flex: 1 0 auto; min-width: max-content; padding: 9px 16px; overflow: hidden; border: 0; border-right: 1px solid var(--color-border); color: color-mix(in srgb, var(--color-accent) 60%, var(--color-muted)); background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface-alt) 88%, var(--color-accent) 12%), var(--color-surface)); font-weight: 700; }
 .cast-tab::before { position: absolute; top: 0; left: -100%; width: 100%; height: 1px; content: ""; background: var(--color-accent); transition: left var(--transition-fast); }
-.cast-tab.is-active { color: var(--color-bg); background: var(--color-accent); box-shadow: var(--shadow-glow); }
+/* The selected tab keeps the dark ground: lit text, a 3px accent underline and a faint inner glow (no solid fill). */
+.cast-tab.is-active { color: var(--color-accent-strong); box-shadow: inset 0 -3px 0 var(--color-accent), inset 0 -16px 18px -14px color-mix(in srgb, var(--color-accent) 55%, transparent); }
 .cast-tab.is-active::before, .cast-tab:hover::before { left: 0; }
 .cast-tab small { display: block; color: var(--color-muted); font-size: .66rem; letter-spacing: .12em; }
-.cast-tab.is-active small { color: inherit; }
-.cast-combo-jump { flex: 0 0 auto; min-width: 106px; padding: 8px 14px; border: 0; border-left: 1px solid var(--color-border); border-radius: 0; color: var(--color-accent-strong); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-alt)), var(--color-surface)); font-weight: 800; }
+.cast-tab.is-active small { color: color-mix(in srgb, var(--color-accent) 70%, var(--color-muted)); }
+/* The combo button jumps to a panel; it is not a tab. A gap with its own divider separates it from the tab row and a CSS arrow marks it as a jump. */
+.cast-combo-jump { position: relative; flex: 0 0 auto; min-width: 106px; margin-left: 12px; padding: 8px 14px; border: 0; border-left: 1px solid var(--color-border); border-radius: 0; color: var(--color-accent-strong); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-alt)), var(--color-surface)); font-weight: 800; }
+.cast-combo-jump::before { position: absolute; top: 18%; bottom: 18%; left: -7px; width: 2px; content: ""; background: var(--color-border); }
+.cast-combo-jump > span::after { display: inline-block; width: .42em; height: .42em; margin-left: .5em; border: solid currentColor; border-width: 0 2px 2px 0; content: ""; transform: translateY(-.14em) rotate(45deg); }
 .cast-combo-jump small { display: block; margin-top: 2px; color: var(--color-muted); font-size: .6rem; letter-spacing: .12em; }
 .combo-data-panel { scroll-margin-top: calc(var(--cast-sticky-header-offset) + 66px); }
 .cast-tab-panel { display: none; padding-top: 14px; }
