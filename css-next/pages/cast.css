@@ -80,13 +80,13 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-style-slot.is-standard .cast-style-slot__role { color: color-mix(in srgb, var(--color-muted) 82%, var(--color-text)); }
 .cast-style-slot__index { flex: 0 0 auto; color: color-mix(in srgb, var(--style-local) 70%, var(--color-text)); font: 700 .74rem/1 var(--font-data); letter-spacing: .08em; }
 .cast-style-slot__name { flex: 0 1 auto; min-width: 0; overflow: hidden; color: var(--color-text); font-size: clamp(1rem, 2.7cqi, 1.625rem); font-weight: 900; line-height: 1.15; letter-spacing: .03em; text-overflow: ellipsis; white-space: nowrap; }
-.cast-style-slot__mark { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin-left: -4px; color: var(--color-text); }
+.cast-style-slot__mark { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; margin-left: -8px; color: var(--color-text); }
 .cast-style-slot .style-mark-glyph { position: relative; display: block; box-sizing: border-box; width: 17px; min-width: 17px; height: 17px; min-height: 17px; flex: 0 0 17px; }
 .cast-style-slot .style-mark-glyph::before,
 .cast-style-slot .style-mark-glyph--persona::after { position: absolute; box-sizing: border-box; border-radius: 50%; content: ""; }
 .cast-style-slot .style-mark-glyph::before { inset: 0; }
-.cast-style-slot .style-mark-glyph--persona::before { border: 2px solid currentColor; }
-.cast-style-slot .style-mark-glyph--persona::after { top: 50%; left: 50%; width: 7px; height: 7px; border: 2px solid currentColor; transform: translate(-50%, -50%); }
+.cast-style-slot .style-mark-glyph--persona::before { border: 3px solid currentColor; }
+.cast-style-slot .style-mark-glyph--persona::after { top: 50%; left: 50%; width: 8px; height: 8px; border: 3px solid currentColor; transform: translate(-50%, -50%); }
 .cast-style-slot .style-mark-glyph--key::before { background: currentColor; }
 
 /* Divine work n follows style n: same width ratio and role color, different card shape. */
