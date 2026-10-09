@@ -358,6 +358,7 @@ const FLIP_PRESETS = {
   normal: { turn: 600, gap: 300 },
   slow: { turn: 900, gap: 450 }
 };
+const STYLE_MARK_UNITS = 0.9; // width of one mark beside the name, in name characters
 const FLIP_SETTLE_MS = 300; // rest after the last card has turned
 const STYLE_HOLD_MS = 700; // the hold when nothing turns (reduced motion, no cards)
 
@@ -379,7 +380,11 @@ function createStyleRow(cast, participationRole) {
   for (const label of getStyleLabels(cast)) {
     const style = parseStyleLabel(label);
     const card = node("div", "neotokyo-style-card");
-    card.style.setProperty("--style-name-chars", String(Math.max(3, Array.from(style.name).length)));
+    // Only assigned marks are drawn, on the same line as the name; the font size is fixed from the whole label's width
+    // (name characters + a mark counts as 0.9 character at the name's size) so the label always fits the face.
+    const litMarks = [["persona", "◎", style.persona], ["key", "●", style.key]].filter(([, , lit]) => lit);
+    const labelUnits = Math.max(3, Array.from(style.name).length) + litMarks.length * STYLE_MARK_UNITS;
+    card.style.setProperty("--style-label-units", String(labelUnits));
     if (role && roleMatchesStyle(role, label)) {
       card.classList.add("is-role");
       card.classList.add(primaryFound ? "is-role-duplicate" : "is-role-primary");
@@ -391,9 +396,12 @@ function createStyleRow(cast, participationRole) {
     const back = node("div", "neotokyo-style-card__back");
     back.setAttribute("aria-hidden", "true");
     const front = node("div", "neotokyo-style-card__front");
-    const marks = node("i", "neotokyo-style-card__marks");
-    marks.append(createStyleMark("persona", "◎", style.persona), createStyleMark("key", "●", style.key));
-    front.append(textNode("b", "neotokyo-style-card__name", style.name), marks);
+    front.append(textNode("b", "neotokyo-style-card__name", style.name));
+    if (litMarks.length) {
+      const marks = node("i", "neotokyo-style-card__marks");
+      for (const [kind, glyph] of litMarks) marks.append(createStyleMark(kind, glyph));
+      front.append(marks);
+    }
     const inner = node("div", "neotokyo-style-card__inner");
     inner.append(back, front);
     card.append(inner);
@@ -403,15 +411,10 @@ function createStyleRow(cast, participationRole) {
   return row;
 }
 
-// A lit mark is real text; an unlit one is a faint drawn shape that is hidden from assistive technology.
-function createStyleMark(kind, glyph, lit) {
-  const mark = node("i", `neotokyo-style-card__mark neotokyo-style-card__mark--${kind}`);
-  if (lit) {
-    mark.classList.add("is-lit");
-    mark.textContent = glyph;
-  } else {
-    mark.setAttribute("aria-hidden", "true");
-  }
+// An assigned mark is real text; styles without one draw nothing.
+function createStyleMark(kind, glyph) {
+  const mark = node("i", `neotokyo-style-card__mark neotokyo-style-card__mark--${kind} is-lit`);
+  mark.textContent = glyph;
   return mark;
 }
 

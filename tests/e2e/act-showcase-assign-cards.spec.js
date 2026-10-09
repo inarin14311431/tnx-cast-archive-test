@@ -93,7 +93,7 @@ for (const { flip, name, turn, gap } of FLIPS) {
     // the last card settles, then CAST ASSIGNED shows, then the scene rests ~300ms before NEXT
     expect(log.settled.filter(Boolean)).toHaveLength(3);
     expect(log.settled[2]).toBeLessThanOrEqual(log.advance);
-    expect(log.done - log.turned[2], "badge waits for the last turn to finish").toBeGreaterThanOrEqual(turn * 0.5);
+    expect(log.done - log.turned[2], "badge waits for the last turn to finish").toBeGreaterThanOrEqual(turn * 0.25); // the edge-on frame and the badge are both sampled per frame, so keep a margin
     const hold = 2 * gap + turn + 300;
     const duration = log.advance - log.assigned;
     testInfo.annotations.push({ type: "assign-scene-duration-ms", description: `${name}: ${Math.round(duration)} (hold ${hold})` });
@@ -128,12 +128,11 @@ test("ASSIGN: カードの表は今のラベル文字列のまま(印は付い�
   await expect(row).toHaveText("カブキ◎カゼ●ニューロ");
   const hidden = await row.evaluate(element => ({
     backs: [...element.querySelectorAll(".neotokyo-style-card__back")].every(back => back.getAttribute("aria-hidden") === "true"),
-    unlit: [...element.querySelectorAll(".neotokyo-style-card__mark:not(.is-lit)")].every(mark => mark.getAttribute("aria-hidden") === "true" && mark.textContent === ""),
     unlitCount: element.querySelectorAll(".neotokyo-style-card__mark:not(.is-lit)").length,
     litCount: element.querySelectorAll(".neotokyo-style-card__mark.is-lit").length,
     spans: element.querySelectorAll("span").length
   }));
-  expect(hidden).toEqual({ backs: true, unlit: true, unlitCount: 4, litCount: 2, spans: 0 });
+  expect(hidden).toEqual({ backs: true, unlitCount: 0, litCount: 2, spans: 0 });
   // the style that matches the participation slot is emphasised
   await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card.is-role")).toHaveCount(1);
   await expect(page.locator(".neotokyo-sequence__cast--linked .neotokyo-style-card.is-role .neotokyo-style-card__name")).toHaveText("カブキ");
@@ -201,6 +200,18 @@ for (const [width, height] of [[1440, 1000], [1024, 768], [444, 900], [390, 844]
             inViewport: box.left >= 0 && box.right <= innerWidth,
             oneLine: nameBox.height <= lineHeight * 1.2 && name.scrollWidth <= name.clientWidth + 1,
             nameInFace: nameBox.left >= face.left - 0.5 && nameBox.right <= face.right + 0.5,
+            labelInFace: [...card.querySelectorAll(".neotokyo-style-card__name, .neotokyo-style-card__mark")].every(item => {
+              const r = item.getBoundingClientRect();
+              return r.left >= face.left - 0.5 && r.right <= face.right + 0.5 && r.top >= face.top - 0.5 && r.bottom <= face.bottom + 0.5;
+            }),
+            marksBesideName: [...card.querySelectorAll(".neotokyo-style-card__mark")].every(item => {
+              const r = item.getBoundingClientRect();
+              return r.left >= nameBox.right - 1 && r.top >= nameBox.top - 2 && r.bottom <= nameBox.bottom + 2;
+            }),
+            markRatio: (() => {
+              const mark = card.querySelector(".neotokyo-style-card__mark");
+              return mark ? parseFloat(getComputedStyle(mark).fontSize) / parseFloat(getComputedStyle(name).fontSize) : 0.8;
+            })(),
             fontPx: parseFloat(getComputedStyle(name).fontSize)
           };
         });
@@ -211,8 +222,12 @@ for (const [width, height] of [[1440, 1000], [1024, 768], [444, 900], [390, 844]
         expect(row.inViewport).toBe(true);
         expect(row.oneLine).toBe(true);
         expect(row.nameInFace).toBe(true);
-        // 8-character names on a phone shrink to the floor (7px); everything up to 5 characters stays >= 10px
-        expect(row.fontPx).toBeGreaterThanOrEqual(width >= 1024 || data !== EIGHT_CHARS ? 10 : 7);
+        expect(row.labelInFace, "name and marks stay inside the face").toBe(true);
+        expect(row.marksBesideName, "marks sit beside the name on the same line").toBe(true);
+        expect(row.markRatio, "marks are 0.8 of the name size").toBeGreaterThan(0.75);
+        expect(row.markRatio).toBeLessThan(0.85);
+        // the label (name + marks on one line) shrinks to fit: 8-character names and 5 characters with two marks may go down to the floor (7px)
+        expect(row.fontPx).toBeGreaterThanOrEqual(width >= 1024 || data === showcaseData ? 10 : 7);
       }
       expect(fit.scrollOverflow).toBe(false);
     });

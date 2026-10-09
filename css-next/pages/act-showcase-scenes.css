@@ -1257,11 +1257,12 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   background:radial-gradient(circle,rgba(255,121,211,.55) 0 28%,transparent 32%);
 }
 .neotokyo-style-card__front{
+  --style-label-size:clamp(.44rem,calc(28cqi / var(--style-label-units,5)),1.15rem);
   display:flex;
-  flex-direction:column;
+  flex-direction:row;
   align-items:center;
   justify-content:center;
-  gap:.45em;
+  gap:.05em;
   padding:6px 2px;
   background:linear-gradient(145deg,rgba(18,35,67,.9),rgba(8,16,35,.94));
   color:#e6f4ff;
@@ -1276,17 +1277,18 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
 .neotokyo-style-card__name{
   display:block;
   max-width:100%;
-  font:800 clamp(.44rem,calc(28cqi / var(--style-name-chars,5)),1.15rem)/1.15 "Noto Sans JP",sans-serif;
+  font:800 var(--style-label-size,1rem)/1.15 "Noto Sans JP",sans-serif;
   font-feature-settings:"palt";
   letter-spacing:0;
   white-space:nowrap;
 }
+/* assigned marks sit beside the name, at 0.8 of the name's size (the name's size is fixed from the whole label) */
 .neotokyo-style-card__marks{
-  display:flex;
+  display:inline-flex;
+  flex:0 0 auto;
   align-items:center;
-  justify-content:center;
-  gap:.7em;
-  font-size:clamp(.66rem,4.4cqi,.95rem);
+  gap:.1em;
+  font-size:calc(var(--style-label-size,1rem) * .8);
   font-style:normal;
   line-height:1;
 }
@@ -1308,14 +1310,6 @@ body.showcase-poster-v2-ready .poster-v2-trailer-stage__footer i:last-child{tran
   opacity:1;
   text-shadow:0 0 10px currentColor;
   transition-delay:calc(var(--flip-turn,600ms) * .8 + var(--flip-index,0) * var(--flip-gap,300ms));
-}
-/* unlit mark: the same shape, drawn faintly */
-.neotokyo-style-card__mark:not(.is-lit){
-  color:rgba(102,219,255,.34);
-  background:radial-gradient(circle,currentColor 0 62%,transparent 66%);
-}
-.neotokyo-style-card__mark--persona:not(.is-lit){
-  background:radial-gradient(circle,currentColor 0 24%,transparent 28% 50%,currentColor 54% 66%,transparent 70%);
 }
 .neotokyo-style-card.is-role .neotokyo-style-card__front{
   border-width:2px;
