@@ -40,8 +40,7 @@
     line.style.opacity=String(depth.opacity);
     line.style.animationDuration=`${(7+Math.random()*10)*depth.slow}s`;
     line.style.animationDelay=`-${Math.random()*17}s`;
-    line.textContent=glyphs.join('
-');
+    line.textContent=glyphs.join('\n');
     rain.append(line);
   }
   document.body.prepend(rain);
