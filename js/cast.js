@@ -555,7 +555,7 @@ function renderDivineWorks(character) {
       <article class="cast-divine-slot ${item.state}${item.state === "is-standard" ? "" : " is-featured"}" data-divine-code="${item.code}">
         <span class="cast-divine-slot__code">${item.code}</span>
         <span class="cast-divine-slot__yomi"${item.yomi ? "" : ' aria-hidden="true"'}>${escapeHtml(item.yomi)}</span>
-        <strong class="cast-divine-slot__name">${escapeHtml(item.name || "UNREGISTERED")}</strong>
+        <strong class="cast-divine-slot__name${item.name ? "" : " is-empty"}">${escapeHtml(item.name || "未登録")}</strong>
       </article>
     `)
     .join("");
