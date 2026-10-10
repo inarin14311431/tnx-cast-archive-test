@@ -1,34 +1,28 @@
 # 現在地 / Current State
 
-最終更新: 2026-10-06
+最終更新: 2026-10-11
 
 AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショット。時点情報
-なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。
+なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。固定のSHAやPR番号はこの資料にだけ置く。
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `9fe5deb`(PR #499 マージ点, 2026-10-06)。runtime の最後の変更は #497(`84802e3`)。画面比較の
-  基準ブランチ `visual-regression-baseline` は `b62e529`(PR #498 マージ点)
-- 本番repo main: 検証PR #497(+ #499のCI構成)までのruntime同期PRのmerge commit(同期元: 検証 `9fe5deb`)。
-  同期前の本番mainは `e25a244`。merge後のSHAは本番repoの同期PRを参照。
-- runtime同期済み範囲: 検証PR #499まで。直前の同期(#495まで)以降の #497(アクト紹介の表示修正:
-  全テーマの文字コントラスト、読み込み画面の書体と横線、背景プリセットの差し替え=green-area / cyberspace、
-  代替画像・サマリーの名前・識別コード・空の枠の切れ、最終ボードの KEY STYLE を各キャストの担当スタイルに)
-  と、#499(アクト紹介のE2Eを関係するPRのときだけ実行する `ci-act-showcase`)を含む。#496 は資料のみ、
-  #498 は検証repoの画面比較の基準ブランチのみで、本番へ同期するruntimeはない。共有Supabase/DBの変更は含まれない。
-- 本番のCIは検証と同じE2E(`e2e:ci-public` が `tests/e2e/test-suites.json` を読む)を実行しているので、#499 の
-  CI構成(`playwright.yml` のジョブ分割、`ci-act-showcase` グループ、`scripts/e2e-changed-groups.mjs`)も同期した。
-  本番専用(`dashboard/`、`.github/workflows/pr-dashboard.yml` ほか)は触っていない。
+- 検証repo main: `1a542da`(PR #539 マージ点, 2026-10-11)。画面比較の基準ブランチ
+  `visual-regression-baseline` は `d550978`(PR #538 マージ点)。
+- 本番repo main: `5d8a8e4`(同期PR #198)。検証 #539 までのruntimeを同期済みで、未同期のruntimeはない。
+  共有Supabase/DBの変更は含まれない。
+- 検証 #538 は基準ブランチのみ、資料だけのPRも本番へ同期するruntimeがない。
 
 **runtime/applicationの同期基準**であり、設計資料やREADMEだけのcommitで各repoのmain SHAは
 その後進む。固定値を最新mainと解釈しないこと。テスト・CI構成の同期は別で、意図的に同期しない
 (`AGENTS.md`参照)。
 
-## 2. 進行中・停止中の作業とbranch
+## 2. 開いているPRとbranch(2026-10-11確認)
 
-2026-10-02時点、検証repoに開いているPRはない。旧調査branch(`refactor/navigation-shared-core`・
-`audit/pc-mobile-commonization`)は削除済み。他の未PR branchは本資料で維持しない。再開前に
-必ず最新mainとのdiffを確認し、branch名だけで「変更済み/不要」と判断しないこと。
+- 開いているPR: 検証・本番とも0件。
+- 残っているbranch: 検証は `main` と `visual-regression-baseline` のみ。本番は `main` と `dashboard-data` のみ。
+- 他の未PR branchは本資料で維持しない。再開前に必ず最新mainとのdiffを確認し、branch名だけで
+  「変更済み/不要」と判断しないこと。
 
 ## 3. 現時点で統合しないもの
 
@@ -44,20 +38,8 @@ task aggregationが中心)。無理に統合するとUI依存がshared coreへ�
 `docs/archive/CURRENT_STATE_20260925.md`第10節。
 
 act-showcaseの「本体が作ったものを削除して作り直す」重複(`js/act-showcase-board-layout.js`等)も
-未着手。詳細は`docs/archive/CURRENT_STATE_20260925.md`第11節。
+未着手。現状は`docs/ACT_SHOWCASE_LAYERS.md`、経緯は`docs/archive/CURRENT_STATE_20260925.md`第11節。
 
 ## 5. 既知の制限
 
-- `js/sheet-mobile-image.js`はサムネイル生成未対応。画像差し替え・解除時は旧サムネイルを削除
-  するが新サムネイルは生成しない。
 - `js/showcase-guests.js`は対象外(別テーブル`act_showcase_guests`、`image_thumbnail_url`列なし)。
-
-## 6. 完了済み作業(詳細は`docs/archive/CURRENT_STATE_20260925.md`)
-
-- Navigation共通化(09-19): `js/sheet-navigation-core.js`
-- Snapshot共通化(09-19): `js/sheet-snapshot-service.js`
-- Public ID utility共通化(09-20): `js/public-id-param.js`
-- act-showcase重複ロジック整理(09-21〜22、一部): タグライン/ハンドアウト/タイトルfont分類/
-  credits・act-metaパネル/overview/trailerの重複排除
-- Supabase画像変換API依存廃止・自前サムネイル生成への切替(09-25): `image_thumbnail_url`列追加、
-  バックフィル108/125件完了

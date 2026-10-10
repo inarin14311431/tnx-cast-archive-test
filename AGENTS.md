@@ -83,15 +83,14 @@ PC/Mobileのファイル名が似ているだけで統合しない。責務が�
 3. 必要なE2E/Visual/Qualityを実行する
 4. commit・push・PR作成
 5. 目視確認が必要な変更(見た目・タイミング絡み)は、実機/Playwrightで実際に確認してから報告する。
-   「直したはず」で終わらせない。
+   「直したはず」で終わらせない。ログインが必要な画面も、模擬ログインでローカルに開いて確認できる
+   (`docs/TESTING_STRATEGY.md` 第8節)。
 6. JSの版数(`?v=`)を上げたら`npm run preload:update`を実行する。
 7. DB変更を含む場合は、live state確認・migration適用確認を追加する(実DB適用は明示的な確認を
    取ってから)。
 
 ## テストについて絶対に守ること
 
-- 失敗したテストは、まず実装とテストのどちらが誤っているかを調査する。テストを弱めて変更を
-  通さない。
 - 過去のPRの記録(コミットメッセージ)と実際の挙動が食い違う場合は、その場で確認し、正直に報告
   する。憶測で「たぶん大丈夫」と言わない。
 - 安全に直せないと分かった場合は、無理に押し通さず変更を元に戻し、分かったことを正直に報告する。
@@ -107,6 +106,18 @@ PC/Mobileのファイル名が似ているだけで統合しない。責務が�
   てから中身を読む)。大きなファイルや長い出力を丸ごと読まない。
 - 「repoを見回して」のような曖昧な依頼を避け、対象ファイル・原因の仮説を先に絞る。
 - 報告は要点だけ: PRのURL、CIの結果、仕様から外れた点とその理由。
+
+## 過去の失敗の再発防止
+
+- JSを変えたら、途中確認でも `npm run check:js` を通す(`npm test` には構文チェックが含まれない)。
+- CSSで同じセレクタの規則を別に足さない(`audit:css` の重複検査で落ちる)。既存の規則に統合する。
+- 共通のhover/状態の規則を一部だけ上書きするときは、`color` と `background` も明示する
+  (共通規則の暗い文字色などが残る)。
+- 同時に開いている複数のPRが同じファイルの `?v=` を上げると番号が重なる。あとからマージする側で、
+  mainより1つ進んだ番号に上げ直す。
+- 見た目が変わるPRは画面比較が赤になる(必須チェック)。基準画像の更新PRを先に作り、対象PRの直前に
+  マージする。手順は `docs/TESTING_STRATEGY.md` 第8節にだけ書く。
+- 本番repoへの書き込みは、その都度の許可が要る。拒否されたら迂回せず、拒否された操作を報告して止まる。
 
 ## 資料を更新すべき変更
 
@@ -124,6 +135,8 @@ AIにとって文書は補助メモではなく、コードとテストと並ぶ
 | アウトフィット | `docs/OUTFIT_DATA_ARCHITECTURE.md` |
 | DB migration | `docs/DATABASE_MIGRATIONS.md`, `supabase/README.md` |
 | CSS | `docs/CSS_ARCHITECTURE.md` |
+| 画面の文言・見た目 | `docs/UI_CONVENTIONS.md` |
+| ACT SHOWCASE(豪華版)のCSS/JS | `docs/ACT_SHOWCASE_LAYERS.md` |
 | Theme | `docs/THEME_SYSTEM.md` |
 | テスト/CI | `docs/TESTING_STRATEGY.md`, `tests/e2e/README.md` |
 | CI失敗調査 | `docs/CI_FAILURE_INVESTIGATION.md` |
