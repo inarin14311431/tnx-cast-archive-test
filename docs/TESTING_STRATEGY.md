@@ -102,22 +102,14 @@ DOM実ブラウザの挙動を文字列testだけで代用しない。一方、p
 
 以下の分類は検証repoで導入済み。正規分類は `tests/e2e/test-suites.json` がsource of truthであり、検証repoに新しい `.spec.js` を追加する場合は必ず分類する。
 
-### 環境差（2026-09-17確認）
+### 環境差
 
-| 項目 | 検証repo | 本番repo |
-|---|---|---|
-| `e2e:ci-public` / `e2e:ci-act-showcase` / `e2e:ci-editor` / `e2e:ci-mobile` | npm scriptsとして導入済み | 未導入 |
-| `e2e:manual-ui` / `e2e:live-write` | npm scriptsとして導入済み | 未導入 |
-| `audit:e2e` | `verify` / Regression checksに組込み済み | script・監査とも未導入 |
-| suite runner | `scripts/run-e2e-suite.mjs` がmanifestを読む | runner未導入、workflowがspecを直接列挙 |
-| `tests/e2e/test-suites.json` | 現行の実行分類として利用 | ファイルはあるが、一部の参照specとrunnerが未同期。現在のCI実行対象とは一致しない |
-| 保存・原状復帰テスト | `audit-editor-live.spec.js` を `live-write` に分離 | `audit-coverage.spec.js` が既存CIの実行対象に含まれる |
-
-本番で検証専用コマンドを実行したり、manifestの存在だけでlive-writeが分離済みだと判断したりしないこと。現在の実行対象は、対象repoの `package.json` と `.github/workflows/playwright.yml` で確認する。
-
-本番の `audit-coverage.spec.js` にはPC/Mobileの保存・再読込・原状復帰テストがある。認証条件を満たすと既存CIでも実DBへの書込みが発生し得るため、第7節の対象制限・復元・別repoとの同時書込み回避の条件を適用する。全specを対象にする `npx playwright test` も通常確認の代替として無条件には実行しない。
-
-今回の引き継ぎ資料整備は文書のみを対象とし、テスト構成・workflowの同期は含めない。テスト構成を同期する際は別の変更として差分と共有DBへの影響を確認する。以下の各グループ説明は検証repoの現行構成を示す。
+検証repoと本番repoで、E2Eのnpm scripts(`e2e:ci-*` / `e2e:manual-ui` / `e2e:live-write` / `audit:e2e`)、
+`scripts/run-e2e-suite.mjs`、`tests/e2e/test-suites.json`、保存・原状復帰テストの分離(`audit-editor-live.spec.js`
+を `live-write` へ)は同じ形で導入済み。差は、本番に無いspecの行がmanifestに無いことと、本番専用の
+`dashboard/`・workflow。現在の実行対象は、対象repoの `package.json` と `.github/workflows/playwright.yml`
+で確認する。manifestの存在だけで分離済みと判断しない。本番で `live-write` を実行するときは第7節の条件を適用する。
+テスト構成を同期する際は別の変更として差分と共有DBへの影響を確認する。以下の各グループ説明は検証repoの現行構成を示す。
 
 ### `ci-public`
 
@@ -195,6 +187,31 @@ Visual Regressionは外観契約を確認する。
 通常E2Eの主判定をページ全体スクリーンショットだけにしない。OS/font差が出やすい箇所はDOM寸法や状態を併用する。
 
 Visual baseline更新は「差分を消すため」ではなく、新デザインが意図したものだと確認した後に行う。
+
+### 基準画像の更新手順
+
+画面比較(`Compare reference screenshots`)は必須チェック。見た目が変わるPRでは赤になり、通常のmergeはブロックされる
+(`--admin` で迂回しない)。基準画像は `visual-regression-baseline` ブランチにあり、CIがそのブランチの
+`tests/visual` と設定をPRのコードへ重ねて比較する。
+
+1. 対象PRのCIが赤になったら、成果物 `visual-regression-report` をダウンロードする(`gh run download <run-id> -n visual-regression-report`)。
+2. `visual-regression-baseline` からブランチを切り、差分が出た画像だけ `*-actual.png` を
+   `tests/visual/__screenshots__/<project>/<spec>/<name>.png` へコピーする(OSやフォント差が出るので手元で撮り直さない)。
+3. `visual-regression-baseline` 向けにPRを作り、画像ごとの変更理由と、差分0だった画像の枚数をPR本文に書く。
+   このPR自身のCIは基準ブランチの古いコードで動くため赤くてもよい。
+4. 基準画像PRを先にマージし、対象PRの比較ジョブを再実行(`gh run rerun <run-id> --failed`)して通してから、対象PRをマージする。
+
+### 模擬ログインでの確認
+
+ログインが必要な画面は、Supabaseへ繋がずにローカルで開ける。基準ブランチの `tests/visual/visual-fixtures.js` の
+`installVisualEnvironment(page, { authenticated: true, theme })` が、偽のセッションを `localStorage`
+(`sb-<project>-auth-token`)へ入れ、REST/auth を固定データで返す。
+
+- `node tests/e2e/server.mjs`(`PORT` で変更可)で静的サイトを配信し、`npx playwright test` から使う。
+  依存は `npm install`(ロックファイルなし)と `npx playwright install chromium`。
+- `playwright.config.js` は 4173 固定で、`reuseExistingServer` が有効。ほかのプロセスが4173を使っていると古い内容を
+  見てしまうので、別ポートの一時設定で実行して後で消す。
+- 自動ブラウザではキャスト閲覧のデータ雨は出ない(`?scan=full` で出る)。
 
 ## 9. Quality tests
 
