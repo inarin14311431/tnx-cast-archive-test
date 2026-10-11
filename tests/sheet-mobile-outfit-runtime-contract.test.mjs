@@ -81,3 +81,9 @@ test("mobile outfit delete button spans the whole 6-column form grid", async () 
   const css = await readFile(new URL("../css-next/pages/sheet-mobile-outfit.css", import.meta.url), "utf8");
   assert.match(css, /\.mobile-outfit-editor__grid>\.mobile-danger-action\{grid-column:1\/-1/);
 });
+
+test("delete actions keep hidden state until a real record is eligible for deletion", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const css = await readFile(new URL("../css-next/pages/sheet-mobile-ui.css", import.meta.url), "utf8");
+  assert.match(css, /\.mobile-danger-action\[hidden\]\{display:none\}/);
+});
