@@ -1,3 +1,4 @@
+import { generalSkillKindForName } from "./general-skill-catalog.js?v=3";
 import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
 
 const STYLE_DETAIL_MARKER = "@@TNX_STYLE_DETAIL_V1@@";
@@ -61,7 +62,7 @@ function styleMark(value){const raw=String(value||"");return raw.includes("◎")
 function skillSuits(data){return{reason:truth(first(data,"s","reason","spade")),passion:truth(first(data,"c","passion","club")),life:truth(first(data,"h","life","heart")),mundane:truth(first(data,"d","mundane","diamond"))};}
 function skillLevel(data){const suits=skillSuits(data);return Math.max(0,number(first(data,"level","lv")),Object.values(suits).filter(Boolean).length);}
 function skillFreeLevel(data){const level=skillLevel(data);return Math.min(level,Math.max(0,number(first(data,"free_level","freeLevel"))));}
-function skillKind(data,category){if(category==="general")return cleanName(first(data,"name")).includes("：")?"proper":"general";if(category!=="style")return "proper";const label=String(first(data,"type","kind","category")||"");if(/演出|方向/.test(label))return"direction";if(/奥義/.test(label))return"ultimate";if(/秘技/.test(label))return"secret";const cost=number(first(data,"expbase","experience","cost"));return cost>=50?"ultimate":cost>=20?"secret":cost>0&&cost<=2?"direction":"normal";}
+function skillKind(data,category){if(category==="general")return generalSkillKindForName(first(data,"name"));if(category!=="style")return "proper";const label=String(first(data,"type","kind","category")||"");if(/演出|方向/.test(label))return"direction";if(/奥義/.test(label))return"ultimate";if(/秘技/.test(label))return"secret";const cost=number(first(data,"expbase","experience","cost"));return cost>=50?"ultimate":cost>=20?"secret":cost>0&&cost<=2?"direction":"normal";}
 function rawSkill(data,category,name){const suits=skillSuits(data);return{name,level:skillLevel(data),free_level:skillFreeLevel(data),skill_kind:skillKind(data,category),...suits,description:text(first(data,"notes","description"))};}
 function prefixed(value,prefix){const cleaned=cleanName(value);return !cleaned?"":cleaned.startsWith(prefix)?cleaned:`${prefix}${cleaned}`;}
 function skillRowsFromJsonp(map){
