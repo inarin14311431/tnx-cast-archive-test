@@ -16,8 +16,8 @@ test("mobile style skill experience reads the actual rendered kind label",()=>{
 });
 
 test("mobile general skills are normalized to the PC skill-kind rule",()=>{
-  assert.match(normalizer,/PROPER_GENERAL_PREFIXES=\["製作：","芸術：","操縦："\]/);
-  assert.match(normalizer,/return PROPER_GENERAL_PREFIXES\.some\(prefix=>text\.startsWith\(prefix\)\)\?"proper":"general"/);
+  assert.match(normalizer,/generalSkillKindForName\(name\)/);
+  assert.match(normalizer,/canonicalGeneralSkillName\(row\.name\)/);
   assert.match(normalizer,/tnx:mobile-skills-saved/);
   assert.match(normalizer,/tnx:mobile-skill-kind-normalized/);
 });
