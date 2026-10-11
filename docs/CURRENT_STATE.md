@@ -7,11 +7,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `1a542da`(PR #539 マージ点, 2026-10-11)。画面比較の基準ブランチ
+- 検証repo main: `08d4760`(PR #542 マージ点, 2026-10-11)。画面比較の基準ブランチ
   `visual-regression-baseline` は `d550978`(PR #538 マージ点)。
-- 本番repo main: `5d8a8e4`(同期PR #198)。検証 #539 までのruntimeを同期済みで、未同期のruntimeはない。
-  共有Supabase/DBの変更は含まれない。
-- 検証 #538 は基準ブランチのみ、資料だけのPRも本番へ同期するruntimeがない。
+- 本番repo main: `5d8a8e4`(同期PR #198)。検証 #539 までのruntimeを同期済み。未同期のruntime: 検証 #541・#542
+  (編集画面・スマホ編集の修正)。共有Supabase/DBの変更は含まれない。
+- 資料だけのPR・基準ブランチだけのPR(#538 など)は本番へ同期するruntimeがない。
 
 **runtime/applicationの同期基準**であり、設計資料やREADMEだけのcommitで各repoのmain SHAは
 その後進む。固定値を最新mainと解釈しないこと。テスト・CI構成の同期は別で、意図的に同期しない
