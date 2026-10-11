@@ -54,3 +54,15 @@ test("mobile app loads skill-kind normalization before experience calculation",(
   assert.ok(normalizeIndex>=0&&normalizeIndex<expIndex);
   assert.match(app,/sheet-mobile-header-exp\.js\?v=20261011-1/);
 });
+
+
+test("★-marked proper General skills use the same category and cost on desktop/mobile", async()=>{
+  const catalog=await import("../js/general-skill-catalog.js");
+  const rules=await import("../js/sheet-experience-rules.js");
+  for(const name of ["製作：トロン", "★製作：トロン", "★芸術：歌唱", "★操縦：航空機"]){
+    assert.equal(catalog.generalSkillKindForName(name),"proper");
+  }
+  assert.equal(catalog.generalSkillKindForName("★射撃"),"general");
+  assert.equal(catalog.canonicalGeneralSkillName("★製作：トロン"),"製作：トロン");
+  assert.equal(rules.generalSkillExperienceCost([{name:"製作：トロン",category:"general",level:2,kind:catalog.generalSkillKindForName("★製作：トロン")}]).total,10);
+});
