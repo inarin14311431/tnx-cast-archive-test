@@ -1,4 +1,4 @@
-import { generalSkillKindForName } from "./general-skill-catalog.js?v=3";
+import { generalSkillKindForName } from "./general-skill-catalog.js?v=2";
 import { normalizeImportedOutfitDetails } from "./outfit-ofc-adapter.js?v=2";
 
 const STYLE_DETAIL_MARKER = "@@TNX_STYLE_DETAIL_V1@@";
