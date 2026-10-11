@@ -1,13 +1,12 @@
+import { generalSkillKindForName } from "./general-skill-catalog.js?v=3";
 import { supabase } from "./supabase-client.js";
 import { getMobileEditorContext } from "./sheet-mobile-runtime.js?v=2";
 
-const PROPER_GENERAL_PREFIXES=["製作：","芸術：","操縦："];
 let character=null;
 let running=false;
 
 function expectedGeneralKind(name=""){
-  const text=String(name||"");
-  return PROPER_GENERAL_PREFIXES.some(prefix=>text.startsWith(prefix))?"proper":"general";
+  return generalSkillKindForName(name);
 }
 
 async function normalizeGeneralKinds(){
