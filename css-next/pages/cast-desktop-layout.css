@@ -104,6 +104,22 @@
     font-size: .54rem;
   }
 
+  /*
+   * The ARCHIVE ID column never shrinks, so the export buttons give up width
+   * instead: 118px when there is room, down to an equal fifth of the row.
+   */
+  body[data-page="cast.html"] .cast-header__export-actions > * {
+    min-width: min(118px, calc((100% - 20px) / 5));
+    padding-inline: 6px;
+    overflow: hidden;
+  }
+
+  body[data-page="cast.html"] .cast-header__export-actions > * > :is(span, small) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   /* 2. Identity column frame. Hero content (name, summary, styles, divine works, facts) is owned by cast.css. */
   body[data-page="cast.html"] .cast-hero__identity {
     height: auto;
