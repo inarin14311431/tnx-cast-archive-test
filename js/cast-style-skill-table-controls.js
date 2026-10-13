@@ -189,13 +189,6 @@
     let storedWidths = readStoredWidths();
     const currentWidth = index => (storedWidths[index] != null ? clampWidth(storedWidths[index]) : defaultWidths[index]);
 
-    function refreshExpandedDescriptions() {
-      table.querySelectorAll(".style-description-expandable.is-expanded").forEach(field => {
-        field.style.setProperty("height", "auto", "important");
-        field.style.setProperty("height", `${Math.max(35, field.scrollHeight + 2)}px`, "important");
-      });
-    }
-
     function applyWidths() {
       const hasCustom = Object.keys(storedWidths).length > 0;
       if (!hasCustom) {
@@ -216,7 +209,7 @@
     function setWidth(index, width, persist) {
       storedWidths = { ...storedWidths, [index]: clampWidth(width) };
       applyWidths();
-      if (persist) { writeStoredWidths(storedWidths); refreshExpandedDescriptions(); }
+      if (persist) writeStoredWidths(storedWidths);
     }
 
     function resetWidth(index) {
@@ -225,7 +218,6 @@
       storedWidths = next;
       writeStoredWidths(storedWidths);
       applyWidths();
-      refreshExpandedDescriptions();
     }
 
     const resizers = headers.map((th, index) => {
@@ -259,7 +251,6 @@
         handle.classList.remove("is-dragging");
         table.classList.remove("is-column-resizing");
         writeStoredWidths(storedWidths);
-        refreshExpandedDescriptions();
       };
       handle.addEventListener("pointerup", finish);
       handle.addEventListener("pointercancel", finish);
@@ -278,14 +269,13 @@
       storedWidths = {};
       writeStoredWidths(storedWidths);
       applyWidths();
-      refreshExpandedDescriptions();
     });
 
     /* cast-view-controls.js clears the table min-width and description width when
      * "全表示" is toggled; re-apply the viewer's widths after that shared handler runs. */
     section.addEventListener("click", event => {
       if (!event.target.closest(".style-description-toggle-all")) return;
-      requestAnimationFrame(() => { applyWidths(); requestAnimationFrame(refreshExpandedDescriptions); });
+      requestAnimationFrame(applyWidths);
     });
 
     applyWidths();

@@ -57,7 +57,7 @@ function ensureDedicatedPanel(section) {
 
 function fieldCell(value, key) {
   const text = normalizeNewlines(value);
-  if (key === "description") return `<td class="style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${esc(text)}</textarea></td>`;
+  if (key === "description") return `<td class="style-view-cell style-view-cell--description"><div class="style-field-scroll style-description-expandable" role="button" tabindex="0" aria-expanded="false" title="クリックでこの解説だけ全文表示／折りたたみ"><span class="style-description-text">${esc(text)}</span></div></td>`;
   if (key === "name") {
     return `<td class="style-view-cell style-view-cell--name"><div class="style-field-scroll style-skill-name-view" aria-label="名称">${multilineHtml(text)}</div></td>`;
   }

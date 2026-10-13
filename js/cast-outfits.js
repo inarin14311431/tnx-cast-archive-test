@@ -90,14 +90,14 @@ function createDescriptionRow(schema, item) {
   if (text === "—") return "";
   const value = text;
   const colspan = schema.length - 2;
-  return `<tr class="cast-outfit-description-row"><td colspan="${colspan}" class="cast-outfit-description-cell style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable outfit-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${escapeHtml(value)}</textarea></td></tr>`;
+  return `<tr class="cast-outfit-description-row"><td colspan="${colspan}" class="cast-outfit-description-cell style-view-cell style-view-cell--description"><div class="style-field-scroll style-description-expandable outfit-description-expandable" role="button" tabindex="0" aria-expanded="false" title="クリックでこの解説だけ全文表示／折りたたみ"><span class="style-description-text">${escapeHtml(value)}</span></div></td></tr>`;
 }
 
 function createCell(field, item) {
   const text = displayValue(item[field]);
   if (field === "description") {
     const value = text === "—" ? "" : text;
-    return `<td class="cast-outfit-col--description style-view-cell style-view-cell--description"><textarea class="style-field-scroll style-description-expandable outfit-description-expandable" rows="1" wrap="soft" readonly aria-label="解説">${escapeHtml(value)}</textarea></td>`;
+    return `<td class="cast-outfit-col--description style-view-cell style-view-cell--description"><div class="style-field-scroll style-description-expandable outfit-description-expandable" role="button" tabindex="0" aria-expanded="false" title="クリックでこの解説だけ全文表示／折りたたみ"><span class="style-description-text">${escapeHtml(value)}</span></div></td>`;
   }
   return `<td class="cast-outfit-col--${field}"><span class="cast-outfit-value" title="${escapeAttribute(text)}">${escapeHtml(text)}</span></td>`;
 }

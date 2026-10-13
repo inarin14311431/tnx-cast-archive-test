@@ -30,8 +30,8 @@ test("tron CS modifier stays compact and description receives remaining width", 
 test("cast page loads the refreshed outfit definitions and layout assets", () => {
   assert.match(outfits, /cast-view-definitions\.js\?v=4/);
   assert.match(entry, /cast-outfit-column-widths\.css\?v=3/);
-  assert.match(castHtml, /cast-entry\.css\?v=33/);
-  assert.match(castHtml, /cast-outfits\.js\?v=11/);
+  assert.match(castHtml, /cast-entry\.css\?v=34/);
+  assert.match(castHtml, /cast-outfits\.js\?v=12/);
 });
 
 test("items without a description get no tablet description row, and name/slot cells wrap on tablet", () => {
