@@ -11,14 +11,14 @@ const tableCss = await readFile(new URL("../css-next/pages/cast-style-skill-tabl
 test("cast.html loads the table controls after the style skill renderer", () => {
   assert.match(castHtml, /<body data-page="cast\.html">/);
   const styleSkills = castHtml.indexOf("./js/cast-style-skills.js");
-  const controls = castHtml.indexOf('<script src="./js/cast-style-skill-table-controls.js?v=2"></script>');
+  const controls = castHtml.indexOf('<script src="./js/cast-style-skill-table-controls.js?v=4"></script>');
   assert.ok(styleSkills >= 0 && controls > styleSkills, "controls must load after cast-style-skills.js");
 });
 
 test("cast entry loads the style table stylesheet as the final cascade layer", () => {
   assert.match(entry, /cast-desktop, cast-style-table;/);
   const imports = [...entry.matchAll(/@import url\("([^"]+)"\) layer\(([^)]+)\);/g)];
-  assert.deepEqual(imports.at(-1)?.slice(1), ["./cast-style-skill-table.css?v=1", "cast-style-table"]);
+  assert.deepEqual(imports.at(-1)?.slice(1), ["./cast-style-skill-table.css?v=2", "cast-style-table"]);
   assert.match(tableCss, /\.style-skill-view-table\.is-table-controlled thead th/);
 });
 
@@ -57,6 +57,16 @@ test("column widths persist per viewer with guarded storage access", () => {
   assert.match(source, /MIN_WIDTH = \d+/);
 });
 
-test("column width storage key is kept from the trial so saved widths carry over", () => {
-  assert.match(source, /const STORAGE_KEY = "tnx\.castV3\.styleSkillColumnWidths\.v1";/);
+test("column widths saved before 参照P moved ahead of 解説 carry over with those columns swapped", () => {
+  assert.match(source, /const STORAGE_KEY = "tnx\.castV3\.styleSkillColumnWidths\.v2";/);
+  assert.match(source, /const LEGACY_STORAGE_KEY = "tnx\.castV3\.styleSkillColumnWidths\.v1";/);
+  assert.match(source, /const LEGACY_SWAPPED_INDEXES = \["14", "15"\];/);
+  assert.match(source, /const legacy = JSON\.parse\(window\.localStorage\.getItem\(LEGACY_STORAGE_KEY\)/);
+  // A reset must not be undone by migrating v1 again, and v1 is never removed.
+  assert.doesNotMatch(source, /removeItem/);
+
+  const body = source.match(/function migrateLegacyWidths\(legacy\) \{([\s\S]*?)\n  \}/)[1];
+  const migrate = new Function("LEGACY_SWAPPED_INDEXES", "legacy", body);
+  assert.deepEqual(migrate(["14", "15"], { 0: 150, 14: 400, 15: 70 }), { 0: 150, 14: 70, 15: 400 });
+  assert.deepEqual(migrate(["14", "15"], { 14: 400 }), { 15: 400 });
 });
