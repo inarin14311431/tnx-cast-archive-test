@@ -23,6 +23,13 @@ Every screen loads one `css-next/pages/*-entry.css` file. An entry imports the c
 | `pages/` | Page-specific composition and entry stylesheets |
 | `themes/` | Theme tokens and concrete `data-theme` selectors |
 
+## Shared patterns
+
+- `layout/app-shell.css` owns the admin screen header `.page-header` (with `.app-header__title` and `.app-header__aside`).
+  Page stylesheets must not restate its size or placement; they keep only what is unique to the screen.
+- `components/disclosure-chevron.css` owns the fold indicator for `.data-panel__header` (cast view) and `.section-toggle` (editor).
+  Screens only set its colour through `--chevron-color`. Which screens use each pattern: `docs/UI_CONVENTIONS.md`.
+
 ## Cascade rules
 
 - Do not use `!important` in application CSS.
@@ -36,6 +43,6 @@ Every screen loads one `css-next/pages/*-entry.css` file. An entry imports the c
 
 ## Verification
 
-`npm run audit:css` rejects `!important`, same-context duplicate selectors, runtime CSS generation, inline production styles, page/feature imports in the common entry, legacy stylesheets, invalid page entry chains, and incorrect final theme ordering.
+`npm run audit:css` rejects `!important`, same-context duplicate selectors (checked per original source inside the bundled ACT SHOWCASE stylesheets), runtime CSS generation, inline production styles, page/feature imports in the common entry, legacy stylesheets, invalid page entry chains, and incorrect final theme ordering.
 
 `npm run audit:themes` separately validates the registry, theme manifests, token coverage and semantic application scopes. Both audits are part of `npm run verify`.

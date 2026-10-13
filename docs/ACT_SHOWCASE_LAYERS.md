@@ -229,10 +229,10 @@ bootstrap から到達するのは22ファイル(visual-caption-code を削除�
 
 - 置き場所: JS は `js/act-showcase-neotokyo.js` の `createStyleRow` / `flipStyleCards` / `revealAllStyleCards`、ラベルの分解は `js/act-showcase-style-label.js` の `parseStyleLabel`(「カブキ◎●」→名前・◎(ペルソナ)・●(キー))。CSS は `act-showcase-scenes.css` 末尾(`from: act-showcase-assign-cards.css`、構造と既定色)と `act-showcase-theme-scenes.css` 末尾(`from: act-showcase-assign-cards-theme.css`、テーマ色)。
 - DOM: `.neotokyo-sequence__styles.neotokyo-sequence__style-cards` の中に `.neotokyo-style-card`(3枚。重なっても枚数分)。各カードは `__inner` > `__back`(裏面。幾何学模様だけ、`aria-hidden`)と `__front`(表面。`__name` と `__marks`)。**カードは div/b/i で作る**。既存の `.neotokyo-sequence__styles span` 系CSS・ロールマーカーが子孫の span に当たらないようにするため。
-- 読み上げ: 表面は名前と「付いている印」の文字だけ(ラベル文字列と同じ並び)。付いていない印は何も書かない図形で `aria-hidden`。ロール枠に一致するカードは `is-role`(最初の1枚は `is-role-primary`、重複は `is-role-duplicate`)で枠線を強調する。
-- 動き: `is-assigned` の後、120ms待ち→左から140ms間隔で `.is-flipped`(1枚320ms)→3枚目が終わってから `CAST ASSIGNED`(`.is-styles-pending` を外す)→300ms保持。旧 `wait(700)` からの増加は約0.3〜0.4秒。印は `.is-flipped` から320ms後に点灯(CSS transition-delay)。裏向きの間は表面が `visibility:hidden`(めくりの中間で切り替わる)。SKIP・シーケンス終了は `finish()` が同期で `revealAllStyleCards`。`prefers-reduced-motion` では最初から `is-flipped`(めくらない・待ち時間は従来の700ms)。
+- 読み上げ: 表面は名前と「付いている印」の文字だけ(ラベル文字列と同じ並び)。印は名前の横に並べ、付いていない印は描かない。裏面は `aria-hidden`。ロール枠に一致するカードは `is-role`(最初の1枚は `is-role-primary`、重複は `is-role-duplicate`)で枠線を強調する。
+- 動き: `is-assigned` の後、カードを左から順に `.is-flipped` にする。めくりの長さと間隔は `js/act-showcase-neotokyo.js` の `FLIP_PRESETS` の1か所だけが持ち(CSSへは `--flip-turn` / `--flip-gap` で渡す)、`?flip=fast|normal|slow` で選ぶ(指定なしは normal)。`CAST ASSIGNED` の表示は3枚目がめくれ終わってから(`.is-styles-pending`)。印はめくり終わりに点灯。裏向きの間は表面が `visibility:hidden`。SKIP・シーケンス終了は同期で全カードを表に。`prefers-reduced-motion` では最初から表で、待ちは従来の `STYLE_HOLD_MS`。
 - スマホ幅: 配役パネルを1列に戻す規則は `act-showcase-scenes.css` の `is-splitting` ブロック(`max-width:760px`)にあり、assign-cards 側では持たない。
-- 長い名前: 行に `container-type:inline-size` を付け、名前のフォントを `28cqi / 文字数` で縮める(下限 .44rem)。8文字(ブラックハウンド)は390pxで約7pxまで縮む。
+- 長い名前: 行に `container-type:inline-size` を付け、名前のフォントをラベル全体の長さ(`--style-label-units`)から決める(`--style-label-size`、下限 .44rem)。長い名前はスマホ幅で小さくなる。
 - テスト: `tests/act-showcase-style-label.test.mjs`(分解)、`tests/e2e/act-showcase-assign-cards.spec.js`(順序・所要時間・SKIP・reduced-motion・4画面幅のはみ出し・名前の1行)。
 
 ## 4. 守りになっているテスト
