@@ -212,6 +212,10 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
 - `playwright.config.js` は 4173 固定で、`reuseExistingServer` が有効。ほかのプロセスが4173を使っていると古い内容を
   見てしまうので、別ポートの一時設定で実行して後で消す。
 - 自動ブラウザではキャスト閲覧のデータ雨は出ない(`?scan=full` で出る)。
+- キャスト閲覧(公開ビュー)は、ログインなしでも `page.route` で `…/rest/v1/characters`・`character_skills`・
+  `character_outfits`・`character_combos` を固定データで返せば描画できる。`characters` は `.maybeSingle()` で
+  取るので、`Accept: application/vnd.pgrst.object+json` のときは1件のオブジェクト、それ以外は配列で返す。
+  解説の長文・改行・空を混ぜておくと、省略・展開・行の高さを一度に確認できる。実データの確認の代わりではない。
 
 ## 9. Quality tests
 
