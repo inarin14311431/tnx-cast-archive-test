@@ -11,12 +11,16 @@
   if (window.TNXCastStyleSkillTableControlsLoaded) return;
   window.TNXCastStyleSkillTableControlsLoaded = true;
 
-  // Key kept from the cast-v3.html trial so widths saved there carry over.
-  const STORAGE_KEY = "tnx.castV3.styleSkillColumnWidths.v1";
+  // Widths are keyed by column index. v1 (kept from the cast-v3.html trial) had
+  // 解説 at 14 and 参照P at 15; v2 swapped those columns, so v1 widths are
+  // carried over with those two indexes swapped.
+  const STORAGE_KEY = "tnx.castV3.styleSkillColumnWidths.v2";
+  const LEGACY_STORAGE_KEY = "tnx.castV3.styleSkillColumnWidths.v1";
+  const LEGACY_SWAPPED_INDEXES = ["14", "15"];
   const MIN_WIDTH = 32;
   const MAX_WIDTH = 1200;
   const KEY_STEP = 10;
-  const FALLBACK_WIDTHS = [144, 48, 48, 48, 48, 48, 48, 90, 52, 100, 64, 58, 64, 64, 340, 64];
+  const FALLBACK_WIDTHS = [144, 48, 48, 48, 48, 48, 48, 90, 52, 100, 64, 58, 64, 64, 64, 340];
   const COLUMN_TYPES = [
     "text", "kind", "number", "suit", "suit", "suit", "suit",
     "text", "text", "text", "text", "text", "text", "text", "text", "text"
@@ -28,17 +32,33 @@
 
   const toHalfWidth = value => String(value ?? "").replace(/[０-９．－]/g, char => String.fromCharCode(char.charCodeAt(0) - 0xFEE0));
 
+  function migrateLegacyWidths(legacy) {
+    const [a, b] = LEGACY_SWAPPED_INDEXES;
+    const widths = { ...legacy };
+    delete widths[a];
+    delete widths[b];
+    if (legacy[b] != null) widths[a] = legacy[b];
+    if (legacy[a] != null) widths[b] = legacy[a];
+    return widths;
+  }
   function readStoredWidths() {
     try {
-      const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}");
-      return parsed && typeof parsed === "object" ? parsed : {};
+      const current = window.localStorage.getItem(STORAGE_KEY);
+      if (current != null) {
+        const parsed = JSON.parse(current);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      }
+      const legacy = JSON.parse(window.localStorage.getItem(LEGACY_STORAGE_KEY) || "{}");
+      if (!legacy || typeof legacy !== "object" || !Object.keys(legacy).length) return {};
+      const migrated = migrateLegacyWidths(legacy);
+      writeStoredWidths(migrated);
+      return migrated;
     } catch { return {}; }
   }
   function writeStoredWidths(widths) {
-    try {
-      if (Object.keys(widths).length) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(widths));
-      else window.localStorage.removeItem(STORAGE_KEY);
-    } catch {}
+    // An empty object is kept (not removed) so a reset is not undone by re-migrating v1.
+    // v1 itself is left alone: pages still on the old column order may read it.
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(widths)); } catch {}
   }
   const clampWidth = value => Math.round(Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Number(value) || MIN_WIDTH)));
 
