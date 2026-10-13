@@ -18,3 +18,12 @@ test("viewer style skill columns put 参照P before 解説", async () => {
   const controls = await read("js/cast-style-skill-table-controls.js");
   assert.match(controls, /const FALLBACK_WIDTHS = \[[^\]]*, 64, 340\];/);
 });
+
+// The editor lays the style skill table out as a CSS grid by position, so the tracks must follow the field order:
+// the narrow 参照P column comes before the wide 解説 column, then the action column.
+test("editor grid gives 参照P the narrow track and 解説 the wide one", async () => {
+  const css = await readFile(new URL("../css-next/editor/style-skills.css", import.meta.url), "utf8");
+  assert.match(css, /minmax\(0, \.68fr\)\s*var\(--style-page-column\)\s*minmax\(0, 3fr\)\s*var\(--style-action-column\);/);
+  const entry = await readFile(new URL("../css-next/pages/sheet-entry.css", import.meta.url), "utf8");
+  assert.match(entry, /style-skills\.css\?v=15/);
+});
