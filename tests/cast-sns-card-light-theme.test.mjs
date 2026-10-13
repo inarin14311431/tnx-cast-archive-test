@@ -29,3 +29,36 @@ test("the theme tokens carry the registry's colour scheme into the card, and the
   assert.match(source, /<stop offset="1" stop-color="\$\{backgroundEnd\}"\/><\/linearGradient>/);
   assert.equal(source.match(/#24152f/g).length, 1); // only as the dark default
 });
+
+// The labels inside the always-dark portrait frame must not take the light themes' near-black text / accent colours.
+function portraitLabelColours(theme) {
+  const text = source.match(/const portraitLabelText = (.*);/)[1];
+  const accent = source.match(/const portraitLabelAccent = (.*);/)[1];
+  return { text: vm.runInNewContext(text, { theme }), accent: vm.runInNewContext(accent, { theme }) };
+}
+
+function contrast(foreground, background) {
+  const luminance = hex => {
+    const channels = [1, 3, 5].map(index => parseInt(hex.slice(index, index + 2), 16) / 255)
+      .map(value => (value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  };
+  const [light, dark] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+test("light themes use light labels inside the dark portrait frame", () => {
+  const light = portraitLabelColours({ colorScheme: "light", text: "#111111", accent: "#111111" });
+  assert.ok(contrast(light.text, "#0a1321") >= 7);
+  assert.ok(contrast(light.accent, "#0a1321") >= 7);
+});
+
+test("dark and fallback themes keep their own text and accent colours in the portrait frame", () => {
+  assert.deepEqual(portraitLabelColours({ colorScheme: "dark", text: "#effcff", accent: "#67efff" }), { text: "#effcff", accent: "#67efff" });
+  assert.deepEqual(portraitLabelColours({ text: "#ffffff", accent: "#00d8ff" }), { text: "#ffffff", accent: "#00d8ff" });
+});
+
+test("the two portrait labels are drawn with the portrait label colours", () => {
+  assert.match(source, /fill="\$\{portraitLabelText\}"[^>]*>VISUAL IDENTITY \/\/ VERIFIED</);
+  assert.match(source, /fill="\$\{portraitLabelAccent\}"[^>]*>LIVE IMAGE LINK : OK</);
+});
