@@ -15,7 +15,7 @@ import {
 } from "./sheet-load-normalization.js?v=2";
 import { formatSheetPersistenceError } from "./sheet-error-message.js?v=1";
 import { initSheetRowInteractions } from "./sheet-row-interactions.js?v=1";
-import { initSheetEditorInteractions } from "./sheet-editor-interactions.js?v=1";
+import { initSheetEditorInteractions } from "./sheet-editor-interactions.js?v=2";
 import { renderSkillEditorSections } from "./sheet-skill-renderer.js?v=2";
 import { renderOutfitEditor } from "./sheet-outfit-renderer.js?v=2";
 import {
@@ -32,7 +32,7 @@ import {
 import { renderStyleCards, renderAbilityCards } from "./sheet-character-renderer.js?v=4";
 import { calculateStyleBaselines } from "./sheet-style-baseline.js?v=1";
 import { buildStylePresentation } from "./sheet-style-presentation.js?v=1";
-import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=1";
+import { calculateAbilityFinals } from "./sheet-ability-calculation.js?v=2";
 import { resolveStyleBaselineValue } from "./sheet-baseline-adjustment.js?v=1";
 import { buildNewCharacterSkills, appendStarterSocialConnectionRowsIfBothMissing } from "./sheet-new-character-state.js?v=2";
 import { countGeneralSkillColumns, chooseGeneralSkillColumn } from "./sheet-general-column.js?v=1";

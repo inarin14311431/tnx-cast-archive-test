@@ -8,7 +8,7 @@ const SEPARATOR_MARKER = "[[STYLE_SEPARATOR]]";
 const FIELDS = [
   ["skill", "技能"], ["limit", "上限"], ["timing", "タイミング"], ["target", "対象"],
   ["range", "射程"], ["difficulty", "目標値"], ["confrontation", "対決"],
-  ["description", "解説"], ["page", "参照P"]
+  ["page", "参照P"], ["description", "解説"]
 ];
 const SUITS = [["reason", "理性", "♠"], ["passion", "感情", "♣"], ["life", "生命", "♥"], ["mundane", "外界", "♦"]];
 const normalizeNewlines = value => String(value ?? "").replace(/\r\n?/g, "\n").replace(/\\n/g, "\n");
@@ -75,7 +75,7 @@ function createSkillRow(skill) {
 function renderTable(section, skills) {
   section.classList.add("style-skill-section-v47", "style-skill-view-editorlike");
   const heading = section.querySelector("h3");
-  section.innerHTML = `<div class="data-table-wrapper style-skill-view-wrapper"><table class="data-table style-skill-detail-table style-skill-view-table"><colgroup><col class="style-col-name"><col class="style-col-kind"><col class="style-col-level">${SUITS.map(() => '<col class="style-col-suit">').join("")}<col class="style-col-skill"><col class="style-col-limit"><col class="style-col-timing"><col class="style-col-target"><col class="style-col-range"><col class="style-col-difficulty"><col class="style-col-confrontation"><col class="style-col-description"><col class="style-col-page"></colgroup><thead><tr><th>名称</th><th>種別</th><th>LV</th>${SUITS.map(([, label]) => `<th>${label}</th>`).join("")}${FIELDS.map(([key, label]) => headerCell(key, label)).join("")}</tr></thead><tbody>${skills.map(createSkillRow).join("")}</tbody></table></div>`;
+  section.innerHTML = `<div class="data-table-wrapper style-skill-view-wrapper"><table class="data-table style-skill-detail-table style-skill-view-table"><colgroup><col class="style-col-name"><col class="style-col-kind"><col class="style-col-level">${SUITS.map(() => '<col class="style-col-suit">').join("")}<col class="style-col-skill"><col class="style-col-limit"><col class="style-col-timing"><col class="style-col-target"><col class="style-col-range"><col class="style-col-difficulty"><col class="style-col-confrontation"><col class="style-col-page"><col class="style-col-description"></colgroup><thead><tr><th>名称</th><th>種別</th><th>LV</th>${SUITS.map(([, label]) => `<th>${label}</th>`).join("")}${FIELDS.map(([key, label]) => headerCell(key, label)).join("")}</tr></thead><tbody>${skills.map(createSkillRow).join("")}</tbody></table></div>`;
   if (heading) { heading.hidden = true; section.prepend(heading); }
   document.dispatchEvent(new CustomEvent("tnx:style-skills-rendered"));
 }

@@ -1,3 +1,5 @@
+import { calculateCombatSpeed } from "./sheet-ability-calculation.js?v=2";
+
 (() => {
   function initializeSheetSidebarActions() {
     const panel = document.querySelector('.exp-panel');
@@ -9,7 +11,7 @@
     const LABELS = {
       view: /キャストを閲覧/,
       transferTsv: /転記TSV/,
-      transferBm: /転記(?:BM|ブックマークレット)/,
+      transferBm: /転記BM|転記ブックマークレット/,
       import: /データ取込/,
       autofill: /SKD・OFC補完|補完/
     };
@@ -72,7 +74,7 @@
         const label = labelOf(element);
         let group = '';
         if (element.id === 'save-button' || /保存済み|未保存|保存中|保存失敗/.test(label)) group = 'save';
-        else if (/キャストを閲覧|転記TSV|転記(?:BM|ブックマークレット)|データ取込|SKD・OFC補完/.test(label)) group = 'action';
+        else if (/キャストを閲覧|転記TSV|転記BM|転記ブックマークレット|データ取込|SKD・OFC補完/.test(label)) group = 'action';
 
         if (!group) {
           if (element.dataset.actionGroup) delete element.dataset.actionGroup;
@@ -139,17 +141,16 @@
       const finalOutput = document.querySelector('#cs-final');
       if (!storedBase || !displayBase || !modifierInput || !finalOutput) return;
 
-      const calculatedBase = Math.floor((
-        abilityValue('reason') +
-        abilityValue('passion') +
-        abilityValue('life')
-      ) / 2);
-      const modifier = toInteger(modifierInput.value);
-      const finalValue = Math.max(0, calculatedBase + modifier);
+      const cs = calculateCombatSpeed({
+        reason: abilityValue('reason'),
+        passion: abilityValue('passion'),
+        life: abilityValue('life'),
+        modifier: toInteger(modifierInput.value)
+      });
 
-      displayBase.value = calculatedBase;
-      finalOutput.textContent = finalValue;
-      storedBase.value = finalValue - modifier;
+      displayBase.value = cs.base;
+      finalOutput.textContent = cs.final;
+      storedBase.value = cs.storedBase;
     };
 
     const patchCsCard = () => {

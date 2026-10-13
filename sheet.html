@@ -20,7 +20,7 @@
   <link rel="modulepreload" href="./js/sheet-load-normalization.js?v=2">
   <link rel="modulepreload" href="./js/sheet-error-message.js?v=1">
   <link rel="modulepreload" href="./js/sheet-row-interactions.js?v=1">
-  <link rel="modulepreload" href="./js/sheet-editor-interactions.js?v=1">
+  <link rel="modulepreload" href="./js/sheet-editor-interactions.js?v=2">
   <link rel="modulepreload" href="./js/sheet-skill-renderer.js?v=2">
   <link rel="modulepreload" href="./js/sheet-outfit-renderer.js?v=2">
   <link rel="modulepreload" href="./js/sheet-row-factory.js?v=2">
@@ -28,7 +28,7 @@
   <link rel="modulepreload" href="./js/sheet-character-renderer.js?v=4">
   <link rel="modulepreload" href="./js/sheet-style-baseline.js?v=1">
   <link rel="modulepreload" href="./js/sheet-style-presentation.js?v=1">
-  <link rel="modulepreload" href="./js/sheet-ability-calculation.js?v=1">
+  <link rel="modulepreload" href="./js/sheet-ability-calculation.js?v=2">
   <link rel="modulepreload" href="./js/sheet-baseline-adjustment.js?v=1">
   <link rel="modulepreload" href="./js/sheet-new-character-state.js?v=2">
   <link rel="modulepreload" href="./js/sheet-row-collection-state.js?v=2">
@@ -49,9 +49,9 @@
   <link rel="modulepreload" href="./js/help-ui.js?v=11">
   <link rel="modulepreload" href="./js/help-content.js?v=4">
   <link rel="modulepreload" href="./js/combo-multi-suit.js?v=1">
-  <link rel="modulepreload" href="./js/direct-transfer-button.js?v=7">
+  <link rel="modulepreload" href="./js/direct-transfer-button.js?v=8">
   <link rel="modulepreload" href="./js/sheet-import-specialized-cleanup.js?v=1">
-  <link rel="modulepreload" href="./js/sheet-experience-rules.js?v=6">
+  <link rel="modulepreload" href="./js/sheet-experience-rules.js?v=7">
   <link rel="modulepreload" href="./js/outfit-ofc-utils.js">
   <link rel="modulepreload" href="./js/outfit-legacy-compat.js?v=1">
   <link rel="modulepreload" href="./js/sheet-snapshot-service.js?v=1">
@@ -59,7 +59,7 @@
   <script src="./js/theme-registry.js?v=1"></script>
   <script src="./js/css-next-theme.js?v=9"></script>
   <script src="./js/theme-scope.js?v=1"></script>
-  <link rel="stylesheet" href="./css-next/pages/sheet-entry.css?v=14" data-css-system="next">
+  <link rel="stylesheet" href="./css-next/pages/sheet-entry.css?v=17" data-css-system="next">
   <link rel="stylesheet" href="./css-next/themes/index.css?v=1" data-theme-system="1">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -68,7 +68,7 @@
 </head>
 <body data-page="sheet.html">
   <div class="background-grid"></div><div class="scanlines"></div>
-  <header class="sheet-header app-header"><a class="app-back-link" href="./account.html"><span>&lt; アカウントへ</span><small>RETURN TO ACCOUNT</small></a><div><p>N◎VA MUNICIPAL DATABASE</p><h1>キャストシート編集 <small>CAST SHEET EDITOR</small></h1></div><div id="save-status">初期化中…</div></header>
+  <header class="sheet-header app-header page-header"><a class="app-back-link" href="./account.html"><span>&lt; アカウントへ</span><small>RETURN TO ACCOUNT</small></a><div class="app-header__title"><p>N◎VA MUNICIPAL DATABASE</p><h1>キャストシート編集 <small>CAST SHEET EDITOR</small></h1></div><div id="save-status" class="app-header__aside">初期化中…</div></header>
   <main class="sheet-layout">
     <aside class="exp-panel"><p>消費経験点 <small>EXPERIENCE POINTS</small></p><strong id="exp-total">0</strong><dl id="exp-breakdown"></dl><nav class="sheet-section-nav" aria-label="編集セクション"><p>編集セクション <small>SECTION NAVIGATION</small></p><a href="#sheet-profile" data-sheet-section="sheet-profile"><b>01</b><span>プロフィール<small>PROFILE</small></span></a><a href="#sheet-styles" data-sheet-section="sheet-styles"><b>02</b><span>スタイル<small>STYLES</small></span></a><a href="#sheet-ability" data-sheet-section="sheet-ability"><b>03</b><span>能力値・制御値<small>ABILITY / CONTROL / CS</small></span></a><a href="#sheet-skills" data-sheet-section="sheet-skills"><b>04</b><span>一般技能・社会・コネ<small>GENERAL / SOCIAL / CONNECTIONS</small></span></a><a href="#sheet-style-skills" data-sheet-section="sheet-style-skills"><b>05</b><span>スタイル技能<small>STYLE SKILLS</small></span></a><a href="#sheet-outfits" data-sheet-section="sheet-outfits"><b>06</b><span>アウトフィット<small>OUTFITS</small></span></a><button id="sheet-combo-open" class="sheet-combo-nav" type="button" aria-haspopup="dialog" aria-controls="sheet-combo-dialog" disabled><b>07</b><span>コンボ<small>COMBOS / COUNTERS</small></span></button></nav><label>公開状態 <small>VISIBILITY</small><select id="visibility"><option value="public">公開 / PUBLIC</option><option value="private">非公開 / PRIVATE</option></select></label><button id="save-button" class="is-unsaved" type="button" data-save-state="unsaved" title="編集内容は自動保存されません。クリックして保存してください。">未保存 <small>NOT SAVED</small></button><a id="cast-view-button" class="sheet-view-link is-disabled" aria-disabled="true" tabindex="-1">キャストを閲覧 <small>VIEW CAST</small></a><button id="legacy-import-open" type="button">データ取込 <small>IMPORT DATA</small></button></aside>
     <section class="sheet-main">
@@ -86,27 +86,27 @@
   <script src="./js/style-skill-kinds.js?v=104"></script>
   <script src="./js/mobile-editor-route.js?v=1"></script>
   <script src="./js/handle-format.js?v=2"></script>
-  <script type="module" src="./js/sheet.js?v=126"></script>
-  <script type="module" src="./js/privileged-tools-bootstrap.js?v=5"></script>
+  <script type="module" src="./js/sheet.js?v=128"></script>
+  <script type="module" src="./js/privileged-tools-bootstrap.js?v=6"></script>
   <script src="./js/general-initial-empty-slot-cleanup.js?v=2"></script>
   <script src="./js/style-mark-cycle.js?v=101"></script>
   <script type="module" src="./js/sheet-image.js?v=105"></script>
   <script type="module" src="./js/sheet-personal-data.js?v=101"></script>
   <script src="./js/general-master-skills.js?v=113"></script>
   <script type="module" src="./js/ui-v25.js?v=109"></script>
-  <script type="module" src="./js/sheet-features.js?v=108"></script>
+  <script type="module" src="./js/sheet-features.js?v=109"></script>
   <script src="./js/sheet-import.js?v=104"></script>
   <script src="./js/sheet-import-url.js?v=8"></script>
-  <script src="./js/style-skill-fields.js?v=106"></script>
+  <script src="./js/style-skill-fields.js?v=107"></script>
   <script src="./js/style-skill-detail-integrity.js?v=2"></script>
   <script src="./js/skill-level-suit-rules.js?v=99"></script>
   <script src="./js/outfit-tables.js?v=103"></script>
   <script src="./js/armor-grand-total.js?v=103"></script>
-  <script type="module" src="./js/experience.js?v=101"></script>
+  <script type="module" src="./js/experience.js?v=102"></script>
   <script src="./js/sheet-sticky-exp-panel.js?v=4"></script>
   <script type="module" src="./js/style-skill-separators.js?v=7"></script>
   <script type="module" src="./js/sheet-multiline-fields-v3.js?v=7"></script>
-  <script src="./js/sheet-sidebar-actions.js?v=4"></script>
+  <script type="module" src="./js/sheet-sidebar-actions.js?v=5"></script>
   <script src="./js/sheet-ability-summary.js?v=1"></script>
   <script src="./js/sheet-birthplace.js?v=1" data-sheet-birthplace></script>
   <script src="./js/sheet-open-at-top.js?v=1"></script>
@@ -116,6 +116,6 @@
   <script src="./js/sheet-import-outfit-compat.js?v=11"></script>
   <script src="./js/sheet-section-nav.js?v=6"></script>
   <script type="module" src="./js/sheet-combos.js?v=7"></script>
-  <script type="module" src="./js/sheet-snapshots.js?v=2"></script>
+  <script type="module" src="./js/sheet-snapshots.js?v=3"></script>
 </body>
 </html>

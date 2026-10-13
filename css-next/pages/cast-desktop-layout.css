@@ -13,6 +13,14 @@
     margin-left: 0;
   }
 
+  /* The ARCHIVE ID column never shrinks; export buttons give up width instead. */
+  body[data-page="cast.html"] .cast-header__export-actions > * {
+    flex: 0 1 118px;
+    min-width: 0;
+    padding-inline: 6px;
+    overflow: hidden;
+  }
+
   body[data-page="cast.html"] .cast-header__primary-actions {
     align-items: stretch;
     gap: 6px;
@@ -104,16 +112,7 @@
     font-size: .54rem;
   }
 
-  /*
-   * The ARCHIVE ID column never shrinks, so the export buttons give up width
-   * instead: 118px when there is room, down to an equal fifth of the row.
-   */
-  body[data-page="cast.html"] .cast-header__export-actions > * {
-    min-width: min(118px, calc((100% - 20px) / 5));
-    padding-inline: 6px;
-    overflow: hidden;
-  }
-
+  /* Labels that no longer fit (e.g. 1280px) are truncated instead of wrapping into ARCHIVE ID. */
   body[data-page="cast.html"] .cast-header__export-actions > * > :is(span, small) {
     overflow: hidden;
     text-overflow: ellipsis;
