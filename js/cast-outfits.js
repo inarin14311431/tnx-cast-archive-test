@@ -4,7 +4,7 @@ import {
   OUTFIT_CATEGORY_LABELS,
   OUTFIT_FIELD_LABELS,
   OUTFIT_SCHEMAS
-} from "./cast-view-definitions.js?v=3";
+} from "./cast-view-definitions.js?v=4";
 import { escapeHtml, escapeAttributeMultiline as escapeAttribute } from "./dom-escape.js?v=2";
 
 const container = document.querySelector("#outfit-container");
