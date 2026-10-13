@@ -44,3 +44,16 @@ test("the editor description textarea is unchanged", async () => {
   const renderer = await read("js/sheet-skill-renderer.js");
   assert.match(renderer, /<textarea data-f="description" data-style-field="description" rows="2">/);
 });
+
+// An expanded row used to give every cell vertical-align: top (the name cell only stayed centered because
+// cast-view-details.css sets its own middle). Expanded rows keep the table's default middle alignment.
+test("expanded description rows keep every cell vertically centered", async () => {
+  const css = await read("css-next/pages/cast.css");
+  const widths = await read("css-next/pages/cast-outfit-column-widths.css");
+  for (const source of [css, widths]) {
+    const rules = source.match(/[^\n{}]*is-description-expanded[^{}]*\{[^}]*\}/g) ?? [];
+    assert.ok(rules.length > 0);
+    for (const rule of rules) assert.doesNotMatch(rule, /vertical-align:\s*top/, rule);
+  }
+  assert.match(css, /\.data-table :where\(th, td\), \.cast-outfit-table :where\(th, td\) \{[^}]*vertical-align:\s*middle/);
+});
