@@ -18,7 +18,7 @@ test("cast.html loads the table controls after the style skill renderer", () => 
 test("cast entry loads the style table stylesheet as the final cascade layer", () => {
   assert.match(entry, /cast-desktop, cast-style-table;/);
   const imports = [...entry.matchAll(/@import url\("([^"]+)"\) layer\(([^)]+)\);/g)];
-  assert.deepEqual(imports.at(-1)?.slice(1), ["./cast-style-skill-table.css?v=1", "cast-style-table"]);
+  assert.deepEqual(imports.at(-1)?.slice(1), ["./cast-style-skill-table.css?v=2", "cast-style-table"]);
   assert.match(tableCss, /\.style-skill-view-table\.is-table-controlled thead th/);
 });
 

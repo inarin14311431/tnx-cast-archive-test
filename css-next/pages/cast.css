@@ -145,8 +145,7 @@ body[data-page="cast.html"] .cast-header__actions { display: grid; grid-template
 .cast-tab small { display: block; color: var(--color-muted); font-size: .66rem; letter-spacing: .12em; }
 .cast-tab.is-active small { color: color-mix(in srgb, var(--color-accent) 70%, var(--color-muted)); }
 /* The combo button jumps to a panel; it is not a tab. A gap with its own divider separates it from the tab row and a CSS arrow marks it as a jump. */
-.cast-combo-jump { position: relative; flex: 0 0 auto; min-width: 106px; margin-left: 12px; padding: 8px 14px; border: 0; border-left: 1px solid var(--color-border); border-radius: 0; color: var(--color-accent-strong); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-alt)), var(--color-surface)); font-weight: 800; }
-.cast-combo-jump::before { position: absolute; top: 18%; bottom: 18%; left: -7px; width: 2px; content: ""; background: var(--color-border); }
+.cast-combo-jump { position: relative; flex: 0 0 auto; min-width: 106px; margin-left: 12px; padding: 8px 14px; border: 0; border-radius: 0; color: var(--color-accent-strong); background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 12%, var(--color-surface-alt)), var(--color-surface)); font-weight: 800; }
 .cast-combo-jump > span::after { display: inline-block; width: .42em; height: .42em; margin-left: .5em; border: solid currentColor; border-width: 0 2px 2px 0; content: ""; transform: translateY(-.14em) rotate(45deg); }
 .cast-combo-jump small { display: block; margin-top: 2px; color: var(--color-muted); font-size: .6rem; letter-spacing: .12em; }
 .combo-data-panel { scroll-margin-top: calc(var(--cast-sticky-header-offset) + 66px); }
@@ -231,7 +230,8 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .style-skill-panel__body { padding: 0; overflow-x: auto; }
 .style-skill-view-editorlike { overflow: hidden; }
 .style-skill-view-wrapper { overflow-x: auto; }
-.style-skill-view-table { width: 1328px; min-width: 1328px; max-width: 1328px; table-layout: fixed; border-collapse: collapse; }
+/* The other 15 columns total 988px; 解説 takes the rest of the frame (148px minimum) so the table fits without a horizontal scroll from 1200px up. */
+.style-skill-view-table { width: 100%; min-width: 1136px; table-layout: fixed; border-collapse: collapse; }
 .style-skill-view-table col.style-col-name { width: 144px; }
 .style-skill-view-table col.style-col-kind { width: 48px; }
 .style-skill-view-table col.style-col-level { width: 48px; }
@@ -243,7 +243,7 @@ body[data-page="cast.html"] .ability-grid { display: grid; grid-template-columns
 .style-skill-view-table col.style-col-range { width: 58px; }
 .style-skill-view-table col.style-col-difficulty { width: 64px; }
 .style-skill-view-table col.style-col-confrontation { width: 64px; }
-.style-skill-view-table col.style-col-description { width: 340px; }
+.style-skill-view-table col.style-col-description { width: auto; }
 .style-skill-view-table col.style-col-page { width: 64px; }
 .style-skill-view-table :is(th, td) { padding: 5px 4px; }
 .style-skill-view-table .style-suit-cell { text-align: center; }
