@@ -11,7 +11,7 @@ const tableCss = await readFile(new URL("../css-next/pages/cast-style-skill-tabl
 test("cast.html loads the table controls after the style skill renderer", () => {
   assert.match(castHtml, /<body data-page="cast\.html">/);
   const styleSkills = castHtml.indexOf("./js/cast-style-skills.js");
-  const controls = castHtml.indexOf('<script src="./js/cast-style-skill-table-controls.js?v=3"></script>');
+  const controls = castHtml.indexOf('<script src="./js/cast-style-skill-table-controls.js?v=4"></script>');
   assert.ok(styleSkills >= 0 && controls > styleSkills, "controls must load after cast-style-skills.js");
 });
 
