@@ -109,6 +109,9 @@ MobileはPCと同じDOMを再利用するのではなく、Mobile UI adapterと�
 - 一般技能・社会・コネの経験点: `experience.js`(PC)と `sheet-mobile-header-exp.js` が
   `sheet-experience-rules.js` の `generalSkillExperienceCost()` を利用。名前は表示用の「★」付き
   ラベルではなく保存名を渡す(Mobileは行の `data-general-name`)
+- スタイルを変えたときの能力値・制御値の現在値: `sheet.js`(PC)と `sheet-mobile-style.js` が
+  `sheet-baseline-adjustment.js` の `resolveStyleBaselineValue()` を利用(旧基準値のままか0なら新基準値に追従、
+  上げた値はそのまま残す)。モバイルで「新基準値＋成長分」に作り直すと経験点がPCとずれる
 - CS(基礎値・最終値・保存する `cs_base`): `sheet-sidebar-actions.js`(PC)と
   `sheet-mobile-ability.js` が `sheet-ability-calculation.js` の `calculateCombatSpeed()` を利用
 
