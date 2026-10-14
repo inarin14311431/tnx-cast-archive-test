@@ -52,7 +52,7 @@ test("mobile app loads skill-kind normalization before experience calculation",(
   const normalizeIndex=app.indexOf("sheet-mobile-skill-kind-normalizer.js");
   const expIndex=app.indexOf("sheet-mobile-header-exp.js");
   assert.ok(normalizeIndex>=0&&normalizeIndex<expIndex);
-  assert.match(app,/sheet-mobile-header-exp\.js\?v=20261011-1/);
+  assert.match(app,/sheet-mobile-header-exp\.js\?v=20261014-1/);
 });
 
 
@@ -65,4 +65,11 @@ test("★-marked proper General skills use the same category and cost on desktop
   assert.equal(catalog.generalSkillKindForName("★射撃"),"general");
   assert.equal(catalog.canonicalGeneralSkillName("★製作：トロン"),"製作：トロン");
   assert.equal(rules.generalSkillExperienceCost([{name:"製作：トロン",category:"general",level:2,kind:catalog.generalSkillKindForName("★製作：トロン")}]).total,10);
+});
+
+test("mobile saves the recalculated EXP only once skills, outfits and skill metadata are loaded", async () => {
+  const source = await readFile(new URL("../js/sheet-mobile-header-exp.js", import.meta.url), "utf8");
+  const body = source.slice(source.indexOf("async function persistExperience("), source.indexOf("async function refreshAndCalculate("));
+  assert.ok(body.indexOf("if (!editorContentReady()) return;") > 0);
+  assert.ok(body.indexOf("editorContentReady()") < body.indexOf("calculateLocalTotal()"));
 });
