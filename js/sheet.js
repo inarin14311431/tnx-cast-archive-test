@@ -6,6 +6,7 @@ import { SITE_BASE_PATH } from "./config.js?v=2";
 import { createSheetSaveCoordinator } from "./sheet-save-coordinator.js?v=2";
 import { persistSheetBundle } from "./sheet-save-persistence.js?v=1";
 import { loadSheetBundle } from "./sheet-load-persistence.js?v=3";
+import { dismissSheetLoadOverlay } from "./sheet-load-overlay.js?v=1";
 import { publishSheetCharacterLoaded, publishSheetCharacterLoadFailed } from "./sheet-loaded-character.js?v=1";
 import { buildCharacterSavePayload, buildSkillSavePayloads, buildOutfitSavePayloads } from "./sheet-save-payload.js?v=3";
 import {
@@ -100,13 +101,20 @@ const saveCoordinator = createSheetSaveCoordinator({
 init();
 
 async function init() {
-  user = await requireAuth();
-  if (!user) return;
-  renderStyles();
-  renderAbilities();
-  bind();
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) await loadCharacter(id); else createNew();
+  try {
+    user = await requireAuth();
+    if (!user) { publishSheetCharacterLoadFailed(); return; }
+    renderStyles();
+    renderAbilities();
+    bind();
+    const id = new URLSearchParams(location.search).get("id");
+    if (id) await loadCharacter(id); else createNew();
+  } catch (error) {
+    // loadCharacter / createNew handle their own errors; this covers failures before they are reached.
+    publishSheetCharacterLoadFailed();
+    dismissSheetLoadOverlay();
+    throw error;
+  }
 }
 
 function bind() {
@@ -286,6 +294,7 @@ function createNew() {
   renderSkills(); renderOutfits(); recalc();
   loading = false;
   saveCoordinator.markDirty();
+  dismissSheetLoadOverlay();
 }
 
 async function loadCharacter(publicId) {
@@ -309,7 +318,7 @@ async function loadCharacter(publicId) {
     renderSkills(); renderOutfits();
     const detail = formatSheetPersistenceError(error?.message, { operation: "load" });
     saveCoordinator.markLoadError(`${detail} 保存は行われません。`);
-  } finally { loading = false; }
+  } finally { loading = false; dismissSheetLoadOverlay(); }
 }
 
 function fillCharacter(data) {
