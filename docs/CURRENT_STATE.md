@@ -29,7 +29,7 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     characters取得を `js/sheet-loaded-character.js` の共有に置き換える)・#563(PC: 既存キャストを開く時の
     アーカイブ接続ロード画面)。runtimeは14ファイル(新規3)。本番側の既存テスト4ファイルは前提が変わるため
     検証の更新済み版に揃えた(新規テストは同期していない)
-  - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
+  - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(第2節)
   - いずれも共有Supabase/DBの変更は含まない
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
   localStorage を共有する。閲覧のスタイル技能表の列幅の保存キーは `…styleSkillColumnWidths.v2` で、
@@ -42,10 +42,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 2. 開いているPRとbranch(2026-10-15確認)
 
-- 開いているPR: Dependabotの依存更新のみ。検証 #560(`@fontsource/noto-sans-jp` 5.3.1)・#561(`@playwright/test` 1.64.0)、
-  本番 #208(同 noto-sans-jp)・#209(同 playwright)。いずれも未マージで、runtimeには関係しない。
-- 残っているbranch: 検証は `main`・`visual-regression-baseline` と上記Dependabot 2本。本番は `main`・`dashboard-data` と
-  上記Dependabot 2本。
+- 開いているPR: Dependabotの依存更新のみ。検証 #561(`@playwright/test` 1.64.0)・本番 #209(同)。いずれも未マージで、
+  runtimeには関係しない。`@fontsource/noto-sans-jp` はサイト・テスト・CI・スクリプトのどこからも参照されない未使用の
+  devDependencyだったため、依存自体を両repoの `package.json` から削除する作業で、検証 #560・本番 #208 は閉じる。
+- 残っているbranch: 検証は `main`・`visual-regression-baseline` と上記Dependabot 1本。本番は `main`・`dashboard-data` と
+  上記Dependabot 1本。
 - 他の未PR branchは本資料で維持しない。再開前に必ず最新mainとのdiffを確認し、branch名だけで
   「変更済み/不要」と判断しないこと。
 
