@@ -210,6 +210,8 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
 
 このフォントと `@playwright/test` の更新は、画面比較の描画に影響しうる。上げるときは両方をまとめて行い、
 差分が出たら上の「基準画像の更新手順」と組み合わせる(Dependabot の個別PRを単独でマージしない)。
+あわせて、CIのコンテナ(`.github/workflows/playwright.yml`・`visual-regression.yml` の `mcr.microsoft.com/playwright:v<版>-noble`)
+も `@playwright/test` と同じ版に上げる(合っていないとブラウザが見つからず E2E が全件落ちる)。
 
 ### 模擬ログインでの確認
 
