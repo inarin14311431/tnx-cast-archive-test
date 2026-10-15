@@ -201,6 +201,16 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
    このPR自身のCIは基準ブランチの古いコードで動くため赤くてもよい。
 4. 基準画像PRを先にマージし、対象PRの比較ジョブを再実行(`gh run rerun <run-id> --failed`)して通してから、対象PRをマージする。
 
+### フォント固定用の依存(削除しない)
+
+`package.json` の devDependencies にある `@fontsource/noto-sans-jp` は、main からは参照されていないが、
+画面比較(`visual-regression-baseline` の `tests/visual/visual-fixtures.js` の `settleVisualPage`)が
+`/node_modules/@fontsource/noto-sans-jp/{400,700,900}.css` を読み込んでフォントを固定するために使っている。
+「未使用」に見えても削除しない(削除すると画面比較が全件落ちる)。
+
+このフォントと `@playwright/test` の更新は、画面比較の描画に影響しうる。上げるときは両方をまとめて行い、
+差分が出たら上の「基準画像の更新手順」と組み合わせる(Dependabot の個別PRを単独でマージしない)。
+
 ### 模擬ログインでの確認
 
 ログインが必要な画面は、Supabaseへ繋がずにローカルで開ける。基準ブランチの `tests/visual/visual-fixtures.js` の
