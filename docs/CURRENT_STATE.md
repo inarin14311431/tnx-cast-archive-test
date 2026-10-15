@@ -1,23 +1,35 @@
 # 現在地 / Current State
 
-最終更新: 2026-10-13
+最終更新: 2026-10-15
 
 AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショット。時点情報
 なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。固定のSHAやPR番号はこの資料にだけ置く。
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `269d0c0`(PR #553 マージ点, 2026-10-13)。画面比較の基準ブランチ
+- 検証repo main: `cf3d304`(PR #563 マージ点, 2026-10-15)。画面比較の基準ブランチ
   `visual-regression-baseline` は `d550978`(PR #538 マージ点)のまま。
-- 本番repo main: `9acebb2`(同期PR #204 マージ点)。検証 #553 までのruntimeを同期済み。検証 `269d0c0` と
+- 本番repo main: `b7d1c42`(同期PR #211 マージ点)。検証 #563 までのruntimeを同期済み。検証 `cf3d304` と
   本番mainの `js/`・`css-next/`・`config/`・`supabase/`・`assets/`・ルートの `*.html` の差分が0であることを
-  実ファイルで確認した(2026-10-13)。
+  実ファイルで確認した(2026-10-15)。
 - 未同期のruntime: なし。
 - 同期の履歴(直近):
   - 本番 #203(`f1c1650`): 検証 #545〜#551(閲覧ヘッダーの出力ボタン、スタイル技能・アウトフィットの
     「参照P→解説」と列幅、閲覧の解説欄の2行表示、解説を開いた行の上下中央ほか)
   - 本番 #204(`9acebb2`): 検証 #552(SNS紹介カード右下を ARCHIVE ID にする)・#553(同カードの
     ライト系テーマで右下の文字が背景に溶ける不具合)。変更は `js/cast-sns-card.js` と `cast.html`(`?v=7`)のみ
+  - 本番 #205(`ceb322e`): 検証 #555(SNS紹介カード: ライト系テーマのポートレート枠内ラベル)。
+    `js/cast-sns-card.js` と `cast.html`(`?v=8`)のみ
+  - 本番 #206(`fd10e93`): 検証 #556(閲覧画面: スタイルの◎を同心円にする)。`css-next/pages/cast.css`、
+    `cast-entry.css` と `cast.html`
+  - 本番 #207(`f6145b6`): 検証 #557(アカウント作成: 同意チェックのずれ)・#558(モバイル: スタイル変更時の
+    能力値の扱いをPCに揃え経験点がずれないようにする)
+  - 本番 #210(`ff0ef23`): 検証 #559(PC: 読み込み時に基準値を下回る能力値・制御値を基準値まで引き上げる)
+  - 本番 #211(`b7d1c42`): 検証 #562(PC: 起動時の読み込みを埋め込みselect 1回にし、各moduleの重複した
+    characters取得を `js/sheet-loaded-character.js` の共有に置き換える)・#563(PC: 既存キャストを開く時の
+    アーカイブ接続ロード画面)。runtimeは14ファイル(新規3)。本番側の既存テスト4ファイルは前提が変わるため
+    検証の更新済み版に揃えた(新規テストは同期していない)
+  - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - いずれも共有Supabase/DBの変更は含まない
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
   localStorage を共有する。閲覧のスタイル技能表の列幅の保存キーは `…styleSkillColumnWidths.v2` で、
@@ -28,10 +40,12 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 その後進む。固定値を最新mainと解釈しないこと。テスト・CI構成の同期は別で、意図的に同期しない
 (`AGENTS.md`参照)。
 
-## 2. 開いているPRとbranch(2026-10-13確認)
+## 2. 開いているPRとbranch(2026-10-15確認)
 
-- 開いているPR: 検証・本番ともなし(GitHub上で確認。この資料の更新PRを作る前の時点)。
-- 残っているbranch: 検証は `main` と `visual-regression-baseline`。本番は `main` と `dashboard-data`。
+- 開いているPR: Dependabotの依存更新のみ。検証 #560(`@fontsource/noto-sans-jp` 5.3.1)・#561(`@playwright/test` 1.64.0)、
+  本番 #208(同 noto-sans-jp)・#209(同 playwright)。いずれも未マージで、runtimeには関係しない。
+- 残っているbranch: 検証は `main`・`visual-regression-baseline` と上記Dependabot 2本。本番は `main`・`dashboard-data` と
+  上記Dependabot 2本。
 - 他の未PR branchは本資料で維持しない。再開前に必ず最新mainとのdiffを確認し、branch名だけで
   「変更済み/不要」と判断しないこと。
 
