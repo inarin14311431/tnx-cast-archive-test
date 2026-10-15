@@ -211,6 +211,21 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
 このフォントと `@playwright/test` の更新は、画面比較の描画に影響しうる。上げるときは両方をまとめて行い、
 差分が出たら上の「基準画像の更新手順」と組み合わせる(Dependabot の個別PRを単独でマージしない)。
 
+#### Playwright 1.64 への更新を見送った件(2026-10)
+
+`@playwright/test` を 1.62.1 → 1.64.0 に上げる試み(#568、クローズ済み)で分かったこと。更新を再開するときの前提にする。
+
+- **イメージ版を2か所そろえる。** `.github/workflows/playwright.yml`(123行目付近)と
+  `.github/workflows/visual-regression.yml`(12行目)の `mcr.microsoft.com/playwright:v<版>-noble` を、
+  `@playwright/test` の版と同じにする。ずれると最初の実行で版不一致で落ちる。
+- **豪華版 board 手前の待ちが 1.64 で通らない。** `tests/visual/act-showcase-deluxe.visual.spec.js` 77行目で
+  `--poster-v2-frame-opacity` が `1` になるのを待つが、1.64 ではこの値が空のまま進まず、desktop 4件と mobile nova が落ちた
+  (画像は出力されない)。1.62.1 の main では通る(2026-10-15 に画面比較を実行して確認済み)。
+- **原因は未解明。** この変数は `js/act-showcase-page.js` のスクロール連動で設定され、`initializeMotion` は
+  `prefersReducedMotion()` のとき早期 return する。画面比較の設定は `reducedMotion: "reduce"` なので、
+  本来は設定されないはずで、1.62.1 でなぜ通っていたかが説明できていない。再開時はここから調べる。
+- 描画差(タイトル文字が約7%小さい、assign の位置ずれ)は Chromium の変化で、フォント 5.3.0 と 5.3.1 の文字幅は同一だった。
+
 ### 模擬ログインでの確認
 
 ログインが必要な画面は、Supabaseへ繋がずにローカルで開ける。基準ブランチの `tests/visual/visual-fixtures.js` の
