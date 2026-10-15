@@ -42,10 +42,10 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 2. 開いているPRとbranch(2026-10-15確認)
 
-- 開いているPR: Dependabotの依存更新のみ。検証 #560(`@fontsource/noto-sans-jp` 5.3.1)・#561(`@playwright/test` 1.64.0)、
-  本番 #208(同 noto-sans-jp)・#209(同 playwright)。いずれも未マージで、runtimeには関係しない。
-- 残っているbranch: 検証は `main`・`visual-regression-baseline` と上記Dependabot 2本。本番は `main`・`dashboard-data` と
-  上記Dependabot 2本。
+- 開いているPR: なし。Dependabot の4本(検証 #560・#561、本番 #208・#209)は、`@fontsource/noto-sans-jp` 5.3.1 と
+  `@playwright/test` 1.64.0 を両repoで「まとめて」更新したため閉じた(画面比較の描画に影響しうるので個別には上げない。
+  `docs/TESTING_STRATEGY.md` 第8節)。
+- 残っているbranch: 検証は `main` と `visual-regression-baseline`。本番は `main` と `dashboard-data`。
 - 他の未PR branchは本資料で維持しない。再開前に必ず最新mainとのdiffを確認し、branch名だけで
   「変更済み/不要」と判断しないこと。
 
