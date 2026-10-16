@@ -1,18 +1,22 @@
 # 現在地 / Current State
 
-最終更新: 2026-10-15
+最終更新: 2026-10-16
 
 AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショット。時点情報
 なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。固定のSHAやPR番号はこの資料にだけ置く。
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `cf3d304`(PR #563 マージ点, 2026-10-15)。画面比較の基準ブランチ
-  `visual-regression-baseline` は `d550978`(PR #538 マージ点)のまま。
-- 本番repo main: `b7d1c42`(同期PR #211 マージ点)。検証 #563 までのruntimeを同期済み。検証 `cf3d304` と
+- 検証repo main: `ea2bfca`(PR #573 マージ点, 2026-10-16)。画面比較の基準ブランチ
+  `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
+  同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
+- 本番repo main: `13c1e0d`(同期PR #212 マージ点)。検証 #573 までのruntimeを同期済み。検証 `ea2bfca` と
   本番mainの `js/`・`css-next/`・`config/`・`supabase/`・`assets/`・ルートの `*.html` の差分が0であることを
-  実ファイルで確認した(2026-10-15)。
+  実ファイルで確認した(2026-10-16)。
 - 未同期のruntime: なし。
+- 同期していないツール類: 検証にだけある `scripts/regenerate-thumbnails.mjs`(`npm run thumbnails:regenerate`)と
+  その devDependencies(`sharp`・`@supabase/supabase-js`)。既存サムネイルの作り直しはオーナーが検証repoから
+  実行する管理作業で、手順は `docs/THUMBNAIL_REGENERATION.md`。実行したかどうかはこの資料では追わない。
 - 同期の履歴(直近):
   - 本番 #203(`f1c1650`): 検証 #545〜#551(閲覧ヘッダーの出力ボタン、スタイル技能・アウトフィットの
     「参照P→解説」と列幅、閲覧の解説欄の2行表示、解説を開いた行の上下中央ほか)
@@ -29,6 +33,9 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     characters取得を `js/sheet-loaded-character.js` の共有に置き換える)・#563(PC: 既存キャストを開く時の
     アーカイブ接続ロード画面)。runtimeは14ファイル(新規3)。本番側の既存テスト4ファイルは前提が変わるため
     検証の更新済み版に揃えた(新規テストは同期していない)
+  - 本番 #212(`13c1e0d`): 検証 #573(キャスト画像サムネイルを長辺840px・目標120KBに変更し、仕様値を
+    `js/image-thumbnail-config.js` に集約)。runtimeは6ファイル(新規1)。本番側の既存テスト2ファイルは
+    検証の更新済み版に揃えた(新規テスト・再生成スクリプト・CI設定は同期していない)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - いずれも共有Supabase/DBの変更は含まない
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
@@ -40,10 +47,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 その後進む。固定値を最新mainと解釈しないこと。テスト・CI構成の同期は別で、意図的に同期しない
 (`AGENTS.md`参照)。
 
-## 2. 開いているPRとbranch(2026-10-15確認)
+## 2. 開いているPRとbranch(2026-10-16確認)
 
 - 開いているPR: Dependabotの依存更新のみ。検証 #560(`@fontsource/noto-sans-jp` 5.3.1)・#561(`@playwright/test` 1.64.0)、
   本番 #208(同 noto-sans-jp)・#209(同 playwright)。いずれも未マージで、runtimeには関係しない。
+  Playwright 1.64 への更新(検証 #568)は見送りでクローズ済み。経緯と再開時の前提は `docs/TESTING_STRATEGY.md` 第8節。
 - 残っているbranch: 検証は `main`・`visual-regression-baseline` と上記Dependabot 2本。本番は `main`・`dashboard-data` と
   上記Dependabot 2本。
 - 他の未PR branchは本資料で維持しない。再開前に必ず最新mainとのdiffを確認し、branch名だけで
