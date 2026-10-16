@@ -7,6 +7,7 @@ import {
   folderOf,
   isSafeOldThumbnailPath,
   parseBucketPath,
+  parseLimit,
   parseOriginalImagePath
 } from "../scripts/regenerate-thumbnails.mjs";
 import {
@@ -85,4 +86,24 @@ test("the script never writes secrets and defaults to dry-run", async () => {
   assert.match(source, /process\.argv\.includes\("--apply"\)/);
   assert.match(source, /\.update\(\{ image_thumbnail_url: newUrl \}\)/, "DB update must touch image_thumbnail_url only");
   assert.equal((source.match(/\.update\(/g) || []).length, 1);
+});
+
+test("--limit narrows the target count and rejects invalid values", () => {
+  assert.equal(parseLimit([]), null);
+  assert.equal(parseLimit(["--apply"]), null);
+  assert.equal(parseLimit(["--limit", "3"]), 3);
+  assert.equal(parseLimit(["--limit=5", "--apply"]), 5);
+  assert.equal(parseLimit(["--apply", "--limit", "12"]), 12);
+  for (const bad of [["--limit"], ["--limit", "0"], ["--limit", "-1"], ["--limit", "abc"], ["--limit=1.5"], ["--limit", "--apply"]]) {
+    assert.throws(() => parseLimit(bad), /--limit/, `should reject ${bad.join(" ")}`);
+  }
+});
+
+test("the script stops without deleting the old thumbnail when updated_at moves", async () => {
+  const source = await readFile(new URL("../scripts/regenerate-thumbnails.mjs", import.meta.url), "utf8");
+  assert.match(source, /\.select\("id,updated_at"\)/);
+  assert.match(source, /return "updated_at_changed"/);
+  const guard = source.indexOf('return "updated_at_changed"');
+  const removal = source.indexOf("isSafeOldThumbnailPath(oldPath, row.imagePath");
+  assert.ok(guard !== -1 && removal !== -1 && guard < removal, "the updated_at guard must run before the old thumbnail is deleted");
 });
