@@ -7,16 +7,27 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `ea2bfca`(PR #573 マージ点, 2026-10-16)。画面比較の基準ブランチ
+- 検証repo main: `5105f62`(PR #575 マージ点, 2026-10-16)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `13c1e0d`(同期PR #212 マージ点)。検証 #573 までのruntimeを同期済み。検証 `ea2bfca` と
-  本番mainの `js/`・`css-next/`・`config/`・`supabase/`・`assets/`・ルートの `*.html` の差分が0であることを
-  実ファイルで確認した(2026-10-16)。
-- 未同期のruntime: なし。
+- 本番repo main: `13c1e0d`(同期PR #212 マージ点)。検証 #573 までのruntimeを同期済み。#575 は runtime
+  (`js/`・`css-next/`・`config/`・`assets/`・ルートの `*.html`)を変えないため、これらの差分は0のまま
+  (実ファイルで確認、2026-10-16)。
+- 未同期: `supabase/` の2ファイルだけ(検証 #575 で追加。本番repoには未反映)。
+  `supabase/migrations/20261016_characters_updated_at_ignore_thumbnail.sql` と `supabase/migrations-manifest.json`。
+  いずれもrepo上の履歴の話で、DBは検証・本番で共有しているため下記のとおり適用済み。本番repoへ同期するかは別の判断。
+- DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
+  `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
+  適用後に、トリガー `characters_set_updated_at` が `characters_touch_updated_at()` を呼ぶ定義になっていること、
+  トランザクション内で `image_thumbnail_url` だけを更新しても `updated_at` が変わらないこと(他の更新では変わること)を
+  確認し、rollbackした。`supabase_migrations` の履歴テーブルには記録されていない(適用は `apply_migration` が
+  タイムアウトしたため、同じDDLを `execute_sql` で個別に実行した。トリガーの付け替えだけは `drop trigger` の代わりに
+  `create or replace trigger`。結果の定義は同じ)。ロールバックはmigration先頭のコメント。
+- 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
+  バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
+  `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
 - 同期していないツール類: 検証にだけある `scripts/regenerate-thumbnails.mjs`(`npm run thumbnails:regenerate`)と
-  その devDependencies(`sharp`・`@supabase/supabase-js`)。既存サムネイルの作り直しはオーナーが検証repoから
-  実行する管理作業で、手順は `docs/THUMBNAIL_REGENERATION.md`。実行したかどうかはこの資料では追わない。
+  その devDependencies(`sharp`・`@supabase/supabase-js`)。
 - 同期の履歴(直近):
   - 本番 #203(`f1c1650`): 検証 #545〜#551(閲覧ヘッダーの出力ボタン、スタイル技能・アウトフィットの
     「参照P→解説」と列幅、閲覧の解説欄の2行表示、解説を開いた行の上下中央ほか)
@@ -36,6 +47,8 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   - 本番 #212(`13c1e0d`): 検証 #573(キャスト画像サムネイルを長辺840px・目標120KBに変更し、仕様値を
     `js/image-thumbnail-config.js` に集約)。runtimeは6ファイル(新規1)。本番側の既存テスト2ファイルは
     検証の更新済み版に揃えた(新規テスト・再生成スクリプト・CI設定は同期していない)
+  - (検証のみ)#575: 再生成スクリプトの `updated_at` 問題の修正。migration・`--limit`・資料。runtimeの変更なしで、
+    本番へ同期するruntimeはない(上記の `supabase/` の2ファイルを除く)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - いずれも共有Supabase/DBの変更は含まない
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
