@@ -10,6 +10,7 @@
     "test:visual:production": "node scripts/run-visual-regression.mjs",
     "test:quality": "playwright test --config=playwright.quality.config.js",
     "check:js": "node scripts/check-js.mjs",
+    "thumbnails:regenerate": "node scripts/regenerate-thumbnails.mjs",
     "preload:update": "node scripts/generate-modulepreload.mjs",
     "audit:modulepreload": "node scripts/generate-modulepreload.mjs --check",
     "audit:js-baseline": "node scripts/audit-js-baseline.mjs",
@@ -47,6 +48,8 @@
   },
   "devDependencies": {
     "@fontsource/noto-sans-jp": "5.3.0",
-    "@playwright/test": "1.62.1"
+    "@playwright/test": "1.62.1",
+    "@supabase/supabase-js": "2.112.0",
+    "sharp": "0.35.5"
   }
 }
