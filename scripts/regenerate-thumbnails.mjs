@@ -1,5 +1,5 @@
 // 既存キャスト画像サムネイルの一括作り直し(オーナーがローカルで手動実行する一回限りの管理用ツール)。
-// 使い方は docs/THUMBNAIL_REGENERATION.md。既定は dry-run、--apply で書き込む。
+// 使い方は docs/THUMBNAIL_REGENERATION.md。既定は dry-run、--apply で書き込む。--limit N で対象を先頭N件に絞る。
 // 接続情報は環境変数 SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY から読む(ブラウザJSには入れない)。
 import { pathToFileURL } from "node:url";
 import sharp from "sharp";
@@ -46,6 +46,15 @@ export function parseOriginalImagePath(imageUrl, supabaseUrl) {
 
 export function folderOf(objectPath) {
   return objectPath.slice(0, objectPath.lastIndexOf("/"));
+}
+
+// --limit N / --limit=N を読む。指定なしは null、不正な値は例外。
+export function parseLimit(argv) {
+  const index = argv.findIndex(arg => arg === "--limit" || arg.startsWith("--limit="));
+  if (index === -1) return null;
+  const raw = argv[index] === "--limit" ? argv[index + 1] : argv[index].slice("--limit=".length);
+  if (!/^[1-9]\d*$/.test(raw ?? "")) throw new Error("--limit には1以上の整数を指定してください。");
+  return Number(raw);
 }
 
 // 旧サムネイルを消してよいのは、同じバケット内かつ元画像と同じフォルダ配下のファイルだけ。
@@ -98,7 +107,7 @@ async function listTargets(client, supabaseUrl) {
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await client
       .from("characters")
-      .select("id,public_id,owner_id,image_url,image_thumbnail_url")
+      .select("id,public_id,owner_id,image_url,image_thumbnail_url,updated_at")
       .neq("image_url", "")
       .not("image_url", "is", null)
       .order("id")
@@ -134,11 +143,16 @@ async function regenerateOne(client, supabaseUrl, row) {
     .update({ image_thumbnail_url: newUrl })
     .eq("id", row.id)
     .eq("image_url", row.image_url)
-    .select("id");
+    .select("id,updated_at");
   if (update.error || !update.data?.length) {
     await client.storage.from(BUCKET).remove([newPath]);
     if (update.error) throw update.error;
     return "skipped";
+  }
+  // updated_at が動いたら(DBトリガーが image_thumbnail_url の更新でも updated_at を書き換える場合)、
+  // 旧サムネイルは消さずに知らせて止める。docs/THUMBNAIL_REGENERATION.md の前提migrationを参照。
+  if (new Date(update.data[0].updated_at).getTime() !== new Date(row.updated_at).getTime()) {
+    return "updated_at_changed";
   }
   const oldPath = parseBucketPath(row.image_thumbnail_url, supabaseUrl);
   if (isSafeOldThumbnailPath(oldPath, row.imagePath, newPath)) {
@@ -162,6 +176,7 @@ async function runPool(items, worker) {
 
 async function main() {
   const apply = process.argv.includes("--apply");
+  const limit = parseLimit(process.argv.slice(2));
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceKey) {
@@ -170,8 +185,11 @@ async function main() {
   }
   const { createClient } = await import("@supabase/supabase-js");
   const client = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { targets, skippedExternal } = await listTargets(client, supabaseUrl);
-  console.log(`${apply ? "APPLY" : "DRY-RUN"}: 対象 ${targets.length} 件 / 対象外(外部URL・バケット外) ${skippedExternal} 件`);
+  const listed = await listTargets(client, supabaseUrl);
+  const { skippedExternal } = listed;
+  const targets = limit ? listed.targets.slice(0, limit) : listed.targets;
+  const limitNote = limit ? `(--limit ${limit}、全体 ${listed.targets.length} 件のうち先頭)` : "";
+  console.log(`${apply ? "APPLY" : "DRY-RUN"}: 対象 ${targets.length} 件${limitNote} / 対象外(外部URL・バケット外) ${skippedExternal} 件`);
   if (!apply) {
     for (const row of targets) console.log(`${row.public_id}\t${row.imagePath}\t${row.image_thumbnail_url ? "thumb:あり" : "thumb:なし"}`);
     console.log("書き込むには --apply を付けて再実行してください。");
@@ -179,9 +197,16 @@ async function main() {
   }
   const counts = { ok: 0, skipped: 0, failed: 0 };
   const failedIds = [];
+  const changedIds = [];
   await runPool(targets, async row => {
+    if (changedIds.length) return;
     try {
-      counts[await regenerateOne(client, supabaseUrl, row)] += 1;
+      const result = await regenerateOne(client, supabaseUrl, row);
+      if (result === "updated_at_changed") {
+        changedIds.push(row.public_id);
+        return;
+      }
+      counts[result] += 1;
     } catch (error) {
       counts.failed += 1;
       failedIds.push(row.public_id);
@@ -190,6 +215,11 @@ async function main() {
   });
   console.log(`完了: 成功 ${counts.ok} / スキップ ${counts.skipped + skippedExternal} / 失敗 ${counts.failed}`);
   if (failedIds.length) console.log(`失敗した public_id: ${failedIds.join(", ")}`);
+  if (changedIds.length) {
+    console.error(`中止: updated_at が変わりました(${changedIds.join(", ")})。残りは処理していません。`);
+    console.error("DBトリガーが image_thumbnail_url の更新でも updated_at を書き換えています。docs/THUMBNAIL_REGENERATION.md の前提(migration 20261016)を確認してください。");
+    process.exitCode = 1;
+  }
   if (counts.failed) process.exitCode = 1;
 }
 
