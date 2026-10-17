@@ -7,12 +7,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `bd0e2f8`(PR #578 マージ点, 2026-10-17)。画面比較の基準ブランチ
+- 検証repo main: `1c83520`(PR #581 マージ点, 2026-10-17)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `b45ea29`(同期PR #214 マージ点)。検証 #577 までのruntimeを同期済み。検証 `bd0e2f8` と
-  本番mainの `js/`・`css-next/`・`config/`・`supabase/`・`assets/`・ルートの `*.html` の差分が0であることを
-  #214 の作成時に実ファイルで確認した(2026-10-17。#578 は資料のみの変更)。
+- 本番repo main: `d75389a`(同期PR #215 マージ点)。検証 #581 までのruntimeを同期済み。同期前の本番mainと検証
+  `bd0e2f8` の対象20ファイルが一致することを実ファイルで確認してからコピーした(2026-10-17)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -28,6 +27,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   (authenticated / service_role)が変わっていないことを確認した。`supabase_migrations` の履歴テーブルには記録されていない
   (`execute_sql` で同じDDLを実行した)。復元の実データでの動作確認はしていない(ライブのスナップショットを復元すると
   キャラクターを上書きするため)。ロールバックは `supabase/11_character_snapshots.sql` の旧本体を再作成。
+- DB: migration `20261017_act_participant_cast_orders.sql` は**適用済み**(2026-10-17、共有DB
+  `koprmbkoftuuffslhsvt`、`apply_migration`)。`set_act_participant_cast_orders_for_current_user(text, jsonb)` を追加
+  (security definer、作成者本人のアクトの `act_participants.cast_order` だけ更新、anon不可を確認)。既存データは
+  `20261017anoyuuhi` の1行(CAST 01→02)だけを個別に修正した。「履歴のみ登録」の過去分は正しい番号が残っていないため
+  未修正(再登録で直る)。ロールバックはmigration先頭のコメント。
 - 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
   バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
   `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
@@ -60,8 +64,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     migration `20261017_restore_snapshot_via_ofc_save.sql` とテスト。runtimeの変更はなく、#578 は適用済みにした資料更新
   - 本番 #214(`b45ea29`): 検証 #577 の migration と `supabase/migrations-manifest.json` の2ファイルだけ
     (repo上の履歴を揃えた。DBは検証側で適用済みで、このPRではDBを触っていない)
+  - 本番 #215(`d75389a`): 検証 #580(アクト紹介生成: CAST No変更・未登録キャストの倉庫URL取込・再編集時の
+    キャスト欠落)・#581(アクト履歴のCAST No.を生成画面に合わせる)。runtimeは20ファイル(新規5、migration含む)。
+    本番側の既存テスト5ファイルは `?v=` 前提のため検証の更新済み版に揃えた(新規テストは同期していない)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
-  - いずれも共有Supabase/DBの変更は含まない
+  - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
   localStorage を共有する。閲覧のスタイル技能表の列幅の保存キーは `…styleSkillColumnWidths.v2` で、
   旧キー v1 からは移行する(v1 は消さない)。同期後も v1 を残してあり、消すかは別の判断にする。
