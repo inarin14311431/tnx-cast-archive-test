@@ -21,6 +21,9 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   確認し、rollbackした。`supabase_migrations` の履歴テーブルには記録されていない(適用は `apply_migration` が
   タイムアウトしたため、同じDDLを `execute_sql` で個別に実行した。トリガーの付け替えだけは `drop trigger` の代わりに
   `create or replace trigger`。結果の定義は同じ)。ロールバックはmigration先頭のコメント。
+- DB: migration `20261017_restore_snapshot_via_ofc_save.sql`(`restore_character_snapshot` を
+  `save_character_bundle_with_ofc` 経由にし、復元で `character_sheet_url` と `ofc_details` が戻るようにする)は
+  **repoにだけある。実DBには未適用**(オーナーの確認後に適用する)。適用したらこの項を「適用済み」に書き換える。
 - 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
   バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
   `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
