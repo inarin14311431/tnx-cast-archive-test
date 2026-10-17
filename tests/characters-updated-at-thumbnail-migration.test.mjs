@@ -7,10 +7,10 @@ const sql = await readFile(new URL(`../${FILE}`, import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../supabase/migrations-manifest.json", import.meta.url), "utf8"));
 const code = sql.split("\n").filter(line => !line.trim().startsWith("--")).join("\n");
 
-test("migration is tracked after the previous newest migration", () => {
+test("migration is tracked after the migration that was newest before it", () => {
   const index = manifest.files.indexOf(FILE.replace("supabase/", ""));
   assert.ok(index > 0, "manifest must list the migration");
-  assert.equal(index, manifest.files.length - 1, "it must be the newest entry");
+  assert.equal(index, manifest.files.indexOf("migrations/20260930_character_share_links.sql") + 1, "it must directly follow the previous migration");
 });
 
 test("trigger function skips the bump only for a thumbnail-only update", () => {
