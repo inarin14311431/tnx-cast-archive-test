@@ -1,18 +1,18 @@
 # 現在地 / Current State
 
-最終更新: 2026-10-16
+最終更新: 2026-10-17
 
 AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショット。時点情報
 なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。固定のSHAやPR番号はこの資料にだけ置く。
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `be45d1e`(PR #574 マージ点, 2026-10-16)。画面比較の基準ブランチ
+- 検証repo main: `bd0e2f8`(PR #578 マージ点, 2026-10-17)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `37f4861`(同期PR #213 マージ点)。検証 #575 までのruntimeを同期済み。検証 `be45d1e` と
+- 本番repo main: `b45ea29`(同期PR #214 マージ点)。検証 #577 までのruntimeを同期済み。検証 `bd0e2f8` と
   本番mainの `js/`・`css-next/`・`config/`・`supabase/`・`assets/`・ルートの `*.html` の差分が0であることを
-  実ファイルで確認した(2026-10-16)。
+  #214 の作成時に実ファイルで確認した(2026-10-17。#578 は資料のみの変更)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -56,6 +56,10 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     本番へ同期したのは `supabase/` の2ファイルだけ(下の本番 #213)
   - 本番 #213(`37f4861`): 検証 #575 の migration `20261016_characters_updated_at_ignore_thumbnail.sql` と
     `supabase/migrations-manifest.json` の2ファイルだけ(repo上の履歴を揃えた。DBは適用済みで、このPRではDBを触っていない)
+  - (検証のみ)#577: スナップショット復元で `character_sheet_url` と `ofc_details` が戻らない不具合の修正。
+    migration `20261017_restore_snapshot_via_ofc_save.sql` とテスト。runtimeの変更はなく、#578 は適用済みにした資料更新
+  - 本番 #214(`b45ea29`): 検証 #577 の migration と `supabase/migrations-manifest.json` の2ファイルだけ
+    (repo上の履歴を揃えた。DBは検証側で適用済みで、このPRではDBを触っていない)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - いずれも共有Supabase/DBの変更は含まない
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
