@@ -7,10 +7,10 @@ const sql = await readFile(new URL(`../${FILE}`, import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../supabase/migrations-manifest.json", import.meta.url), "utf8"));
 const code = sql.split("\n").filter(line => !line.trim().startsWith("--")).join("\n");
 
-test("migration is tracked as the newest entry", () => {
+test("migration is tracked right after the migration that preceded it", () => {
   const index = manifest.files.indexOf(FILE.replace("supabase/", ""));
   assert.ok(index > 0, "manifest must list the migration");
-  assert.equal(index, manifest.files.length - 1, "it must be the newest entry");
+  assert.equal(manifest.files[index - 1], "migrations/20261016_characters_updated_at_ignore_thumbnail.sql", "it must stay appended after the previous newest entry");
 });
 
 test("restore goes through save_character_bundle_with_ofc, not save_character_bundle", () => {

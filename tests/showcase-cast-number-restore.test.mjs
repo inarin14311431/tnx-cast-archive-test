@@ -8,10 +8,10 @@ import { renderShowcase } from "../js/showcase-output-html.js";
 test("CAST No falls back to the cast order and survives the published slot label", () => {
   assert.equal(normalizeCastNumber("０５"), "5");
   assert.equal(normalizeCastNumber("0"), "");
-  assert.equal(normalizeCastNumber("100"), "");
+  assert.equal(normalizeCastNumber("7"), "");
   assert.equal(formatCastNumber("", 2), "03");
-  assert.equal(formatCastNumber("7", 0), "07");
-  assert.equal(castNumberFromSlot("CAST 07", 0), 7);
+  assert.equal(formatCastNumber("6", 0), "06");
+  assert.equal(castNumberFromSlot("CAST 06", 0), 6);
   assert.equal(castNumberFromSlot("", 1), 2);
   assert.equal(findDuplicateCastNumber(["", "1"]), 1);
   assert.equal(findDuplicateCastNumber(["3", "", ""]), 3);
