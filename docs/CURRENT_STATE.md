@@ -7,11 +7,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `1c83520`(PR #581 マージ点, 2026-10-17)。画面比較の基準ブランチ
+- 検証repo main: `31aaefd`(PR #583 マージ点, 2026-10-17)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `d75389a`(同期PR #215 マージ点)。検証 #581 までのruntimeを同期済み。同期前の本番mainと検証
-  `bd0e2f8` の対象20ファイルが一致することを実ファイルで確認してからコピーした(2026-10-17)。
+- 本番repo main: `f3ffb1c`(同期PR #216 マージ点)。検証 #583 までのruntimeを同期済み。同期前の本番mainと検証
+  `1c83520` の対象2ファイルが一致することを実ファイルで確認してからコピーした(2026-10-17)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -67,6 +67,8 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   - 本番 #215(`d75389a`): 検証 #580(アクト紹介生成: CAST No変更・未登録キャストの倉庫URL取込・再編集時の
     キャスト欠落)・#581(アクト履歴のCAST No.を生成画面に合わせる)。runtimeは20ファイル(新規5、migration含む)。
     本番側の既存テスト5ファイルは `?v=` 前提のため検証の更新済み版に揃えた(新規テストは同期していない)
+  - 本番 #216(`f3ffb1c`): 検証 #583(ユドナリウム出力のアクトデータにCS欄を追加)。`js/udonarium-export.js` と
+    `js/supabase-client.js`(読み込みの `?v=2`)。本番側の既存テスト1ファイルを検証の更新済み版に揃えた
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
