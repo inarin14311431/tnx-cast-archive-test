@@ -1,5 +1,6 @@
 import { renderShowcase, getStyles, getStyleNames, formatHandle, formatFullName, obfuscatePublicId } from "./showcase-output-html.js?v=4";
-import { normalizeCastNumber, formatCastNumber, findDuplicateCastNumber, MAX_CAST_NUMBER } from "./showcase-cast-number.js?v=1";
+import { normalizeCastNumber, formatCastNumber, resolveCastNumber, findDuplicateCastNumber, MAX_CAST_NUMBER } from "./showcase-cast-number.js?v=1";
+import { syncActCastOrders } from "./showcase-cast-order-sync.js?v=1";
 import { escapeHtml, escapeAttribute } from "./dom-escape.js?v=2";
 import { normalizeShowcaseTheme } from "./showcase-output-css.js?v=2";
 import { supabase } from "./supabase-client.js";
@@ -554,6 +555,8 @@ async function registerHistoryOnly() {
       .filter(item => !item.manual && item.character.id)
       .map(item => item.character.id);
     if (!participantIds.length) throw new Error("履歴へ登録するには、公開または自分の非公開キャストを1名以上選択してください。");
+    const duplicateNumber = findDuplicateCastNumber(selectedCasts.map(item => item.castNo));
+    if (duplicateNumber) throw new Error(`CAST No ${String(duplicateNumber).padStart(2, "0")} が重複しています。番号を変更してください。`);
 
     const slug = normalizeSlug(elements.publishSlug?.value);
     if (!slug) throw new Error("アクト識別名を半角英数字とハイフンで入力してください。");
@@ -572,12 +575,18 @@ async function registerHistoryOnly() {
     });
     if (error) throw new Error(translateHistoryError(error));
     if (!actId) throw new Error("登録したアクト履歴を確認できませんでした。");
+    const castOrders = selectedCasts
+      .map((item, index) => ({ item, castOrder: resolveCastNumber(item.castNo, index) }))
+      .filter(({ item }) => !item.manual && item.character.id)
+      .map(({ item, castOrder }) => ({ characterId: item.character.id, castOrder }));
+    const castOrderSync = await syncActCastOrders(supabase, slug, castOrders);
 
     const privateCount = selectedCasts.filter(item => item.source === "private").length;
     const manualCount = selectedCasts.filter(item => item.manual).length;
     const privateNote = privateCount ? ` 非公開キャスト${privateCount}名を含みます。` : "";
     const manualNote = manualCount ? ` 手動追加キャスト${manualCount}名は履歴対象外です。` : "";
-    setGeneratorStatus(`GitHub Pagesへ公開せず、参加アクト履歴へ登録しました。${privateNote}${manualNote}`, "success");
+    const castOrderNote = castOrderSync.ok ? "" : " 履歴のCAST No.は更新できませんでした。";
+    setGeneratorStatus(`GitHub Pagesへ公開せず、参加アクト履歴へ登録しました。${privateNote}${manualNote}${castOrderNote}`, "success");
   } catch (error) {
     console.error(error);
     setGeneratorStatus(error?.message || "参加アクト履歴の登録に失敗しました。", "error");

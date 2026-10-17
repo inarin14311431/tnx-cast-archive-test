@@ -1,6 +1,6 @@
 // CAST No: the number a cast is shown under in an act showcase. Empty = its position (1-based).
 // Shared by the generator, the standalone output and both published views so they never disagree.
-export const MAX_CAST_NUMBER = 99;
+export const MAX_CAST_NUMBER = 6; // act_participants.cast_order is constrained to 1..6
 
 export function normalizeCastNumber(value) {
   const digits = String(value ?? "").normalize("NFKC").replace(/[^0-9]/g, "");
