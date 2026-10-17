@@ -21,9 +21,13 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   確認し、rollbackした。`supabase_migrations` の履歴テーブルには記録されていない(適用は `apply_migration` が
   タイムアウトしたため、同じDDLを `execute_sql` で個別に実行した。トリガーの付け替えだけは `drop trigger` の代わりに
   `create or replace trigger`。結果の定義は同じ)。ロールバックはmigration先頭のコメント。
-- DB: migration `20261017_restore_snapshot_via_ofc_save.sql`(`restore_character_snapshot` を
-  `save_character_bundle_with_ofc` 経由にし、復元で `character_sheet_url` と `ofc_details` が戻るようにする)は
-  **repoにだけある。実DBには未適用**(オーナーの確認後に適用する)。適用したらこの項を「適用済み」に書き換える。
+- DB: migration `20261017_restore_snapshot_via_ofc_save.sql` は**適用済み**(2026-10-17、共有DB
+  `koprmbkoftuuffslhsvt`)。`restore_character_snapshot` が `save_character_bundle_with_ofc` 経由になり、復元で
+  `character_sheet_url` と `ofc_details` が戻る(`character_sheet_url` キーのない古いスナップショットは現在のURLを維持)。
+  適用後に、関数が `save_character_bundle_with_ofc` を呼ぶ定義であること、`security invoker`・search_path・ACL
+  (authenticated / service_role)が変わっていないことを確認した。`supabase_migrations` の履歴テーブルには記録されていない
+  (`execute_sql` で同じDDLを実行した)。復元の実データでの動作確認はしていない(ライブのスナップショットを復元すると
+  キャラクターを上書きするため)。ロールバックは `supabase/11_character_snapshots.sql` の旧本体を再作成。
 - 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
   バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
   `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
