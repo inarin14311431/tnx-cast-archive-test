@@ -7,8 +7,9 @@ const sql = await readFile(new URL(`../${FILE}`, import.meta.url), "utf8");
 const manifest = JSON.parse(await readFile(new URL("../supabase/migrations-manifest.json", import.meta.url), "utf8"));
 const code = sql.split("\n").filter(line => !line.trim().startsWith("--")).join("\n");
 
-test("migration is the last manifest entry and documents rollback", () => {
-  assert.equal(manifest.files.at(-1), FILE.replace("supabase/", ""));
+test("migration is registered after the cast order migration and documents rollback", () => {
+  const index = manifest.files.indexOf(FILE.replace("supabase/", ""));
+  assert.ok(index > manifest.files.indexOf("migrations/20261017_act_participant_cast_orders.sql"));
   assert.match(sql, /ロールバック手順/);
 });
 

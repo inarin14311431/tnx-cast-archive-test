@@ -34,7 +34,8 @@ test("cast order RPC is owner-scoped and respects the 1..6 constraint", async ()
   assert.match(sql, /revoke all on function public\.set_act_participant_cast_orders_for_current_user\(text, jsonb\) from anon/);
   assert.match(sql, /grant execute on function public\.set_act_participant_cast_orders_for_current_user\(text, jsonb\) to authenticated/);
   const manifest = JSON.parse(await read("supabase/migrations-manifest.json"));
-  assert.equal(manifest.files.at(-1), "migrations/20261017_act_participant_cast_orders.sql");
+  const index = manifest.files.indexOf("migrations/20261017_act_participant_cast_orders.sql");
+  assert.ok(index > manifest.files.indexOf("migrations/20261017_restore_snapshot_via_ofc_save.sql"), "cast order migration must stay registered after the snapshot restore migration");
 });
 
 test("publish and history-only both synchronize CAST No after recording history", async () => {
