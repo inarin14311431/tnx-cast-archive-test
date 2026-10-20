@@ -20,14 +20,14 @@ test("mobile global visibility select offers unlisted and the load-time sync kee
   assert.match(mobileProfile, /<option value="unlisted">限定公開 \/ UNLISTED<\/option>/);
   assert.match(
     mobileProfile,
-    /global\.value=\["public","unlisted"\]\.includes\(original\.value\)\?original\.value:"private"/
+    /global\.value = \["public", "unlisted"\]\.includes\(original\.value\) \? original\.value : "private"/
   );
 });
 
 test("mobile save payload keeps whatever value the global visibility select carries (including unlisted)", () => {
   assert.match(
     mobileProfile,
-    /\$\("#mobile-global-visibility"\)\?\.addEventListener\("change",event=>\{const original=source\("visibility"\);if\(!original\|\|original\.value===event\.target\.value\)return;original\.value=event\.target\.value;notifyProfileChanged\(\);\}\);/
+    /\$\("#mobile-global-visibility"\)\?\.addEventListener\("change", event => \{\s*const original = source\("visibility"\);\s*if \(!original \|\| original\.value === event\.target\.value\) return;\s*original\.value = event\.target\.value;\s*notifyProfileChanged\(\);\s*\}\);/
   );
 });
 
