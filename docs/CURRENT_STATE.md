@@ -32,6 +32,14 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   (security definer、作成者本人のアクトの `act_participants.cast_order` だけ更新、anon不可を確認)。既存データは
   `20261017anoyuuhi` の1行(CAST 01→02)だけを個別に修正した。「履歴のみ登録」の過去分は正しい番号が残っていないため
   未修正(再登録で直る)。ロールバックはmigration先頭のコメント。
+- DB: migration `20261020_unlisted_bundle_troops_public_and_rls_initplan.sql` は**適用済み**(2026-10-20、共有DB
+  `koprmbkoftuuffslhsvt`、`apply_migration`。`supabase_migrations` に記録済み)。`get_unlisted_character_bundle` の
+  troops を `visibility = 'public'` のものだけにし、advisor `auth_rls_initplan` の35件を `ALTER POLICY` で
+  `(select auth.uid())` に書き換えた(条件の意味は不変)。適用後に次を確認した: advisor `auth_rls_initplan` が0件、
+  書き換え前の `auth.uid()` が残るポリシーが0件、関数に troops の公開条件が入っていて security definer・anon
+  実行権限が変わっていないこと、anon で読めるのは公開キャスト82件のみで非公開キャストの技能は0件、一般ユーザーは
+  自分のキャストと公開キャストを読め他人のスナップショットは0件。ロールバックはmigration先頭のコメント。
+  本番repoへのmigration・manifestの同期は、この変更(検証 #585)のマージ後に行う。
 - 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
   バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
   `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
