@@ -17,6 +17,7 @@ const STEPS = [
   "check:js",
   "audit:modulepreload",
   "audit:js-baseline",
+  "audit:colors",
   "audit:cache",
   "audit:modules",
   "audit:integrity",

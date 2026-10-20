@@ -47,6 +47,7 @@
   省略記号にする(`css-next/pages/cast-desktop-layout.css`)。ARCHIVE ID の列は縮めない。
 - 閲覧のタブ列と「コンボ」(技能表へ移るジャンプボタン。タブではない)の間の区切りは、最後のタブの右罫線の
   1本だけ。ジャンプボタン側に `::before` の線や左罫線を足して二重・三重にしない(`css-next/pages/cast.css`)。
+- 経験点チケット(`css-next/pages/experience-ticket.css`、`js/experience-ticket.js`)はテーマ非追従の固定配色(暗い背景＋金色)。トークンへの置き換えをしない(`audit:colors` の対象外)。
 
 ## 表の列順と幅
 
