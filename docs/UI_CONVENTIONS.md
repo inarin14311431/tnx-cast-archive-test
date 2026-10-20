@@ -20,6 +20,9 @@
 - データがないときは「日本語 + `<small>英字</small>`」の `<p class="empty-data">`。英語だけにしない。
   例: `コンボは登録されていません。<small>NO COMBO DATA</small>`。
 - 名前が空の神業は `未登録`(muted色、登録済みより細く)。
+- ハンドルが未登録のキャストは、代替文字(`NO HANDLE`・`ハンドル未登録`)を出さず空欄にする(アクト紹介の出力と同じ。`formatShowcaseHandle` は空文字を返す)。
+  ハンドルの行は要素を残して中身だけ空にし(`aria-hidden="true"`)、`min-height: 1lh` で1行分の高さを保つので、ハンドルの有無で名前の位置はずれない。
+  `js/handle-format.js` の `PLACEHOLDERS` は既存データの互換判定なので、`NO HANDLE`・`ハンドル未登録` を消さない。
 
 ## スタイルの印(◎ ●)
 
