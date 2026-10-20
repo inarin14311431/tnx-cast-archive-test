@@ -70,6 +70,7 @@ static auditは、ブラウザを起動せずに構造的な契約を検査す�
 - `audit:integrity` — runtime integrity
 - `audit:css` — CSS ownership / duplicate / prohibited patterns
 - `audit:themes` — theme registry / manifest / scope
+- `audit:colors` — 直書き色（#hex / rgb() / hsl()）の増加防止。ファイルごとの基準値は `scripts/hardcoded-colors-baseline.json`（検証repoのみ導入済み）
 - `audit:sheet` — PC editor runtime contract
 - `audit:mobile` — Mobile editor runtime contract
 - `audit:cast` — cast viewer runtime

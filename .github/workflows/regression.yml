@@ -26,6 +26,8 @@ jobs:
         run: npm run audit:modulepreload
       - name: Audit JavaScript baseline
         run: npm run audit:js-baseline
+      - name: Audit hardcoded colors
+        run: npm run audit:colors
       - name: Audit editor cache policy
         run: npm run audit:cache
       - name: Audit module dependency graph
