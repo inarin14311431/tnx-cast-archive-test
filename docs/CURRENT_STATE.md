@@ -7,11 +7,12 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `31aaefd`(PR #583 マージ点, 2026-10-17)。画面比較の基準ブランチ
+- 検証repo main: `0f21f73`(PR #585 マージ点, 2026-10-20)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `f3ffb1c`(同期PR #216 マージ点)。検証 #583 までのruntimeを同期済み。同期前の本番mainと検証
-  `1c83520` の対象2ファイルが一致することを実ファイルで確認してからコピーした(2026-10-17)。
+- 本番repo main: `59e4474`(同期PR #218 マージ点, 2026-10-20)。検証 #583 までのruntimeと検証 #585 までのmigrationを
+  同期済み。runtimeの同期(#216)では、同期前の本番mainと検証 `1c83520` の対象2ファイルが一致することを
+  実ファイルで確認してからコピーした(2026-10-17)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -39,7 +40,7 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   書き換え前の `auth.uid()` が残るポリシーが0件、関数に troops の公開条件が入っていて security definer・anon
   実行権限が変わっていないこと、anon で読めるのは公開キャスト82件のみで非公開キャストの技能は0件、一般ユーザーは
   自分のキャストと公開キャストを読め他人のスナップショットは0件。ロールバックはmigration先頭のコメント。
-  本番repoへのmigration・manifestの同期は、この変更(検証 #585)のマージ後に行う。
+  本番repoへのmigration・manifestの同期は本番 #218(下記)で済んでいる。
 - 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
   バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
   `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
@@ -77,6 +78,10 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     本番側の既存テスト5ファイルは `?v=` 前提のため検証の更新済み版に揃えた(新規テストは同期していない)
   - 本番 #216(`f3ffb1c`): 検証 #583(ユドナリウム出力のアクトデータにCS欄を追加)。`js/udonarium-export.js` と
     `js/supabase-client.js`(読み込みの `?v=2`)。本番側の既存テスト1ファイルを検証の更新済み版に揃えた
+  - (検証のみ)#585: migration `20261020_unlisted_bundle_troops_public_and_rls_initplan.sql`(適用済み。上記)とテスト。
+    runtimeの変更はない
+  - 本番 #218(`59e4474`): 検証 #585 の migration と `supabase/migrations-manifest.json` の2ファイルだけ
+    (repo上の履歴を揃えた。DBは検証側で適用済みで、このPRではDBを触っていない)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
