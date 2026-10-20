@@ -7,12 +7,12 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `0f21f73`(PR #585 マージ点, 2026-10-20)。画面比較の基準ブランチ
+- 検証repo main: `6f21552`(PR #588 マージ点, 2026-10-20)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `59e4474`(同期PR #218 マージ点, 2026-10-20)。検証 #583 までのruntimeと検証 #585 までのmigrationを
-  同期済み。runtimeの同期(#216)では、同期前の本番mainと検証 `1c83520` の対象2ファイルが一致することを
-  実ファイルで確認してからコピーした(2026-10-17)。
+- 本番repo main: `7f2b4f5`(同期PR #220 マージ点, 2026-10-20)。検証 #588 までのruntimeとmigrationを同期済み。
+  同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
+  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -82,6 +82,15 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     runtimeの変更はない
   - 本番 #218(`59e4474`): 検証 #585 の migration と `supabase/migrations-manifest.json` の2ファイルだけ
     (repo上の履歴を揃えた。DBは検証側で適用済みで、このPRではDBを触っていない)
+  - (検証のみ)#587: 動作を変えないリファクタリング。`experience-ticket.js`・`sheet-mobile-profile.js` の独自エスケープ関数を
+    `js/dom-escape.js` に統一し、`experience.js`・`sheet-mobile-profile.js` の詰め込まれた行を展開(構文木は不変)。
+    `js/cast-cyberscan.js`(通常スクリプトで `import` 不可)と `js/showcase-output-css.js`(出力のSHA256をテストが固定)は対象外
+  - 本番 #219(`e29059a`): 検証 #587 のruntime 7ファイル(`?v=` と modulepreload を含む)。本番側の既存テスト4件を
+    検証の更新済み版と同じ差分で直した(検証のテストファイルはコピーしていない)
+  - (検証のみ)#588: `showcases/` の古いサンプル4ファイルを削除(URL共有の実績なし)。`showcases/` を読んでいた
+    `tests/showcase-name-normalization.test.mjs` は `renderShowcase()` の出力を検証する形に置き換え、
+    `tests/e2e/test-suites.json` の `showcases/**` を外し、`docs/ACT_SHOWCASE_LAYERS.md` を直した
+  - 本番 #220(`7f2b4f5`): 検証 #588 と同じ削除と同じ3つの参照箇所の修正(本番側の対象テストは検証と同一内容だった)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
@@ -121,6 +130,8 @@ act-showcaseの「本体が作ったものを削除して作り直す」重複(`
 
 ## 5. 既知の制限
 
+- `js/cast-cyberscan.js` は独自の `escapeHtml` を持ったまま(`cast.html` が `type="module"` なしの通常スクリプトで読むため
+  `js/dom-escape.js` を `import` できない。モジュール化すると実行が遅延し strict mode になり、スキャン演出のタイミングが変わりうる)。
 - `js/showcase-guests.js`は対象外(別テーブル`act_showcase_guests`、`image_thumbnail_url`列なし)。
 - 閲覧のスタイル技能表は、1200px未満(タブレット等)では従来どおり枠内で横スクロールする(#548 は1200px以上が対象)。
   アウトフィットのように、タブレットでは解説を項目の下の行へ移す方式が使える(未着手)。
