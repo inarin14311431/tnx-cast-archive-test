@@ -8,12 +8,15 @@ import path from "node:path";
 const CSS_EXCLUDED_DIRS = ["css-next/themes/", "css-next/foundation/", "css-next/tokens/"];
 const JS_EXCLUDED_DIRS = ["js/vendor/"];
 const JS_EXCLUDED_FILES = ["js/style-colors.js"];
+// The experience ticket is a fixed design (dark background + gold) that deliberately ignores the theme.
+const FIXED_DESIGN_FILES = ["css-next/pages/experience-ticket.css", "js/experience-ticket.js"];
 
 const HEX = /(?<![\w&])#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])/gi;
 const FUNCTIONAL = /(?<![\w-])(?:rgb|hsl)a?\(/gi;
 
 export function isTargetFile(relativePath) {
   if (relativePath.split("/").some(segment => /showcase/i.test(segment))) return false;
+  if (FIXED_DESIGN_FILES.includes(relativePath)) return false;
   if (relativePath.startsWith("css-next/") && relativePath.endsWith(".css")) {
     return !CSS_EXCLUDED_DIRS.some(directory => relativePath.startsWith(directory));
   }

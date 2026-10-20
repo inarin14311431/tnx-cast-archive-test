@@ -33,12 +33,13 @@ test("a color in JS code after a URL string is still counted", () => {
   assert.equal(countHardcodedColors('const u = "https://example.test/"; const c = "#ffffff";', "js"), 1);
 });
 
-test("scope: theme/foundation/token CSS, showcase files, vendor and style-colors are excluded", () => {
+test("scope: theme/foundation/token CSS, showcase files, vendor, style-colors and the fixed-design ticket are excluded", () => {
   for (const excluded of [
     "css-next/themes/presets.css", "css-next/foundation/base.css", "css-next/tokens/core.css",
-    "css-next/pages/act-showcase.css", "js/showcase-output-css.js", "js/act-showcase-page.js", "js/vendor/x.js", "js/style-colors.js"
+    "css-next/pages/act-showcase.css", "js/showcase-output-css.js", "js/act-showcase-page.js", "js/vendor/x.js", "js/style-colors.js",
+    "css-next/pages/experience-ticket.css", "js/experience-ticket.js"
   ]) assert.equal(isTargetFile(excluded), false, excluded);
-  for (const included of ["css-next/pages/sheet-mobile.css", "css-next/components/help.css", "js/cast-sns-card.js", "js/experience-ticket.js"]) {
+  for (const included of ["css-next/pages/sheet-mobile.css", "css-next/components/help.css", "js/cast-sns-card.js", "js/udonarium-export.js"]) {
     assert.equal(isTargetFile(included), true, included);
   }
   assert.equal(isTargetFile("tests/foo.js"), false);

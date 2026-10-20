@@ -23,7 +23,6 @@
     "css-next/pages/cast-transfer.css": 2,
     "css-next/pages/cast-troop-modal.css": 4,
     "css-next/pages/cast.css": 18,
-    "css-next/pages/experience-ticket.css": 36,
     "css-next/pages/mobile-transfer.css": 1,
     "css-next/pages/sheet-mobile-import.css": 3,
     "css-next/pages/sheet-mobile-ui.css": 3,
@@ -36,7 +35,6 @@
     "css-next/pages/troops-registry.css": 7,
     "css-next/pages/troops.css": 1,
     "js/cast-sns-card.js": 40,
-    "js/experience-ticket.js": 12,
     "js/udonarium-export.js": 3
   }
 }
