@@ -7,10 +7,10 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `7713ec8`(PR #599 マージ点, 2026-10-21)。画面比較の基準ブランチ
+- 検証repo main: `6747315`(PR #601 マージ点, 2026-10-21)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `790ecab`(同期PR #226 マージ点, 2026-10-21)。検証 #599 までのruntimeとmigrationを同期済み。
+- 本番repo main: `3007d48`(同期PR #228 マージ点, 2026-10-21)。検証 #601 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
   (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル)。
 - 未同期のruntime: なし。
@@ -122,9 +122,16 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   - 本番 #225(`a2a0e2c`): 検証 #597 の同じspec(本番の同ファイルは検証の修正前と同一だった)。本番のCI(Act showcase E2E)も通った
   - (検証のみ)#599: 上の migration `20261021_drop_migration_backup_schemas.sql` とテスト。runtimeの変更はない
   - 本番 #226(`790ecab`): 検証 #599 の migration と `supabase/migrations-manifest.json` の2ファイルだけ(repo上の履歴を揃えた)
-  - (検証のみ)migration 20261021 の修正: `DO` ブロックの `c.relkind` を `c.relkind::text` に直し、内容テストに検査を足した。
+  - (検証のみ)#600(`6533774`): migration 20261021 の修正: `DO` ブロックの `c.relkind` を `c.relkind::text` に直し、内容テストに検査を足した。
     実DBへ適用した内容にファイルを合わせる修正
-  - 本番 #227: 検証の同じ修正(`20261021_drop_migration_backup_schemas.sql` の1ファイル。manifest は変更なし)
+  - 本番 #227(`f0d4e97`): 検証の同じ修正(`20261021_drop_migration_backup_schemas.sql` の1ファイル。manifest は変更なし)
+  - (検証のみ)#601: キャスト画像・サムネイル(PC `js/sheet-image.js`・モバイル `js/sheet-mobile-image.js`)とアクト紹介のゲスト画像
+    (`js/showcase-guests.js`)のアップロード時の `cacheControl` を `"31536000"`(1年)にした(変更前は 86400 / 3600)。保存パスは毎回新しく
+    (`Date.now()` / `crypto.randomUUID()`)、5か所の `upload()` はすべて `upsert: false` で、ブラウザのJSに上書きはないため、古い画像が残る
+    問題は起きない。**既存の画像は変更されず、これから新しくアップロードする画像にだけ効く**。長い保持の副作用として、削除した画像が、
+    キャッシュしているブラウザ・CDN には最大1年間見えることがある(CDN 側の削除の反映は未確認)。`scripts/regenerate-thumbnails.mjs` の
+    `"86400"` は対象外で、そのまま。新規テスト `tests/storage-upload-cache-control.test.mjs` は本番へ同期しない
+  - 本番 #228(`3007d48`): 検証 #601 のruntime 8ファイル(JS 5・HTML 3)。本番側の既存テスト2件は `?v=` の番号だけ更新
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
