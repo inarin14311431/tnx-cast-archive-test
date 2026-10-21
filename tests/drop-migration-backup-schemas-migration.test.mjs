@@ -51,6 +51,9 @@ test("the two schemas are dropped with restrict only after an emptiness check th
   assert.match(code, /n\.nspname in \('internal_archive', 'migration_backup_20260901'\)/);
   for (const catalog of ["pg_class", "pg_proc", "pg_type"]) assert.ok(code.includes(catalog), catalog);
   assert.match(code, /if remaining is not null then/);
+  // relkind is a "char"; "text || char" fails with 42725 (operator is not unique), so it must be cast to text.
+  assert.match(code, /' \(relkind ' \|\| c\.relkind::text \|\| '\)'/);
+  assert.doesNotMatch(code, /\|\| c\.relkind \|\|/);
 });
 
 test("no cascade and no touching of the public schema", () => {

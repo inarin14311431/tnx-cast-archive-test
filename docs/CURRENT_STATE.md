@@ -7,10 +7,10 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `14618b6`(PR #597 マージ点, 2026-10-21)。画面比較の基準ブランチ
+- 検証repo main: `7713ec8`(PR #599 マージ点, 2026-10-21)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `a2a0e2c`(同期PR #225 マージ点, 2026-10-21)。検証 #597 までのruntimeとmigrationを同期済み。
+- 本番repo main: `790ecab`(同期PR #226 マージ点, 2026-10-21)。検証 #599 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
   (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル)。
 - 未同期のruntime: なし。
@@ -41,9 +41,16 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   実行権限が変わっていないこと、anon で読めるのは公開キャスト82件のみで非公開キャストの技能は0件、一般ユーザーは
   自分のキャストと公開キャストを読め他人のスナップショットは0件。ロールバックはmigration先頭のコメント。
   本番repoへのmigration・manifestの同期は本番 #218(下記)で済んでいる。
-- DB: migration `20261021_drop_migration_backup_schemas.sql` は**repoにだけある(実DBへは未適用)**。ロールバック用のバックアップ
-  (`internal_archive` の2表、`migration_backup_20260901` の2表と関数 `parse_legacy_style_detail`)を個別に drop し、空を確かめて
-  から両スキーマを drop する。**削除は元に戻せない**。適用は明示的な確認を取ってから行い、適用したらこの項を「適用済み」に更新する。
+- DB: migration `20261021_drop_migration_backup_schemas.sql` は**適用済み**(2026-10-21、共有DB `koprmbkoftuuffslhsvt`)。
+  ロールバック用のバックアップ(`internal_archive` の2表、`migration_backup_20260901` の2表と関数 `parse_legacy_style_detail`)を
+  個別に drop し、空を確かめてから両スキーマを drop した。**削除は元に戻せない(ロールバック不可)**。
+  - 適用の経緯: 利用者が Supabase SQL Editor で修正後のSQLを実行した。`apply_migration` は破壊的操作の確認に応答できず
+    タイムアウト/キャンセルになったため。`supabase_migrations` の履歴テーブルには記録されていない。
+  - 1回目は `DO` ブロックの `c.relkind`(`"char"` 型)が `text || "char"` で演算子が一意に決まらず 42725 で失敗し、トランザクション
+    ごと取り消された(DBは変化なし)。`c.relkind::text` に直して適用した。repo のファイルは、適用した内容に合わせて直してある
+    (検証の修正PRと本番 #227)。
+  - 適用後の確認: 両スキーマが消えた。`public` の件数は適用前と同じ(characters 163 / character_skills 4,023 /
+    character_outfits 1,351 / character_snapshots 28)。advisor の `no_primary_key` 4件が解消した(消えたバックアップ表の分)。
 - 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
   バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
   `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
@@ -113,6 +120,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     反転の予約時刻(CSS transition の `startTime + delay`)で間隔を厳密に検査し、フレームで見た値には最長フレーム間隔を許容に足す。
     runtimeの変更はない。CPU負荷下で、修正前は21回中3回落ち、修正後は100回すべて成功
   - 本番 #225(`a2a0e2c`): 検証 #597 の同じspec(本番の同ファイルは検証の修正前と同一だった)。本番のCI(Act showcase E2E)も通った
+  - (検証のみ)#599: 上の migration `20261021_drop_migration_backup_schemas.sql` とテスト。runtimeの変更はない
+  - 本番 #226(`790ecab`): 検証 #599 の migration と `supabase/migrations-manifest.json` の2ファイルだけ(repo上の履歴を揃えた)
+  - (検証のみ)migration 20261021 の修正: `DO` ブロックの `c.relkind` を `c.relkind::text` に直し、内容テストに検査を足した。
+    実DBへ適用した内容にファイルを合わせる修正
+  - 本番 #227: 検証の同じ修正(`20261021_drop_migration_backup_schemas.sql` の1ファイル。manifest は変更なし)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
