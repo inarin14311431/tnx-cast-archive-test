@@ -41,6 +41,9 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   実行権限が変わっていないこと、anon で読めるのは公開キャスト82件のみで非公開キャストの技能は0件、一般ユーザーは
   自分のキャストと公開キャストを読め他人のスナップショットは0件。ロールバックはmigration先頭のコメント。
   本番repoへのmigration・manifestの同期は本番 #218(下記)で済んでいる。
+- DB: migration `20261021_drop_migration_backup_schemas.sql` は**repoにだけある(実DBへは未適用)**。ロールバック用のバックアップ
+  (`internal_archive` の2表、`migration_backup_20260901` の2表と関数 `parse_legacy_style_detail`)を個別に drop し、空を確かめて
+  から両スキーマを drop する。**削除は元に戻せない**。適用は明示的な確認を取ってから行い、適用したらこの項を「適用済み」に更新する。
 - 既存サムネイルの作り直し: 全112件を完了(2026-10-16)。最初の実行(migration適用前)で `updated_at` が書き換わったが、
   バックアップから復元済み。再実行は不要。以後 `scripts/regenerate-thumbnails.mjs` を使うときは
   `docs/THUMBNAIL_REGENERATION.md` の手順(`--limit` で少数から)に従う。
