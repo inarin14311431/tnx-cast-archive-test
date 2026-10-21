@@ -1,18 +1,18 @@
 # 現在地 / Current State
 
-最終更新: 2026-10-17
+最終更新: 2026-10-21
 
 AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショット。時点情報
 なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。固定のSHAやPR番号はこの資料にだけ置く。
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `6f21552`(PR #588 マージ点, 2026-10-20)。画面比較の基準ブランチ
+- 検証repo main: `e707903`(PR #594 マージ点, 2026-10-21)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `7f2b4f5`(同期PR #220 マージ点, 2026-10-20)。検証 #588 までのruntimeとmigrationを同期済み。
+- 本番repo main: `fadd58c`(同期PR #223 マージ点, 2026-10-21)。検証 #594 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
-  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル)。
+  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#223: それぞれ直前の検証mainの対象ファイル)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -91,6 +91,16 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     `tests/showcase-name-normalization.test.mjs` は `renderShowcase()` の出力を検証する形に置き換え、
     `tests/e2e/test-suites.json` の `showcases/**` を外し、`docs/ACT_SHOWCASE_LAYERS.md` を直した
   - 本番 #220(`7f2b4f5`): 検証 #588 と同じ削除と同じ3つの参照箇所の修正(本番側の対象テストは検証と同一内容だった)
+  - (検証のみ)#592: ハードコード色の `audit:colors`(`scripts/hardcoded-colors-lib.mjs` ほか)とテスト。モバイルの状態色をトークン化
+  - 本番 #221(`5749915`): 検証 #592 のruntime(状態色のトークン化)。`audit:colors` のscript・テストは同期していない
+  - (検証のみ)#593: 編集・取込画面の色のトークン化(PR5c)。`audit:colors` の基準値の更新とテスト
+  - 本番 #222(`38d1044`): 検証 #593 のruntime
+  - (検証のみ)#594: ハンドルが空のとき、`@` だけが残らないよう表示を出さず `aria-hidden` にする
+    (`formatHandle` は空文字を返す。クイックシート・アーカイブ・アカウント・生成画面のカード)。ハンドル行は
+    `min-height: 1lh` で高さを保つ。クイックシートの出力が変わったためSHA256の基準値(`empty`)を差し替えた。
+    モバイル閲覧(`js/cast-mobile.js`)はハンドルがなければ要素ごと出さない作りで対応不要
+  - 本番 #223(`fadd58c`): 検証 #594 のruntime 19ファイル(JS 7・CSS 8・HTML 4)。本番側の既存テスト9件を検証の更新済み版と
+    同じ差分で直した(検証のテストファイルはコピーしていない)
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
@@ -130,6 +140,11 @@ act-showcaseの「本体が作ったものを削除して作り直す」重複(`
 
 ## 5. 既知の制限
 
+- 不安定なテスト: `tests/e2e/act-showcase-assign-cards.spec.js` の ASSIGN(`flip=fast`)は、カード反転の間隔の実測が
+  許容範囲(目標±45ms)から数十msずれて落ちることがある(検証 #592・本番 #223 の2回。再実行で通った)。修正は別PRで後日。
+- statistics-bureau テーマの `--color-warning` / `--color-success` は淡い色のまま(ライト背景でのコントラスト比 約1.8 / 1.6)。
+  `css-next/themes/base-ui.css` の `:root:not([data-theme=...])` の列挙に statistics-bureau が含まれず、テーマ側の定義が
+  上書きされているため。統計局テーマの改善は保留中で、直していない。
 - `js/cast-cyberscan.js` は独自の `escapeHtml` を持ったまま(`cast.html` が `type="module"` なしの通常スクリプトで読むため
   `js/dom-escape.js` を `import` できない。モジュール化すると実行が遅延し strict mode になり、スキャン演出のタイミングが変わりうる)。
 - `js/showcase-guests.js`は対象外(別テーブル`act_showcase_guests`、`image_thumbnail_url`列なし)。
