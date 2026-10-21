@@ -7,12 +7,12 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `e707903`(PR #594 マージ点, 2026-10-21)。画面比較の基準ブランチ
+- 検証repo main: `14618b6`(PR #597 マージ点, 2026-10-21)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `fadd58c`(同期PR #223 マージ点, 2026-10-21)。検証 #594 までのruntimeとmigrationを同期済み。
+- 本番repo main: `a2a0e2c`(同期PR #225 マージ点, 2026-10-21)。検証 #597 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
-  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#223: それぞれ直前の検証mainの対象ファイル)。
+  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -101,6 +101,15 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     モバイル閲覧(`js/cast-mobile.js`)はハンドルがなければ要素ごと出さない作りで対応不要
   - 本番 #223(`fadd58c`): 検証 #594 のruntime 19ファイル(JS 7・CSS 8・HTML 4)。本番側の既存テスト9件を検証の更新済み版と
     同じ差分で直した(検証のテストファイルはコピーしていない)
+  - (検証のみ)#596: キャスト閲覧(`cast.css`・`cast-mobile.css`・`cast-mobile-combos.css`)の直書き色のトークン化(PR5d)。
+    `audit:colors` は 190→161。人物画像ラベルとスマホのコンボ使用回数は、ライト系3テーマで読めなかった(コントラスト比 1.6〜2.1)のが
+    4.0 以上になった。残した色(影・コンボの金・押下中のピンク・クイックシート背景の黒との混色・印刷の白)は検証 #596 の本文。
+    `audit:colors` の基準値と新規テスト `tests/cast-view-theme-tokens.test.mjs` は本番へ同期しない
+  - 本番 #224(`f43339a`): 検証 #596 のruntime 5ファイル(CSS 4・`cast.html`)。本番側の既存テスト3件は `cast-entry.css?v=` の番号だけ更新
+  - (検証のみ)#597: `act-showcase-assign-cards.spec.js` の ASSIGN(`flip=fast`)がタイミング誤差で落ちる件の修正。
+    反転の予約時刻(CSS transition の `startTime + delay`)で間隔を厳密に検査し、フレームで見た値には最長フレーム間隔を許容に足す。
+    runtimeの変更はない。CPU負荷下で、修正前は21回中3回落ち、修正後は100回すべて成功
+  - 本番 #225(`a2a0e2c`): 検証 #597 の同じspec(本番の同ファイルは検証の修正前と同一だった)。本番のCI(Act showcase E2E)も通った
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
@@ -140,8 +149,9 @@ act-showcaseの「本体が作ったものを削除して作り直す」重複(`
 
 ## 5. 既知の制限
 
-- 不安定なテスト: `tests/e2e/act-showcase-assign-cards.spec.js` の ASSIGN(`flip=fast`)は、カード反転の間隔の実測が
-  許容範囲(目標±45ms)から数十msずれて落ちることがある(検証 #592・本番 #223 の2回。再実行で通った)。修正は別PRで後日。
+- `tests/e2e/act-showcase-assign-cards.spec.js` の ASSIGN は、カード反転の間隔の検査が CI の負荷で落ちることがあった(検証 #592・
+  本番 #223)が、検証 #597・本番 #225 で直した。再び落ちたら、予約時刻(`log.scheduled`)の検査と、フレームで見た値(`log.maxFrame`
+  を許容に足している)のどちらが落ちたかを見分ける。前者なら演出の遅れ、後者なら計測の粗さ。
 - statistics-bureau テーマの `--color-warning` / `--color-success` は淡い色のまま(ライト背景でのコントラスト比 約1.8 / 1.6)。
   `css-next/themes/base-ui.css` の `:root:not([data-theme=...])` の列挙に statistics-bureau が含まれず、テーマ側の定義が
   上書きされているため。統計局テーマの改善は保留中で、直していない。
