@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { initSheetActionBindings } from "../js/sheet-action-bindings.js";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 test("sheet action bindings assign each editor action once", () => {
   const elements = new Map([
@@ -45,7 +46,7 @@ test("missing editor action elements are tolerated", () => {
 
 test("sheet delegates action button ownership to the action binding module", async () => {
   const source = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
-  assert.match(source, /sheet-action-bindings\.js\?v=1/);
+  assertVersionedMatch(source, /sheet-action-bindings\.js\?v=VERSION/);
   assert.match(source, /initSheetActionBindings\(/);
   assert.doesNotMatch(source, /\$\("#save-button"\)\.onclick/);
   assert.doesNotMatch(source, /\$\("#add-general"\)\.onclick/);

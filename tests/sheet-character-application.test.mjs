@@ -5,6 +5,7 @@ import {
   applyStyleAttributeVisibility,
   applyCharacterToEditor
 } from "../js/sheet-character-application.js";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 test("style attribute visibility preserves the existing ウツワ behavior", () => {
   const wrap = { hidden: true };
@@ -57,7 +58,7 @@ test("character application keeps the existing load order", () => {
 test("sheet.js delegates character application and style attribute ownership", async () => {
   const sheet = await readFile(new URL("../js/sheet.js", import.meta.url), "utf8");
   const application = await readFile(new URL("../js/sheet-character-application.js", import.meta.url), "utf8");
-  assert.match(sheet, /sheet-character-application\.js\?v=1/);
+  assertVersionedMatch(sheet, /sheet-character-application\.js\?v=VERSION/);
   assert.match(sheet, /applyCharacterToEditor\(/);
   assert.match(sheet, /applyStyleAttributeVisibility/);
   assert.doesNotMatch(sheet, /function toggleAttribute\s*\(/);

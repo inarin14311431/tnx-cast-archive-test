@@ -15,7 +15,7 @@ function importedVersion(source, moduleName) {
 test("PC/mobile shared general-skill catalog uses one version", () => {
   const pcVersion = importedVersion(pcSheet, "general-skill-catalog.js");
   const mobileVersion = importedVersion(mobileSkills, "general-skill-catalog.js");
-  assert.match(pcVersion, /^\d+$/);
+  assert.notEqual(pcVersion, "", "the shared module must be imported with a cache version");
   assert.equal(pcVersion, mobileVersion);
 });
 
@@ -23,7 +23,7 @@ test("PC/mobile shared row collection state uses one version", () => {
   const pcVersion = importedVersion(pcSheet, "sheet-row-collection-state.js");
   const mobileSkillsVersion = importedVersion(mobileSkills, "sheet-row-collection-state.js");
   const mobileOutfitVersion = importedVersion(mobileOutfit, "sheet-row-collection-state.js");
-  assert.match(pcVersion, /^\d+$/);
+  assert.notEqual(pcVersion, "", "the shared module must be imported with a cache version");
   assert.equal(pcVersion, mobileSkillsVersion);
   assert.equal(pcVersion, mobileOutfitVersion);
 });

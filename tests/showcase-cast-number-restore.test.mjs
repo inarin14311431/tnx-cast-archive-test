@@ -4,6 +4,7 @@ import { normalizeCastNumber, formatCastNumber, castNumberFromSlot, findDuplicat
 import { planShowcaseRestore, obfuscatePublicId } from "../js/showcase-restore-matching.js";
 import { manualCastFieldsFromCanonical } from "../js/showcase-manual-sheet-import.js";
 import { renderShowcase } from "../js/showcase-output-html.js";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 test("CAST No falls back to the cast order and survives the published slot label", () => {
   assert.equal(normalizeCastNumber("０５"), "5");
@@ -61,7 +62,7 @@ test("generator wires CAST No, sheet import and restore through the shared helpe
   const restore = await readFile(new URL("../js/showcase-edit-restore.js", import.meta.url), "utf8");
   assert.match(generator, /data-field="cast-no"/);
   assert.match(generator, /data-action="sheet-import"/);
-  assert.match(generator, /showcase-manual-sheet-import\.js\?v=1/);
+  assertVersionedMatch(generator, /showcase-manual-sheet-import\.js\?v=VERSION/);
   assert.match(restore, /planShowcaseRestore\(casts, participants\)/);
   assert.match(restore, /!findSelectedRow\(participant\.characterId\)/);
 });

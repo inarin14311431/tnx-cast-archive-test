@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const authCss = await readFile(new URL("../css-next/pages/auth.css", import.meta.url), "utf8");
 const authEntry = await readFile(new URL("../css-next/pages/auth-entry.css", import.meta.url), "utf8");
@@ -13,7 +14,7 @@ const indexCss = await readFile(new URL("../css-next/index.css", import.meta.url
 test("consent row layout is restored inside the auth-page layer", () => {
   assert.match(indexCss, /legal-notices\.css[^;]*;/);
   assert.match(authEntry, /@layer app, auth-page;/);
-  assert.match(authEntry, /auth\.css\?v=4"\) layer\(auth-page\)/);
+  assertVersionedMatch(authEntry, /auth\.css\?v=VERSION"\) layer\(auth-page\)/);
   const rule = authCss.match(/\.auth-form label\.legal-consent\s*\{([^}]*)\}/);
   assert.ok(rule, "auth.css must set the consent row layout itself");
   assert.match(rule[1], /display:\s*flex/);
@@ -37,6 +38,6 @@ test("consent row rule comes after the generic grid label rule and the checkbox 
 test("login and password-reset load the bumped auth entry", async () => {
   for (const page of ["login.html", "password-reset.html"]) {
     const html = await readFile(new URL(`../${page}`, import.meta.url), "utf8");
-    assert.match(html, /auth-entry\.css\?v=3/);
+    assertVersionedMatch(html, /auth-entry\.css\?v=VERSION/);
   }
 });

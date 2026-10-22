@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const [html, sheet, overlayJs, css, entry] = await Promise.all([
@@ -39,5 +40,5 @@ test("overlay styling is theme-token driven and respects reduced motion without 
   assert.match(css, /var\(--color-accent, /);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.doesNotMatch(css, /url\(|@font-face|!important|data-theme/);
-  assert.match(entry, /components\/sheet-load-overlay\.css\?v=\d+/);
+  assertVersionedMatch(entry, /components\/sheet-load-overlay\.css\?v=VERSION/);
 });

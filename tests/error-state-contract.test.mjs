@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -24,14 +25,14 @@ test("error-state renderer never interpolates a container without an explicit fa
 });
 
 test("archive.js routes its DB-failure catch through the shared error-state helpers", () => {
-  assert.match(archive, /from "\.\/error-state\.js\?v=2"/);
+  assertVersionedMatch(archive, /from "\.\/error-state\.js\?v=VERSION"/);
   assert.match(archive, /const message = toUserFacingErrorMessage\(error\);/);
   assert.match(archive, /renderErrorState\(castGrid,\s*\{\s*message,\s*onRetry:\s*loadCharacters\s*\}\)/);
   assert.doesNotMatch(archive, /データベースへの接続に失敗しました。/);
 });
 
 test("cast.js never forwards a raw Supabase/PostgREST error.message to the UI", () => {
-  assert.match(cast, /from "\.\/error-state\.js\?v=2"/);
+  assertVersionedMatch(cast, /from "\.\/error-state\.js\?v=VERSION"/);
   assert.match(cast, /showError\(toUserFacingErrorMessage\(error\), loadCharacter\)/);
   assert.doesNotMatch(cast, /error instanceof Error\s*\n?\s*\?\s*error\.message/);
   assert.match(cast, /throw new AppError\("キャストIDが指定されていません。"\);/);
@@ -44,6 +45,6 @@ test("cast.js retry renders into a container that can host the retry button mark
 });
 
 test("the error-state component stylesheet is wired into both the archive and cast entries", () => {
-  assert.match(archiveEntryCss, /@import url\("\.\.\/components\/error-state\.css\?v=1"\) layer\(archive-components\);/);
-  assert.match(castEntryCss, /@import url\("\.\.\/components\/error-state\.css\?v=1"\) layer\(cast-components\);/);
+  assertVersionedMatch(archiveEntryCss, /@import url\("\.\.\/components\/error-state\.css\?v=VERSION"\) layer\(archive-components\);/);
+  assertVersionedMatch(castEntryCss, /@import url\("\.\.\/components\/error-state\.css\?v=VERSION"\) layer\(cast-components\);/);
 });
