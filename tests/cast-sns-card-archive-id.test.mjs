@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const cardSource = await read("js/cast-sns-card.js");
@@ -31,7 +32,7 @@ test("the card prints the ARCHIVE ID the cast header shows", () => {
 test("the card uses the same value source and formatter as the header", () => {
   const header = cardSource.includes("getPublicIdParam") && cardSource.includes("TNXArchiveId");
   assert.ok(header);
-  assert.match(cardSource, /import \{ getPublicIdParam \} from "\.\/public-id-param\.js\?v=1"/);
+  assertVersionedMatch(cardSource, /import \{ getPublicIdParam \} from "\.\/public-id-param\.js\?v=VERSION"/);
   assert.match(cardSource, /\$\{esc\(resolveArchiveId\(cast\)\)\}/);
   assert.doesNotMatch(cardSource, /esc\(cast\.public_id/);
 });

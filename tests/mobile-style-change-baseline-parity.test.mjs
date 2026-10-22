@@ -4,6 +4,7 @@ import vm from "node:vm";
 import { readFile } from "node:fs/promises";
 import { resolveStyleBaselineValue } from "../js/sheet-baseline-adjustment.js";
 import { steppedExperienceCost, resolveCanonicalCurrent } from "../js/sheet-experience-rules.js";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const source = await readFile(new URL("../js/sheet-mobile-style.js", import.meta.url), "utf8");
 
@@ -66,6 +67,6 @@ test("every old/current/new combination matches the PC resolver and growth never
 });
 
 test("the mobile style editor imports the shared PC resolver", () => {
-  assert.match(source, /import \{ resolveStyleBaselineValue \} from "\.\/sheet-baseline-adjustment\.js\?v=1";/);
+  assertVersionedMatch(source, /import \{ resolveStyleBaselineValue \} from "\.\/sheet-baseline-adjustment\.js\?v=VERSION";/);
   assert.doesNotMatch(source, /character\[baseField\] = num\(nextBaseline\) \+ growth/);
 });

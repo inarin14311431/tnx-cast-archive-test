@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { maskCacheVersions } from "./helpers/cache-version.mjs";
 
 const source = await readFile(new URL("../js/cast-style-skill-table-controls.js", import.meta.url), "utf8");
 const castHtml = await readFile(new URL("../cast.html", import.meta.url), "utf8");
@@ -11,14 +12,14 @@ const tableCss = await readFile(new URL("../css-next/pages/cast-style-skill-tabl
 test("cast.html loads the table controls after the style skill renderer", () => {
   assert.match(castHtml, /<body data-page="cast\.html">/);
   const styleSkills = castHtml.indexOf("./js/cast-style-skills.js");
-  const controls = castHtml.indexOf('<script src="./js/cast-style-skill-table-controls.js?v=4"></script>');
+  const controls = maskCacheVersions(castHtml).indexOf('<script src="./js/cast-style-skill-table-controls.js?v=VERSION"></script>');
   assert.ok(styleSkills >= 0 && controls > styleSkills, "controls must load after cast-style-skills.js");
 });
 
 test("cast entry loads the style table stylesheet as the final cascade layer", () => {
   assert.match(entry, /cast-desktop, cast-style-table;/);
-  const imports = [...entry.matchAll(/@import url\("([^"]+)"\) layer\(([^)]+)\);/g)];
-  assert.deepEqual(imports.at(-1)?.slice(1), ["./cast-style-skill-table.css?v=2", "cast-style-table"]);
+  const imports = [...maskCacheVersions(entry).matchAll(/@import url\("([^"]+)"\) layer\(([^)]+)\);/g)];
+  assert.deepEqual(imports.at(-1)?.slice(1), ["./cast-style-skill-table.css?v=VERSION", "cast-style-table"]);
   assert.match(tableCss, /\.style-skill-view-table\.is-table-controlled thead th/);
 });
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const castCss = await readFile(new URL("../css-next/pages/cast.css", import.meta.url), "utf8");
 const tableCss = await readFile(new URL("../css-next/pages/cast-style-skill-table.css", import.meta.url), "utf8");
@@ -18,7 +19,7 @@ test("style skill table follows the frame width and 解説 takes the remaining s
 
 test("the last column's resize handle stays inside the table", () => {
   assert.match(tableCss, /\.style-skill-view-table th:last-child > \.style-col-resizer \{ right: 0; \}/);
-  assert.match(entry, /cast-style-skill-table\.css\?v=2/);
+  assertVersionedMatch(entry, /cast-style-skill-table\.css\?v=VERSION/);
 });
 
 // Only the last tab's right border separates the tab list from the COMBO jump button.

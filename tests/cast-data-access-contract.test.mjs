@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -10,7 +11,7 @@ test("cast troop link reuses the shared character read", () => {
 
   assert.match(store, /export async function getCharacter\(\)/);
   assert.match(store, /\.from\(["']characters["']\)/);
-  assert.match(troopLink, /from ["']\.\/cast-data-store\.js\?v=2["']/);
+  assertVersionedMatch(troopLink, /from ["']\.\/cast-data-store\.js\?v=VERSION["']/);
   assert.match(troopLink, /getCharacter\(\)/);
   assert.doesNotMatch(troopLink, /\.from\(["']characters["']\)/);
   assert.doesNotMatch(troopLink, /characterResult/);

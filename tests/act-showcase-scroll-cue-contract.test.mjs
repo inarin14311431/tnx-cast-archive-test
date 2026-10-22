@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { actShowcaseSources } from "./helpers/act-showcase-css.mjs";
+import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const bootstrap = read("js/act-showcase-bootstrap.js");
@@ -10,7 +11,7 @@ const enhancer = read("js/act-showcase-finale-enhancer.js");
 const css = actShowcaseSources().map(source => source.text).join("\n");
 
 test("scroll cue module marks only a screen that really scrolls and still has room below", () => {
-  assert.match(bootstrap, /act-showcase-scroll-cue\.js\?v=\d+/);
+  assertVersionedMatch(bootstrap, /act-showcase-scroll-cue\.js\?v=VERSION/);
   assert.match(cue, /neotokyo-sequence__screen--linked\.is-splitting/);
   assert.match(cue, /\(auto\|scroll\)/);
   assert.match(cue, /scrollHeight - screen\.clientHeight - screen\.scrollTop > ROOM/);
@@ -39,7 +40,7 @@ test("PC badge sits in front of the cast name, at 10px or larger", () => {
 });
 
 test("assignment reveal scrolls with rAF, once, and never against the reader", () => {
-  assert.match(bootstrap, /act-showcase-scroll-cue\.js\?v=3/);
+  assertVersionedMatch(bootstrap, /act-showcase-scroll-cue\.js\?v=VERSION/);
   assert.match(cue, /const REVEAL_MS = 800/);
   assert.match(cue, /classList\.contains\("is-assigned"\) && !revealed\.has\(screen\)/);
   assert.match(cue, /neotokyo-sequence__link-bridge/);
