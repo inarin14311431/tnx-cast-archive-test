@@ -16,7 +16,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 - **フィナーレのDOMは最初から裏にある。** `act-showcase-page.js` がデータ取得直後にヒーローと最終ボードを作り、導入演出のオーバーレイ(`#cinematic-intro`)の下に置く。フィナーレ用の observer はその間も動いている。
 - **CSSの層は枠ごとに分かれていない。** 31の元ファイルのうち、7枠のうち1枠だけを対象にしているのは8ファイル、3枠以上にまたがるのは18ファイル。複数の枠を1つのセレクタ群でまとめたルールが97個ある(第3節)。
 - **直書きの色は1,210個。そのうち1,146個(95%)はテーマ層以外(core / scenes)にある。** 枠ごとの内訳は第4節。
-- 画面比較は、豪華版 desktop の4テーマ × 8状態(ローディング・アクセス画面・タイトル・トレーラー・ハンドアウト・アサイン・ACT READY・最終ボード)を撮影済み(LAYERS §4.1)。足りないのは、mobile の3テーマ、PC2 以降、フィナーレのヒーロー部分、枠の名前との対応づけ。最初のPRでここを埋める(第6節)。
+- 画面比較は、豪華版の4テーマ × 2幅 × 13状態を、6つの枠IDの名前で撮影している(第6節 #1、基準ブランチ #606。範囲は LAYERS §4.1)。調査時点では desktop の8状態だけで、mobile の3テーマ・PC2 以降・フィナーレのヒーローは撮っていなかった。
 
 ## 1. 7枠と今の実装
 
@@ -160,7 +160,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 
 | # | PR | 内容 | 確かめ方 |
 |---|---|---|---|
-| 1 | **画面比較: 7枠を決まった状態で撮る**(テストのみ、`visual-regression-baseline` 側。手順は `docs/TESTING_STRATEGY.md` 第8節) | 今の `act-showcase-deluxe.visual.spec.js` の撮影を、枠の名前(1〜7)で引ける形に整理する。各枠の「終わった状態」(NEXT ボタンのラベルが出た時点)で撮る方式は今のまま使う。追加: mobile の intron / vlad / lutetia × 7枠、アクセス画面の mobile、PC2 のハンドアウト・アサイン(1テーマ)、フィナーレのヒーロー部分(今は最終ボードだけ)。既存の基準画像のファイル名は変えない(枠名との対応をspecのコメントに書く) | 3回続けて撮って差分0(LAYERS §4.1 と同じ確認)。既存46枚は不変 |
+| 1 | **済(基準ブランチ #606)** **画面比較: 7枠を決まった状態で撮る**(テストのみ、`visual-regression-baseline` 側。手順は `docs/TESTING_STRATEGY.md` 第8節) | 今の `act-showcase-deluxe.visual.spec.js` の撮影を、枠の名前(1〜7)で引ける形に整理する。各枠の「終わった状態」(NEXT ボタンのラベルが出た時点)で撮る方式は今のまま使う。追加: mobile の intron / vlad / lutetia × 7枠、アクセス画面の mobile、PC2 のハンドアウト・アサイン(1テーマ)、フィナーレのヒーロー部分(今は最終ボードだけ)。既存の基準画像のファイル名は変えない(枠名との対応をspecのコメントに書く) | 3回続けて撮って差分0(LAYERS §4.1 と同じ確認)。既存46枚は不変 |
 | 2 | 枠の定義と構成の解釈(純粋関数、Shared core) | 枠ID(`loading` `title` `trailer` `handout` `assign` `ready` `finale`)と順番、`resolveSceneComposition(data)`(キーなし・不正値・未知のパターン → その枠はA)を新しいモジュールに置く。まだどこからも使わない | 単体テストのみ。画面は不変 |
 | 3 | 本体の進行を枠の配列で回す(リファクタ) | `runNeoTokyoIntro` の直列の `await` を「枠ID → 関数」の表で回す形にする。表の中身は今の `showOpening` などそのまま。進捗の値と `01 //` 〜 `06 //` の番号は表の各行に移す(値は同じ)。4・5のPCごとの繰り返しはそのまま | 画面比較の差分0、E2E(特に `neotokyo-stability`・`title-render-order`・`assign-cards`)。文字列固定のテストは、意図を保って直す |
 | 4 | 枠の印をDOMに付ける | 各画面の `section` とフィナーレの `#act-showcase-root` に `data-scene="title"` `data-scene-pattern="a"` を付ける。CSS はまだ使わない | 画面比較の差分0。属性を監視する observer はすべて `attributeFilter`(`class`、finale-enhancer は `class` と `aria-hidden`)を持つので、要素を作る時点で付ければ observer は反応しない見込み(`act-showcase-observer-stability` で確認) |
