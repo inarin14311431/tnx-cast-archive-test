@@ -8,7 +8,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 
 ## 0. 要点
 
-- **名前の衝突。** コードの `finale`(`act-showcase-finale-enhancer.js`、`.neotokyo-sequence__screen--finale`、`.neotokyo-finale__*`、`body.showcase-neotokyo-finale-active`)は、計画でいう **ACT READY**(サマリー画面)を指す。計画の **フィナーレ** は、導入演出が終わったあとのページ本体(ヒーロー `#scene-opening` と最終ボード `#poster-showcase-board-v2`)。以下はこの対応で書く。部品化の前に呼び名を決めておく必要がある。
+- **名前の衝突。** コードの `finale`(`act-showcase-finale-enhancer.js`、`.neotokyo-sequence__screen--finale`、`.neotokyo-finale__*`、`body.showcase-neotokyo-finale-active`)は、計画でいう **ACT READY**(サマリー画面)を指す。計画の **フィナーレ** は、導入演出が終わったあとのページ本体(ヒーロー `#scene-opening` と最終ボード `#poster-showcase-board-v2`)。以下はこの対応で書く。呼び名は第6.1節で決定済み。
 - **ハンドアウトとキャストアサインは同じDOM。** PCごとに1つの `section.neotokyo-sequence__screen--linked` があり、アサインはその要素への状態クラスの追加(`is-read` → `is-splitting` → `is-searching` → `is-found` → `is-assigned`)で進む。画面の差し替えは起きない。しかも PC の人数分(1〜6回)「ハンドアウト→アサイン」が交互に繰り返される。「同じ枠は1回だけ使う」は「枠のパターンは1回だけ選び、全PCに同じものを使う」と読み替える必要がある。
 - **ローディングの前半はパターンを選べない。** 最初の読み込み画面(`act-showcase.html` に書かれた静的な `.cinematic-intro__*`)は、公開データ(=構成情報)を取得する前に出る。選べるのは、データ取得後のアクセス画面(`01 // ACT FILE // ACCESS`)だけ。テーマも同じ事情で、URL に `&theme=` がないとデータ取得まで既定の nova で出る。
 - **テーマはページ全体に1つ。** `<html data-showcase-theme>` に1つだけ付き、豪華版の6つのCSSで `:root[data-showcase-theme…]` から始まるセレクタが782個ある(テーマ4本で702、core で80)。アクトごとにテーマを選ぶのは今の仕組みのまま使えるが、枠ごとに変えるには変数の置き場所を `:root` から枠の要素へ移す必要がある。
@@ -169,13 +169,17 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 | 6 | 構成情報の保存と読み出し | 生成画面の選択欄、`showcase_data.scenes`、豪華版での解釈(2の関数)。Aしかない状態で入れ、全枠Aで今と同じに再生されることを確かめる。実DBの関数定義の確認を含む(DDLが要る場合は別ゲート) | 既存データ(キーなし)とA指定のデータの両方で画面比較の差分0 |
 | 7〜 | パターンB/Cの追加(見た目が変わる) | 枠ごとに1PR。`data-scene-pattern="b"` の下でだけ効くCSSと、その枠の関数を表に足す。基準画像はB用を新規に追加し、A用は変えない | 新しい基準画像、E2E |
 
-先に決めてもらう必要があること(調査からは決められない):
+### 6.1 決定事項(2026-10-22)
 
-1. 枠の呼び名: コードの `finale`(= ACT READY)をどう扱うか。
-2. テーマ・背景は「アクトに1つ」か「枠ごと」か。枠ごとなら、テーマ変数を `:root` から枠の要素へ移す作業(782セレクタ)が5の前に入る。
-3. ハンドアウトとアサインのパターンを別々に選べるようにするか(第3.2節)。組で選ぶなら作業はかなり減る。
-4. ローディングの前半(データ取得前)は全パターン共通にしてよいか。
-5. パターンB/Cでも、Aの後付け層(observer)の装飾を受けるか(同じクラス名を使うか)。
+上の表と第0〜5節は決定前の調査として残す。以後の作業はこの決定に従う。
+
+1. **名前。** 既存のクラス名・ファイル名は変えない。既存の `finale`(`act-showcase-finale-enhancer.js`、`.neotokyo-sequence__screen--finale`、`.neotokyo-finale__*`、`body.showcase-neotokyo-finale-active`)は **ACT READY** を指す。新しく作る枠IDは `ready`(ACT READY)と `finale`(ページ本体: ヒーロー `#scene-opening` と最終ボード)とする。新しい `finale` と既存の `.neotokyo-finale__*` は別物である。
+2. **テーマ・背景はアクトに1つ。** 枠ごとには変えない。テーマ変数を `:root` から移す作業は不要。
+3. **ハンドアウトとキャストアサインは組で1つのパターンとして選ぶ。** 選ぶ枠は6つで、順番は固定: `loading` / `title` / `trailer` / `handout-assign` / `ready` / `finale`。上の表の #2 の枠IDもこの6つに読み替える。
+4. **ローディングの前半は全パターン共通。** データ取得前の静的な読み込み画面(`.cinematic-intro__*`)はパターンを持たない。`loading` の枠で選べるのは、データ取得後の ACCESS 画面(`.neotokyo-sequence__screen--opening`)から。
+5. **パターンB/CはAの後付け層の装飾を受けない。** B/C は専用のクラス名と、`data-scene-pattern="b"` などの下でだけ効くCSSで作る。Aの層(observer と、既存クラス名に当たるCSS)はAの中に閉じ込める。
+
+画面比較の名前(#1)も、この6つの枠IDに合わせる。
 
 ## 7. 調べ方(再現用)
 
