@@ -1,16 +1,16 @@
 # 現在地 / Current State
 
-最終更新: 2026-10-21
+最終更新: 2026-10-22
 
 AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショット。時点情報
 なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。固定のSHAやPR番号はこの資料にだけ置く。
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `6747315`(PR #601 マージ点, 2026-10-21)。画面比較の基準ブランチ
+- 検証repo main: `7fc7dc0`(PR #603 マージ点, 2026-10-22)。画面比較の基準ブランチ
   `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
   同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `3007d48`(同期PR #228 マージ点, 2026-10-21)。検証 #601 までのruntimeとmigrationを同期済み。
+- 本番repo main: `ecddb97`(同期PR #229 マージ点, 2026-10-22)。検証 #603 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
   (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル)。
 - 未同期のruntime: なし。
@@ -132,6 +132,15 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     キャッシュしているブラウザ・CDN には最大1年間見えることがある(CDN 側の削除の反映は未確認)。`scripts/regenerate-thumbnails.mjs` の
     `"86400"` は対象外で、そのまま。新規テスト `tests/storage-upload-cache-control.test.mjs` は本番へ同期しない
   - 本番 #228(`3007d48`): 検証 #601 のruntime 8ファイル(JS 5・HTML 3)。本番側の既存テスト2件は `?v=` の番号だけ更新
+  - (検証)#603(`7fc7dc0`): `?v=` を手作業から自動生成に切り替えた。`npm run version:update` が、`?v=` の付いたローカル参照
+    (import / export from / `import()` / `<script src>` / `<link href>` / CSS `@import`)を参照先の内容ハッシュ(sha256 先頭8文字)に
+    書き換え、modulepreload も再生成する。`audit:cache` が、ハッシュと一致しない `?v=` を検出して失敗する。テストは
+    `tests/helpers/cache-version.mjs` で値を伏せて比べる(番号の正しさは `audit:cache` だけが見る)。手順は `CHANGE_MANAGEMENT.md` 第10節。
+    初回の置き換えで全ページのキャッシュが1回更新された。cast.html で `character-sheet-url.js`・`cast-troops-link.js` を別の番号で2回
+    読み込んでいたのが1回になった。`?v=` の付いていない参照(145か所)と、コードの中で組み立てるURL(14か所)は対象外で手作業のまま
+  - 本番 #229(`ecddb97`): 検証 #603 の runtime 160ファイル(`?v=` のみ)・`scripts/` 4ファイル・`package.json` の `version:update`・資料。
+    本番テストの番号固定は、検証と同じ内容だった96件に同じ差分、内容の違う3件と本番だけの1件は同じヘルパーで個別に直した。
+    検証の新規テスト `tests/content-versions.test.mjs` は同期していない。同期後、`js/`・`css-next/`・全HTMLは検証と全ファイル一致
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
