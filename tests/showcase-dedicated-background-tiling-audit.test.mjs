@@ -1,4 +1,4 @@
-import { actShowcaseCss } from "./helpers/act-showcase-css.mjs";
+import { actShowcaseCss, stripSceneScope } from "./helpers/act-showcase-css.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -34,7 +34,7 @@ test("deluxe ACT TRAILER stage (poster-v2-trailer-stage) theme override no longe
 });
 
 test("deluxe ACT TRAILER stage base rule (act-showcase-final-trailer.css) states background-repeat explicitly", async () => {
-  const css = await actShowcaseCss("act-showcase-final-trailer");
+  const css = stripSceneScope(await actShowcaseCss("act-showcase-final-trailer"));
   const rule = ruleBodyFor(css, "body.showcase-poster-v2-ready .poster-v2-trailer-stage");
   assert.match(rule, /background-position:center/);
   assert.match(rule, /background-size:cover/);
@@ -50,7 +50,7 @@ test("deluxe ambient stage theme override (act-showcase-theme-surface-system.css
 });
 
 test("deluxe poster board theme override (act-showcase-ornament.css) no longer relies on implicit background-size/repeat", async () => {
-  const css = await actShowcaseCss("act-showcase-ornament");
+  const css = stripSceneScope(await actShowcaseCss("act-showcase-ornament"));
   const rule = ruleBodyFor(css, "body.showcase-poster-v2-ready .poster-v2-board:before");
   assert.match(rule, /background-position:center top/);
   assert.match(rule, /background-size:cover/);
