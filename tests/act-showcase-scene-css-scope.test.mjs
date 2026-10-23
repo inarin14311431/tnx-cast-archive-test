@@ -8,6 +8,8 @@ import { SCENE_FRAMES } from "../js/act-showcase-scenes.js";
 // (the screen itself or anything inside it). :where() adds no specificity and the rules keep their place in the
 // bundle, so for the elements of that frame the cascade is unchanged; outside the frame (a pattern B/C screen,
 // another frame) the rules no longer apply.
+// A layer that styles several frames (frames: [...]) is split into one rule per frame, each scoped to its own frame;
+// every selector carries exactly one of the listed scopes and every listed frame is used.
 // unscoped: rules whose subject is the page itself (body), which no single frame owns; listed one by one so a new
 // unscoped selector fails the test
 const SCOPED_SOURCES = [
@@ -18,7 +20,8 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-ornament", frame: "finale" },
   { source: "act-showcase-ornament-plus", frame: "finale" },
   { source: "act-showcase-top-background-only", frame: "finale" },
-  { source: "act-showcase-final-trailer", frame: "finale" }
+  { source: "act-showcase-final-trailer", frame: "finale" },
+  { source: "act-showcase-cinematic-fit", frames: ["title", "handout-assign", "ready", "finale"] }
 ];
 
 const scopeOf = frame => {
@@ -47,17 +50,22 @@ function selectorsOf(css) {
     .filter(Boolean);
 }
 
-for (const { source, frame, unscoped = [] } of SCOPED_SOURCES) {
-  test(`${source}: every selector is confined to the ${frame} frame of pattern a`, () => {
-    assert.ok(SCENE_FRAMES.includes(frame), frame);
-    const scope = scopeOf(frame);
+for (const { source, frame, frames = [frame], unscoped = [] } of SCOPED_SOURCES) {
+  test(`${source}: every selector is confined to one frame of pattern a (${frames.join(", ")})`, () => {
+    for (const item of frames) assert.ok(SCENE_FRAMES.includes(item), item);
+    const scopes = frames.map(scopeOf);
     const selectors = selectorsOf(actShowcaseCss(source));
     assert.ok(selectors.length > 0);
-    const left = selectors.filter(selector => !selector.includes(scope));
+    const left = selectors.filter(selector => !scopes.some(scope => selector.includes(scope)));
     assert.deepEqual([...new Set(left)].sort(), [...unscoped].sort(), "only the listed page-level selectors stay unscoped");
-    for (const selector of selectors.filter(item => item.includes(scope))) {
+    const used = new Set();
+    for (const selector of selectors.filter(item => !left.includes(item))) {
+      const own = scopes.filter(scope => selector.includes(scope));
+      assert.equal(own.length, 1, `one frame per selector: ${selector}`);
+      used.add(own[0]);
       // the scope sits on the subject compound: only pseudo-elements may follow it
-      assert.match(selector.replaceAll(scope, "\u0000"), /\u0000(?:::?(?:before|after|first-line|first-letter|placeholder|marker))*$/, selector);
+      assert.match(selector.replaceAll(own[0], "\u0000"), /\u0000(?:::?(?:before|after|first-line|first-letter|placeholder|marker))*$/, selector);
     }
+    assert.deepEqual([...used].sort(), [...scopes].sort(), "every listed frame is used");
   });
 }
