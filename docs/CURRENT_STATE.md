@@ -7,13 +7,13 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `2a3e898`(PR #609 マージ点, 2026-10-23)。画面比較の基準ブランチ
+- 検証repo main: `0b603c1`(PR #611 マージ点, 2026-10-23)。画面比較の基準ブランチ
   `visual-regression-baseline` は `8ac9466`(PR #606 マージ点)。豪華版の撮影を6つの画面枠の名前に揃え、4テーマ × 2幅 × 13状態の
   104枚にした(範囲は `docs/ACT_SHOWCASE_LAYERS.md` §4.1)。それ以外の基準画像は `d550978`(PR #538 マージ点)のままで、
   Playwright 1.62.1 時代の基準(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `f3fe8cc`(同期PR #230 マージ点, 2026-10-23)。検証 #609 までのruntimeとmigrationを同期済み。
+- 本番repo main: `c9679ed`(同期PR #231 マージ点, 2026-10-23)。検証 #611 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
-  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル、#230: 検証 `a587888` の対象ファイル)。
+  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル、#230: 検証 `a587888` の対象ファイル、#231: 検証 `916cd2b` の対象ファイル)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -156,6 +156,13 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   - 本番 #230(`f3fe8cc`): 検証 #608・#609 の runtime 5ファイル(`act-showcase-scenes.js` 新規・`act-showcase-page.js`・
     `act-showcase-neotokyo.js`・`act-showcase-bootstrap.js`・`act-showcase.html`)。本番テスト5本は検証と同一だったので同じ差分。
     資料 `docs/ACT_SHOWCASE_SCENES.md` は本番にない(資料だけのPRのため未同期)。同期後、`js/`・`css-next/`・全HTMLは検証と全ファイル一致
+  - (検証・資料のみ)#610: CURRENT_STATE に #605〜#609・本番 #230 を記録
+  - (検証)#611(`0b603c1`): 導入演出の各画面の `section` に、作った時点で `data-scene`(枠ID)と `data-scene-pattern="a"` を付けた
+    (`js/act-showcase-neotokyo.js` の `markScene`)。フィナーレは `act-showcase.html` の `#act-showcase-root` に静的に付けた。ヒーローに
+    残っていた旧い `data-scene="opening"`(参照なし)は削除(利用者了承)。CSS はまだ使わない。新規 E2E `act-showcase-scene-markers`
+    (挿入時点で印があり、`data-scene*` の属性変化が一度も起きない)は本番へ同期しない
+  - 本番 #231(`c9679ed`): 検証 #611 の runtime 4ファイル(`act-showcase-neotokyo.js`・`act-showcase.html`・`act-showcase-bootstrap.js`・
+    `act-showcase-page.js`)。本番テストの変更なし。同期後、`js/`・`css-next/`・全HTMLは検証と全ファイル一致
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
