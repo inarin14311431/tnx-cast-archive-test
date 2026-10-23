@@ -258,6 +258,7 @@ bootstrap から到達するのは22ファイル(visual-caption-code を削除�
 - スマホ幅(360/390/430)の検査: `act-showcase-mobile-overflow`(1200x1600の大きな画像・14文字の題・長い名前/URLで、導入の各画面と最終ボードが `html,body` のクリップなしで画面幅に収まること、割り当てパネルが潰れないこと、題が枠に収まること、ゲスト画像が描画されること)。スマホ幅の修正は `act-showcase-scenes.css` 末尾の `@media(max-width:760px)` ブロック(handout→assign の積み上げだけは同じ `is-splitting` 規則と並べて同ファイル中ほどの 760px ブロック)に置く。デスクトップ幅の見た目は変えない。
 - 実行時間(polish で判明、対策済み): 上の polish の検査(特に `act-showcase-contrast` の豪華版×4テーマと `act-showcase-key-style`)は1本が長く、`ci-public` に入れたままだと `Public and smoke E2E` が約11分になり、従来の `timeout-minutes: 8` を超えてキャンセルされた。アクト紹介の検査は専用グループ `ci-act-showcase`(`Act showcase E2E`、実測 約9分52秒、`timeout-minutes: 20`)へ移し、関係するPRと手動実行のときだけ動かす(判定は `scripts/e2e-changed-groups.mjs`、パスは `tests/e2e/test-suites.json` の `triggerPaths`)。`Public and smoke E2E` は実測 約58秒に戻り、`timeout-minutes: 5`。
 - 文言・正規化の「書き換え前の表示が一度も出ない」検査(MutationObserver を初期スクリプトで仕込み、全表示を記録): `act-showcase-final-copy`(読み込み画面・アクセス画面3行・進捗ラベル・NODE ラベル。手順5b/5c)と `act-showcase-name-quotes`(重複引用符の名前。豪華版+スタンダード版+ゲスト。手順5c。スタンダード版のE2Eはこれが初)。
+- 画面枠の印: `act-showcase-scene-markers`(導入演出の各画面が挿入された時点で `data-scene` / `data-scene-pattern` を持ち、その属性の変化が一度も起きないこと。`docs/ACT_SHOWCASE_SCENES.md` 第6節 #4)。
 - スタンダード版のE2E: なし。ダウンロード出力HTMLの実描画テスト: なし(`showcase-output-css.test.mjs` は旧出力のハッシュ一致のみ)。
 
 ### 4.3 文字列正規表現のみのテスト(見た目の退行を検出できない)

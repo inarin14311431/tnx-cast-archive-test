@@ -53,6 +53,7 @@
         "tests/e2e/act-showcase-mobile-overflow.spec.js",
         "tests/e2e/act-showcase-key-style.spec.js",
         "tests/e2e/act-showcase-trailer-readout.spec.js",
+        "tests/e2e/act-showcase-scene-markers.spec.js",
         "tests/e2e/showcase-background-preset-legacy.spec.js"
       ]
     },
