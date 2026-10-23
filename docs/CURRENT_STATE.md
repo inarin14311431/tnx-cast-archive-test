@@ -1,18 +1,19 @@
 # 現在地 / Current State
 
-最終更新: 2026-10-22
+最終更新: 2026-10-23
 
 AIや新規担当者が「何が完了済みで、何が途中か」を誤認しないためのスナップショット。時点情報
 なので、作業再開時はGitHub上のmain/PR/branchを再確認すること。固定のSHAやPR番号はこの資料にだけ置く。
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `7fc7dc0`(PR #603 マージ点, 2026-10-22)。画面比較の基準ブランチ
-  `visual-regression-baseline` は `28fa7ae`(revert #571 のマージ点)。中身は `d550978`(PR #538 マージ点)と
-  同一で、Playwright 1.62.1 時代の基準画像のまま(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `ecddb97`(同期PR #229 マージ点, 2026-10-22)。検証 #603 までのruntimeとmigrationを同期済み。
+- 検証repo main: `2a3e898`(PR #609 マージ点, 2026-10-23)。画面比較の基準ブランチ
+  `visual-regression-baseline` は `8ac9466`(PR #606 マージ点)。豪華版の撮影を6つの画面枠の名前に揃え、4テーマ × 2幅 × 13状態の
+  104枚にした(範囲は `docs/ACT_SHOWCASE_LAYERS.md` §4.1)。それ以外の基準画像は `d550978`(PR #538 マージ点)のままで、
+  Playwright 1.62.1 時代の基準(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
+- 本番repo main: `f3fe8cc`(同期PR #230 マージ点, 2026-10-23)。検証 #609 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
-  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル)。
+  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル、#230: 検証 `a587888` の対象ファイル)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -141,6 +142,20 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   - 本番 #229(`ecddb97`): 検証 #603 の runtime 160ファイル(`?v=` のみ)・`scripts/` 4ファイル・`package.json` の `version:update`・資料。
     本番テストの番号固定は、検証と同じ内容だった96件に同じ差分、内容の違う3件と本番だけの1件は同じヘルパーで個別に直した。
     検証の新規テスト `tests/content-versions.test.mjs` は同期していない。同期後、`js/`・`css-next/`・全HTMLは検証と全ファイル一致
+  - (検証・資料のみ)#605・#607: アクト紹介を「6つの画面枠 × パターンA/B/C」の組み合わせにする計画の調査と決定事項を
+    `docs/ACT_SHOWCASE_SCENES.md` にまとめた(枠ID・進め方・決定事項は同資料の第6節)。#607 は撮影範囲の記述の更新
+  - (基準ブランチ)#606: 豪華版の画面比較を枠の名前で撮る形にし、mobile の全テーマ・PC2以降・フィナーレのヒーローを足して104枚にした。
+    許容差(0.6%)以内で検出されていなかった旧表示の基準画像7枚(PC1 アサインの desktop 4テーマと mobile nova、ACT READY の intron desktop
+    と mobile nova)を現在の表示に更新した(利用者が目視で確認・了承)。ACCESS 画面は 2.9 秒で自動で進むため、撮影の間だけテスト側で
+    そのタイマーを止める。画面比較の全体の所要時間は約9分20秒(ジョブの上限15分)
+  - (検証)#608(`fc3b921`): `js/act-showcase-scenes.js` を追加(6つの画面枠の定義と、公開データの `scenes` を読む純粋関数。読めないものは
+    その枠を `a`)。読み込まれないモジュールは `audit:js-reachability` で落ちるため、`act-showcase-page.js` が結果を `model.scenes` に
+    載せる(演出はまだ使わない)。新規テスト `tests/act-showcase-scenes.test.mjs` は本番へ同期しない
+  - (検証)#609(`2a3e898`): 導入演出の進行を枠の表 `INTRO_SCENES`(`js/act-showcase-neotokyo.js`)で回すリファクタ。見出しの番号と
+    進捗の値は表の各行に移した(値は同じ)。順番を文字列で固定していたテスト5本は、表を読み込む形に直した。画面比較は許容差0で104枚とも差分0
+  - 本番 #230(`f3fe8cc`): 検証 #608・#609 の runtime 5ファイル(`act-showcase-scenes.js` 新規・`act-showcase-page.js`・
+    `act-showcase-neotokyo.js`・`act-showcase-bootstrap.js`・`act-showcase.html`)。本番テスト5本は検証と同一だったので同じ差分。
+    資料 `docs/ACT_SHOWCASE_SCENES.md` は本番にない(資料だけのPRのため未同期)。同期後、`js/`・`css-next/`・全HTMLは検証と全ファイル一致
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
