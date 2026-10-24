@@ -10,7 +10,8 @@ import { SCENE_FRAMES } from "../js/act-showcase-scenes.js";
 // another frame) the rules no longer apply.
 // A layer that styles several frames (frames: [...]) is split into one rule per frame, each scoped to its own frame;
 // every selector carries exactly one of the listed scopes and every listed frame is used.
-// unscoped: rules whose subject is the page itself (body), which no single frame owns; listed one by one so a new
+// unscoped: rules whose subject is the page itself (body) or the sequence stage that holds every screen (it sits
+// outside the frames' sections), which no single frame owns; listed one by one so a new
 // unscoped selector fails the test
 const SCOPED_SOURCES = [
   { source: "act-showcase-assign-cards", frame: "handout-assign" },
@@ -21,7 +22,12 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-ornament-plus", frame: "finale" },
   { source: "act-showcase-top-background-only", frame: "finale" },
   { source: "act-showcase-final-trailer", frame: "finale" },
-  { source: "act-showcase-cinematic-fit", frames: ["title", "handout-assign", "ready", "finale"] }
+  { source: "act-showcase-cinematic-fit", frames: ["title", "handout-assign", "ready", "finale"] },
+  {
+    source: "act-showcase-visual-trailer-fix",
+    frames: ["trailer", "finale"],
+    unscoped: ["body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage:has(> .neotokyo-sequence__screen--trailer.is-visible)"]
+  }
 ];
 
 const scopeOf = frame => {

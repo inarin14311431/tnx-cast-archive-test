@@ -7,13 +7,13 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `5b79bcd`(PR #613 マージ点, 2026-10-23)。画面比較の基準ブランチ
+- 検証repo main: `5361475`(PR #614 マージ点, 2026-10-23)。画面比較の基準ブランチ
   `visual-regression-baseline` は `8ac9466`(PR #606 マージ点)。豪華版の撮影を6つの画面枠の名前に揃え、4テーマ × 2幅 × 13状態の
   104枚にした(範囲は `docs/ACT_SHOWCASE_LAYERS.md` §4.1)。それ以外の基準画像は `d550978`(PR #538 マージ点)のままで、
   Playwright 1.62.1 時代の基準(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `1dea517`(同期PR #233 マージ点, 2026-10-23)。検証 #613 までのruntimeとmigrationを同期済み。
+- 本番repo main: `3c1cfaa`(同期PR #234 マージ点, 2026-10-23)。検証 #614 までのruntimeとmigrationを同期済み。
   同期前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確認してからコピーした
-  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル、#230: 検証 `a587888` の対象ファイル、#231: 検証 `916cd2b` の対象ファイル、#232: 検証 `0b603c1` の対象ファイル、#233: 検証 `814c9f8` の対象ファイル)。
+  (#216: 検証 `1c83520` の対象2ファイル、#219: 検証 `34f7cbd` の7ファイル、#220: 削除する4ファイル、#221〜#225: それぞれ直前の検証mainの対象ファイル、#230: 検証 `a587888` の対象ファイル、#231: 検証 `916cd2b` の対象ファイル、#232: 検証 `0b603c1` の対象ファイル、#233: 検証 `814c9f8` の対象ファイル、#234: 検証 `5b79bcd` の対象ファイル)。
 - 未同期のruntime: なし。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
@@ -173,6 +173,10 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
     ページ全体の背景なのでテストに例外として明記。セレクタの文字列で規則を探すテストは `stripSceneScope` で比べる
   - 本番 #233(`1dea517`): 検証 #613 の runtime 3ファイル(CSS 2・`act-showcase.html`)。本番テストのうち検証と同一の4本
     (ornament-plus・followup-contract・top-background-only・helper)は同じ差分。同期後、`js/`・`css-next/`・全HTMLは検証と全ファイル一致
+  - (検証)#614(`5361475`): 複数の枠にまたがる層の1本目。cinematic-fit の17規則を title・handout-assign・ready・finale の
+    23規則に分け(宣言・位置は不変)、それぞれの枠に閉じ込めた。scene-css-scope テストは `frames: [...]` で複数枠の層を書ける
+  - 本番 #234(`3c1cfaa`): 検証 #614 の runtime 2ファイル(`act-showcase-scenes.css`・`act-showcase.html`)。本番テスト
+    `showcase-css-js-responsibility` は検証と同一だったので同じ差分。同期後、`js/`・`css-next/`・全HTMLは検証と全ファイル一致
   - 本番 #208・#209 は同期PRではなく、Dependabot の依存更新PR(未マージ。第2節)
   - #215 以外は共有Supabase/DBの変更を含まない(#215 のDB関数は同期前に適用済み)
 - 同期するときの注意: 検証と本番は同じオリジン(`https://inarin14311431.github.io`)なので、ブラウザの
