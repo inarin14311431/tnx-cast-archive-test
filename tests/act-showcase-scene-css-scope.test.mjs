@@ -27,7 +27,8 @@ const SCOPED_SOURCES = [
     source: "act-showcase-visual-trailer-fix",
     frames: ["trailer", "finale"],
     unscoped: ["body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage:has(> .neotokyo-sequence__screen--trailer.is-visible)"]
-  }
+  },
+  { source: "act-showcase-title-cyberpunk", frames: ["title", "finale"] }
 ];
 
 const scopeOf = frame => {
