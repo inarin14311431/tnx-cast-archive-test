@@ -14,6 +14,7 @@ import { SCENE_FRAMES } from "../js/act-showcase-scenes.js";
 // (its shell, stage or footer, outside the frames' sections), which no single frame owns; listed one by one so a new
 // unscoped selector fails the test
 const SCOPED_SOURCES = [
+  { source: "act-showcase-neotokyo-linked", frame: "handout-assign" },
   { source: "act-showcase-assign-cards", frame: "handout-assign" },
   { source: "act-showcase-assign-cards-theme", frame: "handout-assign" },
   { source: "act-showcase-poster-v2", frame: "finale", unscoped: ["body.showcase-poster-v2-ready", "body.showcase-poster-v2-ready:after"] },
