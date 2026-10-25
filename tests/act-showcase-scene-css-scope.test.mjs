@@ -47,6 +47,18 @@ const SCOPED_SOURCES = [
       "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line",
       "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line + .neotokyo-finale__access-title-line"
     ]
+  },
+  {
+    source: "act-showcase-handout-live-frame",
+    frames: ["handout-assign", "ready", "finale"],
+    // the handout reading scrolls the stage; at phone width the page, the overlay and its shell get their own fit
+    unscoped: [
+      ".cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-handout-scroll",
+      "html",
+      "body",
+      ".cinematic-intro.neotokyo-sequence",
+      ".cinematic-intro.neotokyo-sequence .neotokyo-sequence__shell"
+    ]
   }
 ];
 

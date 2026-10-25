@@ -1,14 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { actShowcaseSources } from "./helpers/act-showcase-css.mjs";
+import { actShowcaseSources, stripSceneScope } from "./helpers/act-showcase-css.mjs";
 import { assertVersionedMatch } from "./helpers/cache-version.mjs";
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const bootstrap = read("js/act-showcase-bootstrap.js");
 const cue = read("js/act-showcase-scroll-cue.js");
 const enhancer = read("js/act-showcase-finale-enhancer.js");
-const css = actShowcaseSources().map(source => source.text).join("\n");
+const css = stripSceneScope(actShowcaseSources().map(source => source.text).join("\n"));
 
 test("scroll cue module marks only a screen that really scrolls and still has room below", () => {
   assertVersionedMatch(bootstrap, /act-showcase-scroll-cue\.js\?v=VERSION/);
