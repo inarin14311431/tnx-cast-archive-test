@@ -13,8 +13,28 @@ import { SCENE_FRAMES } from "../js/act-showcase-scenes.js";
 // unscoped: rules whose subject is the page itself (body) or a part of the sequence overlay that holds every screen
 // (its shell, stage or footer, outside the frames' sections), which no single frame owns; listed one by one so a new
 // unscoped selector fails the test
+// legacy: selectors whose element no code creates any more (docs §3.1 "旧"). They are left as they are here and removed
+// separately, after their list has been reviewed
+// counts: how many selectors (each occurrence, including repeats in @media blocks) stay unscoped / legacy, so the
+// exceptions cannot quietly grow; omitted means one occurrence per listed selector
 const SCOPED_SOURCES = [
   { source: "act-showcase-neotokyo-linked", frame: "handout-assign" },
+  {
+    source: "act-showcase-neotokyo-hierarchy",
+    frames: ["title", "handout-assign", "ready", "finale"],
+    // the page-level loading status sits next to #act-showcase-root, outside every frame
+    unscoped: [".showcase-loading[hidden]"],
+    legacy: [
+      ".neotokyo-sequence__act-overview",
+      ".neotokyo-sequence__act-overview-label",
+      ".neotokyo-sequence__act-overview-copy",
+      ".neotokyo-sequence__trailer-definition",
+      ".neotokyo-sequence__trailer-definition strong",
+      ".neotokyo-sequence__overview-intro-label",
+      ".neotokyo-sequence__overview-intro"
+    ],
+    counts: { unscoped: 1, legacy: 12 }
+  },
   { source: "act-showcase-assign-cards", frame: "handout-assign" },
   { source: "act-showcase-assign-cards-theme", frame: "handout-assign" },
   { source: "act-showcase-poster-v2", frame: "finale", unscoped: ["body.showcase-poster-v2-ready", "body.showcase-poster-v2-ready:after"] },
@@ -36,7 +56,8 @@ const SCOPED_SOURCES = [
   {
     source: "act-showcase-visual-trailer-fix",
     frames: ["trailer", "finale"],
-    unscoped: ["body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage:has(> .neotokyo-sequence__screen--trailer.is-visible)"]
+    unscoped: ["body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage:has(> .neotokyo-sequence__screen--trailer.is-visible)"],
+    counts: { unscoped: 2 }
   },
   { source: "act-showcase-title-cyberpunk", frames: ["title", "finale"] },
   { source: "act-showcase-presentation-tuning", frames: ["title", "ready", "finale"] },
@@ -56,7 +77,8 @@ const SCOPED_SOURCES = [
       "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong.neotokyo-finale__access-title",
       "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line",
       "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line + .neotokyo-finale__access-title-line"
-    ]
+    ],
+    counts: { unscoped: 11 }
   },
   {
     source: "act-showcase-handout-live-frame",
@@ -98,14 +120,16 @@ function selectorsOf(css) {
     .filter(Boolean);
 }
 
-for (const { source, frame, frames = [frame], unscoped = [] } of SCOPED_SOURCES) {
+for (const { source, frame, frames = [frame], unscoped = [], legacy = [], counts = {} } of SCOPED_SOURCES) {
   test(`${source}: every selector is confined to one frame of pattern a (${frames.join(", ")})`, () => {
     for (const item of frames) assert.ok(SCENE_FRAMES.includes(item), item);
     const scopes = frames.map(scopeOf);
     const selectors = selectorsOf(actShowcaseCss(source));
     assert.ok(selectors.length > 0);
     const left = selectors.filter(selector => !scopes.some(scope => selector.includes(scope)));
-    assert.deepEqual([...new Set(left)].sort(), [...unscoped].sort(), "only the listed page-level selectors stay unscoped");
+    assert.deepEqual([...new Set(left)].sort(), [...unscoped, ...legacy].sort(), "only the listed shared and legacy selectors stay unscoped");
+    assert.equal(left.filter(selector => unscoped.includes(selector)).length, counts.unscoped ?? unscoped.length, "unscoped count");
+    assert.equal(left.filter(selector => legacy.includes(selector)).length, counts.legacy ?? legacy.length, "legacy count");
     const used = new Set();
     for (const selector of selectors.filter(item => !left.includes(item))) {
       const own = scopes.filter(scope => selector.includes(scope));
