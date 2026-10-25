@@ -23,6 +23,15 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-ornament-plus", frame: "finale" },
   { source: "act-showcase-top-background-only", frame: "finale" },
   { source: "act-showcase-final-trailer", frame: "finale" },
+  {
+    source: "act-showcase-finale",
+    frames: ["title", "ready"],
+    // the advance button lives in the sequence footer, outside the ACT READY screen
+    unscoped: [
+      "body.showcase-neotokyo-finale-active .neotokyo-sequence__advance",
+      "body.showcase-neotokyo-finale-active .neotokyo-sequence__advance:before"
+    ]
+  },
   { source: "act-showcase-cinematic-fit", frames: ["title", "handout-assign", "ready", "finale"] },
   {
     source: "act-showcase-visual-trailer-fix",
