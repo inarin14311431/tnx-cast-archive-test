@@ -10,8 +10,8 @@ import { SCENE_FRAMES } from "../js/act-showcase-scenes.js";
 // another frame) the rules no longer apply.
 // A layer that styles several frames (frames: [...]) is split into one rule per frame, each scoped to its own frame;
 // every selector carries exactly one of the listed scopes and every listed frame is used.
-// unscoped: rules whose subject is the page itself (body) or the sequence stage that holds every screen (it sits
-// outside the frames' sections), which no single frame owns; listed one by one so a new
+// unscoped: rules whose subject is the page itself (body) or a part of the sequence overlay that holds every screen
+// (its shell, stage or footer, outside the frames' sections), which no single frame owns; listed one by one so a new
 // unscoped selector fails the test
 const SCOPED_SOURCES = [
   { source: "act-showcase-assign-cards", frame: "handout-assign" },
@@ -31,7 +31,23 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-title-cyberpunk", frames: ["title", "finale"] },
   { source: "act-showcase-presentation-tuning", frames: ["title", "ready", "finale"] },
   { source: "act-showcase-writing-patterns", frames: ["title", "trailer", "handout-assign"] },
-  { source: "act-showcase-followup-v1", frames: ["handout-assign", "finale"] }
+  { source: "act-showcase-followup-v1", frames: ["handout-assign", "finale"] },
+  {
+    source: "act-showcase-visual-emphasis",
+    frames: ["trailer", "handout-assign", "finale"],
+    // the trailer's document scroll switches the page, the overlay, its shell and stage; the ACT READY access
+    // button lives in the sequence footer, outside the ready screen
+    unscoped: [
+      ":root[data-showcase-theme] body#act-showcase-page.showcase-neotokyo-intro-active.showcase-trailer-document-scroll",
+      ":root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence",
+      ":root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__shell",
+      ":root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll",
+      ":root[data-showcase-theme] body#act-showcase-page.showcase-trailer-document-scroll .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll:before",
+      "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong.neotokyo-finale__access-title",
+      "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line",
+      "body#act-showcase-page.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong .neotokyo-finale__access-title-line + .neotokyo-finale__access-title-line"
+    ]
+  }
 ];
 
 const scopeOf = frame => {

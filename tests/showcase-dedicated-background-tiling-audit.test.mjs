@@ -81,7 +81,7 @@ test("deluxe opening hero + poster board theme overrides (act-showcase-theme-sur
 });
 
 test("deluxe opening hero visual-emphasis overrides (act-showcase-visual-emphasis.css) state background-size/repeat explicitly", async () => {
-  const css = await actShowcaseCss("act-showcase-visual-emphasis");
+  const css = stripSceneScope(await actShowcaseCss("act-showcase-visual-emphasis"));
   const base = ruleBodyFor(css, ":root[data-showcase-theme] body#act-showcase-page.showcase-poster-v2-ready.has-showcase-background .scene-opening:before");
   assert.match(base, /background-size:cover,contain/);
   assert.match(base, /background-repeat:no-repeat,no-repeat/);
