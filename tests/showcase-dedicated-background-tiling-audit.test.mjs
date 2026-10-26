@@ -93,7 +93,7 @@ test("deluxe opening hero visual-emphasis overrides (act-showcase-visual-emphasi
 });
 
 test("deluxe opening hero mobile override (act-showcase-cinematic-v2.css) is self-contained for background-repeat", async () => {
-  const css = await actShowcaseCss("act-showcase-cinematic-v2");
+  const css = await stripSceneScope(actShowcaseCss("act-showcase-cinematic-v2"));
   const mediaBlock = css.slice(css.indexOf("@media (max-width:760px)"));
   const rule = ruleBodyFor(mediaBlock, "body.showcase-poster-v2-ready.showcase-published-background-restored .scene-opening:before");
   assert.match(rule, /background-size:cover,contain/);

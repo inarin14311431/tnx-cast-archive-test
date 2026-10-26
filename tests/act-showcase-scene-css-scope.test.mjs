@@ -41,6 +41,12 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-title-cyberpunk", frames: ["title", "finale"] },
   { source: "act-showcase-presentation-tuning", frames: ["title", "ready", "finale"] },
   { source: "act-showcase-supporting-cast", frames: ["title", "handout-assign", "ready", "finale"] },
+  {
+    source: "act-showcase-cinematic-v2",
+    frames: ["title", "trailer", "handout-assign", "finale"],
+    // the trailer's document scroll switches the overlay's stage, which sits outside every screen's section
+    unscoped: ["body#act-showcase-page .cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage.is-trailer-scroll"]
+  },
   { source: "act-showcase-writing-patterns", frames: ["title", "trailer", "handout-assign"] },
   { source: "act-showcase-followup-v1", frames: ["handout-assign", "finale"] },
   {
