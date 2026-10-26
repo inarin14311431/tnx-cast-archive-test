@@ -42,6 +42,19 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-presentation-tuning", frames: ["title", "ready", "finale"] },
   { source: "act-showcase-supporting-cast", frames: ["title", "handout-assign", "ready", "finale"] },
   {
+    source: "act-showcase-cinematic",
+    frames: ["loading", "title", "trailer", "handout-assign", "ready"],
+    // the overlay's shell and stage and the base rule of every screen (.neotokyo-sequence__screen) sit outside, or are
+    // shared by, every frame's section
+    unscoped: [
+      "body.showcase-neotokyo .neotokyo-sequence__shell",
+      "body.showcase-neotokyo .neotokyo-sequence__shell:before",
+      "body.showcase-neotokyo .neotokyo-sequence__shell:after",
+      "body.showcase-neotokyo .neotokyo-sequence__stage:before",
+      "body.showcase-neotokyo .neotokyo-sequence__screen"
+    ]
+  },
+  {
     source: "act-showcase-cinematic-v2",
     frames: ["title", "trailer", "handout-assign", "finale"],
     // the trailer's document scroll switches the overlay's stage, which sits outside every screen's section
