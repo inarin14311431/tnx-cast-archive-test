@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { stripSceneScope } from "./helpers/act-showcase-css.mjs";
 
 const page = readFileSync(new URL("../js/act-showcase-page.js", import.meta.url), "utf8");
-const css = readFileSync(new URL("../css-next/pages/act-showcase-core.css", import.meta.url), "utf8");
+const css = stripSceneScope(readFileSync(new URL("../css-next/pages/act-showcase-core.css", import.meta.url), "utf8"));
 
 test("キャスト選択は本体グリッドより上段に置き、1人のときは出さない", () => {
   const rosterAppend = page.indexOf("frame.append(roster);");

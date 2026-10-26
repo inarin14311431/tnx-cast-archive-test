@@ -41,6 +41,34 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-title-cyberpunk", frames: ["title", "finale"] },
   { source: "act-showcase-presentation-tuning", frames: ["title", "ready", "finale"] },
   { source: "act-showcase-supporting-cast", frames: ["title", "handout-assign", "ready", "finale"] },
+  {
+    source: "act-showcase-layout-polish",
+    frames: ["title", "handout-assign", "ready", "finale"],
+    // 22 selectors (13 distinct) stay unscoped, in three kinds. None of them sits inside a frame's section:
+    unscopedCount: 22,
+    unscoped: {
+      // the sequence overlay's stage, which holds every screen
+      stage: [".cinematic-intro.neotokyo-sequence .neotokyo-sequence__stage"],
+      // the shared footer of the overlay (progress, step and status text), outside every screen
+      "shared footer": [
+        "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer",
+        "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer>.neotokyo-sequence__progress",
+        "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer>span",
+        "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer>small"
+      ],
+      // the ACT READY entrance button and its marker, which cinematic-polish.js builds into the shared footer
+      "ACT READY access button": [
+        "body.showcase-neotokyo-finale-active .neotokyo-finale__access-button",
+        "body.showcase-neotokyo-finale-active .neotokyo-finale__access-button:before",
+        "body.showcase-neotokyo-finale-active .neotokyo-finale__access-button:after",
+        "body.showcase-neotokyo-finale-active .neotokyo-finale__access-button span",
+        "body.showcase-neotokyo-finale-active .neotokyo-finale__access-button strong",
+        "body.showcase-neotokyo-finale-active .neotokyo-finale__access-button small",
+        ".neotokyo-finale__access-marker",
+        ".neotokyo-finale__access-marker:before"
+      ]
+    }
+  },
   { source: "act-showcase-story-flow", frames: ["title", "trailer", "handout-assign", "ready", "finale"] },
   {
     source: "act-showcase-cinematic",
@@ -144,7 +172,9 @@ function selectorsOf(css) {
     .filter(Boolean);
 }
 
-for (const { source, frame, frames = [frame], unscoped = [] } of SCOPED_SOURCES) {
+for (const { source, frame, frames = [frame], unscoped: unscopedSpec = [], unscopedCount } of SCOPED_SOURCES) {
+  // unscoped is a list, or { kind: [selectors] } so each kind of exception is named; unscopedCount pins how many rules stay
+  const unscoped = Array.isArray(unscopedSpec) ? unscopedSpec : Object.values(unscopedSpec).flat();
   test(`${source}: every selector is confined to one frame of pattern a (${frames.join(", ")})`, () => {
     for (const item of frames) assert.ok(SCENE_FRAMES.includes(item), item);
     const scopes = frames.map(scopeOf);
@@ -152,6 +182,7 @@ for (const { source, frame, frames = [frame], unscoped = [] } of SCOPED_SOURCES)
     assert.ok(selectors.length > 0);
     const left = selectors.filter(selector => !scopes.some(scope => selector.includes(scope)));
     assert.deepEqual([...new Set(left)].sort(), [...unscoped].sort(), "only the listed page-level selectors stay unscoped");
+    if (unscopedCount !== undefined) assert.equal(left.length, unscopedCount, "the number of unscoped selectors is pinned");
     const used = new Set();
     for (const selector of selectors.filter(item => !left.includes(item))) {
       const own = scopes.filter(scope => selector.includes(scope));
