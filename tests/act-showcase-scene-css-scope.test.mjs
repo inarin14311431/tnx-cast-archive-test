@@ -75,6 +75,25 @@ const SCOPED_SOURCES = [
     frames: ["title", "ready", "handout-assign", "trailer", "finale"],
     // the page's own status line (#act-showcase-status) sits beside #act-showcase-root, outside every frame
     unscoped: [".showcase-loading[hidden]"]
+  },
+  {
+    source: "act-showcase-cinematic-readability",
+    frames: ["title", "ready", "handout-assign", "finale"],
+    // the shared footer and the progress button in it, and the ACT READY access button (made in that footer by
+    // cinematic-polish.js): all outside the screens' sections. __advance--title-access is also never added by any code
+    unscoped: [
+      ".neotokyo-sequence__advance--title-access",
+      ".neotokyo-sequence__footer",
+      "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer",
+      "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer>.neotokyo-sequence__advance",
+      ".neotokyo-finale__access-button",
+      ".neotokyo-finale__access-button:before",
+      ".neotokyo-finale__access-button span",
+      ".neotokyo-finale__access-button strong",
+      ".neotokyo-finale__access-button small",
+      ".neotokyo-finale__access-button:hover",
+      ".neotokyo-finale__access-button:focus-visible"
+    ]
   }
 ];
 
