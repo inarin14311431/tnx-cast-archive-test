@@ -42,6 +42,67 @@ const SCOPED_SOURCES = [
   { source: "act-showcase-presentation-tuning", frames: ["title", "ready", "finale"] },
   { source: "act-showcase-supporting-cast", frames: ["title", "handout-assign", "ready", "finale"] },
   {
+    source: "act-showcase-neotokyo",
+    frames: ["loading", "title", "trailer", "handout-assign", "ready"],
+    // 55 selectors (37 distinct) stay unscoped, in five kinds. A class shared by several screens (.neotokyo-sequence__screen,
+    // __eyebrow, __micro, __terminal, __section-title, __readout) is split into one rule per frame that builds it.
+    unscopedCount: 55,
+    unscoped: {
+      // the overlay's root element and the page class that goes with it (they hold every screen)
+      "overlay root and page state": [
+        "body.showcase-neotokyo-intro-active",
+        ".cinematic-intro.neotokyo-sequence",
+        ".cinematic-intro.neotokyo-sequence:before",
+        ".cinematic-intro.neotokyo-sequence:after",
+        ".neotokyo-sequence__shell",
+        "body.showcase-neotokyo-reduced .cinematic-intro"
+      ],
+      // the overlay's header (brand, system text, skip button), outside every screen
+      "overlay header": [
+        ".neotokyo-sequence__header",
+        ".neotokyo-sequence__brand",
+        ".neotokyo-sequence__brand strong",
+        ".neotokyo-sequence__brand span",
+        ".neotokyo-sequence__brand small",
+        ".neotokyo-sequence__system",
+        ".neotokyo-sequence__system span:first-child",
+        ".neotokyo-sequence__skip",
+        ".neotokyo-sequence__skip:hover",
+        ".neotokyo-sequence__skip:focus-visible"
+      ],
+      // the overlay's stage, which holds every screen
+      "overlay stage": [
+        ".neotokyo-sequence__stage",
+        ".neotokyo-sequence__stage:before",
+        ".neotokyo-sequence__stage.is-awaiting-advance",
+        ".neotokyo-sequence__stage:after",
+        ".neotokyo-sequence__stage.is-screen-swap:after",
+        "body.showcase-neotokyo-reduced .neotokyo-sequence__stage:after"
+      ],
+      // the shared footer (progress, step text, advance button), outside every screen
+      "shared footer and advance button": [
+        ".neotokyo-sequence__footer",
+        ".neotokyo-sequence__progress",
+        ".neotokyo-sequence__progress i",
+        ".neotokyo-sequence__footer span",
+        ".neotokyo-sequence__footer small",
+        ".neotokyo-sequence__advance",
+        ".neotokyo-sequence__advance[hidden]",
+        ".neotokyo-sequence__advance:hover",
+        ".neotokyo-sequence__advance:focus-visible"
+      ],
+      // selectors for classes that nothing in js/ or the HTML creates (screen--assign, assign-title, ruler, rail): they match no element, so no frame owns them; they belong to the dead-selector cleanup
+      "dead selectors (no creation site)": [
+        ".neotokyo-sequence__ruler",
+        ".neotokyo-sequence__screen--assign",
+        ".neotokyo-sequence__screen--assign>.neotokyo-sequence__eyebrow",
+        ".neotokyo-sequence__assign-title",
+        ".neotokyo-sequence__screen--assign.is-assigned .neotokyo-sequence__search",
+        ".neotokyo-sequence__rail"
+      ]
+    }
+  },
+  {
     source: "act-showcase-layout-polish",
     frames: ["title", "handout-assign", "ready", "finale"],
     // 22 selectors (13 distinct) stay unscoped, in three kinds. None of them sits inside a frame's section:
