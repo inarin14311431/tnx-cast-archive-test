@@ -40,6 +40,7 @@ const SCOPED_SOURCES = [
   },
   { source: "act-showcase-title-cyberpunk", frames: ["title", "finale"] },
   { source: "act-showcase-presentation-tuning", frames: ["title", "ready", "finale"] },
+  { source: "act-showcase-supporting-cast", frames: ["title", "handout-assign", "ready", "finale"] },
   { source: "act-showcase-writing-patterns", frames: ["title", "trailer", "handout-assign"] },
   { source: "act-showcase-followup-v1", frames: ["handout-assign", "finale"] },
   {
