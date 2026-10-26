@@ -72,7 +72,7 @@ const SCOPED_SOURCES = [
   },
   {
     source: "act-showcase-neotokyo-hierarchy",
-    frames: ["title", "ready", "handout-assign", "trailer", "finale"],
+    frames: ["title", "ready", "handout-assign", "finale"],
     // the page's own status line (#act-showcase-status) sits beside #act-showcase-root, outside every frame
     unscoped: [".showcase-loading[hidden]"]
   },
