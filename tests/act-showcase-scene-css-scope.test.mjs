@@ -14,6 +14,30 @@ import { SCENE_FRAMES } from "../js/act-showcase-scenes.js";
 // (its shell, stage or footer, outside the frames' sections), which no single frame owns; listed one by one so a new
 // unscoped selector fails the test
 const SCOPED_SOURCES = [
+  {
+    source: "act-showcase",
+    frame: "finale",
+    // the base layer: 25 selectors (18 distinct) stay unscoped, in three kinds. The page's own reset, the static ACCESS overlay and the loading line sit outside #act-showcase-root, so
+    // no frame owns them; everything inside the root (hero, ambient stage, footer) is the finale frame
+    unscopedCount: 25,
+    unscoped: {
+      // reset rules for the whole page
+      "page-wide reset": [":root", "*", "html", "[hidden]", "button", "a", "body", "*:before", "*:after"],
+      // the static ACCESS overlay of act-showcase.html (#cinematic-intro): the overlay root and its first lines, outside every frame
+      "static ACCESS overlay": [
+        ".cinematic-intro",
+        ".cinematic-intro.is-hidden",
+        ".cinematic-intro:before",
+        ".cinematic-intro__scan",
+        ".cinematic-intro__inner",
+        ".cinematic-intro__overline",
+        ".cinematic-intro__title",
+        ".cinematic-intro__sub"
+      ],
+      // the loading/error line (#act-showcase-status), a sibling of the root
+      "loading line": [".showcase-loading", ".showcase-loading.is-error"]
+    }
+  },
   { source: "act-showcase-neotokyo-linked", frame: "handout-assign" },
   { source: "act-showcase-assign-cards", frame: "handout-assign" },
   { source: "act-showcase-assign-cards-theme", frame: "handout-assign" },
