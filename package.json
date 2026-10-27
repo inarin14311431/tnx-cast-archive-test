@@ -16,6 +16,7 @@
     "audit:modulepreload": "node scripts/generate-modulepreload.mjs --check",
     "audit:js-baseline": "node scripts/audit-js-baseline.mjs",
     "audit:colors": "node scripts/audit-hardcoded-colors.mjs",
+    "audit:showcase-colors": "node scripts/audit-showcase-colors.mjs",
     "audit:cache": "node scripts/audit-editor-cache-policy.mjs",
     "audit:modules": "node scripts/audit-module-graph.mjs",
     "audit:integrity": "node scripts/audit-runtime-integrity.mjs",

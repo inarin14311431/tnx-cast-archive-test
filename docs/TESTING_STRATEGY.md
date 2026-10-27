@@ -71,6 +71,7 @@ static auditは、ブラウザを起動せずに構造的な契約を検査す�
 - `audit:css` — CSS ownership / duplicate / prohibited patterns
 - `audit:themes` — theme registry / manifest / scope
 - `audit:colors` — 直書き色（#hex / rgb() / hsl()）の増加防止。ファイルごとの基準値は `scripts/hardcoded-colors-baseline.json`（検証repoのみ導入済み）
+- `audit:showcase-colors` — 豪華版・スタンダード版・生成画面(パスに `showcase` を含むファイル)の直書き色の増加防止。`audit:colors` はこれらを数えない。ファイルごとの基準値は `scripts/showcase-hardcoded-colors-baseline.json`(検証repoのみ)。基準値より増えると落ちる。基準値にないファイル(新しい CSS。パターン B・C のものを含む)は直書き0が条件。基準値を上げて通さない。枠ごとの内訳は `node scripts/report-showcase-colors.mjs`(報告のみ、検査ではない)
 - `audit:sheet` — PC editor runtime contract
 - `audit:mobile` — Mobile editor runtime contract
 - `audit:cast` — cast viewer runtime
