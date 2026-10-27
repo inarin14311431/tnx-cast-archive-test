@@ -119,7 +119,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 |---|---|---|
 | 特異度で優先度を取っている | `!important` は0件で、`body#act-showcase-page .cinematic-intro.neotokyo-sequence …` のような接頭辞の長さで勝敗を決めている(LAYERS §1)。パターンBのCSSは、Aの全層より強い特異度を持つか、Aの規則が当たらないクラス名を使う必要がある | パターンBが同じクラス名を使うと、Aの約30層の規則と戦うことになる。**パターンB/Cは、Aと共有しない枠の名前空間(例: `data-scene-pattern="b"` の下)で書く前提にしないと成り立たない** |
 | observer の登録順と同期性 | 1〜10の observer は本体より先に登録され、タイトルのロゴ構造は最初の可視フレームまでに同期で確定させている(LAYERS §3.4)。枠の部品を `import()` で遅延読み込みすると、この順序が崩れる | Aの部品は今の読み込み順のまま残す。B/Cを足すときに読み込み方を決める |
-| 旧CSS | 旧ベース(`act-showcase.css`)の113ルールは、今の豪華版に対応するDOMがない(`.scene-progress` `.trailer-layout` `.cast-stage` `.handout-file` `.scene-end` など。js/ と HTML に生成箇所なし)。テーマ層にも4ルールある | 枠への振り分けの対象外。うち「確証あり」17クラス(削除済みであることをテストか資料が確認しているもの。第7節)は、別PRで削除した(画面比較の差分0、アクト紹介 E2E で確認)。確証が弱い35クラスは、1つずつ確かめるまで削除せず保留 |
+| 旧CSS | 旧ベース(`act-showcase.css`)の113ルールは、今の豪華版に対応するDOMがない(`.scene-progress` `.trailer-layout` `.cast-stage` `.handout-file` `.scene-end` など。js/ と HTML に生成箇所なし)。テーマ層にも4ルールある | 枠への振り分けの対象外。うち「確証あり」17クラス(削除済みであることをテストか資料が確認しているもの。第7節)は、別PRで削除した(画面比較の差分0、アクト紹介 E2E で確認)。確証が弱い35クラスのうち neotokyo の旧セレクタ(`__ruler` `__screen--assign` `__assign-title` `__rail` と、それを含む複合2件)・`showcase-neotokyo-title-paused`・`__advance--title-access`・使われていない `@keyframes showcase-cast-entry-reveal` は、js/・全HTML・scripts/・supabase/・config/・assets/・属性セレクタ・他のCSS・テスト・資料まで確かめたうえで、別PRで削除した。残りは1つずつ確かめるまで保留 |
 | 文字列で固定したテスト | `act-showcase-observer-stability` など、ソース文字列を `assert.match` するテストが38本(LAYERS §4.3) | 関数やファイルを動かすと、見た目と関係なく落ちる。意図を保ったまま検査を実装非依存に直す(弱めない)作業が各PRに付く |
 | 4・5の繰り返し | 第0節。アサインのパターンは、ハンドアウトのパターンが作ったDOMの上で動く | ハンドアウトとアサインのパターンを別々に選べるようにするには、両者の受け渡し(アサインが使う `__assign-panel` と、ハンドアウト側の縮め方)を契約として決める必要がある |
 

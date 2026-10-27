@@ -44,9 +44,9 @@ const SCOPED_SOURCES = [
   {
     source: "act-showcase-neotokyo",
     frames: ["loading", "title", "trailer", "handout-assign", "ready"],
-    // 55 selectors (37 distinct) stay unscoped, in five kinds. A class shared by several screens (.neotokyo-sequence__screen,
+    // 47 selectors (31 distinct) stay unscoped, in four kinds. A class shared by several screens (.neotokyo-sequence__screen,
     // __eyebrow, __micro, __terminal, __section-title, __readout) is split into one rule per frame that builds it.
-    unscopedCount: 55,
+    unscopedCount: 47,
     unscoped: {
       // the overlay's root element and the page class that goes with it (they hold every screen)
       "overlay root and page state": [
@@ -90,15 +90,6 @@ const SCOPED_SOURCES = [
         ".neotokyo-sequence__advance[hidden]",
         ".neotokyo-sequence__advance:hover",
         ".neotokyo-sequence__advance:focus-visible"
-      ],
-      // selectors for classes that nothing in js/ or the HTML creates (screen--assign, assign-title, ruler, rail): they match no element, so no frame owns them; they belong to the dead-selector cleanup
-      "dead selectors (no creation site)": [
-        ".neotokyo-sequence__ruler",
-        ".neotokyo-sequence__screen--assign",
-        ".neotokyo-sequence__screen--assign>.neotokyo-sequence__eyebrow",
-        ".neotokyo-sequence__assign-title",
-        ".neotokyo-sequence__screen--assign.is-assigned .neotokyo-sequence__search",
-        ".neotokyo-sequence__rail"
       ]
     }
   },
@@ -190,9 +181,8 @@ const SCOPED_SOURCES = [
     source: "act-showcase-cinematic-readability",
     frames: ["title", "ready", "handout-assign", "finale"],
     // the shared footer and the progress button in it, and the ACT READY access button (made in that footer by
-    // cinematic-polish.js): all outside the screens' sections. __advance--title-access is also never added by any code
+    // cinematic-polish.js): all outside the screens' sections.
     unscoped: [
-      ".neotokyo-sequence__advance--title-access",
       ".neotokyo-sequence__footer",
       "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer",
       "body.showcase-neotokyo-finale-active .neotokyo-sequence__footer>.neotokyo-sequence__advance",
