@@ -4,6 +4,9 @@ import {
   DEFAULT_SCENE_PATTERN,
   SCENE_FRAMES,
   SCENE_PATTERNS,
+  formatSceneSelectionField,
+  normalizeSceneSelection,
+  parseSceneSelectionField,
   resolveSceneComposition
 } from "../js/act-showcase-scenes.js";
 
@@ -72,3 +75,60 @@ test("keys inherited from the prototype are not read as frames", () => {
   const scenes = Object.create({ title: "b" });
   assert.deepEqual(resolveSceneComposition({ scenes }, { patterns: ABC }), ALL_A);
 });
+
+// ---- saving and restoring the composition (the generator side)
+
+test("the selection keeps only frames that are not a, in frame order, with names normalised", () => {
+  assert.deepEqual(
+    normalizeSceneSelection({ finale: " C ", title: "B", ready: "a", loading: "A", "handout-assign": "b" }),
+    { title: "b", "handout-assign": "b", finale: "c" }
+  );
+  assert.deepEqual(Object.keys(normalizeSceneSelection({ finale: "c", title: "b" })), ["title", "finale"]);
+});
+
+test("a selection of all a, or of nothing usable, is empty", () => {
+  for (const value of [{}, null, undefined, "b", ["b"], 3, { title: "a" }, { bogus: "b" }, { handout: "b", assign: "b" }, { title: "" }, { title: 2 }, { title: "has space" }, { title: "x".repeat(17) }]) {
+    assert.deepEqual(normalizeSceneSelection(value), {}, JSON.stringify(value));
+  }
+});
+
+test("a pattern the frame cannot play yet is kept as written (the reader plays a for it until it exists)", () => {
+  const stored = { title: "b", ready: "c" };
+  assert.deepEqual(normalizeSceneSelection(stored), stored);
+  assert.deepEqual(resolveSceneComposition({ scenes: stored }), ALL_A);
+});
+
+test("keys inherited from the prototype are not taken into the selection", () => {
+  assert.deepEqual(normalizeSceneSelection(Object.create({ title: "b" })), {});
+});
+
+test("the hidden field holds the selection as JSON, and an empty selection as an empty string", () => {
+  assert.equal(formatSceneSelectionField({}), "");
+  assert.equal(formatSceneSelectionField(undefined), "");
+  assert.equal(formatSceneSelectionField({ title: "a" }), "");
+  assert.equal(formatSceneSelectionField({ title: "b" }), '{"title":"b"}');
+  assert.deepEqual(parseSceneSelectionField('{"title":"b","finale":"c"}'), { title: "b", finale: "c" });
+});
+
+test("an empty, broken or non-object field reads as no selection", () => {
+  for (const text of ["", "   ", undefined, null, "{", "not json", "[]", '"b"', "3", "null", '{"bogus":"b"}']) {
+    assert.deepEqual(parseSceneSelectionField(text), {}, String(text));
+  }
+});
+
+test("round trip: restore writes the field, publish reads it back, and the page plays the same composition", () => {
+  const stored = { version: 2, scenes: { title: "B", "handout-assign": " c ", ready: "a", finale: 3, bogus: "b" } };
+  const field = formatSceneSelectionField(stored.scenes);              // restore: showcase_data.scenes -> #showcase-scenes
+  const published = parseSceneSelectionField(field);                   // publish: #showcase-scenes -> showcase_data.scenes
+  assert.deepEqual(published, { title: "b", "handout-assign": "c" });
+  assert.deepEqual(resolveSceneComposition({ scenes: published }, { patterns: ABC }), resolveSceneComposition(stored, { patterns: ABC }));
+  assert.equal(formatSceneSelectionField(published), field, "publishing again does not change the field");
+});
+
+test("round trip: a showcase without a scenes key stays without one", () => {
+  for (const stored of [{ casts: [{}] }, { casts: [{}], scenes: {} }, { casts: [{}], scenes: { title: "a" } }]) {
+    assert.equal(formatSceneSelectionField(stored.scenes), "");
+    assert.deepEqual(parseSceneSelectionField(formatSceneSelectionField(stored.scenes)), {});
+  }
+});
+
