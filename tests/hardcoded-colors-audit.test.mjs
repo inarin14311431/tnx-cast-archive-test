@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { collectColorCounts, countHardcodedColors, isTargetFile } from "../scripts/hardcoded-colors-lib.mjs";
+import { collectColorCounts, collectShowcaseColorCounts, countHardcodedColors, isShowcaseTargetFile, isTargetFile } from "../scripts/hardcoded-colors-lib.mjs";
 
 const root = new URL("../", import.meta.url).pathname;
 
@@ -58,5 +58,30 @@ test("the baseline file is the sorted per-file count of the current tree", async
   const current = await collectColorCounts(root);
   for (const [file, count] of Object.entries(current)) {
     assert.ok(count <= (baseline.files[file] ?? 0), `${file} has ${count} hardcoded colors, baseline ${baseline.files[file] ?? 0}`);
+  }
+});
+
+test("showcase files are audited by their own ratchet, not by audit:colors", () => {
+  for (const file of ["css-next/pages/act-showcase-core.css", "css-next/pages/showcase.css", "js/act-showcase-page.js", "js/showcase-output-css.js"]) {
+    assert.equal(isShowcaseTargetFile(file), true, file);
+    assert.equal(isTargetFile(file), false, file);
+  }
+  for (const file of ["css-next/pages/acts.css", "css-next/themes/showcase-x.css", "js/vendor/showcase.js", "tests/act-showcase.test.mjs", "css-next/pages/act-showcase.md"]) {
+    assert.equal(isShowcaseTargetFile(file), false, file);
+  }
+});
+
+test("the showcase baseline names every showcase file; a file may go down, never up, and a new file starts at 0", async () => {
+  const baseline = JSON.parse(await readFile(new URL("../scripts/showcase-hardcoded-colors-baseline.json", import.meta.url), "utf8"));
+  assert.equal(baseline.schema, 1);
+  const files = Object.keys(baseline.files);
+  assert.deepEqual(files, [...files].sort(), "baseline keys must be sorted");
+  for (const [file, count] of Object.entries(baseline.files)) {
+    assert.ok(isShowcaseTargetFile(file), `${file} is outside the audited scope`);
+    assert.ok(Number.isInteger(count) && count >= 0, `${file} must have a non-negative integer count`);
+  }
+  const current = await collectShowcaseColorCounts(root);
+  for (const [file, count] of Object.entries(current)) {
+    assert.ok(count <= (baseline.files[file] ?? 0), `${file} has ${count} hardcoded colors, baseline ${baseline.files[file] ?? 0} (a new showcase file starts at 0)`);
   }
 });

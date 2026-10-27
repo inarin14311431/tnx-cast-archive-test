@@ -28,6 +28,8 @@ jobs:
         run: npm run audit:js-baseline
       - name: Audit hardcoded colors
         run: npm run audit:colors
+      - name: Audit showcase hardcoded colors
+        run: npm run audit:showcase-colors
       - name: Audit editor cache policy
         run: npm run audit:cache
       - name: Audit module dependency graph

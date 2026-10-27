@@ -14,6 +14,19 @@ const FIXED_DESIGN_FILES = ["css-next/pages/experience-ticket.css", "js/experien
 const HEX = /(?<![\w&])#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])/gi;
 const FUNCTIONAL = /(?<![\w-])(?:rgb|hsl)a?\(/gi;
 
+// The showcase (ACT SHOWCASE and the showcase generator) files are counted by their own ratchet (audit:showcase-colors).
+export function isShowcaseTargetFile(relativePath) {
+  if (!relativePath.split("/").some(segment => /showcase/i.test(segment))) return false;
+  if (relativePath.startsWith("css-next/") && relativePath.endsWith(".css")) {
+    return !CSS_EXCLUDED_DIRS.some(directory => relativePath.startsWith(directory));
+  }
+  if (relativePath.startsWith("js/") && relativePath.endsWith(".js")) {
+    return !JS_EXCLUDED_DIRS.some(directory => relativePath.startsWith(directory))
+      && !JS_EXCLUDED_FILES.includes(relativePath);
+  }
+  return false;
+}
+
 export function isTargetFile(relativePath) {
   if (relativePath.split("/").some(segment => /showcase/i.test(segment))) return false;
   if (FIXED_DESIGN_FILES.includes(relativePath)) return false;
@@ -87,6 +100,20 @@ export async function collectColorCounts(root) {
       if (!isTargetFile(relativePath)) continue;
       const count = countHardcodedColors(await readFile(file, "utf8"), relativePath.endsWith(".css") ? "css" : "js");
       if (count > 0) counts[relativePath] = count;
+    }
+  }
+  return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+}
+
+// Same counting as collectColorCounts, for the showcase files. Files with no color are listed too (as 0), so the
+// baseline names every showcase file and a new file that is not in it has to start at 0.
+export async function collectShowcaseColorCounts(root) {
+  const counts = {};
+  for (const top of ["css-next", "js"]) {
+    for (const file of await filesUnder(path.join(root, top))) {
+      const relativePath = path.relative(root, file).replaceAll(path.sep, "/");
+      if (!isShowcaseTargetFile(relativePath)) continue;
+      counts[relativePath] = countHardcodedColors(await readFile(file, "utf8"), relativePath.endsWith(".css") ? "css" : "js");
     }
   }
   return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
