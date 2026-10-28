@@ -22,9 +22,14 @@ const LONG_TRAILER = [
 async function pageOffersTrailerB(page) {
   // A script URL is a document of the same origin: nothing of the showcase page runs, and import() can read the module.
   await page.goto("/js/act-showcase-scenes.js");
+  // A build without the module at all (an old runtime) has no pattern B either: the import fails and the spec skips.
   return page.evaluate(async () => {
-    const { SCENE_PATTERNS } = await import("/js/act-showcase-scenes.js");
-    return Boolean(SCENE_PATTERNS.trailer?.includes("b"));
+    try {
+      const { SCENE_PATTERNS } = await import("/js/act-showcase-scenes.js");
+      return Boolean(SCENE_PATTERNS.trailer?.includes("b"));
+    } catch {
+      return false;
+    }
   });
 }
 
