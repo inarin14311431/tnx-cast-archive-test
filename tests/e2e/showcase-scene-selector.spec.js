@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { hasAuthCredentials } from "./helpers.js";
 
-// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). Only pattern "a" exists for every frame
-// now, so the real page shows nothing; the second test mounts the same selector with a frame that can play "b" to check the whole
-// path in the browser: the select, the hidden field, and what a restore writes.
+// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). The ACT TRAILER frame is the only one
+// with a second pattern (b), so the real page offers that one select; the second test mounts the same selector with more frames
+// that can play other patterns to check the whole path in the browser: the select, the hidden field, and what a restore writes.
 
 test.beforeEach(() => {
   test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
@@ -14,10 +14,19 @@ async function openGenerator(page) {
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 20_000 });
 }
 
-test("while every frame can play only pattern a, the generator offers no composition choice", async ({ page }) => {
+test("the generator offers one composition choice: the trailer frame's pattern b; the choice lands in the hidden field", async ({ page }) => {
   await openGenerator(page);
-  await expect(page.locator("#showcase-scene-composition")).toBeHidden();
-  await expect(page.locator("#showcase-scene-composition select")).toHaveCount(0);
+  // only the ACT TRAILER frame can play a second pattern, so it is the only select
+  const host = page.locator("#showcase-scene-composition");
+  await expect(host).toBeVisible();
+  await expect(host.locator("select")).toHaveCount(1);
+  const trailer = host.locator('select[data-scene-frame="trailer"]');
+  await expect(trailer.locator("option")).toHaveText(["パターン A", "パターン B"]);
+  await expect(trailer).toHaveValue("a");
+  await expect(page.locator("#showcase-scenes")).toHaveValue("");
+  await trailer.selectOption("b");
+  await expect(page.locator("#showcase-scenes")).toHaveValue('{"trailer":"b"}');
+  await trailer.selectOption("a");
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
 });
 
