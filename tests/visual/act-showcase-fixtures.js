@@ -124,10 +124,17 @@ async function fulfill(route, body) {
   return route.fulfill({ status: 200, headers: corsHeaders, body: JSON.stringify(body) });
 }
 
-export async function installActShowcaseRoutes(page) {
+// scenes: the composition stored with the showcase (showcase_data.scenes), e.g. { trailer: "b" }. trailerBody: replaces the
+// ACT TRAILER text (a long text for the frames that scroll). Both are optional: without them the data is the default one.
+export async function installActShowcaseRoutes(page, { scenes, trailerBody } = {}) {
+  const data = {
+    ...showcaseData,
+    ...(scenes ? { scenes } : {}),
+    ...(trailerBody ? { trailer: { ...showcaseData.trailer, body: trailerBody } } : {})
+  };
   // Remote web fonts would make the first frame depend on the network.
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
-  await page.route("**/rest/v1/rpc/get_public_act_showcase", route => fulfill(route, showcaseData));
+  await page.route("**/rest/v1/rpc/get_public_act_showcase", route => fulfill(route, data));
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => fulfill(route, guestData));
 }
 
