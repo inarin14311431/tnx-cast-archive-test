@@ -72,6 +72,7 @@ static auditは、ブラウザを起動せずに構造的な契約を検査す�
 - `audit:themes` — theme registry / manifest / scope
 - `audit:colors` — 直書き色（#hex / rgb() / hsl()）の増加防止。ファイルごとの基準値は `scripts/hardcoded-colors-baseline.json`（検証repoのみ導入済み）
 - `audit:showcase-colors` — 豪華版・スタンダード版・生成画面(パスに `showcase` を含むファイル)の直書き色の増加防止。`audit:colors` はこれらを数えない。ファイルごとの基準値は `scripts/showcase-hardcoded-colors-baseline.json`(検証repoのみ)。基準値より増えると落ちる。基準値にないファイル(新しい CSS。パターン B・C のものを含む)は直書き0が条件。数え方は `audit:colors` と同じで、`rgba(var(--x-rgb), .3)` のように引数が変数のものも1つと数える。新しい CSS の透明度付きの色は `color-mix(in srgb, var(--showcase-primary) 30%, transparent)` で書く。基準値を上げて通さない。枠ごとの内訳は `node scripts/report-showcase-colors.mjs`(報告のみ、検査ではない)
+- ACT SHOWCASE のパターン B(trailer、2026-10-28): `tests/act-showcase-pattern-b-css.test.mjs`(CSS のスコープ・クラス名・色)、`tests/act-showcase-scenes.test.mjs` の `playWithFallback`、`tests/act-showcase-caret.test.mjs`(追従スクロールの純関数と、A が `onStep` を使わないこと)、E2E `tests/e2e/act-showcase-scene-b.spec.js`(B の画面と A の装飾が付かないこと、切り替え幅 760px・520px、長文の打鍵中にキャレットが枠内、B が失敗したら A で再生、forced-colors、4テーマのコントラスト)。画面比較は `visual-regression-baseline` の `act-showcase-scene-b.visual.spec.js`(B が無いビルドでは skip。基準画像は B の実装 PR の CI の成果物から、手順どおり別の基準画像 PR で入れる)
 - `audit:sheet` — PC editor runtime contract
 - `audit:mobile` — Mobile editor runtime contract
 - `audit:cast` — cast viewer runtime
