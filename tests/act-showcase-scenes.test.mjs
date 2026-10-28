@@ -7,6 +7,7 @@ import {
   formatSceneSelectionField,
   normalizeSceneSelection,
   parseSceneSelectionField,
+  playWithFallback,
   resolveSceneComposition
 } from "../js/act-showcase-scenes.js";
 
@@ -19,10 +20,37 @@ test("six frames in a fixed order (docs/ACT_SHOWCASE_SCENES.md §6.1); handout a
   assert.ok(Object.isFrozen(SCENE_FRAMES));
 });
 
-test("only pattern a exists for now, on every frame", () => {
+test("pattern a exists on every frame; the trailer frame also has b, nothing else has more", () => {
   assert.equal(DEFAULT_SCENE_PATTERN, "a");
   assert.deepEqual(Object.keys(SCENE_PATTERNS), SCENE_FRAMES);
-  for (const frame of SCENE_FRAMES) assert.deepEqual(SCENE_PATTERNS[frame], ["a"]);
+  for (const frame of SCENE_FRAMES) assert.deepEqual(SCENE_PATTERNS[frame], frame === "trailer" ? ["a", "b"] : ["a"], frame);
+});
+
+test("playWithFallback plays the asked pattern, and \"a\" when it is unknown or throws", async () => {
+  const calls = [];
+  const patterns = {
+    a: async () => { calls.push("a"); return "drawn a"; },
+    b: async () => { calls.push("b"); return "drawn b"; }
+  };
+  const run = draw => draw();
+  assert.equal(await playWithFallback(patterns, "b", run), "drawn b");
+  assert.equal(await playWithFallback(patterns, "a", run), "drawn a");
+  for (const wanted of ["c", "", undefined, null, 3, "toString", "__proto__"]) assert.equal(await playWithFallback(patterns, wanted, run), "drawn a", String(wanted));
+  assert.deepEqual(calls, ["b", "a", "a", "a", "a", "a", "a", "a", "a"]);
+
+  const failures = [];
+  const broken = { a: async () => "drawn a", b: async () => { throw new Error("b is broken"); } };
+  assert.equal(await playWithFallback(broken, "b", run, (error, pattern) => failures.push([error.message, pattern])), "drawn a");
+  assert.deepEqual(failures, [["b is broken", "b"]]);
+});
+
+test("playWithFallback does not hide a failing pattern a, or a failing fallback", async () => {
+  const boom = new Error("a is broken");
+  await assert.rejects(playWithFallback({ a: async () => { throw boom; } }, "a", draw => draw()), error => error === boom);
+  await assert.rejects(playWithFallback({ a: async () => { throw boom; }, b: async () => { throw new Error("b"); } }, "b", draw => draw()), error => error === boom);
+  // without an "a" there is nothing to fall back to: the error of the asked pattern surfaces
+  const only = new Error("only b");
+  await assert.rejects(playWithFallback({ b: async () => { throw only; } }, "b", draw => draw()), error => error === only);
 });
 
 test("a showcase published before compositions existed plays every frame as a", () => {

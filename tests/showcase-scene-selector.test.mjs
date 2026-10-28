@@ -34,8 +34,9 @@ function mount(patterns = PATTERNS, fieldValue = "") {
 }
 
 test("while every frame can play only a, nothing is offered and the fieldset stays hidden", () => {
-  assert.deepEqual(selectableFrames(SCENE_PATTERNS), []);
-  const { host, selects, api } = mount(SCENE_PATTERNS);
+  const onlyA = Object.fromEntries(SCENE_FRAMES.map(frame => [frame, ["a"]]));
+  assert.deepEqual(selectableFrames(onlyA), []);
+  const { host, selects, api } = mount(onlyA);
   assert.equal(host.hidden, true);
   assert.equal(selects().length, 0);
   assert.deepEqual(api.frames, []);
@@ -121,8 +122,8 @@ test("a missing host or field mounts nothing", () => {
   assert.equal(mountSceneSelector({ host: doc.createElement("fieldset"), field: null, doc }), null);
 });
 
-test("the real SCENE_PATTERNS still has only a, so the generator shows nothing yet", () => {
-  assert.deepEqual(selectableFrames(), []);
+test("the real SCENE_PATTERNS offers one choice, the trailer frame's pattern b; every other frame has only a", () => {
+  assert.deepEqual(selectableFrames(), [{ frame: "trailer", patterns: ["a", "b"] }]);
 });
 
 test("the generator page has the hidden fieldset with the one hidden field in it, and the loader mounts the selector", async () => {

@@ -174,6 +174,16 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 | 7〜 | パターンB/Cの追加(見た目が変わる) | 枠ごとに1PR。`data-scene-pattern="b"` の下でだけ効くCSSと、その枠の関数を表に足す。基準画像はB用を新規に追加し、A用は変えない。B・C の新しい CSS は、色を `var(--showcase-*)` と `color-mix()` だけで書く(第4節) | 新しい基準画像、E2E |
 
   7 の分け方(2026-10-28 決定。最初のパターンは trailer の B「縦組み」): 4本に分ける。(1) 資料の訂正(直書き色の数え方)。(2) 打鍵に合わせた追従スクロールの共通部品: `js/act-showcase-caret.js`(`lastCharRect` = 読み上げ済みの最後の文字の位置、`scrollDeltaToKeepVisible` = 純関数、`keepCaretVisible`)と、`typeSplitReadout` の省略可能な引数 `onStep`(打鍵1回ごとと、読み上げ終了時に呼ぶ)。A は渡さない(A の枠は `cinematic-layout-v2` が自分で追う)。書字方向はスクロール枠ではなく本文の要素から取る。(3) 画面比較の基準画像の PR(B 用の spec。`SCENE_PATTERNS.trailer` に `"b"` が無いときは `test.skip`)。(4) B の実装(B 用の CSS=直書き0、`SCENE_PATTERNS.trailer` を `["a","b"]` に、JS、`playWithFallback`、E2E、単体テスト)。4 は本番で生成画面の選択欄が初めて表示される変更なので、検証側にマージしたら本番へ同期する前に、実画面の確認を待つ。
+
+  7 の1つ目: trailer の B「縦組み」(2026-10-28 決定、実装は4本目の PR)。
+  - **見た目。** PC 幅は、見出しを左に横組みで置き、本文を右に縦組み(`writing-mode: vertical-rl`、右から左)で置く。幅 760px 以下、または高さ 520px 以下は、見出しを上、本文を下の横組みに切り替える(高さ 520px 以下は、さらに eyebrow・index・meta を隠して見出しを小さくする。縦向きの phone でも、横向きの phone でも、画面に収まる)。
+  - **縦組みに向かない文字。** 英数字・英語・URL は `text-orientation: mixed`(横倒しで読める。`upright` は英単語が1文字ずつ縦に並んで読めないので不採用)。数字の縦中横は、本文が打鍵用のプレーンな文字で markup が付けられないので使わない。長音・「…」・「―」は、フォントの縦書きグリフでそのまま出る。禁則と折り返しは `line-break: strict`・`overflow-wrap: anywhere`。見出しは横組みのまま。
+  - **打鍵の追従。** 本文は専用の箱の中でスクロールし、`typeSplitReadout` の `onStep` から `keepCaretVisible` を呼んで、読み上げ中の最後の文字を箱の中に保つ。書字方向は本文の要素から取る(縦組みは横にスクロール、横組みは縦にスクロール)。A の枠の高さ追従(`cinematic-layout-v2`)には触れない。
+  - **A の装飾を受けない。** B は専用のクラス名(`neotokyo-trailer-b__*`)だけを使い、A の層が探すクラス(`.neotokyo-sequence__screen--trailer`、`__readout`、`__trailer-terminal` など)を使わない。端末窓・outro・ページのスクロール・`data-trailer-pattern` は B に付かない(実測: `tests/e2e/act-showcase-scene-b.spec.js`)。テーマ層の trailer 規則はパターンの指定が付いていないので、同じクラス名を使うと B にも当たるため、これも別のクラス名にする理由。
+  - **7つ目の CSS。** `css-next/pages/act-showcase-patterns.css`(出典名 `act-showcase-pattern-trailer-b.css`、`act-showcase.html` の6つの後に読む。パターン B・C の CSS はここに出典ごとに足す)。ルールは全て `:where([data-scene="trailer"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0、`rgb()` も使わない。第4節)。`tests/act-showcase-pattern-b-css.test.mjs` が、スコープ・クラス名・色・keyframes の名前を検査する。`prefers-reduced-motion`(遷移とキャレットの点滅を止める)、`prefers-contrast: more`(本文の背景を不透明に、枠線を太く)、`forced-colors: active`(装飾の「03」を隠す)に対応。
+  - **失敗時は A。** `playWithFallback`(`js/act-showcase-scenes.js`、DOM を使わない関数)が、枠の再生に使うパターンを選び、B が例外を投げたら A で再生する(A が失敗したときは隠さない)。B の画面は、進捗の更新や DOM に触る前に作るので、失敗しても画面は元のまま。
+  - **確認(2026-10-28)。** 文字コントラストは4テーマ(PC 幅)で失敗0。長文(約200字)を 1440x1000・390x844・360x640・844x390 で打ち、打鍵中のキャレットが枠から出た回数は0、読み終えた末尾も枠内。**共有ヘッダ「MUNICIPAL DATABASE」は 390 幅の intron で 2.73:1(A でも出る既存の問題。B では直さない。既存のコントラスト E2E は 1440 幅しか測っていない)**。
+  - **本番の影響。** `SCENE_PATTERNS.trailer` が `["a","b"]` になるので、生成画面の構成の選択欄(#646)が本番で初めて表示される(trailer の1つだけ)。既存の公開アクトは `scenes` が無く、A のまま。
 - #2 の補足: 計画では「まだどこからも使わない」だったが、どこからも読み込まれないモジュールは `audit:js-reachability` で落ちる(例外リストは実行時に動的に読み込まれる実在の入口に限る)。そのため `createShowcaseModel` から読み込んで `model.scenes` に載せることにした。演出はまだ使わず、画面は変わらない(2026-10-22 了承)。
 
 ### 6.1 決定事項(2026-10-22)

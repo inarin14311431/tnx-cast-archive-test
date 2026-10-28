@@ -5,7 +5,7 @@
 
 ## 0. 要点
 
-- 豪華版 `act-showcase.html` = CSS 6ファイル(下記の順に `<link rel="stylesheet">` で直接読む。`@import` なし、レイヤー指定なし)。元は29本を `act-showcase-entry.css` が `@import` していたが、カスケード順を変えずに隣り合うファイルだけを連結して6本にした。以下の章で `act-showcase-xxx.css` と書いているファイルは、現在は下記バンドルの中に `/* ==== from: 元ファイル名 ==== */` 境界コメント付きで入っている(宣言の削除・並べ替え・セレクタの書き換えはまだしていない)+ JS 21本(bootstrap から `await import` 連鎖)。
+- 豪華版 `act-showcase.html` = CSS 7ファイル(6つに、7つ目のパターン層 `act-showcase-patterns.css` を後ろに足した。下記の順に `<link rel="stylesheet">` で直接読む。`@import` なし、レイヤー指定なし)。元は29本を `act-showcase-entry.css` が `@import` していたが、カスケード順を変えずに隣り合うファイルだけを連結して6本にした。以下の章で `act-showcase-xxx.css` と書いているファイルは、現在は下記バンドルの中に `/* ==== from: 元ファイル名 ==== */` 境界コメント付きで入っている(宣言の削除・並べ替え・セレクタの書き換えはまだしていない)+ JS 21本(bootstrap から `await import` 連鎖)。
 - 豪華版のCSS読み込み順(`act-showcase.html`):
   1. `act-showcase-core.css` = 元の1〜12番目(`act-showcase.css` 〜 `act-showcase-layout-polish.css`)
   2. `act-showcase-scenes.css` = 元の13〜24番目(`act-showcase-story-flow.css` 〜 `act-showcase-handout-live-frame.css`)
@@ -13,6 +13,7 @@
   4. `act-showcase-theme-phase-contract.css`
   5. `act-showcase-theme-legibility.css`(スタンダード版・ダウンロード出力と共有)
   6. `act-showcase-theme-scenes.css` = 元の28〜29番目(`act-showcase-theme-scene-contract.css`、`act-showcase-visual-emphasis.css`)
+  7. `act-showcase-patterns.css` = パターン B・C の CSS(出典ごとに `/* ==== from: act-showcase-pattern-<枠>-<パターン>.css ==== */`。今は `act-showcase-pattern-trailer-b.css` だけ)。A の層ではなく、各ルールは自分のパターンの `:where()` で閉じる(`tests/act-showcase-pattern-b-css.test.mjs`)。直書きの色は0
   順序は `scripts/audit-act-showcase-architecture.mjs` が元29ファイルの順まで検査する。契約テストは `tests/helpers/act-showcase-css.mjs` で、バンドルから元ファイル単位の本文と順序を取り出して読む。
 - スタンダード版 `act-showcase-standard.html` = CSS 5本 + JS 7本。同じ5本のCSSは `js/showcase-dedicated-output.js` がダウンロード用HTMLにも埋め込む。
 - 同一(@コンテキスト+セレクタ+プロパティ)の重複: **204キー / 234件の追加定義**(厳密)。接頭辞(`body…`・`.cinematic-intro.neotokyo-sequence`)を除いて数えると **335キー / 389件**(緩い)。
