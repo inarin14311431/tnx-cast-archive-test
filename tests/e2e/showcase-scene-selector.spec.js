@@ -23,6 +23,9 @@ test("while every frame can play only pattern a, the generator offers no composi
 
 test("a frame that can play b gets a select that writes the hidden field and follows a restore", async ({ page }) => {
   await openGenerator(page);
+  // The page's own selector module loads after "ready" and mounts with the real SCENE_PATTERNS (replacing any earlier mount),
+  // so mount the b-capable frames only once the module after it (edit-restore, imported next) has loaded.
+  await expect.poll(() => page.evaluate(() => performance.getEntriesByType("resource").some(entry => /\/js\/showcase-edit-restore\.js/.test(entry.name) && entry.responseEnd > 0)), { timeout: 20_000 }).toBe(true);
   await page.evaluate(async () => {
     const selector = await import("/js/showcase-scene-selector.js");
     selector.mountSceneSelector({
