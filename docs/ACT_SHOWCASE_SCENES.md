@@ -15,7 +15,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 - **背景は今はフィナーレだけ。** `--showcase-background` を使うのはヒーロー・最終ボード・最終ボードのトレーラー枠・`ambient-stage` だけで、導入演出の6枠には出ない(LAYERS §1 の top-background-only)。枠ごとに背景を選ぶのは新しい機能になる。
 - **フィナーレのDOMは最初から裏にある。** `act-showcase-page.js` がデータ取得直後にヒーローと最終ボードを作り、導入演出のオーバーレイ(`#cinematic-intro`)の下に置く。フィナーレ用の observer はその間も動いている。
 - **CSSの層は枠ごとに分かれていない。** 31の元ファイルのうち、7枠のうち1枠だけを対象にしているのは8ファイル、3枠以上にまたがるのは18ファイル。複数の枠を1つのセレクタ群でまとめたルールが97個ある(第3節)。
-- **直書きの色は1,210個。そのうち1,146個(95%)はテーマ層以外(core / scenes)にある。** 枠ごとの内訳は第4節。
+- **直書きの色は1,210個。そのうち1,146個(95%)はテーマ層以外(core / scenes)にある。** 枠ごとの内訳は第4節。(調査時の測定で、引数が変数の `rgba(var(--x-rgb), a)` は数えていない。歯止めの数え方との違いは第4節の冒頭)
 - 画面比較は、豪華版の4テーマ × 2幅 × 13状態を、6つの枠IDの名前で撮影している(第6節 #1、基準ブランチ #606。範囲は LAYERS §4.1)。調査時点では desktop の8状態だけで、mobile の3テーマ・PC2 以降・フィナーレのヒーローは撮っていなかった。
 
 ## 1. 7枠と今の実装
@@ -125,7 +125,9 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 
 ## 4. テーマ変数を通さない色(枠ごと)
 
-数え方は `audit:colors`(`scripts/hardcoded-colors-lib.mjs`)に合わせた。`#hex`、`rgb()/rgba()`、`hsl()/hsla()` を数え、`var(--x, 色)` の代替値・カスタムプロパティの定義値・コメントは数えない。加えて、`rgba(var(--showcase-primary-rgb), .4)` のように**引数が変数のものは、テーマを通しているので数えない**(`audit:colors` はこれも数えるが、ACT のテーマはこの書き方でパレットを渡しているため)。`act-showcase*` は `audit:colors` の対象外(パスに `showcase` を含むファイルは除外)なので、今は誰も数えていない。
+この節と第0節の数(1,210個、枠ごとの表)は、調査時の測定で、`#hex`、`rgb()/rgba()`、`hsl()/hsla()` のうち**引数が変数のもの(`rgba(var(--showcase-primary-rgb), .4)`)は、テーマを通しているので数えなかった**。これに対し、歯止め `audit:showcase-colors` と報告 `scripts/report-showcase-colors.mjs`(どちらも `scripts/hardcoded-colors-lib.mjs` の `countHardcodedColors`)は `audit:colors` と同じ数え方で、`rgb()/rgba()/hsl()/hsla()` を**引数が変数でも1つと数える**(数えないのは、`var(--x, 色)` の代替値・カスタムプロパティの定義値・コメントだけ)。そのため、歯止めの総数(1,804)と、この節の数は比べられない(2026-10-28 に実装を確かめて食い違いを直した)。
+
+**パターン B・C の新しい CSS の色の書き方。** 歯止めの数え方では `rgba(var(--x-rgb), .3)` も直書きと数えるので、新しい CSS には書けない。色は `var(--showcase-*)` と、透明度が要るときは `color-mix(in srgb, var(--showcase-primary) 30%, transparent)` で書く(`rgb()/rgba()/hsl()/hsla()`、`#hex` は、引数が変数でも使わない)。透明度付きの色に使うのは `--showcase-primary` `-secondary` `-tertiary` `-bg` `-surface` など、色そのものを持つ変数で、`-rgb` 版(`rgba()` に渡す用)ではない。`act-showcase*` は `audit:colors` の対象外(パスに `showcase` を含むファイルは除外)で、`audit:showcase-colors` が数えている。
 
 | 枠 | テーマ層以外(core / scenes) | うち黒・白 | 色を持つルール数 | テーマ層の、特定テーマ用セレクタ(`[data-showcase-theme="…"]`)内 |
 |---|---|---|---|---|
@@ -169,7 +171,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
   試し置き換えの結果(loading・trailer): 色を持つ宣言を1つずつ外して、枠の要素(`::before`/`::after` を含む)の計算後の色が4テーマ × 2幅 × 3状態(読み込み中・ACCESS・トレーラー)で変わるかを調べた(トランジションは切って測る。切らないと、遷移の途中の値を拾って「効いていない」と誤判定する。実際に ACCESS シールの影で起きた)。変わらない宣言だけから成る23規則・40色を、色の家族(青緑=primary、ピンク=secondary、緑=tertiary、暗い紺=bg、明るい文字=readable-text、灰青=readable-muted)でテーマ変数に置き換えた。黒・白は固定のまま。置き換えの前後で、計算後の色は24通りすべて一致、画面比較は差分0。直書きは1,821→1,804。残りは区分B(効いている。bootlog の線と末尾の文字、トレーラーのターミナルの走査線と読み上げ中の文字の4宣言)と、状態が測定に出てこなかった7宣言で、固定のまま。1つずつ外す方法は、同じ値の宣言が2つあると両方「効いていない」と出るので、置き換えは規則単位でまとめて行い、置き換え後の計算後の色をもう一度測る | 画面比較の差分0、`act-showcase-contrast`、`audit:showcase-colors` |
 | 6 | 構成情報の保存と読み出し | 生成画面の選択欄、`showcase_data.scenes`、豪華版での解釈(2の関数)。Aしかない状態で入れ、全枠Aで今と同じに再生されることを確かめる。実DBの関数定義の確認を含む(DDLが要る場合は別ゲート) | 既存データ(キーなし)とA指定のデータの両方で画面比較の差分0 |
   方針と分け方(2026-10-27): DBの変更なし(`showcase_data` は検査のない jsonb で、公開の関数は `casts` 1〜6件・512KB 以下・オブジェクトの3つしか見ない。実DBの関数定義、`acts` のRLS、4件の公開アクトを確認済みで、`scenes` を持つものは0件)。公開の関数に `scenes` の形の検査は足さない(読み手が枠ごとに a へ戻す)。3本に分ける: (1) 書く側と復元する側の共通処理 **済**: `js/act-showcase-scenes.js` の `normalizeSceneSelection`(A以外の枠だけ、枠の順、名前は小文字・トリム。今は再生できない名前も書いたまま残す)、`formatSceneSelectionField` / `parseSceneSelectionField`(生成画面の hidden 欄 `#showcase-scenes` に JSON。空は全枠A)。公開(`showcase-dynamic-publish-v3.js`、豪華版・従来版の両方)は欄を読み、A以外の枠があるときだけ `showcaseData.scenes` を付ける。復元(`showcase-edit-restore.js`)は保存済みの `scenes` を欄に書く(無いときも空で書く。前に復元したアクトの構成が残らないように)。公開のたびに `showcaseData` を作り直すので、欄に載せないと再公開で消える。それを往復テストで固定した。(2) 生成画面の選択欄 **済**: `js/showcase-scene-selector.js`(`SCENE_PATTERNS` から組み立てる。再生できるパターンが2つ以上ある枠だけに `<select>` を出し、今は全枠Aだけなので `#showcase-scene-composition` の fieldset ごと隠れたまま)。選んだ値は hidden 欄 `#showcase-scenes` にだけ書き、公開・復元は欄だけを読み書きする。選んだ枠の項目だけを変え、ほかの項目(今は再生できない名前を含む)は残す。Aを選ぶと項目を消す。復元で欄が書かれる(`input` が発火する)と選択欄も追従する。置き場所と見た目は、パターンB・Cが入る枠が決まってから詰める(今はCSSなし)。テストはBを持つ枠を渡して、保存・復元・再公開で保たれることを確かめる(本番の `SCENE_PATTERNS` はAのまま)。(3) 全枠Aでの確認(キーなしとA指定の両方で画面比較の差分0)。従来版の再公開でも `scenes` は消さずに引き継ぐ |
-| 7〜 | パターンB/Cの追加(見た目が変わる) | 枠ごとに1PR。`data-scene-pattern="b"` の下でだけ効くCSSと、その枠の関数を表に足す。基準画像はB用を新規に追加し、A用は変えない | 新しい基準画像、E2E |
+| 7〜 | パターンB/Cの追加(見た目が変わる) | 枠ごとに1PR。`data-scene-pattern="b"` の下でだけ効くCSSと、その枠の関数を表に足す。基準画像はB用を新規に追加し、A用は変えない。B・C の新しい CSS は、色を `var(--showcase-*)` と `color-mix()` だけで書く(第4節) | 新しい基準画像、E2E |
 
 - #2 の補足: 計画では「まだどこからも使わない」だったが、どこからも読み込まれないモジュールは `audit:js-reachability` で落ちる(例外リストは実行時に動的に読み込まれる実在の入口に限る)。そのため `createShowcaseModel` から読み込んで `model.scenes` に載せることにした。演出はまだ使わず、画面は変わらない(2026-10-22 了承)。
 
