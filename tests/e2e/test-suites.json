@@ -67,7 +67,8 @@
         "tests/e2e/skd-master-search.spec.js",
         "tests/e2e/tsv-bulk-import.spec.js",
         "tests/e2e/troop-editor-flow.spec.js",
-        "tests/e2e/showcase-editor-restore.spec.js"
+        "tests/e2e/showcase-editor-restore.spec.js",
+        "tests/e2e/showcase-scene-selector.spec.js"
       ]
     },
     "ci-mobile": {
