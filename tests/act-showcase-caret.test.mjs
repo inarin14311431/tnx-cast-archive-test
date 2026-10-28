@@ -58,7 +58,7 @@ test("the text's own writing mode decides the axis, not the scrolling box's", ()
 
 test("pattern A's ACT TRAILER keeps following the caret by itself: typeSplitReadout reports each step only to a caller that asks", async () => {
   const source = await readFile(new URL("../js/act-showcase-neotokyo.js", import.meta.url), "utf8");
-  const showTrailer = source.slice(source.indexOf("async function showTrailer("), source.indexOf("async function showHandoutAndAssign("));
+  const showTrailer = source.slice(source.indexOf("async function showTrailer("), source.indexOf("async function showTrailerB("));
   assert.match(showTrailer, /typeSplitReadout\(state, readout, 4200, 34\)/);
   assert.doesNotMatch(showTrailer, /onStep|keepCaretVisible/);
   const type = source.slice(source.indexOf("async function typeSplitReadout("), source.indexOf("function wait("));
