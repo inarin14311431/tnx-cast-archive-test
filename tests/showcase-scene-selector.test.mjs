@@ -122,8 +122,8 @@ test("a missing host or field mounts nothing", () => {
   assert.equal(mountSceneSelector({ host: doc.createElement("fieldset"), field: null, doc }), null);
 });
 
-test("the real SCENE_PATTERNS offers one choice, the trailer frame's pattern b; every other frame has only a", () => {
-  assert.deepEqual(selectableFrames(), [{ frame: "trailer", patterns: ["a", "b"] }]);
+test("the real SCENE_PATTERNS offers two choices, pattern b of the title and trailer frames; every other frame has only a", () => {
+  assert.deepEqual(selectableFrames(), [{ frame: "title", patterns: ["a", "b"] }, { frame: "trailer", patterns: ["a", "b"] }]);
 });
 
 test("the generator page has the hidden fieldset with the one hidden field in it, and the loader mounts the selector", async () => {
