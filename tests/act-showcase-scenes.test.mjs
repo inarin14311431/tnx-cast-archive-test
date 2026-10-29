@@ -20,10 +20,10 @@ test("six frames in a fixed order (docs/ACT_SHOWCASE_SCENES.md §6.1); handout a
   assert.ok(Object.isFrozen(SCENE_FRAMES));
 });
 
-test("pattern a exists on every frame; the trailer frame also has b, nothing else has more", () => {
+test("pattern a exists on every frame; the title and trailer frames also have b, nothing else has more", () => {
   assert.equal(DEFAULT_SCENE_PATTERN, "a");
   assert.deepEqual(Object.keys(SCENE_PATTERNS), SCENE_FRAMES);
-  for (const frame of SCENE_FRAMES) assert.deepEqual(SCENE_PATTERNS[frame], frame === "trailer" ? ["a", "b"] : ["a"], frame);
+  for (const frame of SCENE_FRAMES) assert.deepEqual(SCENE_PATTERNS[frame], frame === "title" || frame === "trailer" ? ["a", "b"] : ["a"], frame);
 });
 
 test("playWithFallback plays the asked pattern, and \"a\" when it is unknown or throws", async () => {
@@ -72,7 +72,7 @@ test("the result lists every frame in order and cannot be changed", () => {
 });
 
 test("a pattern the frame cannot play yet falls back to a (b and c are not implemented)", () => {
-  assert.deepEqual(resolveSceneComposition({ scenes: { title: "b", ready: "c" } }), ALL_A);
+  assert.deepEqual(resolveSceneComposition({ scenes: { "handout-assign": "b", ready: "c" } }), ALL_A);
 });
 
 test("with b and c available, each frame takes its own pattern and the rest stay a", () => {
@@ -121,7 +121,7 @@ test("a selection of all a, or of nothing usable, is empty", () => {
 });
 
 test("a pattern the frame cannot play yet is kept as written (the reader plays a for it until it exists)", () => {
-  const stored = { title: "b", ready: "c" };
+  const stored = { "handout-assign": "b", ready: "c" };
   assert.deepEqual(normalizeSceneSelection(stored), stored);
   assert.deepEqual(resolveSceneComposition({ scenes: stored }), ALL_A);
 });
