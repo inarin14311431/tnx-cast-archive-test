@@ -125,11 +125,15 @@ async function fulfill(route, body) {
 }
 
 // scenes: the composition stored with the showcase (showcase_data.scenes), e.g. { trailer: "b" }. trailerBody: replaces the
-// ACT TRAILER text (a long text for the frames that scroll). Both are optional: without them the data is the default one.
-export async function installActShowcaseRoutes(page, { scenes, trailerBody } = {}) {
+// ACT TRAILER text (a long text for the frames that scroll). actName / scenarioWriterName / heroSubTitle: replace those fields
+// (a long act name, the credits and the subtitle of the TITLE frame). All optional: without them the data is the default one.
+export async function installActShowcaseRoutes(page, { scenes, trailerBody, actName, scenarioWriterName, heroSubTitle } = {}) {
   const data = {
     ...showcaseData,
     ...(scenes ? { scenes } : {}),
+    ...(actName ? { actName } : {}),
+    ...(scenarioWriterName ? { scenarioWriterName } : {}),
+    ...(heroSubTitle ? { heroSubTitle } : {}),
     ...(trailerBody ? { trailer: { ...showcaseData.trailer, body: trailerBody } } : {})
   };
   // Remote web fonts would make the first frame depend on the network.
