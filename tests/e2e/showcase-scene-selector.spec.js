@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { hasAuthCredentials } from "./helpers.js";
 
-// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). The ACT TRAILER frame is the only one
-// with a second pattern (b), so the real page offers that one select; the second test mounts the same selector with more frames
+// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). The TITLE and ACT TRAILER frames are the only ones
+// with a second pattern (b), so the real page offers those two selects; the second test mounts the same selector with more frames
 // that can play other patterns to check the whole path in the browser: the select, the hidden field, and what a restore writes.
 
 test.beforeEach(() => {
@@ -14,19 +14,25 @@ async function openGenerator(page) {
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 20_000 });
 }
 
-test("the generator offers one composition choice: the trailer frame's pattern b; the choice lands in the hidden field", async ({ page }) => {
+test("the generator offers two composition choices: the title and trailer frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
   await openGenerator(page);
-  // only the ACT TRAILER frame can play a second pattern, so it is the only select
+  // only the TITLE and ACT TRAILER frames can play a second pattern, so they are the only selects
   const host = page.locator("#showcase-scene-composition");
   await expect(host).toBeVisible();
-  await expect(host.locator("select")).toHaveCount(1);
+  await expect(host.locator("select")).toHaveCount(2);
+  const title = host.locator('select[data-scene-frame="title"]');
   const trailer = host.locator('select[data-scene-frame="trailer"]');
-  await expect(trailer.locator("option")).toHaveText(["パターン A", "パターン B"]);
-  await expect(trailer).toHaveValue("a");
+  for (const select of [title, trailer]) {
+    await expect(select.locator("option")).toHaveText(["パターン A", "パターン B"]);
+    await expect(select).toHaveValue("a");
+  }
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
   await trailer.selectOption("b");
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"trailer":"b"}');
+  await title.selectOption("b");
+  await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b"}');
   await trailer.selectOption("a");
+  await title.selectOption("a");
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
 });
 

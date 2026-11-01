@@ -1,8 +1,9 @@
 import { parseStyleLabel } from "./act-showcase-style-label.js?v=8a1b88dd";
 import { castNumberFromSlot } from "./showcase-cast-number.js?v=944a948e";
 import { keepCaretVisible } from "./act-showcase-caret.js";
-import { DEFAULT_SCENE_PATTERN, playWithFallback } from "./act-showcase-scenes.js?v=3bf295e5";
+import { DEFAULT_SCENE_PATTERN, playWithFallback } from "./act-showcase-scenes.js?v=72966bf1";
 import { createTrailerScreenB } from "./act-showcase-trailer-b.js";
+import { createTitleScreenB } from "./act-showcase-title-b.js";
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
 const SHOW_ACT_TITLE_SCREEN = true;
@@ -67,7 +68,7 @@ export async function runNeoTokyoIntro({ intro, model }) {
 // start of a PC to +5 (searching) and +10 (assigned).
 export const INTRO_SCENES = Object.freeze([
   Object.freeze({ frame: "loading", step: "01", progress: 5, patterns: Object.freeze({ a: showOpening }) }),
-  Object.freeze({ frame: "title", step: "02", progress: 18, patterns: Object.freeze({ a: showActTitle }) }),
+  Object.freeze({ frame: "title", step: "02", progress: 18, patterns: Object.freeze({ a: showActTitle, b: showActTitleB }) }),
   Object.freeze({ frame: "trailer", step: "03", progress: 30, patterns: Object.freeze({ a: showTrailer, b: showTrailerB }) }),
   Object.freeze({
     frame: "handout-assign",
@@ -194,6 +195,22 @@ async function showActTitle(state, model, scene) {
 
   content.append(textNode("p", "neotokyo-sequence__terminal", "TITLE & CREDITS LOCKED // PREPARING ACT TRAILER"));
   swapScreen(state, content);
+  await waitForAdvance(state, "NEXT // ACT TRAILER");
+}
+
+// Pattern B: one large title card with its credits (js/act-showcase-title-b.js). The screen is built before anything else is
+// touched, so a failure there leaves the page as it was and playWithFallback plays pattern A instead.
+async function showActTitleB(state, model, scene) {
+  const { screen } = createTitleScreenB({
+    step: scene.step,
+    title: model.actName,
+    subtitle: model.heroSubTitle,
+    rulerName: model.rulerName,
+    scenarioWriterName: model.scenarioWriterName
+  });
+  markScene(screen, scene, "b");
+  setProgress(state, scene.progress, "TITLE & CREDITS");
+  swapScreen(state, screen);
   await waitForAdvance(state, "NEXT // ACT TRAILER");
 }
 

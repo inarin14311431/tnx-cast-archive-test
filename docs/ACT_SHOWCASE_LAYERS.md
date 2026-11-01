@@ -13,7 +13,7 @@
   4. `act-showcase-theme-phase-contract.css`
   5. `act-showcase-theme-legibility.css`(スタンダード版・ダウンロード出力と共有)
   6. `act-showcase-theme-scenes.css` = 元の28〜29番目(`act-showcase-theme-scene-contract.css`、`act-showcase-visual-emphasis.css`)
-  7. `act-showcase-patterns.css` = パターン B・C の CSS(出典ごとに `/* ==== from: act-showcase-pattern-<枠>-<パターン>.css ==== */`。今は `act-showcase-pattern-trailer-b.css` だけ)。A の層ではなく、各ルールは自分のパターンの `:where()` で閉じる(`tests/act-showcase-pattern-b-css.test.mjs`)。直書きの色は0
+  7. `act-showcase-patterns.css` = パターン B・C の CSS(出典ごとに `/* ==== from: act-showcase-pattern-<枠>-<パターン>.css ==== */`。今は `act-showcase-pattern-trailer-b.css` と `act-showcase-pattern-title-b.css`)。A の層ではなく、各ルールは自分のパターンの `:where()` で閉じる(`tests/act-showcase-pattern-b-css.test.mjs`)。直書きの色は0
   順序は `scripts/audit-act-showcase-architecture.mjs` が元29ファイルの順まで検査する。契約テストは `tests/helpers/act-showcase-css.mjs` で、バンドルから元ファイル単位の本文と順序を取り出して読む。
 - スタンダード版 `act-showcase-standard.html` = CSS 5本 + JS 7本。同じ5本のCSSは `js/showcase-dedicated-output.js` がダウンロード用HTMLにも埋め込む。
 - 同一(@コンテキスト+セレクタ+プロパティ)の重複: **204キー / 234件の追加定義**(厳密)。接頭辞(`body…`・`.cinematic-intro.neotokyo-sequence`)を除いて数えると **335キー / 389件**(緩い)。

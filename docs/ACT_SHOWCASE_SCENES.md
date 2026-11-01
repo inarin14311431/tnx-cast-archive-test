@@ -184,6 +184,12 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
   - **失敗時は A。** `playWithFallback`(`js/act-showcase-scenes.js`、DOM を使わない関数)が、枠の再生に使うパターンを選び、B が例外を投げたら A で再生する(A が失敗したときは隠さない)。B の画面は、進捗の更新や DOM に触る前に作るので、失敗しても画面は元のまま。
   - **確認(2026-10-28)。** 文字コントラストは4テーマ(PC 幅)で失敗0。長文(約200字)を 1440x1000・390x844・360x640・844x390 で打ち、打鍵中のキャレットが枠から出た回数は0、読み終えた末尾も枠内。**共有ヘッダ「MUNICIPAL DATABASE」は 390 幅の intron で 2.73:1(A でも出る既存の問題。B では直さない。既存のコントラスト E2E は 1440 幅しか測っていない)**。
   - **本番の影響。** `SCENE_PATTERNS.trailer` が `["a","b"]` になるので、生成画面の構成の選択欄(#646)が本番で初めて表示される(trailer の1つだけ)。既存の公開アクトは `scenes` が無く、A のまま。
+  7 の2つ目: title の B「タイトルカード」(2026-10-29 決定、案1の入りの動きに、案3の「確定の瞬間の色ズレ」だけを足す)。
+  - **見た目。** アクト名を画面中央に極大の1行(折り返しあり)で置く。入りは、画面の点灯(ちらつき)→ 光の縁が左から右へ走ってアクト名が現れる(`clip-path` のワイプ、約0.9秒)→ 現れた瞬間に、色ズレ(`--showcase-primary` と `--showcase-secondary` の `text-shadow` が左右に割れて収まる、約0.5秒)。そのあと、罫線(中央から左右へ伸びる)、副題、クレジット(RULER と、あれば SCENARIO WRITER)、状態行が点灯風に順に出る。フェードアウトは使わない。NEXT を待つのは A と同じ。
+  - **A との違い。** B は `neotokyo-title-b__*` の専用のクラス名で、A の後付け層(メタ帯・ゴースト文字・罫線・副題・脚本家クレジット・`showcase-neotokyo-title-logo-active`)は付かない。そのため、A では DOM の後読みで足している副題と脚本家は、B ではモデルから描く(`act-showcase-page.js` のモデルに `scenarioWriterName` を足した。副題は `heroSubTitle` で、`CAST SHOWCASE` のときは出さない A と同じ規則 `meaningfulSubtitle`)。
+  - **CSS。** `css-next/pages/act-showcase-patterns.css` の2つ目の出典 `act-showcase-pattern-title-b.css`。全ルールを `:where([data-scene="title"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0)。幅 760px 以下、または高さ 520px 以下は、クレジットを縦積みにする(高さ 520px 以下は状態行も隠す)。reduced-motion は動かさず最終状態、prefers-contrast は光の縁の発光を消して罫線を太くする、forced-colors は光の縁を隠す。
+  - **本番の影響。** `SCENE_PATTERNS.title` が `["a","b"]` になるので、生成画面の構成の選択欄に title の欄が増える。既存の公開アクトは `scenes` が無く、A のまま。
+
 - #2 の補足: 計画では「まだどこからも使わない」だったが、どこからも読み込まれないモジュールは `audit:js-reachability` で落ちる(例外リストは実行時に動的に読み込まれる実在の入口に限る)。そのため `createShowcaseModel` から読み込んで `model.scenes` に載せることにした。演出はまだ使わず、画面は変わらない(2026-10-22 了承)。
 
 ### 6.1 決定事項(2026-10-22)
