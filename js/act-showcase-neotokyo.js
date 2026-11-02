@@ -5,7 +5,7 @@ import { DEFAULT_SCENE_PATTERN, playWithFallback } from "./act-showcase-scenes.j
 import { createTrailerScreenB } from "./act-showcase-trailer-b.js";
 import { createTitleScreenB } from "./act-showcase-title-b.js";
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
-const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
+export const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
 const SHOW_ACT_TITLE_SCREEN = true;
 
 export function prepareNeoTokyoLoading(intro) {
@@ -599,7 +599,7 @@ function createRulerCredit(rulerName) {
   return ruler;
 }
 
-function createCastImage(cast, fallbackAlt) {
+export function createCastImage(cast, fallbackAlt) {
   const image = document.createElement("img");
   image.src = safeImageUrl(cast?.imageUrl || cast?.image_url) || FALLBACK_IMAGE;
   image.alt = clean(cast?.imageAlt || cast?.image_alt) || clean(cast?.fullName || cast?.full_name) || fallbackAlt;
