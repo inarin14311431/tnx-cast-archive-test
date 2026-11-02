@@ -681,7 +681,8 @@ async function revealWhenFontsAreIn(state, content, hadScreen) {
   const held = new Set();
   const hold = () => {
     for (const animation of content.getAnimations?.({ subtree: true }) ?? []) {
-      if (held.has(animation)) continue;
+      // only the CSS animations: the ones a layer drives from script (the trailer's height following) are not ours to restart
+      if (held.has(animation) || (typeof CSSAnimation !== "undefined" && !(animation instanceof CSSAnimation))) continue;
       held.add(animation);
       animation.pause();
     }
