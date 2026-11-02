@@ -190,6 +190,17 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
   - **CSS。** `css-next/pages/act-showcase-patterns.css` の2つ目の出典 `act-showcase-pattern-title-b.css`。全ルールを `:where([data-scene="title"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0)。幅 760px 以下、または高さ 520px 以下は、クレジットを縦積みにする(高さ 520px 以下は状態行も隠す)。reduced-motion は動かさず最終状態、prefers-contrast は光の縁の発光を消して罫線を太くする、forced-colors は光の縁を隠す。
   - **本番の影響。** `SCENE_PATTERNS.title` が `["a","b"]` になるので、生成画面の構成の選択欄に title の欄が増える。既存の公開アクトは `scenes` が無く、A のまま。
 
+  7 の3つ目: ready(ACT READY)の B「ポートレート中央」(2026-11-02 決定。3案を A と並べて比べ、案3を選んだ)。
+  - **見た目。** 中央に ACT READY(字間を広げた極大の1行)、その下にアクト名と RULER、その下にキャストを丸い画像で横に並べる(画像の下に `PCn`、役割、名前、スタイル)。キャストの下に小さな行として、GUEST(ゲスト)と SCENARIO WRITER(脚本家)を添える。入りは、画面の点灯 → キャストが左から順にちらつきながら入る → 行が入る(フェードアウトはしない)。文字の下には、`--showcase-surface` と `--showcase-bg` を混ぜた不透明なパネルを敷く(intron など明るいテーマでコントラストが足りなくなるため)。
+  - **役割ラベル。** `roleForCast`(参加ロール、なければハンドアウトの役のスタイル)が空なら、行ごと出さない(`UNREGISTERED`・空欄・`NO HANDLE` は出さない)。
+  - **A の装飾を受けない。** B は `neotokyo-ready-b__*` の専用のクラス名で、A の後付け層(`--summary`・finale のロックアップとコア・FINAL BRIEFING への書き換え・ゲスト欄・脚本家クレジット・アクセスボタン・`showcase-neotokyo-finale-active`)は付かない。ゲストは model の `guests`(表示名の配列)から B が描く。`act-showcase-page.js` が、`scenes.ready` が `b` のときだけ `loadPublicShowcaseGuests`(キャッシュ付き)を最大2秒待って詰める(失敗・遅延ならゲストの行だけが無い。A の `supporting-cast` は同じ取得を共有する)。脚本家は `scenarioWriterName`(title B で足したもの)から描く。
+  - **進む操作。** 画面下の標準フッターの「OPEN FULL SHOWCASE」ボタンで進む(A の「ENTER」アクセスボタンは作られない)。`summary-advance-guard` は `--summary` の有無で判定するので B には効かない。代わりに、B の `section` が `data-advance-guard="button"` を持ち、ステージのクリックハンドラ(`act-showcase-neotokyo.js`)が、ステージ内にそれがあるときは「空きをクリックして NEXT」を無効にする(余白のクリックも含む)。誤クリックでは進まない(E2E)。
+  - **キャスト画像。** `createCastImage` と `FALLBACK_IMAGE` を export した(別の PR、動作は変えない)。B の module から `act-showcase-neotokyo.js` を import すると循環になるので、`createReadyScreenB` が引数 `createImage` で受け取る。
+  - **phone 幅と最大6人。** 760px 以下は2列(奇数の最後は中央)。スタイルの行は phone では出さず(3人が 390x844 で画面に収まるように)、PC 幅では2行で切って出す。名前は `overflow-wrap:anywhere`・`text-wrap:balance` で折り返し、3行で切る(`line-clamp:3`)。画面は縦に `overflow-y:auto`(足りないときは画面の中でスクロールし、フッターは動かない)。最長の名前6人で、390・360・844 幅と PC 幅に、横あふれと、セルからのはみ出しが無いことを E2E で確かめる。
+  - **CSS。** `css-next/pages/act-showcase-patterns.css` の3つ目の出典 `act-showcase-pattern-ready-b.css`。全ルールを `:where([data-scene="ready"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0)。reduced-motion・prefers-contrast・forced-colors に対応。
+  - **失敗時は A。** `playWithFallback`。B の画面は、進捗の更新や DOM に触る前に作る。
+  - **本番の影響。** `SCENE_PATTERNS.ready` が `["a","b"]` になるので、生成画面の構成の選択欄に ready の欄が増える。既存の公開アクトは `scenes` が無く、A のまま。
+
   共通の直し(2026-11-02、実画面の確認で見つかった2点。A・B どちらにも効く):
   - **短い画面でフッターが見切れる。** `.neotokyo-sequence__shell` が `min-height:560px` で、高さ 560px 未満の画面(小さいウィンドウ、横向きの phone)では、シェルが画面より高くなり、フッターと NEXT ボタンが画面の外に出ていた。`min-height` を外して、高さは常に画面の高さ(`100svh`)にし、高さ 559px 以下ではあふれた中身をステージの中でスクロールする(`align-items: safe center; overflow-y: auto`)。横向き phone(844x390)の NEXT ボタンもこれで画面に入る。
   - **タイトルと読み上げが途中から見える。** Google Fonts を `display=block` で読むので、画面を入れた時点で必要な字形(Noto Sans JP は unicode-range で細かく分かれている)の取得が始まり、届くまで文字が見えない。その間もアニメーションと打鍵は進むので、届いた時点で途中から見えていた。`swapScreen(state, content, { waitForFonts: true })` は、画面を隠したまま入れ、レイアウトでフォントを要求させ、2フレーム待ってから `document.fonts.ready` を待つ(上限 2.5 秒、スキップで即解除)。待つ間、A の画面のアニメーションは一時停止し(A のアニメーションは `.is-visible` ではなく要素の挿入で始まるため)、表示と同時に最初から再生する。title・trailer(A・B)・handout-assign・ready で使う。loading の画面は待たない(その間にフォントが読み込まれる)。

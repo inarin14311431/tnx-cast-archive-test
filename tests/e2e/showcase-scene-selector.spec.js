@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { hasAuthCredentials } from "./helpers.js";
 
-// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). The TITLE and ACT TRAILER frames are the only ones
-// with a second pattern (b), so the real page offers those two selects; the second test mounts the same selector with more frames
+// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). The TITLE, ACT TRAILER and ACT READY frames are the only ones
+// with a second pattern (b), so the real page offers those three selects; the second test mounts the same selector with more frames
 // that can play other patterns to check the whole path in the browser: the select, the hidden field, and what a restore writes.
 
 test.beforeEach(() => {
@@ -14,15 +14,16 @@ async function openGenerator(page) {
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 20_000 });
 }
 
-test("the generator offers two composition choices: the title and trailer frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
+test("the generator offers three composition choices: the title, trailer and ready frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
   await openGenerator(page);
-  // only the TITLE and ACT TRAILER frames can play a second pattern, so they are the only selects
+  // only the TITLE, ACT TRAILER and ACT READY frames can play a second pattern, so they are the only selects
   const host = page.locator("#showcase-scene-composition");
   await expect(host).toBeVisible();
-  await expect(host.locator("select")).toHaveCount(2);
+  await expect(host.locator("select")).toHaveCount(3);
   const title = host.locator('select[data-scene-frame="title"]');
   const trailer = host.locator('select[data-scene-frame="trailer"]');
-  for (const select of [title, trailer]) {
+  const ready = host.locator('select[data-scene-frame="ready"]');
+  for (const select of [title, trailer, ready]) {
     await expect(select.locator("option")).toHaveText(["パターン A", "パターン B"]);
     await expect(select).toHaveValue("a");
   }
@@ -31,6 +32,9 @@ test("the generator offers two composition choices: the title and trailer frames
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"trailer":"b"}');
   await title.selectOption("b");
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b"}');
+  await ready.selectOption("b");
+  await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b","ready":"b"}');
+  await ready.selectOption("a");
   await trailer.selectOption("a");
   await title.selectOption("a");
   await expect(page.locator("#showcase-scenes")).toHaveValue("");

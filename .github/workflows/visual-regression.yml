@@ -11,7 +11,9 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
       options: --user 1001
-    timeout-minutes: 15
+    # 30: the compare took about 9 minutes before ACT READY pattern B; its 10 shots (each walks the sequence to ACT READY) take about 8 more.
+    # A timeout shows up as "cancelled", not as a failure.
+    timeout-minutes: 30
     steps:
       - name: Checkout production
         uses: actions/checkout@v7
