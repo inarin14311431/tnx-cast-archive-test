@@ -190,6 +190,10 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
   - **CSS。** `css-next/pages/act-showcase-patterns.css` の2つ目の出典 `act-showcase-pattern-title-b.css`。全ルールを `:where([data-scene="title"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0)。幅 760px 以下、または高さ 520px 以下は、クレジットを縦積みにする(高さ 520px 以下は状態行も隠す)。reduced-motion は動かさず最終状態、prefers-contrast は光の縁の発光を消して罫線を太くする、forced-colors は光の縁を隠す。
   - **本番の影響。** `SCENE_PATTERNS.title` が `["a","b"]` になるので、生成画面の構成の選択欄に title の欄が増える。既存の公開アクトは `scenes` が無く、A のまま。
 
+  共通の直し(2026-11-02、実画面の確認で見つかった2点。A・B どちらにも効く):
+  - **短い画面でフッターが見切れる。** `.neotokyo-sequence__shell` が `min-height:560px` で、高さ 560px 未満の画面(小さいウィンドウ、横向きの phone)では、シェルが画面より高くなり、フッターと NEXT ボタンが画面の外に出ていた。`min-height` を外して、高さは常に画面の高さ(`100svh`)にし、高さ 559px 以下ではあふれた中身をステージの中でスクロールする(`align-items: safe center; overflow-y: auto`)。横向き phone(844x390)の NEXT ボタンもこれで画面に入る。
+  - **タイトルと読み上げが途中から見える。** Google Fonts を `display=block` で読むので、画面を入れた時点で必要な字形(Noto Sans JP は unicode-range で細かく分かれている)の取得が始まり、届くまで文字が見えない。その間もアニメーションと打鍵は進むので、届いた時点で途中から見えていた。`swapScreen(state, content, { waitForFonts: true })` は、画面を隠したまま入れ、レイアウトでフォントを要求させ、2フレーム待ってから `document.fonts.ready` を待つ(上限 2.5 秒、スキップで即解除)。待つ間、A の画面のアニメーションは一時停止し(A のアニメーションは `.is-visible` ではなく要素の挿入で始まるため)、表示と同時に最初から再生する。title・trailer(A・B)・handout-assign・ready で使う。loading の画面は待たない(その間にフォントが読み込まれる)。
+
 - #2 の補足: 計画では「まだどこからも使わない」だったが、どこからも読み込まれないモジュールは `audit:js-reachability` で落ちる(例外リストは実行時に動的に読み込まれる実在の入口に限る)。そのため `createShowcaseModel` から読み込んで `model.scenes` に載せることにした。演出はまだ使わず、画面は変わらない(2026-10-22 了承)。
 
 ### 6.1 決定事項(2026-10-22)
