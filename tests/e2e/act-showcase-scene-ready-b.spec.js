@@ -15,7 +15,8 @@ const A_HOOKS = [".neotokyo-sequence__screen--summary", ".neotokyo-finale__locku
 async function openReady(page, data, theme = "nova", override) {
   await installActShowcaseRoutes(page, data);
   if (override) await override();
-  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}`);
+  // flip=fast: the cards of the assignment frame turn quickly, so the walk to ACT READY is short
+  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}&flip=fast`);
   const advance = page.locator(".neotokyo-sequence__advance");
   const access = page.locator(".neotokyo-finale__access-button");
   for (let step = 0; step < 20; step += 1) {
@@ -33,7 +34,7 @@ async function openReady(page, data, theme = "nova", override) {
 const writerData = withScenes({ ready: "b" }, { scenarioWriterName: "脚本 太郎" });
 
 test("B を選ぶと B の画面が出て、A の装飾(ロックアップ・ゲスト欄・アクセスボタン)は付かない", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
   await openReady(page, writerData);
   const screen = page.locator(READY);
   await expect(screen).toHaveAttribute("data-scene-pattern", "b");
@@ -47,11 +48,7 @@ test("B を選ぶと B の画面が出て、A の装飾(ロックアップ・ゲ
   for (const selector of A_HOOKS) await expect(page.locator(selector), selector).toHaveCount(0);
   await expect(page.locator("body")).not.toHaveClass(/showcase-neotokyo-finale-active/);
   await expect(screen.locator("h2")).not.toHaveText("FINAL BRIEFING");
-});
-
-test("ゲストと脚本家は、キャストの下の小さな行として B 自身が描く", async ({ page }) => {
-  test.setTimeout(90_000);
-  await openReady(page, writerData);
+  // guests and the scenario writer: small rows under the casts, drawn by B itself
   const extras = page.locator(`${READY} .neotokyo-ready-b__extra`);
   await expect(extras).toHaveCount(2);
   await expect(extras.nth(0)).toContainText("GUEST");
@@ -64,6 +61,20 @@ test("ゲストと脚本家は、キャストの下の小さな行として B �
     return [top(".neotokyo-ready-b__casts"), top(".neotokyo-ready-b__extras")];
   });
   expect(order[1]).toBeGreaterThan(order[0]);
+  // a stray click does not leave ACT READY; only the footer button does
+  const advance = page.locator(".neotokyo-sequence__advance");
+  const box = await screen.boundingBox();
+  const stage = await page.locator(".neotokyo-sequence__stage").boundingBox();
+  // the screen itself, a portrait, and the margin of the stage beside the screen
+  await page.mouse.click(box.x + box.width / 2, box.y + 14);
+  await screen.locator(".neotokyo-ready-b__image").first().click({ force: true });
+  await page.mouse.click(stage.x + 3, stage.y + stage.height / 2);
+  await page.waitForTimeout(700);
+  await expect(page.locator("#cinematic-intro")).toHaveCount(1);
+  await expect(screen).toHaveClass(/is-visible/);
+  await expect(advance).toHaveText("OPEN FULL SHOWCASE");
+  await advance.click({ force: true });
+  await expect(page.locator("#cinematic-intro")).toHaveCount(0, { timeout: 8_000 });
 });
 
 test("ゲストも脚本家もいなければ、その行は出さない", async ({ page }) => {
@@ -83,24 +94,6 @@ test("役割ラベルが無いキャストには、何も出さない(UNREGISTER
   await expect(items.nth(0).locator(".neotokyo-ready-b__role")).toHaveCount(0);
   await expect(items.nth(1).locator(".neotokyo-ready-b__role")).toHaveText("ロール名");
   await expect(page.locator(READY)).not.toContainText("NO HANDLE");
-});
-
-test("誤クリックでは進まない: 画面や余白をクリックしても ACT READY のまま、フッターのボタンだけで進む", async ({ page }) => {
-  test.setTimeout(90_000);
-  const advance = await openReady(page, writerData);
-  const screen = page.locator(READY);
-  const box = await screen.boundingBox();
-  const stage = await page.locator(".neotokyo-sequence__stage").boundingBox();
-  // the screen itself, a portrait, and the margin of the stage beside the screen
-  await page.mouse.click(box.x + box.width / 2, box.y + 14);
-  await screen.locator(".neotokyo-ready-b__image").first().click({ force: true });
-  await page.mouse.click(stage.x + 3, stage.y + stage.height / 2);
-  await page.waitForTimeout(700);
-  await expect(page.locator("#cinematic-intro")).toHaveCount(1);
-  await expect(screen).toHaveClass(/is-visible/);
-  await expect(advance).toHaveText("OPEN FULL SHOWCASE");
-  await advance.click({ force: true });
-  await expect(page.locator("#cinematic-intro")).toHaveCount(0, { timeout: 8_000 });
 });
 
 test("A を指定しても、scenes が無くても、A のまま(ロックアップなどの付いた画面)", async ({ page }) => {
@@ -154,67 +147,69 @@ test("reduced-motion では、動かさず最終の状態をすぐ表示する",
 
 // 6 casts, the longest names: at 390 wide (iPhone Safari portrait), 360x640 (narrowest Android), 844x390 (a phone held sideways)
 // and on desktop, nothing leaves its cell, nothing overflows sideways, and every name and the footer button stay reachable.
+// One walk to ACT READY, then the window is resized (the layout answers to the size, not to how the screen was reached).
 const LONG = "“夜明けを駆け抜けるネオンの亡霊” 神楽坂 ALEXANDER VON NEON 零式";
 const sixCasts = Array.from({ length: 6 }, (_, index) => ({ ...showcaseData.casts[index % 3], fullName: index % 2 ? LONG : "ル 名", styles: [{ label: "とても長いスタイル名の組み合わせ◎", handoutRole: true }, { label: "カゼ●", handoutRole: false }, { label: "ニューロ", handoutRole: false }] }));
-for (const [width, height] of [[1440, 900], [1024, 768], [390, 844], [360, 640], [844, 390]]) {
-  test(`最大6人・最長の名前でも、はみ出さず、読める ${width}x${height}`, async ({ page }) => {
-    test.setTimeout(90_000);
+test("最大6人・最長の名前でも、はみ出さず、読める(1440x900・1024x768・390x844・360x640・844x390)", async ({ page }) => {
+  test.setTimeout(120_000);
+  await openReady(page, withScenes({ ready: "b" }, { casts: sixCasts, scenarioWriterName: "とても長い名前の脚本家 ALEXANDER VON NEON" }));
+  for (const [width, height] of [[1440, 900], [1024, 768], [390, 844], [360, 640], [844, 390]]) {
     await page.setViewportSize({ width, height });
-    await openReady(page, withScenes({ ready: "b" }, { casts: sixCasts, scenarioWriterName: "とても長い名前の脚本家 ALEXANDER VON NEON" }));
-    await page.waitForTimeout(1600);
+    await page.waitForTimeout(900);
     const fit = await page.evaluate(() => {
       const box = selector => document.querySelector(selector).getBoundingClientRect();
       const screen = document.querySelector(".neotokyo-ready-b");
       const frame = box(".neotokyo-ready-b");
       const cells = [...document.querySelectorAll(".neotokyo-ready-b__cast")];
+      const last = cells[cells.length - 1];
+      // every cast can be brought into view by scrolling the screen: the last cell ends inside the scrollable area, and its name
+      // (a cell with three long style lines can be taller than a landscape phone's screen) is inside it
+      last.scrollIntoView({ block: "end" });
+      const lastBox = last.getBoundingClientRect();
+      const name = last.querySelector(".neotokyo-ready-b__name").getBoundingClientRect();
+      const frameAfter = screen.getBoundingClientRect();
       return {
         horizontal: document.documentElement.scrollWidth - innerWidth,
         screenSideways: screen.scrollWidth - screen.clientWidth,
         outsideCell: cells.some(cell => {
           const cellBox = cell.getBoundingClientRect();
-          return [...cell.children].some(child => child.getBoundingClientRect().left < cellBox.left - 1 || child.getBoundingClientRect().right > cellBox.right + 1);
+          // the styles row is not drawn on a phone (display:none, zero size)
+          return [...cell.children].filter(child => child.getBoundingClientRect().width > 0).some(child => child.getBoundingClientRect().left < cellBox.left - 1 || child.getBoundingClientRect().right > cellBox.right + 1);
         }),
-        clampedNames: [...document.querySelectorAll(".neotokyo-ready-b__name")].every(name => name.scrollHeight <= name.clientHeight + 2 || getComputedStyle(name).webkitLineClamp === "3"),
+        clampedNames: [...document.querySelectorAll(".neotokyo-ready-b__name")].every(item => item.scrollHeight <= item.clientHeight + 2 || getComputedStyle(item).webkitLineClamp === "3"),
         cells: cells.length,
         outsideScreenX: cells.some(cell => cell.getBoundingClientRect().left < frame.left - 1 || cell.getBoundingClientRect().right > frame.right + 1),
         footer: box(".neotokyo-sequence__footer").bottom - innerHeight,
-        advance: box(".neotokyo-sequence__advance").bottom - innerHeight
+        advance: box(".neotokyo-sequence__advance").bottom - innerHeight,
+        reach: lastBox.bottom <= frameAfter.bottom + 1 && name.top >= frameAfter.top - 1 && name.bottom <= frameAfter.bottom + 1
       };
     });
-    expect(fit.cells).toBe(6);
-    expect(fit.horizontal).toBeLessThanOrEqual(0);
-    expect(fit.screenSideways).toBeLessThanOrEqual(0);
-    expect(fit.outsideCell).toBe(false);
-    expect(fit.outsideScreenX).toBe(false);
-    expect(fit.clampedNames).toBe(true);
-    expect(fit.footer).toBeLessThanOrEqual(1);
-    expect(fit.advance).toBeLessThanOrEqual(1);
-    // every cast can be brought into view by scrolling the screen: the last cell ends inside the scrollable area, and its name
-    // (a cell with three long style lines can be taller than a landscape phone's screen) is inside it
-    const reach = await page.evaluate(() => {
-      const screen = document.querySelector(".neotokyo-ready-b");
-      const last = [...document.querySelectorAll(".neotokyo-ready-b__cast")].pop();
-      last.scrollIntoView({ block: "end" });
-      const frame = screen.getBoundingClientRect();
-      const box = last.getBoundingClientRect();
-      const name = last.querySelector(".neotokyo-ready-b__name").getBoundingClientRect();
-      return box.bottom <= frame.bottom + 1 && name.top >= frame.top - 1 && name.bottom <= frame.bottom + 1;
-    });
-    expect(reach).toBe(true);
-  });
-}
+    const at = `${width}x${height}`;
+    expect(fit.cells, at).toBe(6);
+    expect(fit.horizontal, at).toBeLessThanOrEqual(0);
+    expect(fit.screenSideways, at).toBeLessThanOrEqual(0);
+    expect(fit.outsideCell, at).toBe(false);
+    expect(fit.outsideScreenX, at).toBe(false);
+    expect(fit.clampedNames, at).toBe(true);
+    expect(fit.footer, at).toBeLessThanOrEqual(1);
+    expect(fit.advance, at).toBeLessThanOrEqual(1);
+    expect(fit.reach, at).toBe(true);
+  }
+});
 
+// One walk per theme: the contrast is measured on desktop, then again after the window is resized to a phone (390x844).
 for (const theme of ACT_THEMES) {
-  for (const [width, height] of [[1440, 1000], [390, 844]]) {
-    test(`B の文字コントラスト ${theme} ${width}x${height}`, async ({ page }) => {
-      test.setTimeout(90_000);
+  test(`B の文字コントラスト(PC幅・phone幅) ${theme}`, async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await openReady(page, withScenes({ ready: "b" }, { scenarioWriterName: "脚本 太郎" }), theme);
+    for (const [width, height] of [[1440, 1000], [390, 844]]) {
       await page.setViewportSize({ width, height });
-      await openReady(page, withScenes({ ready: "b" }, { scenarioWriterName: "脚本 太郎" }), theme);
       await page.waitForTimeout(2200);
       // the shared header ("MUNICIPAL DATABASE", 3.41:1 on intron at 390 wide) is the same on every frame and pattern: a known issue of its own, not measured here
       const result = await measureContrast(page, { excluded: [...DECORATIVE_SELECTORS, ".neotokyo-sequence__header"] });
-      expect(result.items.length).toBeGreaterThan(8);
-      expect(result.failures.map(formatFailure)).toEqual([]);
-    });
-  }
+      expect(result.items.length, `${width}x${height}`).toBeGreaterThan(8);
+      expect(result.failures.map(formatFailure), `${width}x${height}`).toEqual([]);
+    }
+  });
 }

@@ -65,7 +65,8 @@ jobs:
     needs: act-showcase-changes
     if: needs.act-showcase-changes.outputs.run == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 45: the suite took about 28 minutes before ACT READY pattern B and has about 6 more minutes of it now; a timeout shows up as "cancelled", not as a failure
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v7
