@@ -30,6 +30,35 @@ for (const [width, height] of [[1280, 500], [1280, 540], [844, 390], [390, 844]]
   }
 }
 
+// The letterbox bars (the shell's ::before / ::after) are as high as 2.2vh, but must never be higher than the shell padding on their
+// side: above 1000px of height (727px on a phone) they used to cover the last pixels of the footer, the bottom border of the NEXT button.
+test("上下の黒い帯は、その下の余白より高くならない(フッターの下辺を覆わない)", async ({ page }) => {
+  test.setTimeout(90_000);
+  await installActShowcaseRoutes(page, showcaseData);
+  await page.setViewportSize({ width: 1920, height: 1040 });
+  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=nova`);
+  await expect(page.locator(".neotokyo-sequence__advance")).toHaveText("NEXT // ACT TRAILER", { timeout: 20_000 });
+  for (const [width, height] of [[1920, 1040], [1920, 1200], [390, 844], [430, 932]]) {
+    await page.setViewportSize({ width, height });
+    await page.waitForTimeout(300);
+    const bars = await page.evaluate(() => {
+      const shell = document.querySelector(".neotokyo-sequence__shell");
+      const style = getComputedStyle(shell);
+      const footer = document.querySelector(".neotokyo-sequence__footer").getBoundingClientRect();
+      return {
+        top: [parseFloat(getComputedStyle(shell, "::before").height), parseFloat(style.paddingTop)],
+        bottom: [parseFloat(getComputedStyle(shell, "::after").height), parseFloat(style.paddingBottom)],
+        footerBottom: footer.bottom,
+        barTop: innerHeight - parseFloat(getComputedStyle(shell, "::after").height)
+      };
+    });
+    expect(bars.top[0], `top bar at ${width}x${height}`).toBeLessThanOrEqual(bars.top[1] + 0.01);
+    expect(bars.bottom[0], `bottom bar at ${width}x${height}`).toBeLessThanOrEqual(bars.bottom[1] + 0.01);
+    // the footer ends above the bottom bar
+    expect(bars.footerBottom, `footer bottom at ${width}x${height}`).toBeLessThanOrEqual(bars.barTop + 0.01);
+  }
+});
+
 // Web fonts that arrive late: the block-period faces of every weight the page asks for, answered after `delay` ms.
 async function lateFonts(page, delay) {
   const sets = { japanese: "U+3000-9FFF,U+FF00-FFEF", latin: "U+0000-00FF" };
