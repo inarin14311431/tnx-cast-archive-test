@@ -56,6 +56,7 @@
         "tests/e2e/act-showcase-scene-markers.spec.js",
         "tests/e2e/act-showcase-scene-b.spec.js",
         "tests/e2e/act-showcase-scene-title-b.spec.js",
+        "tests/e2e/act-showcase-scene-ready-b.spec.js",
         "tests/e2e/act-showcase-screen-timing.spec.js",
         "tests/e2e/showcase-background-preset-legacy.spec.js"
       ]
