@@ -41,7 +41,8 @@ async function capture(page, name) {
 
 async function playToReady(page, theme, options) {
   await installActShowcaseRoutes(page, { scenes: { ready: "b" }, scenarioWriterName: WRITER, ...options });
-  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}`);
+  // flip=fast: the cards of the assignment frame turn quickly, so the walk to ACT READY is short (the compare job has 15 minutes)
+  await page.goto(`/act-showcase.html?id=${ACT_SLUG}&theme=${theme}&flip=fast`);
   await expect(page.locator("html")).toHaveAttribute("data-showcase-theme", theme);
   const advance = page.locator(".neotokyo-sequence__advance");
   for (let step = 0; step < 20; step += 1) {
