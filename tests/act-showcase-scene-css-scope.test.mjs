@@ -68,9 +68,9 @@ const SCOPED_SOURCES = [
   {
     source: "act-showcase-neotokyo",
     frames: ["loading", "title", "trailer", "handout-assign", "ready"],
-    // 47 selectors (31 distinct) stay unscoped, in four kinds. A class shared by several screens (.neotokyo-sequence__screen,
+    // 48 selectors (31 distinct) stay unscoped, in four kinds. A class shared by several screens (.neotokyo-sequence__screen,
     // __eyebrow, __micro, __terminal, __section-title, __readout) is split into one rule per frame that builds it.
-    unscopedCount: 47,
+    unscopedCount: 48,
     unscoped: {
       // the overlay's root element and the page class that goes with it (they hold every screen)
       "overlay root and page state": [
