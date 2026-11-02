@@ -189,14 +189,16 @@ for (const [width, height] of [[1440, 900], [1024, 768], [390, 844], [360, 640],
     expect(fit.clampedNames).toBe(true);
     expect(fit.footer).toBeLessThanOrEqual(1);
     expect(fit.advance).toBeLessThanOrEqual(1);
-    // every cast can be brought into view by scrolling the screen: the last cell ends inside the scrollable area
+    // every cast can be brought into view by scrolling the screen: the last cell ends inside the scrollable area, and its name
+    // (a cell with three long style lines can be taller than a landscape phone's screen) is inside it
     const reach = await page.evaluate(() => {
       const screen = document.querySelector(".neotokyo-ready-b");
       const last = [...document.querySelectorAll(".neotokyo-ready-b__cast")].pop();
       last.scrollIntoView({ block: "end" });
       const frame = screen.getBoundingClientRect();
       const box = last.getBoundingClientRect();
-      return box.bottom <= frame.bottom + 1 && box.top >= frame.top - 1;
+      const name = last.querySelector(".neotokyo-ready-b__name").getBoundingClientRect();
+      return box.bottom <= frame.bottom + 1 && name.top >= frame.top - 1 && name.bottom <= frame.bottom + 1;
     });
     expect(reach).toBe(true);
   });
