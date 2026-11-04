@@ -107,3 +107,10 @@ test("guests and the role label: from the model, nothing drawn for what is missi
   assert.match(page, /guests: \[\],/);
   assert.equal(typeof createReadyScreenB, "function");
 });
+
+test("the round portraits show the top of a tall image (one fixed position, no per-image adjustment)", () => {
+  const rule = styleRules.find(item => item.prelude.startsWith(".neotokyo-ready-b__image img"));
+  assert.ok(rule, "no rule for the portrait image");
+  assert.match(rule.body, /object-fit:cover/);
+  assert.match(rule.body, /object-position:50% 6%/);
+});
