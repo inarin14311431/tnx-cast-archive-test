@@ -157,6 +157,7 @@ migration historyとdeployment ledgerを混同しない。
   - `?v=` が付いているローカル参照(import / export from / `import()` / `<script src>` / `<link href>` / CSSの`@import`)を、
     参照先ファイルの内容ハッシュ(sha256の先頭8文字)にする。参照先の `?v=` が変わると参照元の内容も変わるので、
     依存の深い側から順に計算してHTMLまでさかのぼる。最後に `preload:update` を実行する。何度実行しても同じ結果になる。
+    動的 `import()` は preload の対象にしない。例外は、先頭の数行に `// modulepreload: eager` の目印がある入口モジュール(今は `js/act-showcase-bootstrap.js` だけ)で、その先頭の `await import("...")` は対象にする(実行の順番は変わらない)。
   - `?v=` の付いていない参照・外部URL・コードの中で組み立てるURL(`new URL(...)`、`element.href = ...`、文字列の配列など)は
     対象外。後者は今までどおり手で番号を書く。
   - `?v=` が付いた参照どうしで循環があると、何も書き換えずに止まって報告する。

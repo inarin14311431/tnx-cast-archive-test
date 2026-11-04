@@ -221,6 +221,32 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 
 画面比較の名前(#1)も、この6つの枠IDに合わせる。
 
+## 6.2 LOADING と先読み(2026-11-04 決定、実装は順に別PR)
+
+遅い回線で「全体が重い、演出が途中から始まる、黒い画面のまま」になる問題への対処。まず測定し、決めた順に直す。
+
+**測定(2026-11-04、ローカルの Chromium、本物の act-0021、1440x900、Slow 4G=1.6 Mbps・往復150ms+CPU 4倍遅く)。** 制限なしでは、最初の描画が約1.0秒、データ取得の開始が0.7秒。Slow 4G+CPU 4倍では次のとおり。
+
+| 事象 | 時点 | 原因 |
+|---|---|---|
+| 最初の描画まで完全な黒 | 約4.8秒 | 描画をブロックする CSS 7本(544KB)と Google Fonts の CSS(205KB、`display=block`)が届くまで |
+| データ取得(RPC)の開始 | 7.6秒 | bootstrap が16個のモジュールを1つずつ `await import()` し、取得を担う `act-showcase-page.js` は11番目 |
+| LOADING 画面に切り替わった直後 | 約0.7秒、文字が空 | この画面にはフォント待ちが無く、文字が `display=block` で見えない |
+| title・trailer | 挿入から2.1秒・2.45秒後に表示 | フォント待ち(#660、上限2.5秒)。この間にフォントは 33/865 しか届かない |
+| キャスト画像 | 2人目以降は、各ハンドアウト画面の作成時に初めて取得 | 画像は画面を作る時まで取得しない |
+| ゲスト画像2枚 | 原寸 PNG(883KB・984KB)、21秒台まで | データ取得の直後から、フォント872KB(42ファイル)と帯域を取り合う |
+
+ページ全体は約4MB。コード上の止まる経路は2つ(再現はしていない): bootstrap の `import` が1つでも失敗すると、以降(page.js を含む)が動かず静的な LOADING のまま止まる。RPC に `fetch` のタイムアウトが無く、応答が来ないと止まる。
+
+**直す順番(それぞれ別PR。(1)(6)は見た目を変えないので、画面比較の差分0を確かめる)。**
+1. **起動の高速化(済、このPR)。** データ取得(RPC 2本)を、`act-showcase.html` の head のインラインスクリプトで、スタイルシートより前に始める(スクリプトは自分より前のスタイルシートだけを待つ。モジュールのスクリプトは全部を待つ)。`js/act-showcase-bootstrap.js` が同じことをする保険を持つ。取得は `public-showcase-service.js` がキャッシュするので、ページと supporting-cast は同じ promise を受け取る(そのため、サービスは同じ URL で import する)。bootstrap の16個の `await import()` は、`// modulepreload: eager` の目印で `generate-modulepreload.mjs` が preload の対象にし、並列に取得する(**実行の順番は今のまま**。観察層の登録順に依存しているため)。head の preload の位置を CSS の前に移した。あわせて、B のパターンのモジュール(title-b・trailer-b・ready-b・caret など)と ready B が使う2つの import に `?v=` を付けた(付いていないと、変えた時にブラウザのキャッシュから古い版が出る)。測定(Slow 4G+CPU 4倍): データ取得の開始 7.6秒 → 0.47秒、LOADING の開始 8.8秒 → 5.5秒、title の表示 13.9秒 → 10.6秒。残りは CSS 待ち(5.4秒)で、(2)で扱う。
+2. **黒い画面の監視と、失敗時の復帰(6)。** bootstrap の `import` を `try/catch` で囲み、失敗したらエラーを出す。一定時間(例: 6秒)映らなければ、静的な文字と「再読み込み」のリンクを出す。データ取得のタイムアウト(15秒で、エラー表示と再読み込みのボタン)。
+3. **最初の黒を短くする(2)。** Google Fonts の CSS を、描画をブロックしない形にする。LOADING の文字に使う最小限のフォント(英数字)だけを先に読む。
+4. **先読み・進捗・時間切れ(3〜5)。** LOADING で先に読む素材は、`showcase_data` と `scenes` から決める(必須: データ、使う文字だけのフォント。先読み: キャスト画像(最大6枚)、ゲスト画像、背景)。進捗は、LOADING の `bootlog` に素材ごとの行(`DATA`・`FONT`・`CAST IMAGES 2/3`・`GUEST 0/2`)を出す(件数ベース)。時間切れの上限は、画像6秒(代替表示の `scan-failed.webp` で先に進み、届いたら差し替える)、全体8秒(超えたら素材が揃っていなくても始める)、データ15秒。フォント待ち2.5秒(#660)は安全網として残す。「前半は共通の LOADING」は変えない。
+5. **ゲストの原寸 PNG のサムネイル化(別の変更)。** Supabase の画像変換(Pro機能)には頼らず、アップロード時に小さい版も作る方式を、後で提案する。
+
+実機での確認(ローカルの制限による再現との違いを見る)は、(1)(6)の後にユーザーに依頼する。
+
 ## 7. 調べ方(再現用)
 
 - 枠への振り分け: 豪華版の6つのCSSバンドルを1ルールずつ読み、`/* ==== from: … ==== */` の境界コメントで元ファイルを決めた。各セレクタは、含むクラス名で枠に振り分けた: 1 = `cinematic-intro__` `screen--opening` `bootlog` `access-seal` など、2 = `screen--title` `act-title` `title-logo` `ruler-credit` など、3 = `screen--trailer` `readout--split` `trailer-*` など、4 = `handout` `link-bridge` `context-` など、5 = `assign` `search` `cast--linked` `style-card` `is-splitting` など、6 = `screen--summary` `summary` `overview` `neotokyo-finale` など、7 = `poster-` `scene-opening` `.opening-` `ambient-stage` など。`screen--linked` `linked-head` だけのものは4と5の両方、どれにも当たらず `neotokyo-sequence` を含むものは共有、`#act-showcase-standard-page` はスタンダード用とした。

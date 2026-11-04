@@ -1,3 +1,15 @@
+// modulepreload: eager
+// Starts the two public data requests (the showcase and its guests) before anything else is loaded. They used to start only when
+// the page module, the 11th of the modules below, had been loaded: on a slow line that was 7.6 s after the first byte. The requests
+// are cached by js/public-showcase-service.js under the same module URL, so the page and the supporting cast take these very promises.
+// A failure here is not reported: the cache forgets it and the page asks again, and shows the error itself.
+import { loadPublicShowcase, loadPublicShowcaseGuests, normalizeShowcaseSlug } from "./public-showcase-service.js?v=d3800656";
+
+const earlySlug = normalizeShowcaseSlug(new URLSearchParams(location.search).get("id"));
+if (earlySlug) {
+  for (const load of [loadPublicShowcase, loadPublicShowcaseGuests]) Promise.resolve(load(earlySlug)).catch(() => {});
+}
+
 await import("./act-showcase-theme-runtime.js?v=442d4e30");
 
 const current = new URL(location.href);
@@ -16,7 +28,7 @@ await import("./act-showcase-scroll-cue.js?v=85c66d25");
 await import("./act-showcase-writing-patterns.js?v=155018b2");
 await import("./act-showcase-cinematic-layout-v2.js?v=110b2f05");
 await import("./act-showcase-handout-live-frame.js?v=a6de4993");
-await import("./act-showcase-page.js?v=e29f106a");
+await import("./act-showcase-page.js?v=3f5e11b7");
 await import("./act-showcase-scenario-writer.js?v=3042484a");
 await import("./act-showcase-supporting-cast.js?v=1f97f956");
 await import("./act-showcase-final-trailer.js?v=7572720a");
