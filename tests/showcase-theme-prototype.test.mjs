@@ -65,8 +65,8 @@ assert.match(generatedOutput, /hero__scroll-cue/);
 assert.doesNotMatch(cinematicHtml, /<script[^>]*act-showcase-theme-runtime\.js/, "cinematic HTML must keep one-bootstrap architecture");
 assert.equal((cinematicHtml.match(/<script\b[^>]*type="module"/g) || []).length, 1, "cinematic HTML must keep one-bootstrap architecture");
 // The dedicated runtime is the first module the bootstrap loads (the early data requests before it need no theme).
-assert.match(cinematicBootstrap, /^await import\("\.\/act-showcase-theme-runtime\.js\?v=/m, "cinematic bootstrap must initialize dedicated runtime first");
-assert.equal(cinematicBootstrap.indexOf("\nawait import(\"./act-showcase-theme-runtime.js"), cinematicBootstrap.indexOf("\nawait import("), "cinematic bootstrap must initialize dedicated runtime first");
+assert.match(cinematicBootstrap, /^\s*await import\("\.\/act-showcase-theme-runtime\.js\?v=/m, "cinematic bootstrap must initialize dedicated runtime first");
+assert.equal(cinematicBootstrap.search(/\n\s*await import\("\.\/act-showcase-theme-runtime\.js/), cinematicBootstrap.search(/\n\s*await import\(/), "cinematic bootstrap must initialize dedicated runtime first");
 assert.match(cinematicHtml, /act-showcase-core\.css\?v=/);
 assert.match(standardHtml, /act-showcase-theme-runtime\.js\?v=/);
 assert.doesNotMatch(standardHtml, /act-showcase-dedicated-themes/);

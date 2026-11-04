@@ -31,13 +31,13 @@ function staticSpecifiers(source) {
 }
 
 /* Opt-in exception to the rule above: a module entry whose first lines carry the marker comment
- * `// modulepreload: eager` runs its top-level `await import("...")` statements unconditionally at startup (js/act-showcase-bootstrap.js,
- * 16 of them one after another). Those specifiers are listed as well, so the browser fetches the whole chain in parallel at once
+ * `// modulepreload: eager` runs its `await import("...")` statements (at the top level or inside a try block) unconditionally at startup
+ * (js/act-showcase-bootstrap.js, 16 of them one after another). Those specifiers are listed as well, so the browser fetches the whole chain in parallel at once
  * instead of one round trip per module. Evaluation order does not change: the dynamic imports still run one after the other. */
 const EAGER_MARKER = /^\s*\/\/\s*modulepreload:\s*eager\b/m;
 function eagerDynamicSpecifiers(source) {
   if (!EAGER_MARKER.test(source.split("\n").slice(0, 5).join("\n"))) return [];
-  return [...source.matchAll(/^await\s+import\(\s*["']([^"']+)["']\s*\)\s*;?/gm)].map(match => match[1]);
+  return [...source.matchAll(/^[ \t]*await\s+import\(\s*["']([^"']+)["']\s*\)\s*;?/gm)].map(match => match[1]);
 }
 
 async function resolveLocal(importerFile, raw) {
