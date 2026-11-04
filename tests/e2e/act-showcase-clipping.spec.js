@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, showcaseData } from "./fixtures/act-showcase-data.js";
+import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, showcaseData, clickAccessWhenReady } from "./fixtures/act-showcase-data.js";
 
 // Content that used to be cut off or empty, in every theme (the fixture's 2nd cast has no image, so the
 // "SCAN FAILED" placeholder is used):
@@ -74,7 +74,7 @@ for (const theme of ACT_THEMES) {
     }
 
     // Final board, cast 2 (no image): placeholder inside the visual frame, identification code not cut.
-    await access.click({ force: true });
+    await clickAccessWhenReady(page, access);
     await expect(page.locator(".poster-v2-board")).toBeVisible();
     await page.locator(".poster-v2-roster__item").nth(1).scrollIntoViewIfNeeded();
     await page.locator(".poster-v2-roster__item").nth(1).click();

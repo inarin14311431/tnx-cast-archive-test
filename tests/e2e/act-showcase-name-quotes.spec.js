@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { clickAccessWhenReady } from "./fixtures/act-showcase-data.js";
 
 // Fixed data whose cast and guest names carry doubled quotes. The names are normalized when the data is
 // read, so a doubled quote must never reach the DOM, not even for a frame.
@@ -99,7 +100,7 @@ test("豪華版: 引用符が重複した名前は、演出・最終ボード・
     }
   }
   await expect(access).toBeVisible({ timeout: 15_000 });
-  await access.click({ force: true });
+  await clickAccessWhenReady(page, access);
   await expect(page.locator(".poster-v2-board")).toBeVisible();
   await expect(page.locator(".poster-supporting-card h3")).toHaveText("“ゲスト” ゲスト 名前");
   await expect(page.locator(".poster-v2-name")).toHaveText("“テスト” 名前");

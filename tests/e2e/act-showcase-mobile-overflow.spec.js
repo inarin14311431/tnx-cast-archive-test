@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import zlib from "node:zlib";
-import { ACT_SLUG, showcaseData, guestData } from "./fixtures/act-showcase-data.js";
+import { ACT_SLUG, showcaseData, guestData, clickAccessWhenReady } from "./fixtures/act-showcase-data.js";
 
 // Phone widths with real-sized artwork. The other specs use 1px-wide placeholder pictures and long-name-free
 // data, so a grid or flex row that grows with its content (min-content) never shows. iOS Safari then widens the
@@ -163,7 +163,7 @@ for (const width of WIDTHS) {
         expect(badge.display).toBe("inline-block");
       }
 
-      await access.click({ force: true });
+      await clickAccessWhenReady(page, access);
       await expect(page.locator(".poster-v2-frame").first()).toBeVisible({ timeout: 30_000 });
       await page.waitForTimeout(3000);
       const titleBox = await page.locator("#opening-act-name").evaluate(element => { const r = element.getBoundingClientRect(); return { right: r.right, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }; });

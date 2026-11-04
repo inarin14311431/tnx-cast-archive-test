@@ -145,3 +145,12 @@ export async function installHeldActShowcaseRoutes(page) {
   await page.route("**/rest/v1/rpc/get_public_act_showcase_guests", route => fulfill(route, guestData));
   return release;
 }
+
+// Opens the final board from the ACT READY screen. The access button is drawn as soon as the screen is swapped in, but the
+// click only does something once the sequence is waiting for it (the stage gets .is-awaiting-advance). A click before
+// that is dropped, so wait for that state, never for a fixed time.
+export async function clickAccessWhenReady(page, access = page.locator(".neotokyo-finale__access-button")) {
+  await access.waitFor({ state: "visible", timeout: 20_000 });
+  await page.locator(".neotokyo-sequence__stage.is-awaiting-advance").waitFor({ state: "attached", timeout: 20_000 });
+  await access.click({ force: true });
+}

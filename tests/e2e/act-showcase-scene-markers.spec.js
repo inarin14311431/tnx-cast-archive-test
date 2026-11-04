@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { ACT_SLUG, installActShowcaseRoutes, showcaseData } from "./fixtures/act-showcase-data.js";
+import { ACT_SLUG, installActShowcaseRoutes, showcaseData, clickAccessWhenReady } from "./fixtures/act-showcase-data.js";
 
 // docs/ACT_SHOWCASE_SCENES.md §6 #4: every screen of the deluxe showcase carries the scene frame it belongs to and the
 // pattern drawing it (data-scene / data-scene-pattern), from the moment it is inserted. The marks are set while the
@@ -47,7 +47,7 @@ test("各画面は挿入された時点で data-scene / data-scene-pattern を�
       || (await advance.isVisible() && ((await advance.textContent()) || "").trim() !== label), { timeout: 15_000 }).toBe(true);
   }
   await expect(access).toBeVisible({ timeout: 15_000 });
-  await access.click({ force: true });
+  await clickAccessWhenReady(page, access);
   await expect(page.locator("#cinematic-intro")).toHaveCount(0, { timeout: 8_000 });
 
   const record = await page.evaluate(() => window.__sceneMarks);

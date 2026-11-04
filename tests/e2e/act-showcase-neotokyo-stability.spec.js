@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { clickAccessWhenReady } from "./fixtures/act-showcase-data.js";
 
 const showcase = {
   version: 2,
@@ -101,9 +102,10 @@ test("NeoTokyo showcase remains responsive through title, trailer, assignment an
   const access = page.locator(".neotokyo-finale__access-button");
   await expect(access).toBeVisible({ timeout: 12_000 });
   await expect(access).toContainText("OPEN FULL SHOWCASE");
-  await access.click({ force: true });
+  await clickAccessWhenReady(page, access);
 
-  await expect(intro).toHaveAttribute("aria-hidden", "true", { timeout: 8_000 });
+  // hidden first, then taken out of the page 850 ms later: either way the intro is no longer shown
+  await expect(page.locator("#cinematic-intro:not([aria-hidden='true'])")).toHaveCount(0, { timeout: 8_000 });
   await expect(page.locator("#act-showcase-root")).toBeVisible();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   await page.waitForTimeout(2300);
