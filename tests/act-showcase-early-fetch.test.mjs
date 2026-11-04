@@ -12,7 +12,7 @@ test("the bootstrap starts the showcase and guest requests before its first awai
   const source = await read("js/act-showcase-bootstrap.js");
   assertVersionedMatch(source, /import \{ loadPublicShowcase, loadPublicShowcaseGuests, normalizeShowcaseSlug \} from "\.\/public-showcase-service\.js\?v=VERSION";/);
   const start = source.indexOf("for (const load of [loadPublicShowcase, loadPublicShowcaseGuests])");
-  const firstAwait = source.indexOf("\nawait import(");
+  const firstAwait = source.search(/\n\s*await import\(/);
   assert.ok(start > -1 && firstAwait > start, "the requests start before the first await");
   assert.match(source, /normalizeShowcaseSlug\(new URLSearchParams\(location\.search\)\.get\("id"\)\)/);
   // a failure is left to the page (the cache forgets it, the page asks again and reports it), never an unhandled rejection

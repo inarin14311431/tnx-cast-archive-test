@@ -50,7 +50,7 @@ const bootstrapSource = await readFile(path.join(root, "js/act-showcase-bootstra
 
 test("act-showcase.html preloads every module the bootstrap imports one after another, and what the page needs from them", () => {
   const block = modulepreloadBlock(showcaseHtml);
-  const chain = [...bootstrapSource.matchAll(/^await import\("\.\/([^"?]+)\?v=([0-9a-f]{8})"\);/gm)];
+  const chain = [...bootstrapSource.matchAll(/^\s*await import\("\.\/([^"?]+)\?v=([0-9a-f]{8})"\);/gm)];
   assert.equal(chain.length, 16, "the bootstrap's chain of imports");
   for (const [, file, version] of chain) assert.ok(block.includes(`href="./js/${file}?v=${version}"`), `${file} is not preloaded`);
   // reached only through the chain: the page's own static imports (the scenes the intro plays, the ready pattern's helpers)
