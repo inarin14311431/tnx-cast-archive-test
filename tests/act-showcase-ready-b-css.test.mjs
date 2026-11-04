@@ -113,4 +113,6 @@ test("the round portraits show the top of a tall image (one fixed position, no p
   assert.ok(rule, "no rule for the portrait image");
   assert.match(rule.body, /object-fit:cover/);
   assert.match(rule.body, /object-position:50% 6%/);
+  // zoomed 1.25 times from the top: the face of a tall full-body image comes to the upper middle of the circle (1.5 cuts heads)
+  assert.match(rule.body, /transform:scale\(1\.25\);transform-origin:50% 6%/);
 });
