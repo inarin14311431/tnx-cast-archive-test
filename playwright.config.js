@@ -9,9 +9,12 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 8_000 },
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI
-    ? [["line"], ["html", { open: "never" }]]
-    : [["list"], ["html", { open: "never" }]],
+  // PLAYWRIGHT_JSON_OUTPUT_NAME: also write a JSON report. The sharded ACT SHOWCASE jobs use it to count the tests that ran.
+  reporter: [
+    process.env.CI ? ["line"] : ["list"],
+    ["html", { open: "never" }],
+    ...(process.env.PLAYWRIGHT_JSON_OUTPUT_NAME ? [["json"]] : [])
+  ],
   use: {
     baseURL: "http://127.0.0.1:4173",
     trace: "retain-on-failure",
