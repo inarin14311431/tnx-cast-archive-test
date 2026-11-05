@@ -5,7 +5,7 @@ import { DEFAULT_SCENE_PATTERN, playWithFallback } from "./act-showcase-scenes.j
 import { createTrailerScreenB } from "./act-showcase-trailer-b.js?v=dc9ea1dc";
 import { createTitleScreenB } from "./act-showcase-title-b.js?v=6f05db48";
 import { createReadyScreenB } from "./act-showcase-ready-b.js?v=7d80dd55";
-import { createAssignScreenB } from "./act-showcase-assign-b.js?v=985060bf";
+import { createAssignScreenB } from "./act-showcase-assign-b.js?v=c56617b4";
 import { roleForCast } from "./act-showcase-visual-caption.js?v=47f6e034";
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 export const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";

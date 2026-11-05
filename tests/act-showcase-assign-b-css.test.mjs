@@ -47,7 +47,9 @@ test("the handout-assign pattern B source has rules", () => {
 test("every rule is scoped to pattern B of the handout-assign frame, so nothing outside that screen is styled", () => {
   for (const rule of styleRules) {
     for (const selector of rule.prelude.split(/,(?![^(]*\))/).map(item => item.trim())) {
-      assert.ok(selector.endsWith(SCOPE), `not scoped: ${selector}`);
+      // a pseudo-element has to be the last part of a selector (".x:after:where(...)" is not valid CSS and the rule is dropped): the scope comes before it
+      assert.ok(selector.replace(/:(before|after)$/, "").endsWith(SCOPE), `not scoped: ${selector}`);
+      assert.doesNotMatch(selector, /:(before|after):where\(/, `pseudo-element before the scope: ${selector}`);
     }
   }
 });
@@ -104,16 +106,54 @@ test("the round portrait shows the top of a tall image (one fixed position, 1.25
   assert.match(rule.body, /transform:scale\(1\.25\);transform-origin:50% 6%/);
 });
 
-test("the name has the full width under both columns, the handle and the name in a line each", () => {
+test("the name has the full width under both columns; the handle and the name are one size, one weight, one colour, in a line (up to 3) each", () => {
   const who = styleRules.find(item => item.prelude.startsWith(".neotokyo-assign-b__who"));
   assert.ok(who);
   const main = styleRules.find(item => item.prelude.startsWith(".neotokyo-assign-b__main"));
   assert.match(main.body, /grid-template-columns:minmax\(150px,30%\) minmax\(0,1fr\)/);
-  // the name block is a child of the screen, not of the narrow left column
-  for (const name of ["handle", "real"]) {
-    const rule = styleRules.find(item => item.prelude.startsWith(`.neotokyo-assign-b__${name}`));
-    assert.match(rule.body, /-webkit-line-clamp:2/);
-  }
+  // one rule styles both, so they cannot drift apart; a later rule for only one of them would be a second size
+  const both = styleRules.filter(item => /__handle|__real/.test(item.prelude));
+  const base = both.filter(item => item.context === "");
+  assert.equal(base.length, 1, "one base rule for the handle and the name");
+  assert.match(base[0].prelude, /\.neotokyo-assign-b__handle:where\([^)]*\),\.neotokyo-assign-b__real:where/);
+  assert.match(base[0].body, /-webkit-line-clamp:3/);
+  assert.match(base[0].body, /font-size:clamp\(/);
+  assert.match(base[0].body, /font-weight:800/);
+  assert.match(base[0].body, /color:var\(--showcase-readable-text\)/);
+  // the phone size is also one rule for both
+  for (const item of both.filter(rule => rule.context !== "")) assert.match(item.prelude, /__handle:where\([^)]*\),\.neotokyo-assign-b__real:where/);
+});
+
+test("the empty slot is a HUD reticle: brackets, a double ring with a scale, a turning dashed arc, a faint scan, SCANNING; drawn by CSS, still when motion is reduced, plain when colours are forced", async () => {
+  const builder = await read("../js/act-showcase-assign-b.js");
+  // four decorations, all aria-hidden, and the text (PC number, state, SCANNING) is real text
+  assert.match(builder, /for \(const part of \["frame", "ticks", "arc", "scan"\]\)/);
+  assert.match(builder, /setAttribute\("aria-hidden", "true"\)/);
+  assert.match(builder, /"neotokyo-assign-b__ring-tag", "SCANNING"/);
+  for (const name of ["frame", "ticks", "arc", "scan"]) assert.ok(styleRules.some(item => item.prelude.startsWith(`.neotokyo-assign-b__ring-${name}`)), name);
+  const arc = styleRules.find(item => item.prelude.startsWith(".neotokyo-assign-b__ring-arc"));
+  assert.match(arc.body, /border:3px dashed transparent/);
+  assert.match(arc.body, /animation:neotokyo-assign-b-scan/);
+  // the scale is a conic gradient cut to a ring by a mask (colors are theme variables only)
+  const ticks = styleRules.find(item => item.prelude.startsWith(".neotokyo-assign-b__ring-ticks:where") && item.prelude.endsWith(":before"));
+  assert.match(ticks.body, /repeating-conic-gradient/);
+  assert.match(ticks.body, /mask:radial-gradient/);
+  // reduced motion: nothing turns or sweeps
+  const reduced = styleRules.filter(rule => rule.context === "@media(prefers-reduced-motion:reduce)");
+  assert.ok(reduced.some(rule => rule.prelude.startsWith(".neotokyo-assign-b__ring-arc") && /animation:none/.test(rule.body)));
+  assert.ok(reduced.some(rule => rule.prelude.startsWith(".neotokyo-assign-b__ring-scan:where") && rule.prelude.endsWith(":after") && /animation:none/.test(rule.body)));
+  // forced colours: the painted decoration goes, the two rings stay as plain borders
+  const forced = styleRules.filter(rule => rule.context === "@media(forced-colors:active)");
+  assert.ok(forced.some(rule => /__ring-arc/.test(rule.prelude) && /display:none/.test(rule.body)));
+  assert.ok(forced.some(rule => /__ring-ticks:where/.test(rule.prelude) && /border-color:CanvasText/.test(rule.body)));
+  // more contrast: stronger lines
+  const contrast = styleRules.filter(rule => rule.context === "@media(prefers-contrast:more)");
+  assert.ok(contrast.some(rule => /--assign-b-line:color-mix\(in srgb,var\(--showcase-primary\) 92%/.test(rule.body)));
+  // the states: the arc stops when found and is gone when assigned; the portrait fades in
+  const state = (phase, name) => styleRules.find(item => item.prelude.startsWith(`.neotokyo-assign-b[data-phase="${phase}"] .neotokyo-assign-b__${name}`));
+  assert.match(state("found", "ring-arc").body, /animation:none/);
+  assert.ok(styleRules.some(item => /data-phase="assigned"\] \.neotokyo-assign-b__ring-arc/.test(item.prelude) && /visibility:hidden/.test(item.body)));
+  assert.match(state("assigned", "portrait").body, /opacity:1;transition:opacity/);
 });
 
 test("the screen is built by its own module with its own class names; the sequence builds it before touching anything and plays it only through playWithFallback", async () => {

@@ -79,9 +79,8 @@ test("B を選ぶと B の画面が出て、A の観察層の装飾は付かな�
     flip: ["idle", "running", "done"]
   });
   const after = await page.evaluate(() => {
-    const ring = document.querySelector(".neotokyo-assign-b__ring");
     const img = document.querySelector(".neotokyo-assign-b__portrait img");
-    return { portrait: getComputedStyle(document.querySelector(".neotokyo-assign-b__portrait")).opacity, round: getComputedStyle(ring).borderRadius, transform: getComputedStyle(img).transform, position: getComputedStyle(img).objectPosition, cards: [...document.querySelectorAll(".neotokyo-assign-b__card")].map(card => card.classList.contains("is-flipped")), role: [...document.querySelectorAll(".neotokyo-assign-b__card.is-role")].map(card => card.textContent.trim()) };
+    return { portrait: getComputedStyle(document.querySelector(".neotokyo-assign-b__portrait")).opacity, round: getComputedStyle(document.querySelector(".neotokyo-assign-b__portrait")).borderRadius, transform: getComputedStyle(img).transform, position: getComputedStyle(img).objectPosition, cards: [...document.querySelectorAll(".neotokyo-assign-b__card")].map(card => card.classList.contains("is-flipped")), role: [...document.querySelectorAll(".neotokyo-assign-b__card.is-role")].map(card => card.textContent.trim()) };
   });
   expect(after.portrait).toBe("1");
   expect(after.round).toBe("50%");
@@ -171,6 +170,62 @@ test("reduced-motion では、札は最初から表向きで、最後の状態�
   await assign(page, advance);
   const motion = await page.evaluate(() => [".neotokyo-assign-b", ".neotokyo-assign-b__card-inner", ".neotokyo-assign-b__portrait"].map(selector => getComputedStyle(document.querySelector(selector)).transitionDuration));
   expect(motion).toEqual(["0s", "0s", "0s"]);
+  // the reticle is still: nothing turns, nothing sweeps (checked in the waiting state, where they would run)
+});
+
+test("reduced-motion では、空の枠の照準は止まっている(弧は回らず、走査線も動かない)", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openHandout(page, withScenes(BSCENE));
+  await expect(page.locator(`${B}[data-phase="read"]`)).toBeVisible();
+  const still = await page.evaluate(() => ({
+    arc: getComputedStyle(document.querySelector(".neotokyo-assign-b__ring-arc")).animationName,
+    sweep: getComputedStyle(document.querySelector(".neotokyo-assign-b__ring-scan"), "::after").animationName,
+    sweepShown: getComputedStyle(document.querySelector(".neotokyo-assign-b__ring-scan"), "::after").display
+  }));
+  expect(still).toEqual({ arc: "none", sweep: "none", sweepShown: "none" });
+});
+
+test("空の枠は HUD の照準: 装飾は読み上げ対象にならず、弧が回り、SCANNING が出て、割り当てで弧と SCANNING は消える", async ({ page }) => {
+  test.setTimeout(90_000);
+  const advance = await openHandout(page, withScenes(BSCENE));
+  await expect(page.locator(`${B}[data-phase="read"]`)).toBeVisible();
+  const reticle = await page.evaluate(() => {
+    const parts = ["frame", "ticks", "arc", "scan"].map(name => document.querySelector(`.neotokyo-assign-b__ring-${name}`));
+    return {
+      parts: parts.map(part => part?.getAttribute("aria-hidden")),
+      arc: getComputedStyle(parts[2]).animationName,
+      arcRunning: getComputedStyle(parts[2]).animationPlayState,
+      sweep: getComputedStyle(parts[3], "::after").animationName,
+      tag: document.querySelector(".neotokyo-assign-b__ring-tag").textContent,
+      tagShown: getComputedStyle(document.querySelector(".neotokyo-assign-b__ring-tag")).visibility
+    };
+  });
+  expect(reticle).toEqual({ parts: ["true", "true", "true", "true"], arc: "neotokyo-assign-b-scan", arcRunning: "running", sweep: "neotokyo-assign-b-sweep", tag: "SCANNING", tagShown: "visible" });
+  await assign(page, advance);
+  const done = await page.evaluate(() => ["arc", "tag", "label"].map(name => getComputedStyle(document.querySelector(`.neotokyo-assign-b__ring-${name}`)).visibility));
+  expect(done).toEqual(["hidden", "hidden", "hidden"]);
+});
+
+test("強制色では照準の装飾は消えて2つの輪は枠線だけになり、高コントラストでは線が太くなる", async ({ page }) => {
+  test.setTimeout(90_000);
+  await openHandout(page, withScenes(BSCENE));
+  await expect(page.locator(`${B}[data-phase="read"]`)).toBeVisible();
+  const read = () => page.evaluate(() => {
+    const css = (selector, property, pseudo) => getComputedStyle(document.querySelector(selector), pseudo)[property];
+    return {
+      frame: css(".neotokyo-assign-b__ring-frame", "display"),
+      arc: css(".neotokyo-assign-b__ring-arc", "display"),
+      scale: css(".neotokyo-assign-b__ring-ticks", "display", "::before"),
+      tickWidth: css(".neotokyo-assign-b__ring-ticks", "borderTopWidth"),
+      scanWidth: css(".neotokyo-assign-b__ring-scan", "borderTopWidth")
+    };
+  });
+  expect(await read()).toEqual({ frame: "block", arc: "block", scale: "block", tickWidth: "1px", scanWidth: "1px" });
+  await page.emulateMedia({ contrast: "more" });
+  expect(await read()).toMatchObject({ tickWidth: "2px", scanWidth: "2px" });
+  await page.emulateMedia({ contrast: "no-preference", forcedColors: "active" });
+  expect(await read()).toMatchObject({ frame: "none", arc: "none", scale: "none" });
 });
 
 // The longest handle and name, a long handout text, three very long style names: at 390 wide (iPhone Safari portrait), 360x640 (narrowest
@@ -228,6 +283,23 @@ for (const theme of ACT_THEMES) {
     test.setTimeout(120_000);
     await page.setViewportSize({ width: 1440, height: 1000 });
     const advance = await openHandout(page, withScenes(BSCENE), theme);
+    // the reticle takes its colours from the theme: the arc is the theme's secondary colour, the rings its primary colour
+    const channels = text => (text.match(/-?[\d.]+(?:e-?\d+)?/g) || []).slice(0, 3).map(Number);
+    const rgb255 = values => values.map(value => (value <= 1 ? value * 255 : value));
+    const colours = await page.evaluate(() => {
+      const probe = name => { const node = document.createElement("i"); node.style.color = `var(${name})`; document.body.append(node); const color = getComputedStyle(node).color; node.remove(); return color; };
+      return { secondary: probe("--showcase-secondary"), primary: probe("--showcase-primary"), arc: getComputedStyle(document.querySelector(".neotokyo-assign-b__ring-arc")).borderTopColor, rings: getComputedStyle(document.querySelector(".neotokyo-assign-b__ring-ticks")).borderTopColor };
+    });
+    const near = (a, b) => a.every((value, index) => Math.abs(value - b[index]) <= 2);
+    expect(near(rgb255(channels(colours.arc)), channels(colours.secondary)), `arc ${colours.arc} vs secondary ${colours.secondary}`).toBe(true);
+    expect(near(rgb255(channels(colours.rings)), channels(colours.primary)), `rings ${colours.rings} vs primary ${colours.primary}`).toBe(true);
+    // the waiting screen (the PC number, SCANNING and the rest of the text)
+    for (const [width, height] of [[1440, 1000], [390, 844]]) {
+      await page.setViewportSize({ width, height });
+      const waiting = await measureContrast(page, { excluded: [...DECORATIVE_SELECTORS, ".neotokyo-sequence__header"] });
+      expect(waiting.failures.map(formatFailure), `waiting ${width}x${height}`).toEqual([]);
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await assign(page, advance);
     for (const [width, height] of [[1440, 1000], [390, 844]]) {
       await page.setViewportSize({ width, height });

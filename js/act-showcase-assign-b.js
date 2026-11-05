@@ -67,11 +67,18 @@ export function createAssignScreenB({ step, assignStep, pcNumber, pcLabel, cast,
   const head = element("header", "neotokyo-assign-b__head");
   head.append(eyebrow, status);
 
+  // The slot is a HUD reticle until the cast arrives: corner brackets, a double ring with a scale, a dashed arc that turns,
+  // a faint scan, a small SCANNING. All of it is decoration drawn by CSS (aria-hidden); the text is the PC number and the state.
   const ring = element("figure", "neotokyo-assign-b__ring");
+  for (const part of ["frame", "ticks", "arc", "scan"]) {
+    const decoration = element("span", `neotokyo-assign-b__ring-${part}`);
+    decoration.setAttribute("aria-hidden", "true");
+    ring.append(decoration);
+  }
   const ringLabel = element("span", "neotokyo-assign-b__ring-label", `PC${pcNumber}`);
   const portrait = element("div", "neotokyo-assign-b__portrait");
   portrait.append(createImage(cast, `PC${pcNumber} CAST`));
-  ring.append(ringLabel, portrait);
+  ring.append(ringLabel, element("span", "neotokyo-assign-b__ring-tag", "SCANNING"), portrait);
   const left = element("div", "neotokyo-assign-b__left");
   left.append(ring);
 
