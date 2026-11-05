@@ -46,7 +46,8 @@ test("the pattern B source is the last stylesheet source and has rules", () => {
 test("every rule is scoped to pattern B of the trailer frame, so nothing outside that screen is styled", () => {
   for (const rule of styleRules) {
     for (const selector of rule.prelude.split(/,(?![^(]*\))/).map(item => item.trim())) {
-      assert.ok(selector.endsWith(SCOPE), `not scoped: ${selector}`);
+      // a pseudo-element has to be the last part of a selector: the scope comes before it (".x:after:where(...)" is invalid CSS and the browser drops the whole rule)
+      assert.ok(selector.replace(/:(before|after)$/, "").endsWith(SCOPE), `not scoped: ${selector}`);
     }
   }
 });

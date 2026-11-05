@@ -155,6 +155,35 @@ test("B の再生に失敗したら、その枠は A で再生され、先へ進
   await expect(page.locator('.neotokyo-sequence__screen[data-scene="handout-assign"]')).toBeVisible({ timeout: 10_000 });
 });
 
+// The caret is the ::after of the part already read (the rule that draws it was dropped by the browser for as long as it was written
+// with the scope before the pseudo-element: tests/css-pseudo-element-order.test.mjs). It shows while the text is typed, blinks, and goes away.
+test("読み上げの間は、読んだ文字の最後に点滅するキャレットが出て、打ち終わると消える。reduced-motion では点滅しない", async ({ page }) => {
+  test.setTimeout(60_000);
+  const advance = await openTrailer(page, withScenes({ trailer: "b" }, LONG_TRAILER));
+  const caret = () => page.evaluate(() => {
+    const read = document.querySelector(".neotokyo-trailer-b__copy .neotokyo-sequence__readout-read");
+    const style = getComputedStyle(read, "::after");
+    return { typing: document.querySelector(".neotokyo-trailer-b__copy").dataset.typing || "", content: style.content, display: style.display, animation: style.animationName };
+  });
+  await expect.poll(async () => (await caret()).typing, { timeout: 10_000 }).toBe("true");
+  expect(await caret()).toEqual({ typing: "true", content: '""', display: "inline-block", animation: "neotokyo-trailer-b-caret" });
+  await expect(advance).toHaveText("NEXT // HANDOUT 01", { timeout: 15_000 });
+  expect((await caret()).content).toBe("none");
+});
+
+test("reduced-motion では、読み上げ中のキャレットは点滅しない", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openTrailer(page, withScenes({ trailer: "b" }, LONG_TRAILER));
+  const state = await page.evaluate(() => {
+    const copy = document.querySelector(".neotokyo-trailer-b__copy");
+    const read = copy.querySelector(".neotokyo-sequence__readout-read");
+    return { typing: copy.dataset.typing || "", animation: getComputedStyle(read, "::after").animationName };
+  });
+  // reduced motion may print the text at once; what matters is that nothing blinks
+  expect(state.animation === "none" || state.typing === "").toBe(true);
+});
+
 test("forced-colors では装飾の大きな「03」を隠す", async ({ page }) => {
   test.setTimeout(60_000);
   await page.emulateMedia({ forcedColors: "active" });
