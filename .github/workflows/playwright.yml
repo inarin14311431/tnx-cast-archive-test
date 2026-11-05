@@ -4,9 +4,12 @@ on:
   pull_request:
   workflow_dispatch:
 
-concurrency:
-  group: shared-db-owner-e2e
-  cancel-in-progress: false
+# No workflow-level concurrency. It used to be one group for the whole workflow, so a run waited for every earlier run
+# (the Act showcase job alone takes about 35 minutes). What has to be serialized is the use of the shared test-owner account
+# (E2E_EMAIL), and only two jobs use it: Authenticated editor E2E and Mobile E2E. Each has its own group below, so two runs
+# never use the account in the same job type at once. Do not give two jobs of the same run one group: a pending job is
+# cancelled when another one joins the group, which would turn the check of an older run red.
+# tests/e2e-account-concurrency.test.mjs fails when a job that is given the account has no group.
 
 jobs:
   public-smoke:
@@ -92,6 +95,9 @@ jobs:
     name: Authenticated editor E2E
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    concurrency:
+      group: shared-db-owner-e2e-editor
+      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -120,6 +126,9 @@ jobs:
   mobile:
     name: Mobile E2E
     runs-on: ubuntu-latest
+    concurrency:
+      group: shared-db-owner-e2e-mobile
+      cancel-in-progress: false
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
       options: --user 1001
