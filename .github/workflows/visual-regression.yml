@@ -5,8 +5,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  # The compare takes about 13 minutes. A pull request that changes documents only cannot change a screenshot, so it is skipped
+  # there. A job skipped by `if` is reported as skipped, which a required check treats as passed. Fail-safe: when this detection
+  # job itself fails, its output is empty and the compare runs anyway.
+  visual-changes:
+    name: Detect changes that can alter screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.detect.outputs.run }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Decide whether the compare has to run
+        id: detect
+        run: node scripts/visual-regression-needed.mjs
+
   compare:
     name: Compare reference screenshots
+    needs: visual-changes
+    if: ${{ always() && needs.visual-changes.outputs.run != 'false' }}
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble

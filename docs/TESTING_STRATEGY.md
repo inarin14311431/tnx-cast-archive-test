@@ -202,6 +202,12 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
 (`--admin` で迂回しない)。基準画像は `visual-regression-baseline` ブランチにあり、CIがそのブランチの
 `tests/visual` と設定をPRのコードへ重ねて比較する。
 
+ドキュメントだけのPR(変更が全部 `docs/**` か `*.md`)では、画面は変わりえないので比較(約13分)を走らせない。
+判定は `scripts/visual-regression-needed.mjs`(ジョブ `Detect changes that can alter screenshots`)で、比較のジョブを
+`if` で skipped にする(必須チェックは skipped を成功扱いにする。`on.pull_request.paths` でワークフローごと絞ると必須チェックが
+未完了のまま止まるので使わない)。判定ジョブ自体が失敗したときと、変更が読めないときは、安全側で比較を走らせる。
+テストやスクリプトは対象外にしている(`tests/e2e/server.mjs` は比較が開くページを配るため)。広げるときは `tests/visual-regression-trigger.test.mjs` と合わせて直す。
+
 1. 対象PRのCIが赤になったら、成果物 `visual-regression-report` をダウンロードする(`gh run download <run-id> -n visual-regression-report`)。
 2. `visual-regression-baseline` からブランチを切り、差分が出た画像だけ `*-actual.png` を
    `tests/visual/__screenshots__/<project>/<spec>/<name>.png` へコピーする(OSやフォント差が出るので手元で撮り直さない)。
