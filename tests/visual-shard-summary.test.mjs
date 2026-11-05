@@ -24,7 +24,12 @@ test("compareVisualRun: 比べていない基準画像・基準の無い比較�
   assert.match(problems({ log: log(["a.spec.js", "t1", ["x.png", "z.png"]], ["a.spec.js", "t2", ["y.png"]]) }), /compared without a baseline image \(1\): a\.spec\.js\/z\.png/);
   assert.match(problems({ log: log(["a.spec.js", "t1", ["x.png"]], ["a.spec.js", "t2", ["x.png"]]) }), /compared more than once/);
   assert.match(problems({ log: log(["a.spec.js", "t1", ["x.png"]]) }), /tests not run \(1\): a\.spec\.js :: t2/);
-  assert.match(problems({ log: log(["a.spec.js", "t1", ["x.png"]], ["a.spec.js", "t2", ["y.png"], "skipped"]) }), /not passed \(1\): t2 = skipped/);
+  assert.match(problems({ log: log(["a.spec.js", "t1", ["x.png"]], ["a.spec.js", "t2", ["y.png"], "failed"]) }), /not passed \(1\): t2 = failed/);
+  assert.match(problems({ log: log(["a.spec.js", "t1", ["x.png"]], ["a.spec.js", "t2", ["y.png"], "timedOut"]) }), /not passed \(1\): t2 = timedOut/);
+  // 設計上の skip(画像なし)は問題にしない。ただし skip が基準画像の比較を隠せば、比べていない画像として見つかる
+  const byDesign = compareVisualRun({ ...base, baselineFiles: ["a.spec.js/x.png"], listIds: ["a.spec.js :: t1", "a.spec.js :: t2"], log: log(["a.spec.js", "t1", ["x.png"]], ["a.spec.js", "t2", [], "skipped"]) });
+  assert.deepEqual([byDesign.problems, byDesign.skipped], [[], 1]);
+  assert.match(problems({ log: log(["a.spec.js", "t1", ["x.png"]], ["a.spec.js", "t2", [], "skipped"]) }), /baseline images not compared \(1\): a\.spec\.js\/y\.png/);
   assert.match(problems({ log: log(["a.spec.js", "t1", [null]], ["a.spec.js", "t2", ["y.png"]]) }), /without a name/);
   assert.match(problems({ log: null }), /no compare log/);
 });

@@ -4,7 +4,7 @@
  *
  * Needs playwright.visual.config.js and tests/visual (with its __screenshots__) from the visual-regression-baseline branch in the
  * working directory, as in the compare job. For each project:
- *   - the tests that ran are the tests `playwright test --list` finds (the same grep as the run), none failed, none skipped;
+ *   - the tests that ran are the tests `playwright test --list` finds (the same grep as the run), none failed (skips by design are counted);
  *   - the screenshots that were compared (scripts/visual-screenshot-reporter.mjs) are the baseline images of that project,
  *     except the ones the run leaves out on purpose (scripts/visual-runs.mjs), none twice.
  * Writes a table to $GITHUB_STEP_SUMMARY. Exits 1 on any difference.
@@ -24,7 +24,10 @@ export function compareVisualRun({ run, listIds, baselineFiles, log }) {
   const listed = new Set(listIds);
   const missingTests = [...listed].filter(id => !ran.includes(id));
   const extraTests = ran.filter(id => !listed.has(id));
-  const notPassed = tests.filter(test => test.status !== "passed");
+  // A spec may skip a test on purpose (a PC-only screen on the mobile project): it has no screenshot. Whether a skip hides a
+  // comparison is decided below by the baseline images, which all have to be compared. Failed, timed-out and interrupted tests are NG.
+  const skipped = tests.filter(test => test.status === "skipped");
+  const notPassed = tests.filter(test => test.status !== "passed" && test.status !== "skipped");
   if (!log) problems.push("no compare log was found");
   if (missingTests.length) problems.push(`tests not run (${missingTests.length}): ${missingTests.slice(0, 5).join(" | ")}`);
   if (extraTests.length) problems.push(`tests run but not listed (${extraTests.length}): ${extraTests.slice(0, 5).join(" | ")}`);
@@ -48,7 +51,7 @@ export function compareVisualRun({ run, listIds, baselineFiles, log }) {
   if (notCompared.length) problems.push(`baseline images not compared (${notCompared.length}): ${notCompared.slice(0, 5).join(" | ")}`);
   if (withoutBaseline.length) problems.push(`compared without a baseline image (${withoutBaseline.length}): ${withoutBaseline.slice(0, 5).join(" | ")}`);
   if (comparedSet.size !== compared.length) problems.push("a screenshot was compared more than once");
-  return { problems, tests: tests.length, listed: listed.size, compared: comparedSet.size, baseline: baseline.size, leftOut: left };
+  return { problems, tests: tests.length, skipped: skipped.length, listed: listed.size, compared: comparedSet.size, baseline: baseline.size, leftOut: left };
 }
 
 function listTests(run) {
@@ -82,14 +85,14 @@ function main() {
   const lines = [
     "### Visual regression compare, one job per project",
     "",
-    "| project | tests run / listed | images compared / baseline images | left out on purpose |",
+    "| project | tests run / listed (skipped by design) | images compared / baseline images | left out on purpose |",
     "|---|---|---|---|",
-    ...results.map(r => `| ${r.run.label} | ${r.tests} / ${r.listed} | ${r.compared} / ${r.baseline} | ${r.leftOut.join(", ") || "-"} |`),
+    ...results.map(r => `| ${r.run.label} | ${r.tests} / ${r.listed} (${r.skipped}) | ${r.compared} / ${r.baseline} | ${r.leftOut.join(", ") || "-"} |`),
     "",
     ...results.flatMap(r => r.problems.map(problem => `- **NG** ${r.run.label}: ${problem}`))
   ];
   const bad = results.some(r => r.problems.length);
-  if (!bad) lines.push("- every listed test ran once and passed, and every baseline image (except the ones left out on purpose) was compared once");
+  if (!bad) lines.push("- every listed test ran once and none failed, and every baseline image (except the ones left out on purpose) was compared once");
   const text = lines.join("\n");
   console.log(text);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${text}\n`);

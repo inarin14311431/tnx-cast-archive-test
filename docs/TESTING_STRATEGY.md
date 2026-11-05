@@ -220,7 +220,7 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
 
 画面比較は、デスクトップ(`visual-desktop`)とモバイル(`visual-mobile`)を別々のジョブ(`Compare screenshots (<project>)`)で並列に動かす
 (1ジョブで約14分 → 約8分)。必須チェック `Compare reference screenshots` は集約ジョブで、比較が要らない変更では何もせず成功、
-要る変更では「両方のジョブが成功」かつ `scripts/summarize-visual-shards.mjs` が「`playwright test --list` のテストが全部1回ずつ走って通り、
+要る変更では「両方のジョブが成功」かつ `scripts/summarize-visual-shards.mjs` が「`playwright test --list` のテストが全部1回ずつ走って失敗がなく、
 基準画像が全部1回ずつ比べられた」ことを確かめたときだけ成功する(比べた画像は `scripts/visual-screenshot-reporter.mjs` が
 `toHaveScreenshot` の名前を記録する。デスクトップが意図して除く1枚 `cast-spectrum-neon` は `scripts/visual-runs.mjs` に書いてあり、
 数に含めない)。結果はジョブのサマリに表で出る。プロジェクトを足すときは `scripts/visual-runs.mjs`・matrix・
