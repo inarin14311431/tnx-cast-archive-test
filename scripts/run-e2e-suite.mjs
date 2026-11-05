@@ -21,8 +21,15 @@ if (!project || tests.length === 0) {
   process.exit(2);
 }
 
+// E2E_SHARD="2/3": run only the second third of the suite (Playwright's own --shard). The CI splits the long suites this way.
+const shard = process.env.E2E_SHARD;
+if (shard !== undefined && shard !== "" && !/^[1-9]\d*\/[1-9]\d*$/.test(shard)) {
+  console.error(`E2E_SHARD must look like 2/3, got "${shard}"`);
+  process.exit(2);
+}
+
 const executable = process.platform === "win32" ? "npx.cmd" : "npx";
-const args = ["playwright", "test", ...tests, `--project=${project}`];
+const args = ["playwright", "test", ...tests, `--project=${project}`, ...(shard ? [`--shard=${shard}`] : [])];
 const child = spawn(executable, args, {
   cwd: root,
   env: process.env,

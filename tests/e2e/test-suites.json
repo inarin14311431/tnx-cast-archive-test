@@ -36,6 +36,7 @@
         "tests/e2e/server.mjs",
         "scripts/run-e2e-suite.mjs",
         "scripts/e2e-changed-groups.mjs",
+        "scripts/summarize-e2e-shards.mjs",
         "package.json",
         ".github/workflows/playwright.yml",
         "playwright.config.js"

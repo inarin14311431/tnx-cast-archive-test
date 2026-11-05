@@ -139,6 +139,13 @@ DOM実ブラウザの挙動を文字列testだけで代用しない。一方、p
 - ACT SHOWCASE の公開ページ(豪華版・スタンダード版)と、生成画面の背景プリセットの旧URL互換
 - 文字コントラスト、表示切れ、KEY STYLE、文言・引用符の「書き換え前の表示が一度も出ない」検査を含む(1本が長い)
 - 意図的な実DB書込みなし
+- **3つのシャード(Playwright の `--shard`)に分けて、別々の実行環境で動かす**(1本で約35分かかるため)。ジョブ `Act showcase E2E shard N/3` が
+  `E2E_SHARD=N/3 npm run e2e:ci-act-showcase` を動かし、`PLAYWRIGHT_JSON_OUTPUT_NAME` で JSON レポートを残す。必須チェック
+  `Act showcase E2E` は集約ジョブで、関係しない変更では成功(何もしない)、関係する変更では「全シャードが成功」かつ
+  `scripts/summarize-e2e-shards.mjs` が「スイートの全テストが、ちょうど1回ずつ走った」(`playwright test --list` との題名の突き合わせ。
+  数が同じでも、二重に走って別が抜けていれば落とす)ことを確かめたときだけ成功する。結果はジョブのサマリに表で出る(シャードごとの
+  件数・時間・再試行で通った件数)。シャード数を変えるときは、matrix・`E2E_SHARD`・集約の引数を揃える(`tests/e2e-shard-summary.test.mjs` が検査する)。
+  Playwright は件数で割るので、シャードの時間は揃わないことがある。偏りが大きければ割り方を見直す
 - **関係するPRのときだけ**実行する。`tests/e2e/test-suites.json` の `triggerPaths`(ACT SHOWCASE の html / js / css / assets、その spec・fixture、テスト基盤、`playwright.yml`)に一致するファイルを変えたPRと、手動実行(`workflow_dispatch`)で動く。関係しないPRでは `Act showcase E2E` が skipped(必須チェックでは成功扱い)
 - 判定はジョブ単位(`scripts/e2e-changed-groups.mjs`)。ワークフロー全体を `on.pull_request.paths` で絞ると、他の必須ジョブが未完了のままマージが止まるため使わない
 - **時間で待たず、状態で待つ。** 演出の途中のクリックは捨てられるので、最終盤面を開くときは `tests/e2e/fixtures/act-showcase-data.js` の `clickAccessWhenReady`(クリックの受付 `.is-awaiting-advance` を待ってから押す)を使う。演出の枠が消えるのは「隠れる→850ms後に取り除かれる」の2段なので、消えたことは属性ではなく `#cinematic-intro:not([aria-hidden='true'])` が0件であること、または枠が0件であることで待つ。待ち時間を延ばしたり、自動の再実行を増やしたりして揺らぎを隠さない。直したら CPU を4倍に絞って(CDP の `Emulation.setCPUThrottlingRate`)20回以上繰り返し、失敗0を確かめる

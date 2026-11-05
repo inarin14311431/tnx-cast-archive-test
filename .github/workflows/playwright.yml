@@ -63,13 +63,21 @@ jobs:
         id: detect
         run: node scripts/e2e-changed-groups.mjs ci-act-showcase
 
-  act-showcase:
-    name: Act showcase E2E
+  # The suite takes about 35 minutes in one piece, so it runs as 3 shards (Playwright's --shard) on separate runners. The
+  # shards do not share a CPU, which matters for the specs that measure animation timing. The job below, named "Act showcase E2E"
+  # like before, is the one the branch protection requires: it passes when the shards were not needed, and otherwise only when
+  # every shard passed AND the shards together ran exactly the tests of the suite (scripts/summarize-e2e-shards.mjs).
+  act-showcase-shard:
+    name: Act showcase E2E shard ${{ matrix.shard }}/3
     needs: act-showcase-changes
     if: needs.act-showcase-changes.outputs.run == 'true'
     runs-on: ubuntu-latest
-    # 45: the suite took about 28 minutes before ACT READY pattern B and has about 6 more minutes of it now; a timeout shows up as "cancelled", not as a failure
-    timeout-minutes: 45
+    # 25: one shard takes about 12 minutes; a timeout shows up as "cancelled", not as a failure
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -81,15 +89,65 @@ jobs:
         run: npm install
       - name: Install Chromium
         run: npx playwright install chromium
-      - name: Run ACT SHOWCASE tests
+      - name: Run ACT SHOWCASE tests (shard)
         run: npm run e2e:ci-act-showcase
+        env:
+          E2E_SHARD: ${{ matrix.shard }}/3
+          PLAYWRIGHT_JSON_OUTPUT_NAME: shard-${{ matrix.shard }}.json
       - name: Upload ACT SHOWCASE Playwright report
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report-act-showcase
+          name: playwright-report-act-showcase-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 14
+      - name: Upload the shard's JSON report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: act-showcase-json-${{ matrix.shard }}
+          path: shard-${{ matrix.shard }}.json
+          if-no-files-found: error
+          retention-days: 14
+
+  act-showcase:
+    name: Act showcase E2E
+    needs: [act-showcase-changes, act-showcase-shard]
+    # always(): this job decides the result of the shards, so it must run when a shard failed or was cancelled too
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Not needed, or all shards passed?
+        env:
+          NEEDED: ${{ needs.act-showcase-changes.outputs.run }}
+          SHARDS: ${{ needs.act-showcase-shard.result }}
+        run: |
+          if [ "$NEEDED" = "false" ]; then echo "ACT SHOWCASE E2E is not needed for this change."; exit 0; fi
+          if [ "$NEEDED" != "true" ]; then echo "The change detection did not answer ('$NEEDED'): failing to be safe."; exit 1; fi
+          if [ "$SHARDS" != "success" ]; then echo "The shards finished as '$SHARDS'."; exit 1; fi
+          echo "All shards passed."
+      - name: Checkout
+        if: needs.act-showcase-changes.outputs.run == 'true'
+        uses: actions/checkout@v7
+      - name: Setup Node
+        if: needs.act-showcase-changes.outputs.run == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        if: needs.act-showcase-changes.outputs.run == 'true'
+        run: npm install
+      - name: Download the shards' JSON reports
+        if: needs.act-showcase-changes.outputs.run == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          pattern: act-showcase-json-*
+          path: shard-reports
+          merge-multiple: true
+      - name: The shards ran every test of the suite, once
+        if: needs.act-showcase-changes.outputs.run == 'true'
+        run: node scripts/summarize-e2e-shards.mjs ci-act-showcase 3 shard-reports
 
   authenticated-editor:
     name: Authenticated editor E2E
