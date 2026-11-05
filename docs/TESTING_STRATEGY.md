@@ -218,13 +218,22 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
 (`--admin` で迂回しない)。基準画像は `visual-regression-baseline` ブランチにあり、CIがそのブランチの
 `tests/visual` と設定をPRのコードへ重ねて比較する。
 
+画面比較は、デスクトップ(`visual-desktop`)とモバイル(`visual-mobile`)を別々のジョブ(`Compare screenshots (<project>)`)で並列に動かす
+(1ジョブで約14分 → 約8分)。必須チェック `Compare reference screenshots` は集約ジョブで、比較が要らない変更では何もせず成功、
+要る変更では「両方のジョブが成功」かつ `scripts/summarize-visual-shards.mjs` が「`playwright test --list` のテストが全部1回ずつ走って通り、
+基準画像が全部1回ずつ比べられた」ことを確かめたときだけ成功する(比べた画像は `scripts/visual-screenshot-reporter.mjs` が
+`toHaveScreenshot` の名前を記録する。デスクトップが意図して除く1枚 `cast-spectrum-neon` は `scripts/visual-runs.mjs` に書いてあり、
+数に含めない)。結果はジョブのサマリに表で出る。プロジェクトを足すときは `scripts/visual-runs.mjs`・matrix・
+`tests/visual-shard-summary.test.mjs` を揃える。ローカルの `npm run test:visual:production` は従来どおり両方を順に動かす
+(`VISUAL_PROJECT=visual-mobile` で片方だけ)。
+
 ドキュメントだけのPR(変更が全部 `docs/**` か `*.md`)では、画面は変わりえないので比較(約13分)を走らせない。
 判定は `scripts/visual-regression-needed.mjs`(ジョブ `Detect changes that can alter screenshots`)で、比較のジョブを
 `if` で skipped にする(必須チェックは skipped を成功扱いにする。`on.pull_request.paths` でワークフローごと絞ると必須チェックが
 未完了のまま止まるので使わない)。判定ジョブ自体が失敗したときと、変更が読めないときは、安全側で比較を走らせる。
 テストやスクリプトは対象外にしている(`tests/e2e/server.mjs` は比較が開くページを配るため)。広げるときは `tests/visual-regression-trigger.test.mjs` と合わせて直す。
 
-1. 対象PRのCIが赤になったら、成果物 `visual-regression-report` をダウンロードする(`gh run download <run-id> -n visual-regression-report`)。
+1. 対象PRのCIが赤になったら、成果物 `visual-regression-report-visual-desktop` / `visual-regression-report-visual-mobile`(プロジェクトごと)をダウンロードする(`gh run download <run-id> -n visual-regression-report-visual-desktop`)。
 2. `visual-regression-baseline` からブランチを切り、差分が出た画像だけ `*-actual.png` を
    `tests/visual/__screenshots__/<project>/<spec>/<name>.png` へコピーする(OSやフォント差が出るので手元で撮り直さない)。
 3. `visual-regression-baseline` 向けにPRを作り、画像ごとの変更理由と、差分0だった画像の枚数をPR本文に書く。
