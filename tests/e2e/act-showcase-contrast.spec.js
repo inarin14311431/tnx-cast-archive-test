@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
-import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, installHeldActShowcaseRoutes } from "./fixtures/act-showcase-data.js";
+import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, installHeldActShowcaseRoutes, clickAccessWhenReady } from "./fixtures/act-showcase-data.js";
 import { DECORATIVE_SELECTORS, formatFailure, measureContrast } from "./fixtures/act-showcase-contrast.js";
 
 // Every scene of the cinematic act showcase (loading, access, title, trailer, handout / assignment for each
@@ -76,7 +76,7 @@ for (const theme of ACT_THEMES) {
     }
     await expect(access).toBeVisible({ timeout: 15_000 });
     await measureScene(page, report, "summary");
-    await access.click({ force: true });
+    await clickAccessWhenReady(page, access);
 
     // Final board: scroll through the whole page for each selected cast (the roster at the bottom switches casts).
     await expect(page.locator(".poster-v2-board")).toBeVisible();

@@ -132,6 +132,7 @@ DOM実ブラウザの挙動を文字列testだけで代用しない。一方、p
 - 意図的な実DB書込みなし
 - **関係するPRのときだけ**実行する。`tests/e2e/test-suites.json` の `triggerPaths`(ACT SHOWCASE の html / js / css / assets、その spec・fixture、テスト基盤、`playwright.yml`)に一致するファイルを変えたPRと、手動実行(`workflow_dispatch`)で動く。関係しないPRでは `Act showcase E2E` が skipped(必須チェックでは成功扱い)
 - 判定はジョブ単位(`scripts/e2e-changed-groups.mjs`)。ワークフロー全体を `on.pull_request.paths` で絞ると、他の必須ジョブが未完了のままマージが止まるため使わない
+- **時間で待たず、状態で待つ。** 演出の途中のクリックは捨てられるので、最終盤面を開くときは `tests/e2e/fixtures/act-showcase-data.js` の `clickAccessWhenReady`(クリックの受付 `.is-awaiting-advance` を待ってから押す)を使う。演出の枠が消えるのは「隠れる→850ms後に取り除かれる」の2段なので、消えたことは属性ではなく `#cinematic-intro:not([aria-hidden='true'])` が0件であること、または枠が0件であることで待つ。待ち時間を延ばしたり、自動の再実行を増やしたりして揺らぎを隠さない。直したら CPU を4倍に絞って(CDP の `Emulation.setCPUThrottlingRate`)20回以上繰り返し、失敗0を確かめる
 - `triggerPaths` がページの読み込むファイルを漏れなく覆うことは `tests/e2e-act-showcase-trigger.test.mjs` が検査する(ページから辿れるファイルが `triggerPaths` に無いと失敗)
 
 ### `ci-editor`

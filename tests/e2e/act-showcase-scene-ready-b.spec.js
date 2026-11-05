@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, showcaseData } from "./fixtures/act-showcase-data.js";
+import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes, showcaseData, clickAccessWhenReady } from "./fixtures/act-showcase-data.js";
 import { DECORATIVE_SELECTORS, formatFailure, measureContrast } from "./fixtures/act-showcase-contrast.js";
 
 // docs/ACT_SHOWCASE_SCENES.md §6 #7 (3rd pattern: ready): ACT READY pattern B (centred portraits). A showcase whose composition says { ready: "b" }
@@ -122,7 +122,7 @@ test("B の再生に失敗したら、その枠は A で再生され、先へ進
   await expect(screen).toHaveClass(/neotokyo-sequence__screen--summary/);
   await expect(page.locator(".neotokyo-ready-b")).toHaveCount(0);
   expect(warnings.some(text => text.includes('scene "ready" pattern "b" failed'))).toBe(true);
-  await page.locator(".neotokyo-finale__access-button").click({ force: true });
+  await clickAccessWhenReady(page);
   await expect(page.locator("#cinematic-intro")).toHaveCount(0, { timeout: 8_000 });
 });
 
