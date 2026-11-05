@@ -203,6 +203,21 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
   - **失敗時は A。** `playWithFallback`。B の画面は、進捗の更新や DOM に触る前に作る。
   - **本番の影響。** `SCENE_PATTERNS.ready` が `["a","b"]` になるので、生成画面の構成の選択欄に ready の欄が増える。既存の公開アクトは `scenes` が無く、A のまま。
 
+  7 の4つ目: handout-assign(ハンドアウトとキャストアサイン)の B「ポートレート先行」(2026-11-05 決定。調査の結果の3案を A と並べて比べ、案2を選んだ)。
+  - **範囲。** 枠まるごと(ハンドアウトの読み上げと割り当て)を B 専用のクラス名で作る。割り当てのカードだけを B にする案は採らない: A の `section`(`--linked`)にハンドアウト側の観察層(`writing-patterns`・`story-flow`・`handout-live-frame`・`scroll-cue`)が付いたままになり、決定 #5 に反し、`data-scene-pattern` も a と b のどちらにしても半分が合わない(「組で1つ」の決定 #3 とも合わない)。PC の数だけ繰り返すのは B の関数(`showHandoutAssignsB`)の中。
+  - **見た目。** 左に空の丸い枠(HUD の照準: 四隅のブラケット、目盛り付きの二重の輪、一部だけ回る破線の弧、淡い走査線、小さな SCANNING。色は主色と副色にテーマ変数で追従する。2026-11-05 の指定で、最初の破線の丸から変えた)、右にハンドアウト(主題、ROLE/CONNECTION/SUIT などの項目、本文)。割り当てで丸に顔が出る(拡大1.25倍・基点上から6%の固定の1値)。**名前は左の細い列から外し、両方の列の下に全幅で置く**(長いハンドルと名前が狭い列で何行にも折れたため。ハンドルと名前は1行ずつ、各2行まで)。ハンドルと名前は同じ文字サイズ・太さ・色(1つの規則で両方を決める。各3行まで)。その下にスタイルカード。phone 幅(760px 以下)は縦に積む(丸 → 主題 → 項目 → 本文 → 名前 → カード)。
+  - **出し方(穏やか)。** 入りは画面の短いフェードイン。割り当てでは、検索中は丸の外周が回り、見つかると枠が光り、顔・名前・カードは短いフェードインで出て、そのあとカードが左から順にめくれる(`?flip=fast|normal|slow` の既存の指定がそのまま効く)。消える側のフェードは付けない。reduced-motion は、カードが最初から表向きで、動きは付けない。
+  - **状態。** 画面の状態は2つの属性だけ: `data-phase`(`reading` → `read` → `searching` → `found` → `assigned`)と `data-flip`(`idle` → `running` → `done`)。E2E と画面比較は、固定の待ちではなく、この属性を待つ。待ちはすべて `wait()` を通すので、SKIP で一度に終わる(A のカードの「CAST ASSIGNED」の札のように `window.setTimeout` で外から動かすものは無い)。各状態の長さは `B_SEARCH_MS`(1000)・`B_FOUND_MS`(600)・`B_FACE_REVEAL_MS`(700)。
+  - **役割。** `roleForCast`(参加ロール、なければハンドアウトの役のスタイル)を直接使う。空なら ROLE の項目も役割の行も強調するカードも出さない(`UNREGISTERED` は出さない)。A は `getParticipationRole` で作ったあと、`supporting-cast` が後から直し、ハンドアウト側の ROLE セルは直らず `UNREGISTERED` と出る。B は出どころが1つ。
+  - **ハンドアウトの項目。** 本文の「推奨スタイル：… コネ：… 推奨スート：…」を、純粋な `js/act-showcase-handout-fields.js`(`handoutFacts`、`splitHandoutTitle`、`splitCastName`)で読む。A は同じ読み取りを `writing-patterns.js` の即時実行関数の中でやっていて取り込めないので、項目名の表 `FIELD_DEFS` を同じにし、同じであることをテストで確かめる。項目は コネ → スート → 関係 … の順に最大3つ。スタイルは主題(見出し)なので項目に含めない。
+  - **長い本文。** 本文は枠の中の箱でスクロールし、追従スクロールの共通部品 `act-showcase-caret.js`(`prepareSplitReadout` と `keepCaretVisible`、向きは y)で、打鍵の先を見せる。A の `handout-live-frame`(ResizeObserver で枠を伸ばす)は B では使わない。
+  - **A の装飾を受けない。** `neotokyo-assign-b__*` の専用のクラス名。A の観察層はどれも A のクラス名(`--linked`、`__handout-panel`、`__assign-panel`、`__cast--linked`、`.neotokyo-style-card` など)を探すので、B には効かない。
+  - **キャスト画像。** `createAssignScreenB` が引数 `createImage` で受け取る(`act-showcase-neotokyo.js` を import すると循環になるため)。画像は画面を作るときに作って隠しておくので、読んでいる間に読み込まれ、割り当ての瞬間に待たない。
+  - **phone 幅。** 画面は縦に `overflow-y:auto`。割り当てで名前とカードが画面の下にはみ出すときは、画面を下までスクロールする(穏やかに。reduced-motion は即時)。
+  - **CSS。** `css-next/pages/act-showcase-patterns.css` の4つ目の出典 `act-showcase-pattern-assign-b.css`。擬似要素の規則は `.x:where(…):before` の順で書く(`.x:before:where(…)` は不正な CSS で、規則ごと捨てられる。テストで禁止)。照準の装飾(`__ring-frame`/`-ticks`/`-arc`/`-scan`)は aria-hidden の飾りで、reduced-motion では回らず、forced-colors では飾りを消して2つの輪を枠線だけにし、prefers-contrast では線を太くする。全ルールを `:where([data-scene="handout-assign"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0)。reduced-motion・prefers-contrast・forced-colors に対応。
+  - **失敗時は A。** `playWithFallback`。B の画面は、進捗の更新や DOM に触る前に作る。
+  - **本番の影響。** `SCENE_PATTERNS["handout-assign"]` が `["a","b"]` になるので、生成画面の構成の選択欄に handout-assign の欄が増える(選択欄は4つ)。既存の公開アクトは `scenes` が無く、A のまま。
+
   共通の直し(2026-11-02、実画面の確認で見つかった2点。A・B どちらにも効く):
   - **短い画面でフッターが見切れる。** `.neotokyo-sequence__shell` が `min-height:560px` で、高さ 560px 未満の画面(小さいウィンドウ、横向きの phone)では、シェルが画面より高くなり、フッターと NEXT ボタンが画面の外に出ていた。`min-height` を外して、高さは常に画面の高さ(`100svh`)にし、高さ 559px 以下ではあふれた中身をステージの中でスクロールする(`align-items: safe center; overflow-y: auto`)。横向き phone(844x390)の NEXT ボタンもこれで画面に入る。
   - **タイトルと読み上げが途中から見える。** Google Fonts を `display=block` で読むので、画面を入れた時点で必要な字形(Noto Sans JP は unicode-range で細かく分かれている)の取得が始まり、届くまで文字が見えない。その間もアニメーションと打鍵は進むので、届いた時点で途中から見えていた。`swapScreen(state, content, { waitForFonts: true })` は、画面を隠したまま入れ、レイアウトでフォントを要求させ、2フレーム待ってから `document.fonts.ready` を待つ(上限 2.5 秒、スキップで即解除)。待つ間、A の画面のアニメーションは一時停止し(A のアニメーションは `.is-visible` ではなく要素の挿入で始まるため)、表示と同時に最初から再生する。title・trailer(A・B)・handout-assign・ready で使う。loading の画面は待たない(その間にフォントが読み込まれる)。

@@ -338,6 +338,7 @@ act-showcaseの「本体が作ったものを削除して作り直す」重複(`
 - `act-showcase-key-style`(KEY STYLE)が、CI で揺らぐ(2026-11-04)。アクセスボタンを押した後の盤面の要素(`.poster-v2-act-meta__cell.is-style strong`)が8秒以内に出ず、再試行でも落ちることがある。起きた回数: 検証側で1回(この作業の前半、`key-style:72`)、本番 #266 で1回(`:37`)、本番 #267 で1回(`:72`)。どれも再実行で通り、手元では10回とも通る。ready B や LOADING の変更とは無関係に起きている。再び落ちたら、まず1回だけ再実行する。
   - **対応済み(検証 #678、2026-11-05)**: 原因は、アクセスボタンが先に出て、クリックの受付が後から整う競合だった(時間の問題ではなく、受付の状態を待つ形に直した)。残りの揺らぎは次の項目。
 
+- **trailer B の読み上げのキャレットの規則が効いていない(2026-11-05、handout-assign B の実装中に見つけた)。** `css-next/pages/act-showcase-patterns.css` の trailer B の2規則(`.neotokyo-trailer-b__copy[data-typing="true"] .neotokyo-sequence__readout-read:after:where(…)` とその reduced-motion 版)は、擬似要素のあとに `:where()` を置いていて、不正な CSS として規則ごと捨てられる(`CSS.supports("selector(.a:after:where(.b))")` は false。正しくは `.a:where(.b):after`)。打鍵中の点滅するキャレットが出ていない。画面比較は打鍵のあとの状態なので気づかなかった。handout-assign B では正しい順に直し、テストで禁止した。trailer B は未修正(直すと打鍵中の見た目が変わる。別の小さな PR で、E2E は `data-typing` の間のキャレットを確かめる)。
 - **CI の残りの課題(2026-11-05)。**
   - Act showcase E2E のシャード(#681)は、Playwright が件数で割るため、時間が揃わない(12分33秒 / 16分21秒 / 5分00秒)。重いテスト(ready B の spec など)が2番目に集まっている。割り方を直す(シャード数を4にする、重いファイルを分ける、`--shard` ではなく自分で割り振る)と約12分まで縮む見込み(未着手)。
   - `act-showcase-contrast` の intron が、CPU 4倍・3並列の負荷をかけると落ちる(20回とも。CI では起きていない)。タイトル画面の RULER クレジット(`.neotokyo-sequence__ruler-credit`)が、点灯の途中の色で測られる(コントラスト 1.06:1 など)。`settle` を「有限の CSS アニメーションの完了待ち」に変えても直らなかったので、取り消した。原因は未確定(点灯がアニメーションではなく別の仕組みで進んでいる可能性)。直すなら、まず再現条件(負荷)で、点灯が何で進むかを調べる。
