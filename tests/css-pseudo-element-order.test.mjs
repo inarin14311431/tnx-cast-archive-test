@@ -24,13 +24,10 @@ function stylesheets(dir) {
   return files.sort();
 }
 
-// The rules that are still written in the invalid order, until they are fixed (each is a rule that does NOT apply today). The test fails
-// when a rule here is fixed (remove it from this list) and when a new one appears (fix it, do not add it here).
-// trailer pattern B: the blinking caret at the end of the typed text, and its reduced-motion twin. They were dropped since they were
-// written; the pattern B baseline images are taken after the typing, so no baseline showed the caret.
-const KNOWN_INVALID = [
-  { file: "css-next/pages/act-showcase-patterns.css", selectorStart: '.neotokyo-trailer-b__copy[data-typing="true"] .neotokyo-sequence__readout-read:after:where(', count: 2 }
-];
+// The rules that are still written in the invalid order, until they are fixed (each is a rule that does NOT apply today). Empty: the two
+// rules of the trailer pattern B caret were fixed on 2026-11-05. The test fails when a rule listed here is fixed (remove it from the list) and
+// when a new one appears (fix it, do not add it here).
+const KNOWN_INVALID = [];
 
 function findings() {
   const found = [];
