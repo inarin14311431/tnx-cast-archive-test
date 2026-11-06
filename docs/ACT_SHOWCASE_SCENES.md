@@ -61,7 +61,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
 |---|---|---|
 | 2 タイトル | 7 フィナーレ | `cinematic-layout-v2` `getMeaningfulSubtitle` が、ヒーローの `#opening-subtitle` の文字からタイトル画面の副題を作る。フィナーレのDOMが先にあることが前提 |
 | 7 フィナーレ | 7(自分の文字) | `board-layout` が `#opening-act-name` / `#opening-ruler` の表示文字から act-meta の値を読む(LAYERS §3.3、本体が先に作るので安全網) |
-| 6 ACT READY | 共有の外枠 | アクセスボタンを `__footer` に足す。終了まで消さないので、6の後に別の枠が来る構成だと残る。ステージのクリックを止める `summary-advance-guard` も、ステージ内に `--summary` があるかどうかで判定する |
+| 6 ACT READY | 共有の外枠 | アクセスボタンを `__footer` に足す。終了まで消さないので、6の後に別の枠が来る構成だと残る(ステージのクリックを止めていた `summary-advance-guard` は 2026-11-06 に削除。ACT READY も他の画面と同じく、どこをクリックしても進む) |
 | 6 ACT READY | 2 タイトル | 同じ `finale-enhancer` の1つの observer がタイトルとサマリーの両方を装飾し、body クラス2つを同時に計算する |
 | 5 アサイン | 4 ハンドアウト | 同じ `section`。アサインのCSSは `.screen--linked.is-splitting …` のように、ハンドアウトの要素を状態クラスで動かす。逆に `handout-live-frame` のCSSは `.screen--linked:not(.is-splitting)` で「アサインがまだ始まっていない」ことを条件にする。両方にまたがるルール54個 |
 | 5・6・7 | 互い | `cinematic-fit` の代替画像ルール3個が `__cast-image`(5)・`__summary-cast-image`(6)・`.poster-v2-visual`(7)を1つのセレクタ群で扱う。`supporting-cast` の `.poster-v2-tags span, .neotokyo-sequence__styles span, .neotokyo-sequence__summary-cast-styles span` も3枠を同時に扱う |
@@ -196,9 +196,9 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
   - **丸い画像の拡大(2026-11-04)。** 顔を円の中心のやや上に寄せるため、画像を1.25倍に拡大する(`transform: scale(1.25)`、基点は画像の上から6%。固定の1値)。1.0・1.25・1.5倍を act-0021 の実画像(縦長・正方形)と横長で比べ、1.5倍は縦長の頭の輪や、正方形・横長の髪や額が切れるので採らない。1.25倍は、縦長の顔が円の上から4割弱になり、頭と輪はほぼ収まる(正方形と横長は髪の頭頂が縁に触れる)。
   - **役割ラベル。** `roleForCast`(参加ロール、なければハンドアウトの役のスタイル)が空なら、行ごと出さない(`UNREGISTERED`・空欄・`NO HANDLE` は出さない)。
   - **A の装飾を受けない。** B は `neotokyo-ready-b__*` の専用のクラス名で、A の後付け層(`--summary`・finale のロックアップとコア・FINAL BRIEFING への書き換え・ゲスト欄・脚本家クレジット・アクセスボタン・`showcase-neotokyo-finale-active`)は付かない。ゲストは model の `guests`(表示名の配列)から B が描く。`act-showcase-page.js` が、`scenes.ready` が `b` のときだけ `loadPublicShowcaseGuests`(キャッシュ付き)を最大2秒待って詰める(失敗・遅延ならゲストの行だけが無い。A の `supporting-cast` は同じ取得を共有する)。脚本家は `scenarioWriterName`(title B で足したもの)から描く。
-  - **進む操作。** 画面下の標準フッターの「OPEN FULL SHOWCASE」ボタンで進む(A の「ENTER」アクセスボタンは作られない)。`summary-advance-guard` は `--summary` の有無で判定するので B には効かない。代わりに、B の `section` が `data-advance-guard="button"` を持ち、ステージのクリックハンドラ(`act-showcase-neotokyo.js`)が、ステージ内にそれがあるときは「空きをクリックして NEXT」を無効にする(余白のクリックも含む)。誤クリックでは進まない(E2E)。
+  - **進む操作。** 他の画面と同じく、ステージのどこをクリックしても進む。画面下の標準フッターの「OPEN FULL SHOWCASE」ボタンでも進む(A の「ENTER」アクセスボタンは作られない)。2026-11-06 の指定で、ボタン以外のクリックを止めていた守り(B の `data-advance-guard="button"` と A の `summary-advance-guard`)を外した(E2E: 画像のクリックで進む)。
   - **キャスト画像。** `createCastImage` と `FALLBACK_IMAGE` を export した(別の PR、動作は変えない)。B の module から `act-showcase-neotokyo.js` を import すると循環になるので、`createReadyScreenB` が引数 `createImage` で受け取る。
-  - **phone 幅と最大6人。** 760px 以下は2列(奇数の最後は中央)。スタイルの行は phone では出さず(3人が 390x844 で画面に収まるように)、PC 幅では2行で切って出す。名前は `overflow-wrap:anywhere`・`text-wrap:balance` で折り返し、3行で切る(`line-clamp:3`)。画面は縦に `overflow-y:auto`(足りないときは画面の中でスクロールし、フッターは動かない)。最長の名前6人で、390・360・844 幅と PC 幅に、横あふれと、セルからのはみ出しが無いことを E2E で確かめる。
+  - **phone 幅と最大6人。** 760px 以下は2列(奇数の最後は中央)。スタイルの行は phone では出さず(3人が 390x844 で画面に収まるように)、PC 幅では2行で切って出す。名前はハンドルと本名を別の `span`(`splitCastName`)にして横に並べ、セルに収まらないときだけハンドルと本名の間で2段にする(2026-11-06 の指定。それぞれ `overflow-wrap:anywhere`・`text-wrap:balance`、2行で切る)。セルは flex の均等割りで、幅は 96〜260px(画像は 200px まで)。画面は縦に `overflow-y:auto`(足りないときは画面の中でスクロールし、フッターは動かない)。最長の名前6人で、390・360・844 幅と PC 幅に、横あふれと、セルからのはみ出しが無いことを E2E で確かめる。
   - **CSS。** `css-next/pages/act-showcase-patterns.css` の3つ目の出典 `act-showcase-pattern-ready-b.css`。全ルールを `:where([data-scene="ready"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0)。reduced-motion・prefers-contrast・forced-colors に対応。
   - **失敗時は A。** `playWithFallback`。B の画面は、進捗の更新や DOM に触る前に作る。
   - **本番の影響。** `SCENE_PATTERNS.ready` が `["a","b"]` になるので、生成画面の構成の選択欄に ready の欄が増える。既存の公開アクトは `scenes` が無く、A のまま。

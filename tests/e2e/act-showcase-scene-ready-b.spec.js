@@ -4,8 +4,8 @@ import { DECORATIVE_SELECTORS, formatFailure, measureContrast } from "./fixtures
 
 // docs/ACT_SHOWCASE_SCENES.md §6 #7 (3rd pattern: ready): ACT READY pattern B (centred portraits). A showcase whose composition says { ready: "b" }
 // plays it; everything else plays pattern A. B uses class names of its own, so none of pattern A's decorations (finale lockup,
-// FINAL BRIEFING heading, guest rail, scenario-writer credit, access button, click guard) reach it. The guests and the
-// scenario-writer credit are drawn by B itself; the footer button is the only way out; when drawing B fails the frame is played as A.
+// FINAL BRIEFING heading, guest rail, scenario-writer credit, access button) reach it. The guests and the
+// scenario-writer credit are drawn by B itself; a click anywhere or the footer button moves on; when drawing B fails the frame is played as A.
 const withScenes = (scenes, extra = {}) => ({ ...showcaseData, scenes, ...extra });
 const READY = '.neotokyo-sequence__screen[data-scene="ready"]';
 const A_HOOKS = [".neotokyo-sequence__screen--summary", ".neotokyo-finale__lockup", ".neotokyo-finale__access-button", ".neotokyo-supporting-cast", ".neotokyo-sequence__summary-cast"];
@@ -61,19 +61,9 @@ test("B を選ぶと B の画面が出て、A の装飾(ロックアップ・ゲ
     return [top(".neotokyo-ready-b__casts"), top(".neotokyo-ready-b__extras")];
   });
   expect(order[1]).toBeGreaterThan(order[0]);
-  // a stray click does not leave ACT READY; only the footer button does
-  const advance = page.locator(".neotokyo-sequence__advance");
-  const box = await screen.boundingBox();
-  const stage = await page.locator(".neotokyo-sequence__stage").boundingBox();
-  // the screen itself, a portrait, and the margin of the stage beside the screen
-  await page.mouse.click(box.x + box.width / 2, box.y + 14);
+  // a click anywhere on ACT READY leaves it, as on the other screens (here: a portrait)
+  await expect(page.locator(".neotokyo-sequence__advance")).toHaveText("OPEN FULL SHOWCASE");
   await screen.locator(".neotokyo-ready-b__image").first().click({ force: true });
-  await page.mouse.click(stage.x + 3, stage.y + stage.height / 2);
-  await page.waitForTimeout(700);
-  await expect(page.locator("#cinematic-intro")).toHaveCount(1);
-  await expect(screen).toHaveClass(/is-visible/);
-  await expect(advance).toHaveText("OPEN FULL SHOWCASE");
-  await advance.click({ force: true });
   await expect(page.locator("#cinematic-intro")).toHaveCount(0, { timeout: 8_000 });
 });
 
@@ -176,7 +166,7 @@ test("最大6人・最長の名前でも、はみ出さず、読める(1440x900�
           // the styles row is not drawn on a phone (display:none, zero size)
           return [...cell.children].filter(child => child.getBoundingClientRect().width > 0).some(child => child.getBoundingClientRect().left < cellBox.left - 1 || child.getBoundingClientRect().right > cellBox.right + 1);
         }),
-        clampedNames: [...document.querySelectorAll(".neotokyo-ready-b__name")].every(item => item.scrollHeight <= item.clientHeight + 2 || getComputedStyle(item).webkitLineClamp === "3"),
+        clampedNames: [...document.querySelectorAll(".neotokyo-ready-b__handle, .neotokyo-ready-b__real")].every(item => item.scrollHeight <= item.clientHeight + 2 || getComputedStyle(item).webkitLineClamp === "2"),
         cells: cells.length,
         outsideScreenX: cells.some(cell => cell.getBoundingClientRect().left < frame.left - 1 || cell.getBoundingClientRect().right > frame.right + 1),
         footer: box(".neotokyo-sequence__footer").bottom - innerHeight,

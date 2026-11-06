@@ -9,7 +9,7 @@
 // So the facts beside the handout (ROLE, CONNECTION, SUIT ...) and the role highlight on the style cards are drawn here,
 // from the model. Styles live in css-next/pages/act-showcase-patterns.css, scoped to
 // [data-scene="handout-assign"][data-scene-pattern="b"]. See docs/ACT_SHOWCASE_SCENES.md section 6 #7 (4th pattern: handout-assign).
-import { handoutFacts, splitCastName, splitHandoutTitle } from "./act-showcase-handout-fields.js?v=48197ec9";
+import { handoutFacts, splitCastName, splitHandoutTitle } from "./act-showcase-handout-fields.js?v=991c7b8e";
 import { findAssignedStyle } from "./act-showcase-visual-caption.js?v=47f6e034";
 import { parseStyleLabel } from "./act-showcase-style-label.js?v=8a1b88dd";
 
@@ -99,7 +99,8 @@ export function createAssignScreenB({ step, assignStep, pcNumber, pcLabel, cast,
   const main = element("div", "neotokyo-assign-b__main");
   main.append(left, right);
 
-  // The name gets the full width under both columns: a long handle and name wrap here instead of in a narrow column.
+  // The name gets the full width under both columns. Handle and name sit side by side; they break onto two lines only when
+  // the pair does not fit (a long one also wraps here instead of in a narrow column).
   const who = element("div", "neotokyo-assign-b__who");
   const { handle, name } = splitCastName(cast?.fullName);
   const heading = element("h3", "neotokyo-assign-b__name");

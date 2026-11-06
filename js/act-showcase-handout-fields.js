@@ -72,7 +72,8 @@ export function splitHandoutTitle(title) {
 }
 
 // The displayed name is the handle in quotes and the name: “ブルー・モーメント” 夜明けのランナー -> {handle, name}.
-// Without a quoted handle the whole text is the name. Both parts keep their own line in the screen so a long one wraps by itself.
+// Without a quoted handle the whole text is the name. The screens set the two parts side by side and break between them only
+// when the pair does not fit (ASSIGN B, READY B).
 export function splitCastName(fullName) {
   const text = squash(fullName);
   const match = text.match(/^([“"「『][^”"」』]+[”"」』])\s*(.*)$/u);
