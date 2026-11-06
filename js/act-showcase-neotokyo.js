@@ -4,8 +4,8 @@ import { keepCaretVisible } from "./act-showcase-caret.js?v=84d1801d";
 import { DEFAULT_SCENE_PATTERN, playWithFallback } from "./act-showcase-scenes.js?v=68d044a1";
 import { createTrailerScreenB } from "./act-showcase-trailer-b.js?v=dc9ea1dc";
 import { createTitleScreenB } from "./act-showcase-title-b.js?v=6f05db48";
-import { createReadyScreenB } from "./act-showcase-ready-b.js?v=7d80dd55";
-import { createAssignScreenB } from "./act-showcase-assign-b.js?v=c56617b4";
+import { createReadyScreenB } from "./act-showcase-ready-b.js?v=b0bf110a";
+import { createAssignScreenB } from "./act-showcase-assign-b.js?v=603b1dc4";
 import { roleForCast } from "./act-showcase-visual-caption.js?v=47f6e034";
 const SAMPLE_TRAILER_MESSAGE = "公開用アクトトレーラーは未登録です。\n公開データにトレーラーを登録すると、ここで読み上げ表示されます。";
 export const FALLBACK_IMAGE = "./assets/placeholders/scan-failed.webp";
@@ -161,8 +161,6 @@ function createSequenceShell(state) {
   state.stage = stage;
   stage.addEventListener("click", event => {
     if (event.target.closest("button")) return;
-    // a screen that is left only with the footer button (ACT READY pattern B) says so itself; its margins count as well
-    if (stage.querySelector("[data-advance-guard='button']")) return;
     state.requestAdvance();
   });
 

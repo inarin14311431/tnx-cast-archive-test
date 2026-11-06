@@ -88,11 +88,13 @@ test("the screen is built by its own module with its own class names, and the lo
   assert.doesNotMatch(builder, /act-showcase-neotokyo/);
 });
 
-test("the stage click that means NEXT is switched off while a screen asks for the footer button only", async () => {
+test("ACT READY B: a click anywhere on the stage is NEXT, and the handle and the name are two spans side by side", async () => {
   const neotokyo = await readFile(new URL("../js/act-showcase-neotokyo.js", import.meta.url), "utf8");
-  assert.match(neotokyo, /stage\.querySelector\("\[data-advance-guard='button'\]"\)/);
+  assert.doesNotMatch(neotokyo, /data-advance-guard/);
   const builder = await readFile(new URL("../js/act-showcase-ready-b.js", import.meta.url), "utf8");
-  assert.match(builder, /dataset\.advanceGuard = "button"/);
+  assert.doesNotMatch(builder, /advanceGuard/);
+  assert.match(builder, /neotokyo-ready-b__handle/);
+  assert.match(builder, /neotokyo-ready-b__real/);
 });
 
 test("guests and the role label: from the model, nothing drawn for what is missing", async () => {

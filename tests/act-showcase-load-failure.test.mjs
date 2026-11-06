@@ -58,7 +58,7 @@ test("the bootstrap reports a module that did not load instead of ending the cha
   const catchStart = source.indexOf("} catch (error) {");
   assert.ok(tryStart > -1 && catchStart > tryStart, "the chain is inside a try block");
   const chain = source.slice(tryStart, catchStart);
-  assert.equal((chain.match(/^\s*await import\(/gm) || []).length, 16, "all 16 imports are inside the try block");
+  assert.equal((chain.match(/^\s*await import\(/gm) || []).length, 15, "all 15 imports are inside the try block");
   assert.match(source.slice(catchStart), /showLoadError\("ページの読み込みに失敗しました。/);
 });
 
