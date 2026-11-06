@@ -33,6 +33,7 @@ Every screen loads one `css-next/pages/*-entry.css` file. An entry imports the c
 ## Cascade rules
 
 - Do not use `!important` in application CSS.
+- A pseudo-element ends a selector: write `.x:where(...):after`, never `.x:after:where(...)` (nor `:is()`, `:not()`, `:has()`, a class, an id or an attribute after `:before` / `:after` / `::marker` ...). The browser drops the WHOLE rule of an invalid selector, without a warning. `tests/css-pseudo-element-order.test.mjs` checks every stylesheet of `css-next/` (the rules that are still invalid are listed there until they are fixed). A quick browser check of any selector: `CSS.supports("selector(.a:where(.b):after)")`.
 - Do not create `<style>` or stylesheet `<link>` elements from JavaScript.
 - Put reusable presentation in `components/`; JavaScript owns state and markup only.
 - Use a named page layer when later presentation must override common styles.
