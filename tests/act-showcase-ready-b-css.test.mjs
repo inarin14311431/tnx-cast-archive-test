@@ -105,7 +105,8 @@ test("guests and the role label: from the model, nothing drawn for what is missi
   assert.deepEqual(normalizeReadyGuests(null), []);
   assert.deepEqual(normalizeReadyGuests([{ handle: "", name: "" }, { handle: "ゲスト", name: " 協力者  K " }, { name: "名前だけ" }]).map(name => name.replace(/[“”"]/g, "")), ["ゲスト 協力者 K", "名前だけ"]);
   const page = await readFile(new URL("../js/act-showcase-page.js", import.meta.url), "utf8");
-  assert.match(page, /model\.scenes\.ready === "b"\) model\.guests = await loadReadyGuests\(slug\)/);
+  assert.match(page, /model\.scenes\.ready === "b" \|\| model\.scenes\.finale === "b"/);
+  assert.match(page, /isNeoTokyo && drawsGuests\) model\.guests = await loadReadyGuests\(slug\)/);
   assert.match(page, /guests: \[\],/);
   assert.equal(typeof createReadyScreenB, "function");
 });

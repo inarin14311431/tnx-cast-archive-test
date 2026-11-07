@@ -4,7 +4,7 @@ import { loadPublicShowcase, loadPublicShowcaseGuests, normalizeShowcaseSlug } f
 import { buildKeyStyle, buildVisualCaption } from "./act-showcase-visual-caption.js?v=47f6e034";
 import { normalizeShowcaseDisplayQuotes } from "./showcase-display-format.js?v=728d9084";
 import { castNumberFromSlot } from "./showcase-cast-number.js?v=944a948e";
-import { resolveSceneComposition } from "./act-showcase-scenes.js?v=68d044a1";
+import { DEFAULT_SCENE_PATTERN, playWithFallback, resolveSceneComposition } from "./act-showcase-scenes.js?v=68d044a1";
 import { normalizeReadyGuests } from "./act-showcase-ready-b.js?v=b0bf110a";
 import { showLoadError } from "./act-showcase-load-error.js?v=5fbf444f";
 
@@ -21,6 +21,13 @@ const opening = document.querySelector("#scene-opening");
 const cinematicIntro = document.querySelector("#cinematic-intro");
 const pageStartedAt = performance.now();
 
+// The finale is the page itself (docs/ACT_SHOWCASE_SCENES.md section 6, "7 の5つ目"). Each pattern draws the hero and the board of
+// the model and returns the hero section and the board that initializeMotion() moves with the scroll (null when a pattern has none).
+// A pattern other than "a" has to leave the static page as it is until it has succeeded, so that a failure plays "a" on an untouched page.
+const FINALE_PATTERNS = {
+  [DEFAULT_SCENE_PATTERN]: renderFinaleA
+};
+
 initialize();
 
 async function initialize() {
@@ -34,11 +41,16 @@ async function initialize() {
     const data = await loadPublicShowcase(slug);
     globalThis.TNX_SHOWCASE_THEME?.applySaved(data?.theme);
     const model = createShowcaseModel(data);
-    // only ACT READY pattern B draws the guests itself (pattern A gets them from js/act-showcase-supporting-cast.js)
-    if (isNeoTokyo && model.scenes.ready === "b") model.guests = await loadReadyGuests(slug);
-    renderOpening(model);
-    applyBackground(model.background);
-    const board = renderPoster(model);
+    // the patterns that draw the guests themselves (ACT READY B, finale B); pattern A gets them from js/act-showcase-supporting-cast.js
+    const drawsGuests = model.scenes.ready === "b" || model.scenes.finale === "b";
+    if (isNeoTokyo && drawsGuests) model.guests = await loadReadyGuests(slug);
+    // the finale: the hero and the cast board, drawn by the pattern the composition asks for (a failing pattern B plays A instead)
+    const finale = await playWithFallback(
+      FINALE_PATTERNS,
+      model.scenes.finale,
+      draw => draw(model),
+      (error, pattern) => console.warn(`ACT SHOWCASE: scene "finale" pattern "${pattern}" failed, playing "${DEFAULT_SCENE_PATTERN}" instead`, error)
+    );
 
     status.hidden = true;
     root.hidden = false;
@@ -58,7 +70,7 @@ async function initialize() {
     } else {
       finishIntro();
     }
-    initializeMotion(opening, board);
+    initializeMotion(finale.opening, finale.board);
   } catch (error) {
     console.error(error);
     showLoadError(error?.message || "アクト紹介を読み込めませんでした。");
@@ -70,6 +82,12 @@ async function loadReadyGuests(slug) {
   const timeout = new Promise(resolve => setTimeout(() => resolve([]), 2000));
   const guests = loadPublicShowcaseGuests(slug).then(normalizeReadyGuests, () => []);
   return Promise.race([guests, timeout]);
+}
+
+function renderFinaleA(model) {
+  renderOpening(model);
+  applyBackground(model.background);
+  return { opening, board: renderPoster(model) };
 }
 
 function createShowcaseModel(data) {
