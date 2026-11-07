@@ -1,5 +1,4 @@
 import { loadPublicShowcase, normalizeShowcaseSlug } from "./public-showcase-service.js?v=5da4463c";
-import { DEFAULT_SCENE_PATTERN, resolveSceneComposition } from "./act-showcase-scenes.js?v=68d044a1";
 
 if (document.body?.id === "act-showcase-page") {
   const slug = normalizeShowcaseSlug(new URLSearchParams(location.search).get("id"));
@@ -9,10 +8,6 @@ if (document.body?.id === "act-showcase-page") {
 async function initializeFinalTrailer(slug) {
   try {
     const data = await loadPublicShowcase(slug);
-    // a finale pattern other than "a" draws its own trailer and has no #poster-showcase-board-v2 to put this one on; without this,
-    // mountAtFinalBoardTop() would keep a MutationObserver on the whole document for good. Read from the data (not from the page),
-    // so it does not depend on which of the two modules gets the cached data first.
-    if (resolveSceneComposition(data).finale !== DEFAULT_SCENE_PATTERN) return;
     const trailer = normalizeTrailer(data);
     if (!trailer.body || document.querySelector("#poster-final-act-trailer")) return;
 
@@ -77,6 +72,11 @@ function normalizeTrailerSubtitle(value) {
   return title;
 }
 
+// A finale pattern other than "a" (pattern B) draws its own trailer and has no #poster-showcase-board-v2: the page marks the root with its
+// pattern once it has drawn it. This decides from what the page did, not from the data, because a pattern B that fails is played as A,
+// and that page needs this trailer. Without it the observer below would stay on the whole document for good.
+const pagePlaysAnotherPattern = () => document.getElementById("act-showcase-root")?.getAttribute("data-scene-pattern") !== "a";
+
 function mountAtFinalBoardTop(section) {
   const mount = () => {
     const board = document.getElementById("poster-showcase-board-v2");
@@ -86,10 +86,10 @@ function mountAtFinalBoardTop(section) {
     board.insertBefore(section, frame);
     return true;
   };
-  if (mount()) return;
+  if (mount() || pagePlaysAnotherPattern()) return;
 
   const observer = new MutationObserver(() => {
-    if (!mount()) return;
+    if (!mount() && !pagePlaysAnotherPattern()) return;
     observer.disconnect();
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
