@@ -48,7 +48,7 @@ test("B を選ぶと B の画面が出て、A の観察層が探すもの(ヒー
   await expect(page.locator(`${B}__title`)).toHaveText(showcaseData.actName);
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(page.locator(`${B}__band`)).toHaveCount(showcaseData.casts.length);
-  await expect(page.locator(`${B}__card`)).toHaveCount(showcaseData.casts.length);
+  await expect(page.locator(`${B}__cards ${B}__card`)).toHaveCount(showcaseData.casts.length);
   // the shared shell stays: the ambient stage and the footer are drawn
   await expect(page.locator(".ambient-stage")).toHaveCount(1);
   await expect(page.locator("footer.footer")).toHaveCount(1);
@@ -71,7 +71,23 @@ test("トレーラー・ゲスト・クレジット(RULER・SCENARIO WRITER・CA
   await expect(page.locator(`${B}__trailer`)).toContainText(showcaseData.trailer.title);
   await expect(page.locator(`${B}__trailer-body`)).toContainText("消えたデータの痕跡を追い");
   await expect(page.locator(`${B}__guests`)).toContainText("GUEST CAST");
-  await expect(page.locator(`${B}__guest`)).toHaveText(["“ゲスト” 協力者 K"]);
+  // one card per guest, with what was registered for the guest (the fixture's age and gender are only "—", so they are left out)
+  const guest = page.locator(`${B}__guests ${B}__card--guest`);
+  await expect(guest).toHaveCount(1);
+  await expect(guest.locator(`${B}__slot`)).toHaveText("GUEST 01");
+  await expect(guest.locator(`${B}__handle`)).toHaveText("“ゲスト”");
+  await expect(guest.locator(`${B}__real`)).toHaveText("協力者 K");
+  await expect(guest.locator(`${B}__style`)).toHaveText(["トーキー"]);
+  await expect(guest.locator(`${B}__meta-label`)).toHaveText(["AFFILIATION"]);
+  await expect(guest.locator(`${B}__meta-value`)).toHaveText(["N◎VA市政調査局"]);
+  await expect(guest.locator(`${B}__tagline`)).toHaveText("「SUPPORTING」");
+  await expect(guest.locator(`${B}__guest-summary`)).toHaveText("アクトを支える協力者。");
+  // the fixture's guest has no image: no portrait, never the placeholder picture
+  await expect(guest.locator("img")).toHaveCount(0);
+  // a single guest keeps the width of a cast card instead of spanning the page
+  const guestWidth = (await guest.boundingBox()).width;
+  const castWidth = (await page.locator(`${B}__cards ${B}__card`).first().boundingBox()).width;
+  expect(Math.abs(guestWidth - castWidth)).toBeLessThanOrEqual(2);
   const tops = await page.evaluate(selectors => selectors.map(selector => document.querySelector(selector).getBoundingClientRect().top + scrollY), [`${B}__hero`, `${B}__credits`, `${B}__trailer`, `${B}__cards`, `${B}__guests`]);
   expect([...tops].sort((a, b) => a - b)).toEqual(tops);
   expect(new Set(tops).size).toBe(5);
@@ -89,7 +105,7 @@ test("キャストごとのカードに、そのキャストのハンドアウ�
       ? { ...cast, handout: { title: "『カゼ』用ハンドアウト", body: "推奨スタイル：カゼ\nコネ：誰か" } }
       : cast);
   await openFinale(page, withScenes({ finale: "b" }, { casts }));
-  const cards = page.locator(`${B}__card`);
+  const cards = page.locator(`${B}__cards ${B}__card`);
   await expect(cards.nth(0).locator(`${B}__handout-body`)).toContainText(showcaseData.casts[0].handout.body.split("\n")[0]);
   await expect(cards.nth(1).locator(`${B}__handout`)).toHaveCount(0);
   await expect(cards.nth(2).locator(`${B}__handout-title`)).toHaveText("『カゼ』用ハンドアウト");
@@ -208,7 +224,9 @@ for (const count of [1, 2, 3, 4, 5, 6]) {
         const spacing = rowsOfBands.map(row => row.slice(1).map((band, index) => rect(band).left - rect(row[index]).left));
         const title = document.querySelector(".neotokyo-finale-b__title");
         const hero = rect(document.querySelector(".neotokyo-finale-b__hero"));
+        // every card, the guests' included, must stay inside the window; the count is of the cast cards only
         const cards = [...document.querySelectorAll(".neotokyo-finale-b__card")];
+        const castCards = document.querySelectorAll(".neotokyo-finale-b__cards .neotokyo-finale-b__card");
         return {
           horizontal: document.documentElement.scrollWidth - innerWidth,
           bands: bands.length,
@@ -218,7 +236,7 @@ for (const count of [1, 2, 3, 4, 5, 6]) {
           heights: bands.map(band => Math.round(rect(band).height)),
           titleInside: title.scrollWidth <= title.clientWidth + 1 && rect(title).left >= hero.left - 1 && rect(title).right <= hero.right + 1,
           titleInHero: rect(title).top >= hero.top - 1 && rect(title).bottom <= hero.bottom + 1,
-          cards: cards.length,
+          cards: castCards.length,
           cardsInside: cards.every(card => rect(card).left >= -1 && rect(card).right <= innerWidth + 1),
           namesInside: [...document.querySelectorAll(".neotokyo-finale-b__name, .neotokyo-finale-b__handle, .neotokyo-finale-b__real")].every(item => item.scrollWidth <= item.clientWidth + 1)
         };

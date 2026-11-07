@@ -6,7 +6,7 @@
 // (#opening-act-name, #opening-ruler, #poster-showcase-board-v2, .poster-v2-*, #poster-final-act-trailer, #poster-supporting-cast, ...):
 // the final ACT TRAILER, the guest section and the scenario-writer credit that pattern A gets from those observers are drawn here,
 // from the model. Styles live in css-next/pages/act-showcase-patterns.css, scoped to [data-scene="finale"][data-scene-pattern="b"].
-import { castCards, creditItems, finaleTrailer, guestNames, heroBands, heroSubtitle, MAX_BANDS } from "./act-showcase-finale-b-model.js?v=715ce5cb";
+import { castCards, creditItems, finaleTrailer, guestCards, heroBands, heroSubtitle, MAX_BANDS } from "./act-showcase-finale-b-model.js?v=92d3b7b2";
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -80,8 +80,9 @@ function createTrailer(model) {
   return section;
 }
 
-function createCard(card) {
-  const item = element("li", "neotokyo-finale-b__card");
+// The head of a card: the square portrait (left out when there is none or it does not load), the slot, the role and reading
+// when given, the handle and name side by side (they wrap onto two lines only when the pair does not fit) and the tagline.
+function createCardHead(card, nameTag) {
   const head = element("div", "neotokyo-finale-b__card-head");
   if (card.imageUrl) {
     const thumb = element("span", "neotokyo-finale-b__thumb");
@@ -99,29 +100,36 @@ function createCard(card) {
   identity.append(element("p", "neotokyo-finale-b__slot", card.slot));
   if (card.role) identity.append(element("p", "neotokyo-finale-b__role", card.role));
   if (card.reading) identity.append(element("p", "neotokyo-finale-b__reading", card.reading));
-  // handle and name side by side; they wrap onto two lines only when the pair does not fit the card
-  const name = element("h3", "neotokyo-finale-b__name");
+  const name = element(nameTag, "neotokyo-finale-b__name");
   if (card.handle) name.append(element("span", "neotokyo-finale-b__handle", card.handle));
   if (card.name) name.append(element("span", "neotokyo-finale-b__real", card.name));
   identity.append(name);
   if (card.tagline) identity.append(element("p", "neotokyo-finale-b__tagline", card.tagline));
   head.append(identity);
-  item.append(head);
+  return head;
+}
 
-  if (card.styles.length) {
-    const styles = element("ul", "neotokyo-finale-b__styles");
-    for (const label of card.styles) styles.append(element("li", "neotokyo-finale-b__style", label));
-    item.append(styles);
+function createStyles(labels) {
+  const styles = element("ul", "neotokyo-finale-b__styles");
+  for (const label of labels) styles.append(element("li", "neotokyo-finale-b__style", label));
+  return styles;
+}
+
+function createMeta(entries) {
+  const meta = element("dl", "neotokyo-finale-b__meta");
+  for (const entry of entries) {
+    const row = element("div", "neotokyo-finale-b__meta-row");
+    row.append(element("dt", "neotokyo-finale-b__meta-label", entry.label), element("dd", "neotokyo-finale-b__meta-value", entry.value));
+    meta.append(row);
   }
-  if (card.meta.length) {
-    const meta = element("dl", "neotokyo-finale-b__meta");
-    for (const entry of card.meta) {
-      const row = element("div", "neotokyo-finale-b__meta-row");
-      row.append(element("dt", "neotokyo-finale-b__meta-label", entry.label), element("dd", "neotokyo-finale-b__meta-value", entry.value));
-      meta.append(row);
-    }
-    item.append(meta);
-  }
+  return meta;
+}
+
+function createCard(card) {
+  const item = element("li", "neotokyo-finale-b__card");
+  item.append(createCardHead(card, "h3"));
+  if (card.styles.length) item.append(createStyles(card.styles));
+  if (card.meta.length) item.append(createMeta(card.meta));
   if (card.handout) {
     const handout = element("div", "neotokyo-finale-b__handout");
     handout.append(
@@ -150,18 +158,29 @@ function createCards(model) {
   return section;
 }
 
+// A guest card: the same parts as a cast card (portrait, slot, name, tagline, persona style, data) and the summary.
+function createGuestCard(guest) {
+  const item = element("li", "neotokyo-finale-b__card neotokyo-finale-b__card--guest");
+  item.append(createCardHead(guest, "h3"));
+  if (guest.personaStyle) item.append(createStyles([guest.personaStyle]));
+  if (guest.meta.length) item.append(createMeta(guest.meta));
+  if (guest.summary) item.append(element("p", "neotokyo-finale-b__guest-summary", guest.summary));
+  return item;
+}
+
 function createGuests(model) {
-  const names = guestNames(model);
-  if (!names.length) return null;
+  const guests = guestCards(model.guestRows);
+  if (!guests.length) return null;
   const section = element("section", "neotokyo-finale-b__guests");
   section.setAttribute("aria-label", "ゲストキャスト");
-  const list = element("ul", "neotokyo-finale-b__guest-list");
-  for (const name of names) list.append(element("li", "neotokyo-finale-b__guest", name));
+  const list = element("ul", "neotokyo-finale-b__card-list neotokyo-finale-b__guest-list");
+  for (const guest of guests) list.append(createGuestCard(guest));
   section.append(element("h2", "neotokyo-finale-b__guests-title", "GUEST CAST"), list);
   return section;
 }
 
-// model: { actName, heroSubTitle, rulerName, scenarioWriterName, trailer, trailerTitle, guests: string[] (display names), casts }.
+// model: { actName, heroSubTitle, rulerName, scenarioWriterName, trailer, trailerTitle, guestRows: rows of the published guests,
+// casts }.
 // Returns the section to put in the page; nothing outside it is touched.
 export function createFinaleB({ model }) {
   if (!model || !Array.isArray(model.casts) || !model.casts.length) throw new Error("finale B needs at least one cast");

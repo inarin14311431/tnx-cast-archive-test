@@ -31,7 +31,7 @@ try {
   await import("./act-showcase-writing-patterns.js?v=155018b2");
   await import("./act-showcase-cinematic-layout-v2.js?v=110b2f05");
   await import("./act-showcase-handout-live-frame.js?v=a6de4993");
-  await import("./act-showcase-page.js?v=cc2fabbb");
+  await import("./act-showcase-page.js?v=8722853c");
   await import("./act-showcase-scenario-writer.js?v=14650d23");
   await import("./act-showcase-supporting-cast.js?v=478738af");
   await import("./act-showcase-final-trailer.js?v=f44c1878");
