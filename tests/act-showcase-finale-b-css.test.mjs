@@ -161,3 +161,17 @@ test("the footer text is painted over the theme layer's on-dark colour (a rule o
   assert.match(rule.body, /color:var\(--showcase-readable-muted\)/);
   assert.equal(styleRules.filter(item => item.prelude.includes("scene-shell")).length, 1);
 });
+
+test("each guest gets a card built from the cast card's parts, in a grid that keeps the cast card width even for one guest", async () => {
+  const builder = await read("../js/act-showcase-finale-b.js");
+  // the same head (portrait, slot, name, tagline), persona style as a style chip, data rows, then the summary
+  assert.match(builder, /function createGuestCard\(guest\) \{\s*const item = element\("li", "neotokyo-finale-b__card neotokyo-finale-b__card--guest"\);\s*item\.append\(createCardHead\(guest, "h3"\)\);\s*if \(guest\.personaStyle\) item\.append\(createStyles\(\[guest\.personaStyle\]\)\);\s*if \(guest\.meta\.length\) item\.append\(createMeta\(guest\.meta\)\);\s*if \(guest\.summary\) item\.append\(element\("p", "neotokyo-finale-b__guest-summary", guest\.summary\)\);/);
+  assert.match(builder, /const guests = guestCards\(model\.guestRows\);/);
+  assert.match(builder, /element\("ul", "neotokyo-finale-b__card-list neotokyo-finale-b__guest-list"\)/);
+  const list = styleRules.find(item => item.prelude.startsWith(".neotokyo-finale-b__guest-list:where"));
+  assert.match(list.body, /grid-template-columns:repeat\(auto-fill,minmax\(min\(100%,340px\),1fr\)\)/);
+  const summary = styleRules.find(item => item.prelude.startsWith(".neotokyo-finale-b__guest-summary:where"));
+  assert.match(summary.body, /white-space:pre-line/);
+  // the old one-line name list is gone
+  assert.ok(!all.some(rule => /\.neotokyo-finale-b__guest:where/.test(rule.prelude)));
+});

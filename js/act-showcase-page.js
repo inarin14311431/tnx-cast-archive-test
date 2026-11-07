@@ -7,8 +7,8 @@ import { castNumberFromSlot } from "./showcase-cast-number.js?v=944a948e";
 import { DEFAULT_SCENE_PATTERN, playWithFallback, resolveSceneComposition } from "./act-showcase-scenes.js?v=145f4954";
 import { normalizeReadyGuests } from "./act-showcase-ready-b.js?v=b0bf110a";
 import { showLoadError } from "./act-showcase-load-error.js?v=5fbf444f";
-import { createFinaleB } from "./act-showcase-finale-b.js?v=6d28d598";
-import { HANDOUT_PLACEHOLDERS } from "./act-showcase-finale-b-model.js?v=715ce5cb";
+import { createFinaleB } from "./act-showcase-finale-b.js?v=5a05338b";
+import { HANDOUT_PLACEHOLDERS } from "./act-showcase-finale-b-model.js?v=76278f9e";
 
 const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city-v2.svg";
 
@@ -42,7 +42,11 @@ async function initialize() {
     const model = createShowcaseModel(data);
     // the patterns that draw the guests themselves (ACT READY B, finale B); pattern A gets them from js/act-showcase-supporting-cast.js
     const drawsGuests = model.scenes.ready === "b" || model.scenes.finale === "b";
-    if (isNeoTokyo && drawsGuests) model.guests = await loadReadyGuests(slug);
+    if (isNeoTokyo && drawsGuests) {
+      const guestRows = await loadGuestRows(slug);
+      model.guests = normalizeReadyGuests(guestRows);
+      model.guestRows = guestRows;
+    }
     // the finale: the hero and the cast board, drawn by the pattern the composition asks for (a failing pattern B plays A instead)
     const finale = await playWithFallback(
       FINALE_PATTERNS,
@@ -76,11 +80,12 @@ async function initialize() {
   }
 }
 
-// The guests of the act, or none: a guest list that fails or is slow (2 s) is left out, it never holds the showcase back.
-async function loadReadyGuests(slug) {
+// The guests of the act (the rows as published), or none: a guest list that fails or is slow (2 s) is left out, it never holds
+// the showcase back.
+async function loadGuestRows(slug) {
   const timeout = new Promise(resolve => setTimeout(() => resolve([]), 2000));
-  const guests = loadPublicShowcaseGuests(slug).then(normalizeReadyGuests, () => []);
-  return Promise.race([guests, timeout]);
+  const rows = loadPublicShowcaseGuests(slug).then(result => (Array.isArray(result) ? result : []), () => []);
+  return Promise.race([rows, timeout]);
 }
 
 function renderFinaleA(model) {
@@ -141,8 +146,10 @@ function createShowcaseModel(data) {
     background: safeImageUrl(data.background),
     // the pattern of each scene frame (js/act-showcase-scenes.js). Not played yet: every frame still runs pattern a.
     scenes: resolveSceneComposition(data),
-    // display names of the guests; filled by initialize() when a frame plays a pattern that draws them
+    // display names of the guests (ACT READY B) and the guest rows as published (finale B); filled by initialize() when a frame
+    // plays a pattern that draws them
     guests: [],
+    guestRows: [],
     casts
   };
 }

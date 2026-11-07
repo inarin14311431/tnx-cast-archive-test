@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { HANDOUT_PLACEHOLDERS, MAX_BANDS, castCards, creditItems, finaleTrailer, guestNames, heroBands, heroSubtitle, safeImageUrl, safeLinkUrl } from "../js/act-showcase-finale-b-model.js";
+import { HANDOUT_PLACEHOLDERS, MAX_BANDS, castCards, creditItems, finaleTrailer, guestCards, heroBands, heroSubtitle, safeImageUrl, safeLinkUrl } from "../js/act-showcase-finale-b-model.js";
 
 // What the finale pattern B ("key visual") shows, read from the model (docs/ACT_SHOWCASE_SCENES.md §6 #7, 5th pattern: finale).
 const BASE = "https://example.test/act-showcase.html";
@@ -117,6 +117,46 @@ test("the sub title is left out when it is the default; the trailer and the gues
   assert.equal(finaleTrailer({}), null);
   assert.deepEqual(finaleTrailer({ trailer: "本文\n二行目", trailerTitle: "ACT TRAILER" }), { title: "アクトトレーラー", body: "本文\n二行目" });
   assert.deepEqual(finaleTrailer({ trailer: "本文", trailerTitle: "夜明け前の通信" }), { title: "夜明け前の通信", body: "本文" });
-  assert.deepEqual(guestNames({ guests: [" ゲスト A ", "", "ゲスト B"] }), ["ゲスト A", "ゲスト B"]);
-  assert.deepEqual(guestNames({}), []);
+});
+
+test("one guest card per registered guest, with the content of pattern A's guest cards; nothing for a guest without a name", () => {
+  const rows = [
+    { sort_order: 1, handle: "ゲスト", name: " 協力者 K ", persona_style: "トーキー", affiliation: "N◎VA市政調査局", gender: "—", age: "—", tagline: "SUPPORTING", summary: "アクトを支える協力者。\n二行目", image_url: "" },
+    { sort_order: 2, handle: "", name: "", persona_style: "カブキ" },
+    { sort_order: 3, handle: "“夜鷹”", name: "情報屋", persona_style: "", affiliation: "", gender: "女性", age: "24", tagline: "「見ていたよ」", summary: "", image_url: "https://example.com/g.png" }
+  ];
+  assert.deepEqual(guestCards(rows), [
+    {
+      slot: "GUEST 01",
+      imageUrl: "",
+      handle: "“ゲスト”",
+      name: "協力者 K",
+      // the persona: style name followed by ◎, like the cast styles
+      personaStyle: "トーキー◎",
+      // a value that is only a dash says nothing
+      meta: [{ label: "AFFILIATION", value: "N◎VA市政調査局" }],
+      // no quotes, as on the cast cards
+      tagline: "SUPPORTING",
+      summary: "アクトを支える協力者。\n二行目"
+    },
+    {
+      // numbered among the guests shown, after the nameless row is left out; quotes are not doubled
+      slot: "GUEST 02",
+      imageUrl: "https://example.com/g.png",
+      handle: "“夜鷹”",
+      name: "情報屋",
+      personaStyle: "",
+      meta: [{ label: "AGE", value: "24" }, { label: "GENDER", value: "女性" }],
+      tagline: "見ていたよ",
+      summary: ""
+    }
+  ]);
+  // ◎ or ● already on the value is not doubled; outer quotes and brackets come off the tagline
+  assert.equal(guestCards([{ name: "X", persona_style: "カブキ◎" }])[0].personaStyle, "カブキ◎");
+  assert.equal(guestCards([{ name: "X", persona_style: "カゼ●" }])[0].personaStyle, "カゼ●");
+  assert.equal(guestCards([{ name: "X", tagline: "“夜を往く”" }])[0].tagline, "夜を往く");
+  // only http(s) and data:image portraits
+  assert.equal(guestCards([{ name: "X", image_url: "javascript:alert(1)" }])[0].imageUrl, "");
+  assert.deepEqual(guestCards(undefined), []);
+  assert.deepEqual(guestCards([]), []);
 });
