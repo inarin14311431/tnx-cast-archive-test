@@ -14,17 +14,18 @@ async function openGenerator(page) {
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 20_000 });
 }
 
-test("the generator offers four composition choices: the title, trailer, handout-assign and ready frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
+test("the generator offers five composition choices: the title, trailer, handout-assign, ready and finale frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
   await openGenerator(page);
-  // only the TITLE, ACT TRAILER, HANDOUT / ASSIGN and ACT READY frames can play a second pattern, so they are the only selects
+  // only the TITLE, ACT TRAILER, HANDOUT / ASSIGN, ACT READY and FINALE frames can play a second pattern, so they are the only selects
   const host = page.locator("#showcase-scene-composition");
   await expect(host).toBeVisible();
-  await expect(host.locator("select")).toHaveCount(4);
+  await expect(host.locator("select")).toHaveCount(5);
   const title = host.locator('select[data-scene-frame="title"]');
   const trailer = host.locator('select[data-scene-frame="trailer"]');
   const assign = host.locator('select[data-scene-frame="handout-assign"]');
   const ready = host.locator('select[data-scene-frame="ready"]');
-  for (const select of [title, trailer, assign, ready]) {
+  const finale = host.locator('select[data-scene-frame="finale"]');
+  for (const select of [title, trailer, assign, ready, finale]) {
     await expect(select.locator("option")).toHaveText(["パターン A", "パターン B"]);
     await expect(select).toHaveValue("a");
   }
@@ -37,6 +38,9 @@ test("the generator offers four composition choices: the title, trailer, handout
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b","handout-assign":"b"}');
   await ready.selectOption("b");
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b","handout-assign":"b","ready":"b"}');
+  await finale.selectOption("b");
+  await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b","handout-assign":"b","ready":"b","finale":"b"}');
+  await finale.selectOption("a");
   await ready.selectOption("a");
   await assign.selectOption("a");
   await trailer.selectOption("a");

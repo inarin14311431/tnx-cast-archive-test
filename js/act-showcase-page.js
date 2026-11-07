@@ -1,18 +1,16 @@
 import { getImageObjectPosition, getImageScale, getImageTransformOrigin } from "./image-focus.js?v=d32e5230";
-import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=9de942fc";
+import { prepareNeoTokyoLoading, runNeoTokyoIntro } from "./act-showcase-neotokyo.js?v=16035f8e";
 import { loadPublicShowcase, loadPublicShowcaseGuests, normalizeShowcaseSlug } from "./public-showcase-service.js?v=5da4463c";
 import { buildKeyStyle, buildVisualCaption } from "./act-showcase-visual-caption.js?v=47f6e034";
 import { normalizeShowcaseDisplayQuotes } from "./showcase-display-format.js?v=728d9084";
 import { castNumberFromSlot } from "./showcase-cast-number.js?v=944a948e";
-import { DEFAULT_SCENE_PATTERN, playWithFallback, resolveSceneComposition } from "./act-showcase-scenes.js?v=68d044a1";
+import { DEFAULT_SCENE_PATTERN, playWithFallback, resolveSceneComposition } from "./act-showcase-scenes.js?v=145f4954";
 import { normalizeReadyGuests } from "./act-showcase-ready-b.js?v=b0bf110a";
 import { showLoadError } from "./act-showcase-load-error.js?v=5fbf444f";
+import { createFinaleB } from "./act-showcase-finale-b.js?v=6d28d598";
+import { HANDOUT_PLACEHOLDERS } from "./act-showcase-finale-b-model.js?v=715ce5cb";
 
 const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city-v2.svg";
-const HANDOUT_PLACEHOLDERS = new Set([
-  "ハンドアウト詳細は未登録です。",
-  "公開用ハンドアウトは登録されていません。"
-]);
 
 const status = document.querySelector("#act-showcase-status");
 const root = document.querySelector("#act-showcase-root");
@@ -25,7 +23,8 @@ const pageStartedAt = performance.now();
 // the model and returns the hero section and the board that initializeMotion() moves with the scroll (null when a pattern has none).
 // A pattern other than "a" has to leave the static page as it is until it has succeeded, so that a failure plays "a" on an untouched page.
 const FINALE_PATTERNS = {
-  [DEFAULT_SCENE_PATTERN]: renderFinaleA
+  [DEFAULT_SCENE_PATTERN]: renderFinaleA,
+  b: renderFinaleB
 };
 
 initialize();
@@ -88,6 +87,18 @@ function renderFinaleA(model) {
   renderOpening(model);
   applyBackground(model.background);
   return { opening, board: renderPoster(model) };
+}
+
+// Pattern B ("key visual") builds its whole page in a detached tree first; only when that has worked is the static hero replaced and the
+// root marked as pattern B. A failure before that leaves the page untouched, and playWithFallback then plays pattern A on it.
+// It has no hero section and no board for initializeMotion(): its motion is a short fade-in in css.
+function renderFinaleB(model) {
+  const view = createFinaleB({ model });
+  document.title = model.pageTitle;
+  applyBackground(model.background);
+  opening.replaceWith(view);
+  root.setAttribute("data-scene-pattern", "b");
+  return { opening: null, board: null };
 }
 
 function createShowcaseModel(data) {
