@@ -48,17 +48,20 @@ async function openFinale(page, theme, options) {
   await expect(page.locator(".neotokyo-finale-b")).toBeVisible();
 }
 
-async function capture(page, name) {
+// settleVisualPage ends with window.scrollTo(0, 0), so the scroll to the cards comes after it, never before.
+async function capture(page, name, { cards = false } = {}) {
   await settleVisualPage(page);
   // the short fade-in of the hero and the images: about 1 second; animations are also fast-forwarded by the screenshot
   await page.waitForTimeout(1800);
+  if (cards) {
+    await page.locator(".neotokyo-finale-b__cards").evaluate(element => {
+      window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top);
+    });
+    await page.waitForTimeout(400);
+    // the card grid is at the top of the window, so the page really scrolled (the hero is at least 420px high)
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(400);
+  }
   await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: false });
-}
-
-async function scrollToCards(page) {
-  await page.locator(".neotokyo-finale-b__cards").evaluate(element => {
-    window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top);
-  });
 }
 
 for (const theme of ACT_THEMES) {
@@ -68,8 +71,7 @@ for (const theme of ACT_THEMES) {
     await openFinale(page, theme);
     await capture(page, `act-showcase-finale-b-${theme}-${testInfo.project.name}`);
     if (theme === "nova") {
-      await scrollToCards(page);
-      await capture(page, `act-showcase-finale-b-cards-${theme}-${testInfo.project.name}`);
+      await capture(page, `act-showcase-finale-b-cards-${theme}-${testInfo.project.name}`, { cards: true });
     }
   });
 }
@@ -79,6 +81,5 @@ test("アクト紹介(豪華版・finale B・6人と長い名前) nova", async (
   test.skip(!(await pageOffersFinaleB(page)), "pattern B of the finale frame is not in this build yet");
   await openFinale(page, "nova", { casts: sixCasts() });
   await capture(page, `act-showcase-finale-b-six-nova-${testInfo.project.name}`);
-  await scrollToCards(page);
-  await capture(page, `act-showcase-finale-b-six-cards-nova-${testInfo.project.name}`);
+  await capture(page, `act-showcase-finale-b-six-cards-nova-${testInfo.project.name}`, { cards: true });
 });
