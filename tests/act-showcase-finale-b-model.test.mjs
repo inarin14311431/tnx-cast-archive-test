@@ -131,10 +131,12 @@ test("one guest card per registered guest, with the content of pattern A's guest
       imageUrl: "",
       handle: "“ゲスト”",
       name: "協力者 K",
-      personaStyle: "トーキー",
+      // the persona: style name followed by ◎, like the cast styles
+      personaStyle: "トーキー◎",
       // a value that is only a dash says nothing
       meta: [{ label: "AFFILIATION", value: "N◎VA市政調査局" }],
-      tagline: "「SUPPORTING」",
+      // no quotes, as on the cast cards
+      tagline: "SUPPORTING",
       summary: "アクトを支える協力者。\n二行目"
     },
     {
@@ -145,10 +147,14 @@ test("one guest card per registered guest, with the content of pattern A's guest
       name: "情報屋",
       personaStyle: "",
       meta: [{ label: "AGE", value: "24" }, { label: "GENDER", value: "女性" }],
-      tagline: "「見ていたよ」",
+      tagline: "見ていたよ",
       summary: ""
     }
   ]);
+  // ◎ or ● already on the value is not doubled; outer quotes and brackets come off the tagline
+  assert.equal(guestCards([{ name: "X", persona_style: "カブキ◎" }])[0].personaStyle, "カブキ◎");
+  assert.equal(guestCards([{ name: "X", persona_style: "カゼ●" }])[0].personaStyle, "カゼ●");
+  assert.equal(guestCards([{ name: "X", tagline: "“夜を往く”" }])[0].tagline, "夜を往く");
   // only http(s) and data:image portraits
   assert.equal(guestCards([{ name: "X", image_url: "javascript:alert(1)" }])[0].imageUrl, "");
   assert.deepEqual(guestCards(undefined), []);

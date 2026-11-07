@@ -7,8 +7,8 @@ import { castNumberFromSlot } from "./showcase-cast-number.js?v=944a948e";
 import { DEFAULT_SCENE_PATTERN, playWithFallback, resolveSceneComposition } from "./act-showcase-scenes.js?v=145f4954";
 import { normalizeReadyGuests } from "./act-showcase-ready-b.js?v=b0bf110a";
 import { showLoadError } from "./act-showcase-load-error.js?v=5fbf444f";
-import { createFinaleB } from "./act-showcase-finale-b.js?v=b9770f3d";
-import { HANDOUT_PLACEHOLDERS } from "./act-showcase-finale-b-model.js?v=92d3b7b2";
+import { createFinaleB } from "./act-showcase-finale-b.js?v=5a05338b";
+import { HANDOUT_PLACEHOLDERS } from "./act-showcase-finale-b-model.js?v=76278f9e";
 
 const POSTER_SAMPLE_BACKGROUND = "./assets/showcase/act-showcase-moon-city-v2.svg";
 

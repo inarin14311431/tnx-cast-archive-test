@@ -6,7 +6,7 @@
 // (#opening-act-name, #opening-ruler, #poster-showcase-board-v2, .poster-v2-*, #poster-final-act-trailer, #poster-supporting-cast, ...):
 // the final ACT TRAILER, the guest section and the scenario-writer credit that pattern A gets from those observers are drawn here,
 // from the model. Styles live in css-next/pages/act-showcase-patterns.css, scoped to [data-scene="finale"][data-scene-pattern="b"].
-import { castCards, creditItems, finaleTrailer, guestCards, heroBands, heroSubtitle, MAX_BANDS } from "./act-showcase-finale-b-model.js?v=92d3b7b2";
+import { castCards, creditItems, finaleTrailer, guestCards, heroBands, heroSubtitle, MAX_BANDS } from "./act-showcase-finale-b-model.js?v=76278f9e";
 
 function element(tag, className, text) {
   const node = document.createElement(tag);

@@ -77,10 +77,10 @@ test("トレーラー・ゲスト・クレジット(RULER・SCENARIO WRITER・CA
   await expect(guest.locator(`${B}__slot`)).toHaveText("GUEST 01");
   await expect(guest.locator(`${B}__handle`)).toHaveText("“ゲスト”");
   await expect(guest.locator(`${B}__real`)).toHaveText("協力者 K");
-  await expect(guest.locator(`${B}__style`)).toHaveText(["トーキー"]);
+  await expect(guest.locator(`${B}__style`)).toHaveText(["トーキー◎"]);
   await expect(guest.locator(`${B}__meta-label`)).toHaveText(["AFFILIATION"]);
   await expect(guest.locator(`${B}__meta-value`)).toHaveText(["N◎VA市政調査局"]);
-  await expect(guest.locator(`${B}__tagline`)).toHaveText("「SUPPORTING」");
+  await expect(guest.locator(`${B}__tagline`)).toHaveText("SUPPORTING");
   await expect(guest.locator(`${B}__guest-summary`)).toHaveText("アクトを支える協力者。");
   // the fixture's guest has no image: no portrait, never the placeholder picture
   await expect(guest.locator("img")).toHaveCount(0);
