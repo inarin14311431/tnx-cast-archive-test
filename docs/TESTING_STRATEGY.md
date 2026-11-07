@@ -241,6 +241,13 @@ Visual baseline更新は「差分を消すため」ではなく、新デザイ�
    このPR自身のCIは基準ブランチの古いコードで動くため赤くてもよい。
 4. 基準画像PRを先にマージし、対象PRの比較ジョブを再実行(`gh run rerun <run-id> --failed`)して通してから、対象PRをマージする。
 
+新しい画像(基準画像がまだ無い画像)と、再実行で気を付けること(2026-11-07、finale B で分かった):
+
+- CI は `updateSnapshots: "none"` なので、基準画像が無い画像には `*-actual.png` が出ない。成果物にあるのは失敗時の画面 `test-failed-1.png` だけ。これを基準画像の初期値にし(寸法を既存の画像と照らす)、対象PRの比較を再実行して、差分が出た画像は出てきた `*-actual.png` に差し替える。finale B では、`test-failed-1.png` で足した hero の10枚が、そのまま差分0になった。
+- 同じテストの中で、先の画像が足りないと、後ろの画像は比較まで進まない(最初の失敗でテストが止まる)。基準画像のPRは、画像が出る順に2回以上に分かれる。
+- `settleVisualPage`(基準ブランチの `tests/visual/visual-fixtures.js`)は最後に `window.scrollTo(0, 0)` を呼ぶ。スクロールしてから撮る画像は、settle のあとでスクロールする(先にスクロールすると先頭が写る)。基準画像を足す前に、写っているものを目視する。
+- 失敗したジョブだけの再実行(`rerun-failed-jobs`)を重ねると、同じ名前の成果物 `visual-compare-log-<project>` が実行ごとに複数残り、集約ジョブ(`Compare reference screenshots`)が、新しいものでなく ID の大きい古いものを読んで赤のままになることがある(2つの比較ジョブが緑でも、集約が古いログの失敗を報告する)。その場合は再実行を続けず、対象PRに実際の変更を1つ push して、全体を走らせ直す(空コミットは使わない)。
+
 ### フォント固定用の依存(削除しない)
 
 `package.json` の devDependencies にある `@fontsource/noto-sans-jp` は、main からは参照されていないが、
