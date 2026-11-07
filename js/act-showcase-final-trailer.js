@@ -1,4 +1,5 @@
 import { loadPublicShowcase, normalizeShowcaseSlug } from "./public-showcase-service.js?v=5da4463c";
+import { DEFAULT_SCENE_PATTERN, resolveSceneComposition } from "./act-showcase-scenes.js?v=68d044a1";
 
 if (document.body?.id === "act-showcase-page") {
   const slug = normalizeShowcaseSlug(new URLSearchParams(location.search).get("id"));
@@ -8,6 +9,10 @@ if (document.body?.id === "act-showcase-page") {
 async function initializeFinalTrailer(slug) {
   try {
     const data = await loadPublicShowcase(slug);
+    // a finale pattern other than "a" draws its own trailer and has no #poster-showcase-board-v2 to put this one on; without this,
+    // mountAtFinalBoardTop() would keep a MutationObserver on the whole document for good. Read from the data (not from the page),
+    // so it does not depend on which of the two modules gets the cached data first.
+    if (resolveSceneComposition(data).finale !== DEFAULT_SCENE_PATTERN) return;
     const trailer = normalizeTrailer(data);
     if (!trailer.body || document.querySelector("#poster-final-act-trailer")) return;
 
