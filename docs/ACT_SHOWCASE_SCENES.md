@@ -265,6 +265,60 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
   - **タイトルと読み上げが途中から見える。** Google Fonts を `display=block` で読むので、画面を入れた時点で必要な字形(Noto Sans JP は unicode-range で細かく分かれている)の取得が始まり、届くまで文字が見えない。その間もアニメーションと打鍵は進むので、届いた時点で途中から見えていた。`swapScreen(state, content, { waitForFonts: true })` は、画面を隠したまま入れ、レイアウトでフォントを要求させ、2フレーム待ってから `document.fonts.ready` を待つ(上限 2.5 秒、スキップで即解除)。待つ間、A の画面のアニメーションは一時停止し(A のアニメーションは `.is-visible` ではなく要素の挿入で始まるため)、表示と同時に最初から再生する。title・trailer(A・B)・handout-assign・ready で使う。loading の画面は待たない(その間にフォントが読み込まれる)。
   - **上下の黒い帯がフッターの下辺を覆う(2026-11-02 の続き)。** シェルの `::before` / `::after`(黒い帯、高さ `clamp(12px, 2.2vh, 26px)`)が、フッターの下の余白(`padding-bottom`、22px・phone 縦は 16px)より高くなると、帯がフッターの最後のピクセル(NEXT ボタンの下辺の枠)を覆う。PC は高さ 1000px 超(1040 で約1px、1080 で約2px、1200 で約4px)、phone 縦は高さ 727px 超(844 で約3px、932 で約4px)。シェルの余白を `--neotokyo-pad-top` / `--neotokyo-pad-bottom` にして、帯の高さを `min(clamp(12px,2.2vh,26px), 余白)` で頭打ちにした(余白が帯より低いときは帯はそのまま。1440x1000 は 22.0px で余白と同じなので変わらない)。E2E は `act-showcase-screen-timing.spec.js` の「上下の黒い帯は、その下の余白より高くならない」。
 
+
+  7 の6つ目: loading(データ取得後の ACCESS 画面)の B「起動ターミナル」(2026-11-07 調査。**コードは未変更。実装は提案の承認後**)。対象は `section.neotokyo-sequence__screen--opening` だけで、データ取得前の静的な `.cinematic-intro__*` は全パターン共通のまま変えない。
+  - **決めた見た目(依頼の要約)。** ステージいっぱいの端末。等幅の文字を左寄せにし、起動ログが1行ずつ高速に打たれて上へ流れる。中央の大見出しと同心円(A の要素)は使わない。ログにはそのアクトの実データを混ぜる(アクトID・RULER・脚本家・PC ごとのハンドル・ゲスト数・テーマ。アクト名は小さな1行)。空のデータの行は行ごと出さず、`UNREGISTERED`・`NO HANDLE` などの代わりの文字も出さない。ハンドルは “ ” を1組だけ付ける。最後に `ACCESS GRANTED` を大きく出して次の枠へ進む。進み方は A と同じ自動。全体の長さは A の実測から長くても +1 秒まで。reduced-motion は打鍵せず全行をまとめて出す。
+  - **調査1: A の ACCESS 画面を誰がいつ作り、どう進むか。** `INTRO_SCENES` の loading の行(`js/act-showcase-neotokyo.js`)は、すでに `playWithFallback` で回っていて、`patterns` が `{ a: showOpening }` だけ。`showOpening` は `setProgress(5, "ACT FILE ACCESS")` → `replaceStage`(eyebrow・`__opening-title`・`__opening-sub`・3行の `__bootlog` を持つ `section--opening` を `markScene` で印を付けてから `swapScreen`)→ `wait(state, 2900)` で、**NEXT ボタンもクリックも使わず、2900ms のタイマーで自動で title へ進む**。`wait` は SKIP・終了で即解除される。実測(ローカルの Chromium、1440x900、act のデータは模擬): ACCESS が表示されてから title が表示されるまで **2.93 秒**(CPU 4倍遅くしても 2.99 秒、reduced-motion でも 2.93 秒。reduced は CSS のアニメーションだけを止めるので長さは変わらない)。B の上限は **3.9 秒**。
+  - **調査2: 静的な画面から切り替わるところで、途切れや二重表示は起きるか。** 起きない(実測)。`runNeoTokyoIntro` は、`intro.replaceChildren(shell)` で静的な `.cinematic-intro__*` を外し、**同じ処理の中で** ACCESS 画面を挿入する(DOM の変化を測ると、シェルの追加と ACCESS の挿入が同じミリ秒、`is-visible` はその次のフレーム=2〜13ms 後)。静的な画面が残ることも、空のステージが見えることもない。ただし B の作り方によっては起きる:
+    - **フォント待ちを入れると途切れる。** `swapScreen(…, { waitForFonts: true })` は、画面を隠したまま入れて最大 2.5 秒待つ。静的な画面はこの時点でもう外れているので、待つ間はヘッダーとフッターだけのシェル(空のステージ)が見える。だから loading は今も待たない(資料の「共通の直し」: その間にフォントが読み込まれる)。
+    - **待たないと、打鍵が見えない。** B は Share Tech Mono(Latin)と Noto Sans JP(ハンドル・アクト名)を使う。Google Fonts は `display=block` で、届くまで文字が見えない(§6.2 の測定: 遅い回線で LOADING の文字が約0.7秒空)。A は文字が打たれず、大見出しが遅れて見えるだけで目立たないが、B は打鍵そのものが見どころで、見えない間に打たれた分が失われる。
+    - **提案: 枠は即表示し、打鍵の開始だけをフォントに合わせる。** 画面(枠・走査線・点滅するキャレット)は A と同じく `swapScreen` で次のフレームに出す(`waitForFonts` は使わない)。打鍵は、ログに出す文字列だけを `document.fonts.load()` で要求してから始める(`fonts.ready` より狙いが絞れ、必要な unicode-range の分だけが届く)。上限は 1.5 秒(他の画面の 2.5 秒より短くする。待つ間は枠とキャレットが見えている)。SKIP で即解除。この待ちは「A の実測 + 1 秒」の外に置く(速い回線では 0)。
+    - **6 秒の監視・失敗時の表示との関係。** head のインラインスクリプトの6秒の監視は `body.showcase-neotokyo-intro-active`(`runNeoTokyoIntro` が、静的な画面を外す前に付ける)で止まるので、B になっても変わらない。`showLoadError` は `#cinematic-intro` ごと外すので、B が使えない場合にも効く。B が画面を入れる前に例外を出せば、`playWithFallback` が A を再生し、ステージは空のまま A が入る(今の A と同じ入り方)。画面を入れたあとの失敗(打鍵中)は、A の `replaceStage` が B の画面を置き換えて A の 2.9 秒を最初から再生する。B は画面を作るまでを例外の出る場所にし、打鍵は例外を出しにくい作りにする。
+  - **調査3: ACCESS 画面に後から手を入れる層と、探すクラス名。** ACCESS を直接扱うのは1つだけ。
+    | 層 | 見るもの | ACCESS に対して | B |
+    |---|---|---|---|
+    | `cinematic-enhancer` | `intro` の `childList` + `characterData` | `.neotokyo-sequence__screen--opening` を見つけて `is-cinematic-access` を付け、`__access-seal`(`PUBLIC ACCESS // AUTHORIZED`)を足す(620ms 後に `is-authorized`) | **`--opening` を付けなければ空振り**。(全画面に `data-cinematic-enhanced` は付くが、それだけ) |
+    | `cinematic-polish` | `intro` の `childList` | 文字のフィット(`.neotokyo-sequence__cast-detail h3` など)と ACT READY のボタンだけ。ACCESS に触れない | 空振り |
+    | `finale-enhancer`・`story-flow`・`writing-patterns`・`cinematic-layout-v2`・`handout-live-frame`・`scroll-cue`・`board-layout` | 他の枠のクラス(`--title`・`--trailer`・`--linked`・`--summary` など) | 触れない | 空振り |
+    | `scenario-writer`・`supporting-cast` | `document.body` の `childList`(要素の追加だけに反応) | title・summary の脚本家クレジットとゲスト欄。ACCESS は対象外 | 空振りだが、**要素を追加するたびに同期の処理が1回走る**(重複を調べるだけで軽い) |
+    | `display-normalizer` | `body` の `childList` | タグラインのクラス(`.cast-card__tagline` など)だけ | 空振り |
+    CSS も、A の loading の規則(`.neotokyo-sequence__screen`・`__opening-title`・`__bootlog`・`is-cinematic-access`・`__access-seal` など)は core.css で `:where([data-scene="loading"][data-scene-pattern="a"], … *)` に閉じていて、B(`data-scene-pattern="b"`)には当たらない。閉じていないのは、クラス名で書かれたテーマ層の規則(theme-surface-system の `…__screen--opening.is-cinematic-access` と `__bootlog`、theme-legibility の intron の `.cinematic-intro.neotokyo-sequence .neotokyo-sequence__bootlog`)で、**B が `--opening`・`is-cinematic-access`・`__bootlog` の名前を使わなければ当たらない**。B は `neotokyo-sequence__screen neotokyo-loading-b` と専用のクラス名(`neotokyo-loading-b__*`)だけを使う(`__screen` は `swapScreen` の入れ替えと他の B と同じ。ほかの共通クラス `__eyebrow`・`__micro`・`__terminal` などは A の frame に閉じているので使っても当たらないが、使わない)。
+    **DOM の変化は最小にする。** 打鍵は文字を1つ増やすたびに `target.textContent = …`(要素の子の入れ替え)をするので、`cinematic-polish` の `childList` の observer がそのたびに呼ばれる(trailer の読み上げは `Text.data` を書き換える作りで、これを避けている)。B は、ログの行を**最初にすべて作って `hidden` にしておき**、打つ行の `hidden` を外して、その行の Text ノードの `data` に書く(属性を見る observer は `class`(`finale-enhancer` は `aria-hidden` も)だけを見るので、`hidden` 属性は動かさない)。構造の変化は画面の挿入の1回だけになる。
+  - **調査4: 打鍵と追従スクロールで使える既存の部品。**
+    - `js/act-showcase-caret.js`: `lastCharRect(textNode)`(読み上げ済みの最後の文字の位置)・`scrollDeltaToKeepVisible`(純関数)・`keepCaretVisible(box, textNode)`。スクロールする箱の中のキャレットを追う用で、trailer B が使う。
+    - `typeReadout(state, target, value, maxDuration, maxInterval)`(`act-showcase-neotokyo.js` の内部関数): 1つの要素に打つ。間隔は `max(6, min(maxInterval, 長さ分の maxDuration))` ms、180字超は2文字ずつ、360字超は3文字ずつ。`wait()` 経由なので SKIP で止まる。`typeSplitReadout` / `prepareSplitReadout` は「読んだ分 / 読む分(`visibility:hidden`)」に分けて、折り返しの位置を最初から確定させる。
+    - **B の提案: 追従スクロールは使わず、端末の枠を下に寄せる。** ログの枠を `display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden` にし、打っている行を常に一番下に置く。行が増える・折り返すと古い行が上へ押し出され(「上へ流れる」)、**キャレットは常に枠の一番下=枠の中**にいる(スクロール量の計算が要らない)。折り返しは `word-break: break-all` にして、打った文字が後から動かないようにする(単語の途中で折り返すと、既に出ている文字が次の行へ動く)。最後の `ACCESS GRANTED` は枠の一番下の要素にして、枠が低い画面(844x390 の横向き)でも隠れないようにする。1行の打鍵は `typeReadout` を行ごとに呼んで使えるが、上の `Text.data` の作りにするなら、`typeReadout` と同じ間隔の計算を使う小さな関数を B 用に足す(`typeSplitReadout` と同じく `act-showcase-neotokyo.js` の内側。`wait` と `state` はそこにしかない)。
+  - **調査5: 起動ログに使えるデータと、空のときの扱い。**
+    | 行 | 元 | 空のとき |
+    |---|---|---|
+    | `handshake ... ok`・`decrypt ... done`・`ACCESS GRANTED` | 固定の文字 | (常に出す) |
+    | `act file <アクトID> located` | URL の `id`(`normalizeShowcaseSlug`)。**モデルには入っていない**ので、`createShowcaseModel` の呼び出しで `slug` を足す | `id` が無ければここへ来る前に読み込みエラーになるので、実際は空にならない |
+    | アクト名(小さな1行) | `model.actName`(空なら `heroTitle` → `pageTitle`) | 常に値あり |
+    | `theme: <コード>` | `<html data-showcase-theme>` と `TNX_SHOWCASE_THEME.themes[id].code`(`NEON GRID`・`DOSSIER`・`CRIMSON NOIR`・`ORBITAL GLASS`)。データの適用(`applySaved`)はこの枠の前に済んでいる | 属性が読めなければ行を出さない |
+    | `ruler: <RULER名>` | `model.rulerName` | 空なら行ごと出さない |
+    | `scenario writer: <名前>` | `model.scenarioWriterName`(title B が足したもの) | 空なら行ごと出さない |
+    | `PCn “<ハンドル>” linked` | `splitCastName(cast.fullName).handle`。外側の引用符(「」『』" "など)を外して `formatShowcaseHandle` で “ ” を1組だけ付ける | ハンドルが無い PC は行ごと出さない。**PC の番号は元のまま(欠番になる)** にする |
+    | `guest files: <人数>` | ゲストの取得結果の件数。**今は ready か finale が B のときだけ取得する**(`drawsGuests`)ので、条件に `scenes.loading === "b"` を足す。取得は共有のキャッシュ付き(`loadPublicShowcaseGuests`)で、失敗か2秒を超えたら0件 | 0件なら行ごと出さない(「0 files」とも出さない) |
+    PC は最大6人(`model.casts` は6人で切る)。固定の行(5行)+ PC 6行 + ゲスト + decrypt で、多くて約14行。
+  - **調査6: 長さの配分(上限 3.9 秒)。** 打鍵の合計は、行数によらず約 2.2 秒に収める(全文字数 N から、1文字の間隔 = 2200 / N を 6〜24ms にし、366字を超えるなら2文字ずつ打つ)。そのあと `ACCESS GRANTED` が出て、約 1.2 秒保持して次へ進む。合計は約 3.4 秒で、上限の 3.9 秒に 0.5 秒の余裕を持たせる。1人でも6人でも、ほぼ同じ長さになる。reduced-motion(`prefersReducedMotion()` か `body.showcase-neotokyo-reduced`)は、打鍵せず全行と `ACCESS GRANTED` をまとめて出し、A と同じ 2.9 秒保持する(A の reduced も 2.9 秒のため)。最後の保持は、A の `2900` と**区別できる専用の定数**にする(画面比較の spec が、A と同じやり方で最後のタイマーだけを止めるため。下記)。
+  - **調査7: 画面比較の撮影。** 今の loading の画像は `act-showcase-deluxe.visual.spec.js` の `act-showcase-loading-access-<theme>`(4テーマ × desktop/mobile)と `loading-static-<theme>` で、A を撮っている。この spec と画像は変えない(`scenes` を付けないので A のまま)。A の ACCESS は 2900ms で自動で進むので、spec は `window.setTimeout` を差し替えて、その1本だけを止めて撮る(`holdAccessScreenTimer`)。B は別の spec `tests/visual/act-showcase-scene-loading-b.visual.spec.js`(基準ブランチ側)を足し、`SCENE_PATTERNS.loading` に `"b"` が無いあいだは `test.skip`(他の B と同じ方式)。止めるタイマーは B の専用の定数で見分ける。画面比較の設定は `reducedMotion: "reduce"` なので、B は全行がまとめて出た最終の状態を撮る(打鍵の途中は撮らない)。撮るのは `act-showcase-loading-b-<theme>-<project>`(既定のアクト=3人・ゲスト1人、4テーマ × desktop/mobile)と、6人・長いハンドルの `act-showcase-loading-b-six-nova-<project>` で、新しい画像は他の B と同じく `test-failed-1.png` を初期値にする(`docs/TESTING_STRATEGY.md` 第8節)。**`SCENE_PATTERNS.loading` が `["a","b"]` になると、生成画面の構成の選択欄が6つになるので、生成画面(PC幅 nova・spectrum-neon)の画像2枚も更新になる**(finale のときと同じ)。
+  - **守れない見込みの点(実装前に確認したい)。**
+    - **「画面いっぱい」は、ステージいっぱい。** ヘッダー(N◎VA MUNICIPAL DATABASE・SKIP SEQUENCE)とフッター(進捗・NEXT)は全パターンが共有する殻で、SKIP ボタンは消せない。端末は `position:absolute; inset:0` でステージ全体(余白を含む)に広げ、殻は変えない。
+    - **B の長さは「文字が見え始めてから」で数える。** フォント待ち(上限 1.5 秒)は、速い回線ではほぼ 0 で、遅い回線では A の 2.9 秒の間にフォントが届いていた分を B が先に待つことになる。合計が「A + 1 秒」を超えるのは、遅い回線でフォントが届かないときだけ。
+    - **共有ヘッダーの文字のコントラスト。** 幅 390px の intron で `MUNICIPAL DATABASE` が 2.73:1(既知の既存の問題。A でも同じで、B のコントラスト E2E は他の B と同じくヘッダーを除いて測る)。
+  - **`CURRENT_STATE` の「保留中の作業(LOADING の残り)」との関係。** (3〜5) の「LOADING の bootlog に素材ごとの進捗行を出す」は、A の ACCESS 画面の `__bootlog` に出す前提で書いてある。B の起動ログは、データから作る固定の台本で、実際の読み込みの進捗ではない。(3〜5) を実装するときは、B の `PCn … linked` の行を、キャスト画像が届いた時点で出す形にもできる(今回は扱わない)。
+  - **分け方の提案(2026-11-07)。** 実装は**検証 PR 1本 + 基準ブランチ PR 2本**に分ける。
+    1. **基準ブランチ PR: loading B の spec(画像なし、`test.skip`)。** `tests/visual/act-showcase-scene-loading-b.visual.spec.js`。`SCENE_PATTERNS.loading` に `"b"` が無いあいだは skip なので、他の PR を赤くしない。
+    2. **検証 PR: 実装(見た目が変わるのは `scenes.loading` が `b` のアクトだけ)。**
+       - `js/act-showcase-loading-b.js`(ログの行を作る純粋な関数 `bootLines(model)`、画面の木を作る `createLoadingScreenB`。木は `hidden` の行を先に作る。画像は使わない)。
+       - `act-showcase-page.js`: モデルに `slug` を足し、`drawsGuests` に `scenes.loading === "b"` を足す。
+       - `act-showcase-neotokyo.js`: `showOpeningB`(画面を作る → `markScene(…, "b")` → `setProgress` → `swapScreen` → 文字列のフォント要求(上限 1.5 秒)→ 行ごとの打鍵 → `ACCESS GRANTED` → 専用の定数で保持)と、`INTRO_SCENES` の loading に `b: showOpeningB`。
+       - `act-showcase-scenes.js`: `PLAYABLE_PATTERNS.loading` を `["a","b"]` に。
+       - CSS: `act-showcase-patterns.css` の6つ目の出典 `act-showcase-pattern-loading-b.css`(`TRAILING_SOURCES` に足す)。全ルールを `:where([data-scene="loading"][data-scene-pattern="b"], … *)` で閉じ、色は `var(--showcase-*)` と `color-mix()` だけ(直書き0、`audit:showcase-colors`)。reduced-motion・`prefers-contrast: more`・`forced-colors: active` に対応。幅 760px 以下・高さ 520px 以下の折り返しと余白。
+       - テスト: ログ行の単体テスト(空の行を出さない・PC の欠番・ハンドルの引用符1組・6人)、CSS の契約テスト(スコープ・クラス名・色)、E2E(B が出る・A の層のクラス(`--opening`・`__bootlog`・`__access-seal`・`is-cinematic-access`)が B に無い・`scenes` が無いアクトは A のまま・B が例外を出したら A・1〜6人 × 5つの画面サイズでログが枠から出ない・打鍵の各ステップでキャレットが枠の中・**同じテストの中で A と B を続けて再生して、B の長さが A + 1 秒以内**・reduced-motion は打鍵なし・SKIP・文字コントラスト4テーマ(PC幅・phone幅))、資料の更新。
+    3. **基準ブランチ PR: B の基準画像(と、生成画面の2枚)。** 検証 PR の画面比較の成果物から新しい画像だけをコピーする(第8節)。マージは検証 PR の直前。
+    本番の影響は検証 PR だけ(生成画面の選択欄に loading の欄が増える。`scenes` が無い既存の公開アクトは A のまま)。本番への同期は、実画面の確認を待つ。
+
 - #2 の補足: 計画では「まだどこからも使わない」だったが、どこからも読み込まれないモジュールは `audit:js-reachability` で落ちる(例外リストは実行時に動的に読み込まれる実在の入口に限る)。そのため `createShowcaseModel` から読み込んで `model.scenes` に載せることにした。演出はまだ使わず、画面は変わらない(2026-10-22 了承)。
 
 ### 6.1 決定事項(2026-10-22)
