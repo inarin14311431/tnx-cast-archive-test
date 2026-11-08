@@ -11,7 +11,7 @@ import {
   themeShortName
 } from "./showcase-generator-summary.js?v=7d1ef899";
 
-// The generator's frame (docs/SHOWCASE_GENERATOR_REDESIGN.md): the "published" band under the header, the step navigation,
+// The generator's frame (docs/SHOWCASE_GENERATOR_REDESIGN.md): the step navigation (the "published" band opens in showcase-owned-band.js),
 // the publish checklist and settings summary, and the HTML export dialog. Nothing here changes what is saved or published:
 // it only reads the same fields the other modules read and shows what they hold.
 
@@ -19,25 +19,9 @@ const $ = selector => document.querySelector(selector);
 const preview = $("#showcase-preview");
 const generatorStatus = $("#generator-status");
 
-mountOwnedBand();
 mountSteps();
 mountSummary();
 mountExportDialog();
-
-// ---- the "公開済みを編集" band ------------------------------------------------------------------------------------------
-function mountOwnedBand() {
-  const toggle = $("#owned-showcase-toggle");
-  const band = $("#owned-showcase-restore");
-  if (!toggle || !band) return;
-  const setOpen = open => {
-    band.hidden = !open;
-    toggle.setAttribute("aria-expanded", String(open));
-    toggle.classList.toggle("is-open", open);
-  };
-  toggle.addEventListener("click", () => setOpen(band.hidden));
-  // A restore started from a link (?edit=) reports its progress inside the band, so the band starts open.
-  if (new URLSearchParams(location.search).has("edit")) setOpen(true);
-}
 
 // ---- step navigation ---------------------------------------------------------------------------------------------------
 function mountSteps() {

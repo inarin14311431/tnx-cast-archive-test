@@ -40,6 +40,19 @@ test("the header keeps the back link, the title and the actions; the published b
   await expect(band).toBeHidden();
 });
 
+test("the published band opens from the first moment the page is interactive", async ({ page }) => {
+  await page.route("**/*", route => {
+    const { hostname } = new URL(route.request().url());
+    return hostname === "127.0.0.1" || hostname === "localhost" ? route.fallback() : route.abort();
+  });
+  await installShowcaseGeneratorMock(page, {});
+  await page.goto("/showcase-generator.html", { waitUntil: "domcontentloaded" });
+  // No wait for the generator modules: the toggle is wired by a module the loader imports statically.
+  await page.locator("#owned-showcase-toggle").click();
+  await expect(page.locator("#owned-showcase-restore")).toBeVisible();
+  await expect(page.locator("#delete-owned-showcase")).toBeVisible({ timeout: 12_000 });
+});
+
 test("a link with ?edit= restores a published showcase through the band", async ({ page }) => {
   const saved = {
     slug: "shell-restore",

@@ -57,3 +57,10 @@ test("the settle helpers read the output and the error state of the generator", 
   assert.equal(generationFailed(null), false);
   assert.ok(SETTLE_QUIET_MS >= 60);
 });
+
+test("the published band toggle is a static import of the loader; the generator shell loads beside the core modules", () => {
+  assert.match(loader, /^\/\/[^\n]*\nimport "\.\/showcase-owned-band\.js\?v=[0-9a-f]+";/);
+  assert.match(loader, /void import\("\.\/showcase-generator-shell\.js\?v=[0-9a-f]+"\)\.catch/);
+  assert.doesNotMatch(read("js/showcase-generator-shell.js"), /owned-showcase-toggle/);
+  assert.match(read("js/showcase-owned-band.js"), /owned-showcase-toggle/);
+});

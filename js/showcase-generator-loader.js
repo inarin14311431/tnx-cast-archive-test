@@ -1,3 +1,6 @@
+// The band toggle must work as soon as the page is interactive (a static import runs before DOMContentLoaded).
+import "./showcase-owned-band.js?v=e74013f6";
+
 function reportRuntimeError(message) {
   const status = document.querySelector("#library-status");
   document.documentElement.dataset.showcaseGeneratorState = "error";
@@ -20,6 +23,10 @@ window.addEventListener("unhandledrejection", event => {
 });
 
 document.documentElement.dataset.showcaseGeneratorState = "loading";
+
+// The frame around the form (step navigation, checklist, export dialog) starts loading at once, beside the core modules, so its
+// controls answer early. It only reads and shows what the core modules write; a failure here leaves the form usable.
+void import("./showcase-generator-shell.js?v=c1d07951").catch(error => reportOptionalModuleError("generator-shell", error));
 
 async function initializeShowcaseGenerator() {
   try {
@@ -55,13 +62,6 @@ async function initializeShowcaseGenerator() {
       reportOptionalModuleError(name, error);
     }
   }));
-
-  try {
-    // The frame around the form: the "published" band toggle, the step navigation, the checklist and the export dialog.
-    await import("./showcase-generator-shell.js?v=ebe1c9ad");
-  } catch (error) {
-    reportOptionalModuleError("generator-shell", error);
-  }
 
   try {
     await import("./showcase-output-normalizer.js?v=cea76d1b");
