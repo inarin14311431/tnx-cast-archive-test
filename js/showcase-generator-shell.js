@@ -20,6 +20,7 @@ const preview = $("#showcase-preview");
 const generatorStatus = $("#generator-status");
 
 mountSteps();
+mountCastSourceTabs();
 mountSummary();
 mountExportDialog();
 
@@ -52,6 +53,32 @@ function mountSteps() {
     }
   }, { rootMargin: "-20% 0px -45% 0px", threshold: [0, 0.1, 0.4, 0.8] });
   sections.forEach(section => observer.observe(section));
+}
+
+// ---- public / private candidate tabs -----------------------------------------------------------------------------------
+function mountCastSourceTabs() {
+  const tabs = [...document.querySelectorAll("[data-cast-source]")].filter(tab => tab.getAttribute("role") === "tab");
+  if (!tabs.length) return;
+  const select = source => {
+    for (const tab of tabs) {
+      const active = tab.dataset.castSource === source;
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+      const panel = document.getElementById(tab.getAttribute("aria-controls"));
+      if (panel) panel.hidden = !active;
+    }
+  };
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => select(tab.dataset.castSource));
+    tab.addEventListener("keydown", event => {
+      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      event.preventDefault();
+      const next = tabs[(tabs.indexOf(tab) + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+      select(next.dataset.castSource);
+      next.focus();
+    });
+  }
+  select("public");
 }
 
 // ---- checklist, step states, settings summary -------------------------------------------------------------------------

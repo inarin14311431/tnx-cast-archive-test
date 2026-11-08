@@ -46,7 +46,7 @@ function mountGuestPanel() {
   }
   panel.querySelector("#add-showcase-guest")?.addEventListener("click", () => {
     if (guests.length >= MAX_GUESTS) return setStatus(`ゲストは最大${MAX_GUESTS}名までです。`, "error");
-    guests.push(createGuest());
+    guests.push(createGuest({ open: true }));
     dirty = true;
     renderGuests();
     invalidatePreview();
@@ -54,6 +54,12 @@ function mountGuestPanel() {
   panel.querySelector("#showcase-guests")?.addEventListener("input", onGuestInput);
   panel.querySelector("#showcase-guests")?.addEventListener("change", onGuestChange);
   panel.querySelector("#showcase-guests")?.addEventListener("click", onGuestClick);
+  // "toggle" does not bubble: listen in the capture phase to remember which cards are open across re-renders.
+  panel.querySelector("#showcase-guests")?.addEventListener("toggle", event => {
+    const card = event.target.closest?.("[data-guest-card]");
+    const guest = guests[Number(card?.dataset.guestCard)];
+    if (guest) guest.open = card.open;
+  }, true);
   renderGuests();
 }
 
@@ -70,7 +76,8 @@ function createGuest(data = {}) {
     summary: String(data.summary || ""),
     imageUrl: String(data.image_url || data.imageUrl || ""),
     storagePath: "",
-    uploading: false
+    uploading: false,
+    open: Boolean(data.open)
   };
 }
 
@@ -83,7 +90,25 @@ function renderGuests() {
     root.innerHTML = '<p class="empty-state">ゲストは未登録です。「ゲスト追加」から登場人物を追加できます。</p>';
     return;
   }
-  root.innerHTML = guests.map((guest, index) => guestEditor(guest, index)).join("");
+  root.innerHTML = guests.map((guest, index) => guestCard(guest, index)).join("");
+}
+
+// A guest is a small card (image, handle and name, persona style) that opens into the editor below it.
+function guestCard(guest, index) {
+  const image = guest.imageUrl || "./assets/placeholders/scan-failed.webp";
+  const handle = guest.handle.trim();
+  return `<details class="showcase-guest-card" data-guest-card="${index}"${guest.open ? " open" : ""}>
+    <summary>
+      <img class="showcase-guest-card__thumb" src="${escAttr(image)}" alt="" loading="lazy">
+      <span class="showcase-guest-card__text">
+        <small>GUEST ${String(index + 1).padStart(2, "0")}</small>
+        <b data-guest-summary-name>${esc(guest.name.trim() || "名前未入力のゲスト")}</b>
+        <span data-guest-summary-style>${esc([handle ? `“${handle}”` : "", guest.personaStyle].filter(Boolean).join(" / "))}</span>
+      </span>
+      <span class="showcase-guest-card__chevron" aria-hidden="true">▾</span>
+    </summary>
+    ${guestEditor(guest, index)}
+  </details>`;
 }
 
 function guestEditor(guest, index) {
@@ -122,8 +147,19 @@ function onGuestInput(event) {
   const guest = guests[Number(row.dataset.guestIndex)];
   if (!guest) return;
   guest[field.dataset.guestField] = field.value;
+  refreshGuestSummary(guest, Number(row.dataset.guestIndex));
   dirty = true;
   invalidatePreview();
+}
+
+function refreshGuestSummary(guest, index) {
+  const card = document.querySelector(`[data-guest-card="${index}"]`);
+  if (!card) return;
+  const name = card.querySelector("[data-guest-summary-name]");
+  const style = card.querySelector("[data-guest-summary-style]");
+  if (name) name.textContent = guest.name.trim() || "名前未入力のゲスト";
+  const handle = guest.handle.trim();
+  if (style) style.textContent = [handle ? `“${handle}”` : "", guest.personaStyle].filter(Boolean).join(" / ");
 }
 
 function onGuestChange(event) {
@@ -135,6 +171,7 @@ function onGuestChange(event) {
   if (field.dataset.guestField === "image") void uploadGuestImage(guest, field.files?.[0]);
   else {
     guest[field.dataset.guestField] = field.value;
+    refreshGuestSummary(guest, Number(row.dataset.guestIndex));
     dirty = true;
     invalidatePreview();
   }
