@@ -32,7 +32,7 @@ async function initializeShowcaseGenerator() {
   try {
     // Guest persistence must be registered before mode-specific publishing so
     // both standard and cinematic buttons save the same supporting-cast data.
-    await import("./showcase-generator-v3.js?v=f2c987a6");
+    await import("./showcase-generator-v3.js?v=2c6d74dd");
     await import("./showcase-act-subtitle.js?v=501b7a5b");
     await import("./showcase-scenario-writer.js?v=e4750a02");
     await import("./showcase-dedicated-output.js?v=cdd8099e");

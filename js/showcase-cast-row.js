@@ -1,6 +1,6 @@
 import { escapeHtml, escapeAttribute } from "./dom-escape.js?v=46402d5f";
 import { getImageObjectPosition } from "./image-focus.js?v=d32e5230";
-import { getStyles, getStyleNames, formatHandle } from "./showcase-output-html.js?v=cae9118b";
+import { getStyles, getStyleNames, formatHandle } from "./showcase-output-html.js?v=12351e7b";
 import { normalizeCastNumber, formatCastNumber, MAX_CAST_NUMBER } from "./showcase-cast-number.js?v=944a948e";
 
 // The markup of the generator's cast rows and candidate cards (docs/SHOWCASE_GENERATOR_REDESIGN.md, PR3). Pure string builders over

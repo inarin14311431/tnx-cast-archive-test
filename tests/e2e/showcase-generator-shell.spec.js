@@ -3,6 +3,12 @@ import { installShowcaseGeneratorMock, MOCK_PUBLIC_CASTS, MOCK_PRIVATE_CASTS } f
 
 // The generator's frame: header actions, the "published" band, the step navigation, the publish column and the export dialog.
 
+// A row's handout panel (role, tagline, handout text) is closed until its "ハンドアウト" button is pressed.
+async function openRow(page, index) {
+  const panel = page.locator(`#selected-casts [data-selected-index="${index}"] .cast-row__panel`);
+  if (await panel.isHidden()) await page.locator(`#selected-casts [data-selected-index="${index}"] [data-action="toggle"]`).click();
+}
+
 async function openGenerator(page, { query = "", ...options } = {}) {
   await page.route("**/*", route => {
     const { hostname } = new URL(route.request().url());
@@ -91,6 +97,7 @@ test("the step navigation shows what is filled in and moves to a section", async
   await pick(page, 0);
   await pick(page, 1);
   await expect(stepStatus(page, "cast")).toHaveText("2人・HO 0/2");
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="description"]').fill("ハンドアウト本文");
   await expect(stepStatus(page, "cast")).toHaveText("2人・HO 1/2");
   await expect(stepStatus(page, "publish")).toHaveText("公開できます");
@@ -135,6 +142,7 @@ test("the publish column lists the checklist and the settings, and a private cas
 test("the HTML export opens in a dialog and generates there; the preview stays in the page for publishing", async ({ page }) => {
   await openGenerator(page);
   await pick(page, 0);
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption("共通");
   const dialog = page.locator("#html-export-dialog");
   await expect(dialog).toBeHidden();
