@@ -60,6 +60,7 @@
         "tests/e2e/act-showcase-scene-ready-b.spec.js",
         "tests/e2e/act-showcase-scene-assign-b.spec.js",
         "tests/e2e/act-showcase-scene-finale-b.spec.js",
+        "tests/e2e/act-showcase-scene-loading-b.spec.js",
         "tests/e2e/act-showcase-load-failure.spec.js",
         "tests/e2e/act-showcase-screen-timing.spec.js",
         "tests/e2e/showcase-background-preset-legacy.spec.js"

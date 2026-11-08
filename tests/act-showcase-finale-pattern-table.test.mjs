@@ -20,10 +20,10 @@ test("the finale is drawn through FINALE_PATTERNS and playWithFallback; pattern 
   assert.match(page, /function initializeMotion\(openingSection, board\) \{\s*if \(!openingSection \|\| !board\) return;/);
 });
 
-test("the guests are fetched when ACT READY or the finale draws them itself", async () => {
+test("the guests are fetched when the boot log of LOADING, ACT READY or the finale draws them itself", async () => {
   const page = await read("js/act-showcase-page.js");
-  assert.match(page, /const drawsGuests = model\.scenes\.ready === "b" \|\| model\.scenes\.finale === "b";/);
-  // one fetch: ACT READY B gets the display names, finale B the rows as published (portrait, persona style, data, summary)
+  // one fetch: ACT READY B gets the display names, finale B and the boot log of LOADING B the rows as published (portrait, persona style, data, summary)
+  assert.match(page, /const drawsGuests = model\.scenes\.loading === "b" \|\| model\.scenes\.ready === "b" \|\| model\.scenes\.finale === "b";/);
   assert.match(page, /if \(isNeoTokyo && drawsGuests\) \{\s*const guestRows = await loadGuestRows\(slug\);\s*model\.guests = normalizeReadyGuests\(guestRows\);\s*model\.guestRows = guestRows;\s*\}/);
   // a guest list that fails or is slow (2 s) is left out
   assert.match(page, /async function loadGuestRows\(slug\) \{\s*const timeout = new Promise\(resolve => setTimeout\(\(\) => resolve\(\[\]\), 2000\)\);/);

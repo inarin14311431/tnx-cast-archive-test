@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { hasAuthCredentials } from "./helpers.js";
 
-// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). The TITLE, ACT TRAILER, HANDOUT / ASSIGN and ACT READY frames are the only ones
-// with a second pattern (b), so the real page offers those four selects; the second test mounts the same selector with more frames
+// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). Every frame the sequence plays has a second pattern (b),
+// so the real page offers a select for each of the six; the second test mounts the same selector with more frames
 // that can play other patterns to check the whole path in the browser: the select, the hidden field, and what a restore writes.
 
 test.beforeEach(() => {
@@ -14,18 +14,19 @@ async function openGenerator(page) {
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 20_000 });
 }
 
-test("the generator offers five composition choices: the title, trailer, handout-assign, ready and finale frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
+test("the generator offers six composition choices: the loading, title, trailer, handout-assign, ready and finale frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
   await openGenerator(page);
-  // only the TITLE, ACT TRAILER, HANDOUT / ASSIGN, ACT READY and FINALE frames can play a second pattern, so they are the only selects
+  // every frame can play a second pattern, so each has a select
   const host = page.locator("#showcase-scene-composition");
   await expect(host).toBeVisible();
-  await expect(host.locator("select")).toHaveCount(5);
+  await expect(host.locator("select")).toHaveCount(6);
+  const loading = host.locator('select[data-scene-frame="loading"]');
   const title = host.locator('select[data-scene-frame="title"]');
   const trailer = host.locator('select[data-scene-frame="trailer"]');
   const assign = host.locator('select[data-scene-frame="handout-assign"]');
   const ready = host.locator('select[data-scene-frame="ready"]');
   const finale = host.locator('select[data-scene-frame="finale"]');
-  for (const select of [title, trailer, assign, ready, finale]) {
+  for (const select of [loading, title, trailer, assign, ready, finale]) {
     await expect(select.locator("option")).toHaveText(["パターン A", "パターン B"]);
     await expect(select).toHaveValue("a");
   }
@@ -45,6 +46,10 @@ test("the generator offers five composition choices: the title, trailer, handout
   await assign.selectOption("a");
   await trailer.selectOption("a");
   await title.selectOption("a");
+  await expect(page.locator("#showcase-scenes")).toHaveValue("");
+  await loading.selectOption("b");
+  await expect(page.locator("#showcase-scenes")).toHaveValue('{"loading":"b"}');
+  await loading.selectOption("a");
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
 });
 
