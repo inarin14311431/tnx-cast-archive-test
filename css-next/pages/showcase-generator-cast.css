@@ -98,8 +98,9 @@
 .manual-cast-form[hidden] { display: none; }
 .manual-cast-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .manual-cast-form__wide { grid-column: 1 / -1; }
-.manual-cast-form label { display: grid; gap: 6px; color: color-mix(in srgb, var(--color-text) 82%, var(--color-muted)); font-size: .74rem; font-weight: 800; }
+.manual-cast-form label { display: flex; flex-wrap: wrap; align-items: baseline; align-content: start; gap: 6px; color: color-mix(in srgb, var(--color-text) 82%, var(--color-muted)); font-size: .74rem; font-weight: 800; }
 .manual-cast-form label small { color: var(--color-muted); font: 600 .62rem/1.4 var(--font-data); }
+.manual-cast-form label > input { flex: 1 1 100%; min-width: 0; }
 .manual-cast-form input { min-height: 40px; padding-inline: 10px; border: 1px solid color-mix(in srgb, var(--color-accent) 30%, var(--color-border)); border-radius: 0; color: var(--color-text); background: color-mix(in srgb, var(--color-bg) 74%, var(--color-surface)); font-size: .85rem; }
 .manual-cast-form .manual-field--sheet-import { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; }
 .manual-cast-form .manual-field--sheet-import .manual-field__note { grid-column: 1 / -1; }
@@ -116,6 +117,8 @@
 #add-manual-cast.is-open { border-color: var(--color-warning); }
 
 /* ---- guest cards ---- */
+html body[data-page="showcase-generator.html"] .showcase-guest-panel .showcase-panel__header-actions { flex-direction: row; align-items: center; justify-content: flex-end; gap: 12px; width: auto; }
+.showcase-guest-panel .showcase-guest-panel__lead { margin: 0; }
 .showcase-guests { display: grid; gap: 8px; }
 .showcase-guest-card { border: 1px solid color-mix(in srgb, var(--color-accent) 24%, var(--color-border)); background: color-mix(in srgb, var(--color-bg) 55%, var(--color-surface)); }
 .showcase-guest-card[open] { border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border)); }
