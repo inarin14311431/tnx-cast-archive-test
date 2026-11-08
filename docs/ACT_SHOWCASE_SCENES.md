@@ -316,6 +316,7 @@ CSSの層の一覧・重複・死んだ宣言、JSの読み込み順・MutationO
     - **観察層。** B が使うクラスは `neotokyo-sequence__screen`(画面の共通クラス)と `neotokyo-loading-b*` だけ。`--opening`・`__bootlog`・`__access-seal`・`is-cinematic-access` は無く、`cinematic-enhancer` は空振りする(E2E で数を確かめる)。打鍵は行ごとの Text ノードの `data` を書き換える(ノードの追加・入れ替えなし。属性は `hidden` と `data-typing` だけで、`class` を見る observer も動かない)。ログは `aria-hidden`(ステージの `aria-live` が1文字ずつ読み上げないため)。
     - **確認。** 単体テスト(`tests/act-showcase-loading-b-model.test.mjs`: 行の並び・空の行・PC の欠番・ハンドルの引用符・6人・打鍵の配分)、CSS の契約テスト(`tests/act-showcase-loading-b-css.test.mjs`)、E2E(`tests/e2e/act-showcase-scene-loading-b.spec.js`: B が出る・A の層のクラスが無い・自動で title へ進む・`scenes` が無いアクトは A のまま・B が使えなければ A・ゲスト取得失敗・長さ・reduced-motion・SKIP・打鍵中のキャレットが枠の中(1440x900・390x844・844x390)・1/3/6人 × 5つの画面サイズではみ出さない・文字コントラスト4テーマ(PC幅・phone幅))。
     - **本番の影響。** `SCENE_PATTERNS.loading` が `["a","b"]` になるので、生成画面の構成の選択欄に loading の欄が増える(6つ)。`scenes` が無い既存の公開アクトは A のまま。本番への同期は、実画面の確認を待つ。
+    - **基準画像。** B の画面比較は `act-showcase-loading-b-{nova,vlad,intron,lutetia,six-nova}-<project>.png` の10枚(desktop 5・mobile 5)。基準ブランチの `tests/visual/__screenshots__/<project>/act-showcase-scene-loading-b.visual.spec.js/` に置く。初期値は CI の失敗時画面(`test-failed-1.png`)で、比較の再実行で差分が出たものだけ `*-actual.png` に差し替える。
   - **分け方の提案(2026-11-07)。** 実装は**検証 PR 1本 + 基準ブランチ PR 2本**に分ける。
     1. **基準ブランチ PR: loading B の spec(画像なし、`test.skip`)。** `tests/visual/act-showcase-scene-loading-b.visual.spec.js`。`SCENE_PATTERNS.loading` に `"b"` が無いあいだは skip なので、他の PR を赤くしない。
     2. **検証 PR: 実装(見た目が変わるのは `scenes.loading` が `b` のアクトだけ)。**
