@@ -21,24 +21,29 @@ void loadForCurrentSlug();
 
 function mountGuestPanel() {
   if (document.querySelector("#showcase-guest-panel")) return;
+  // The generator page reserves a place inside the cast section; an older page gets the panel in front of its last one.
+  const host = document.querySelector("#showcase-guest-host");
   const panels = [...document.querySelectorAll("main.showcase-layout > .showcase-panel")];
   const outputPanel = panels.at(-1);
-  if (!outputPanel) return;
+  if (!host && !outputPanel) return;
   const panel = document.createElement("section");
   panel.id = "showcase-guest-panel";
-  panel.className = "showcase-panel showcase-guest-panel";
+  panel.className = host ? "showcase-subsection showcase-guest-panel" : "showcase-panel showcase-guest-panel";
   panel.innerHTML = `
-    <header class="showcase-panel__header">
-      <div><span>04</span><h2>ゲスト <small>GUEST CAST / SUPPORTING FILES</small></h2></div>
+    <header class="${host ? "showcase-subsection__header" : "showcase-panel__header"}">
+      ${host ? '<h3 class="showcase-subsection__title">ゲスト <small>GUEST CAST / SUPPORTING FILES</small></h3>' : "<div><span>04</span><h2>ゲスト <small>GUEST CAST / SUPPORTING FILES</small></h2></div>"}
       <div class="showcase-panel__header-actions"><p><strong id="guest-count">0</strong> / ${MAX_GUESTS} SUPPORTING</p><button id="add-showcase-guest" class="manual-cast-add" type="button">ゲスト追加 <small>ADD GUEST</small></button></div>
     </header>
-    <div class="showcase-panel__body">
+    <div class="${host ? "showcase-guest-panel__content" : "showcase-panel__body"}">
       <p class="showcase-guest-panel__lead">主演キャストとは別に、アクトを彩る助演・重要人物を登録できます。ゲストはハンドアウトのアサイン対象や参加履歴には含まれません。</p>
       <div id="showcase-guests" class="showcase-guests"><p class="empty-state">ゲストは未登録です。「ゲスト追加」から登場人物を追加できます。</p></div>
     </div>`;
-  outputPanel.before(panel);
-  const outputNumber = outputPanel.querySelector(".showcase-panel__header span");
-  if (outputNumber?.textContent?.trim() === "04") outputNumber.textContent = "05";
+  if (host) host.append(panel);
+  else {
+    outputPanel.before(panel);
+    const outputNumber = outputPanel.querySelector(".showcase-panel__header span");
+    if (outputNumber?.textContent?.trim() === "04") outputNumber.textContent = "05";
+  }
   panel.querySelector("#add-showcase-guest")?.addEventListener("click", () => {
     if (guests.length >= MAX_GUESTS) return setStatus(`ゲストは最大${MAX_GUESTS}名までです。`, "error");
     guests.push(createGuest());

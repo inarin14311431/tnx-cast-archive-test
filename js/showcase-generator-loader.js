@@ -29,7 +29,7 @@ async function initializeShowcaseGenerator() {
     await import("./showcase-act-subtitle.js?v=501b7a5b");
     await import("./showcase-scenario-writer.js?v=e4750a02");
     await import("./showcase-dedicated-output.js?v=cdd8099e");
-    await import("./showcase-guests.js?v=f8351e3a");
+    await import("./showcase-guests.js?v=3cafe553");
     // Before the guest bridge and the publisher: a publish click generates the HTML first, then reaches them.
     await import("./showcase-publish-flow.js?v=f06815e0");
     await import("./showcase-guest-publish-bridge.js?v=809b92f6");
@@ -57,11 +57,18 @@ async function initializeShowcaseGenerator() {
   }));
 
   try {
+    // The frame around the form: the "published" band toggle, the step navigation, the checklist and the export dialog.
+    await import("./showcase-generator-shell.js?v=ebe1c9ad");
+  } catch (error) {
+    reportOptionalModuleError("generator-shell", error);
+  }
+
+  try {
     await import("./showcase-output-normalizer.js?v=cea76d1b");
     await import("./showcase-scene-selector.js?v=eb72f9c7");
-    await import("./showcase-edit-restore.js?v=530ac39b");
-    await import("./showcase-delete.js?v=13064975");
-    await import("./showcase-owned-list.js?v=816b4c40");
+    await import("./showcase-edit-restore.js?v=d345906c");
+    await import("./showcase-delete.js?v=3f62ca3a");
+    await import("./showcase-owned-list.js?v=71944577");
   } catch (error) {
     reportOptionalModuleError("edit-management", error);
   }
