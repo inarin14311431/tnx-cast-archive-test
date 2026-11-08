@@ -34,7 +34,15 @@ mountRestorePanel();
 void initializeRestore();
 
 function mountRestorePanel() {
-  if (!elements.host || document.querySelector("#owned-showcase-restore")) return;
+  // The generator page carries the panel (the band under the header); only a page without it gets one built here.
+  const existing = document.querySelector("#owned-showcase-restore");
+  if (existing) {
+    restoreSelect = existing.querySelector("#owned-showcase-select");
+    restoreButton = existing.querySelector("#load-owned-showcase");
+    restoreStatus = existing.querySelector("#owned-showcase-status");
+    return;
+  }
+  if (!elements.host) return;
   const section = document.createElement("section");
   section.id = "owned-showcase-restore";
   section.className = "private-history-selector form-grid__wide";

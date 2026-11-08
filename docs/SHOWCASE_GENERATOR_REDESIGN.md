@@ -257,6 +257,25 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
   `tests/showcase-publish-flow-contract.test.mjs`。**気づいた点**: ページタイトルが空のとき、公開ページの `heroTitle` も
   アクトタイトルになる。スタンダード版の見出し(`h1`)とアクト名の行が同じ文字になりうる(公開ページ側は触っていない)。
 
+- **PR2 骨組み(2026-11-08)。** `showcase-generator.html` を、ヘッダー(← アカウントへ / タイトル / 公開済みを編集・キャスト一覧)、
+  「公開済みを編集」の帯、3列(手順のナビ | 入力 | 公開)に作り直した。**1200px以上で3列、未満は縦に積む**
+  (ナビ → 入力 → 公開。1000〜1199pxで3列にすると入力列が狭くなりすぎるため、旧ページと同じ1200pxを境にした)。
+  - 帯は静的HTMLに置き、`showcase-edit-restore.js` は既にあればそれを使う(`?edit=` で来たときは進み具合が見えるよう自動で開く)。
+    取り下げのボタンの文言は「公開を取り下げる」(動作・確認ダイアログ・`#delete-owned-showcase` は同じ)。
+  - ゲスト区画は「02 キャスト」の中の `#showcase-guest-host` に入り、公開の欄の番号を書き換えない。アクトタイトルの欄・
+    サブタイトル・RULER/SCENARIO WRITER・識別名とページタイトル(「詳細設定」に畳む)は最初からHTMLに置いた。文字数は `8 / 40`。
+  - 公開の欄: 確認リスト、「豪華版で公開」(主)、「スタンダード版で公開」、「ほかの操作」(HTMLを書き出す・履歴だけ登録)、今の設定の要約。
+    **「HTMLを書き出す」は `<dialog id="html-export-dialog">` を開き、開いたとき生成が無ければ生成する**。`#generate-button`・
+    `#download-button`・`#copy-button`・`#showcase-preview` はこのダイアログの中(閉じている間は見えないがDOMにあり、公開はここを源にする)。
+    `#generator-status` は公開の欄に1つだけ置き、ダイアログには同じ内容を写す(`#html-export-status`)。
+  - 状態の表示は `js/showcase-generator-shell.js`(DOMを読んで表示するだけ)と、純粋関数の `js/showcase-generator-summary.js`
+    (手順の状態、確認リスト、設定の要約、演出の構成の要約 `B:タイトル・ACT READY / ほかは A`)。演出の構成の要約はPR4でも使う。
+  - CSS は新しい `css-next/pages/showcase-generator-layout.css`(直書きの色0)。02 キャストの行は、入力列が狭くなったぶん、
+    旧ページの1200px未満と同じ配置にした(PR3で作り直す)。
+  - テスト: E2E `showcase-generator-shell.spec.js`(帯・`?edit=` の復元・手順の状態・確認リスト・書き出し・ゲストの位置・3列/縦積みと横あふれなし)、
+    単体テスト `showcase-generator-summary.test.mjs`。PR1のE2Eと `output-rendering` は、生成ボタンがダイアログの中に移ったので
+    ダイアログを開く操作を足した(確かめる内容は同じ)。
+
 ### 各PRの確認
 
 - どのPRも `npm run verify` と `npm run check:js`、JS/CSS/HTMLを変えたら `npm run version:update`。
