@@ -491,9 +491,11 @@ async function generateShowcase() {
     validateSelectedCasts();
     setGeneratorStatus("HTMLを生成中…");
     const background = elements.backgroundUrl?.value.trim() || await readFileAsDataUrl(elements.backgroundFile?.files?.[0]);
+    const actName = elements.actName?.value.trim() || "トーキョーＮ◎ＶＡ アクト参加キャスト";
     generatedHtml = renderShowcase({
-      title: elements.pageTitle?.value.trim() || "ACT CAST FILE",
-      actName: elements.actName?.value.trim() || "トーキョーＮ◎ＶＡ アクト参加キャスト",
+      // A blank page title falls back to the act title (a restored act keeps the page title it was saved with).
+      title: elements.pageTitle?.value.trim() || elements.actName?.value.trim() || "ACT CAST FILE",
+      actName,
       rulerName: elements.rulerName?.value.trim() || "",
       theme: normalizeShowcaseTheme(elements.showcaseTheme?.value),
       intro: elements.introText?.value.trim() || "",
