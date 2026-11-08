@@ -144,6 +144,7 @@ test("a private cast blocks publishing and leaves the HTML export", async ({ pag
   const calls = await openGenerator(page);
   await setSlug(page, "flow-private");
   await pickPublicCast(page, 0);
+  await page.locator("#cast-source-private").click();
   await page.locator(`[data-private-character-id="${MOCK_PRIVATE_CASTS[0].id}"]`).click();
   await expect(page.locator("#publish-cinematic-button")).toBeDisabled();
   await expect(page.locator("#publish-standard-button")).toBeDisabled();

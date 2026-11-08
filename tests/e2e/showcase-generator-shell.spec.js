@@ -133,6 +133,7 @@ test("the publish column lists the checklist and the settings, and a private cas
   await expect(page.locator('[data-setting="background"]')).toHaveText("自分の画像(URL)");
 
   await expect(page.locator("#publish-blocker")).toBeHidden();
+  await page.locator("#cast-source-private").click();
   await page.locator(`[data-private-character-id="${MOCK_PRIVATE_CASTS[0].id}"]`).click();
   await expect(page.locator("#publish-blocker")).toContainText("非公開キャストを含む");
   await expect(page.locator("#publish-cinematic-button")).toBeDisabled();

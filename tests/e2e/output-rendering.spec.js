@@ -93,6 +93,8 @@ test('紹介生成UIは公開リンクを作り、非公開追加後は公開ボ
   await expect(page.locator('#publish-button')).toBeEnabled();
   await expect(page.frameLocator('#showcase-preview').locator('.cast-card__link')).toHaveAttribute('href', 'http://127.0.0.1:4173/cast.html?id=TNX-FIXTURE');
   await page.evaluate(() => document.querySelector('#html-export-dialog').close());
+  // The isolated page loads only the generator core: the private list is behind a tab that the page shell wires, so show it.
+  await page.evaluate(() => { document.querySelector('#cast-source-panel-private').hidden = false; });
   await page.locator('[data-private-character-id="private-fixture"]').click();
   await openRow(page, 1);
   await page.locator('[data-selected-index="1"] [data-field="quote"]').selectOption('フェイト');
