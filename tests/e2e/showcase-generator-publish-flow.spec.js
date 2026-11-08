@@ -151,6 +151,7 @@ test("a private cast blocks publishing and leaves the HTML export", async ({ pag
   await expect(page.locator("#publish-cinematic-button")).toHaveAttribute("title", /非公開キャスト/);
 
   for (const index of [0, 1]) {
+    await openRow(page, index);
     await page.locator(`[data-selected-index="${index}"] [data-field="quote"]`).selectOption("共通");
   }
   await page.locator("#open-html-export").click();
