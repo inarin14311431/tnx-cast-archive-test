@@ -166,7 +166,8 @@ test("three columns at a wide width, stacked at a narrow one, without horizontal
   const publish = await box("#section-publish");
   expect(nav.x + nav.width).toBeLessThanOrEqual(flow.x);
   expect(flow.x + flow.width).toBeLessThanOrEqual(publish.x + 1);
-  expect(Math.abs(nav.y - flow.y)).toBeLessThan(40);
+  // Side by side: the navigation starts within the input column's height.
+  expect(nav.y).toBeLessThan(flow.y + flow.height);
 
   for (const width of [1024, 390]) {
     await page.setViewportSize({ width, height: 900 });

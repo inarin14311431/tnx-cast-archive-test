@@ -80,11 +80,15 @@ test('紹介生成UIは公開リンクを作り、非公開追加後は公開ボ
   });
   await page.locator('[data-public-character-id="fixture"]').click();
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption('フェイト');
+  // The generate button is in the export dialog (the isolated page loads only the generator core, not the dialog's opener).
+  await page.evaluate(() => document.querySelector('#html-export-dialog').showModal());
   await page.locator('#generate-button').click();
   await expect(page.locator('#publish-button')).toBeEnabled();
   await expect(page.frameLocator('#showcase-preview').locator('.cast-card__link')).toHaveAttribute('href', 'http://127.0.0.1:4173/cast.html?id=TNX-FIXTURE');
+  await page.evaluate(() => document.querySelector('#html-export-dialog').close());
   await page.locator('[data-private-character-id="private-fixture"]').click();
   await page.locator('[data-selected-index="1"] [data-field="quote"]').selectOption('フェイト');
+  await page.evaluate(() => document.querySelector('#html-export-dialog').showModal());
   await page.locator('#generate-button').click();
   await expect(page.locator('#publish-button')).toBeDisabled();
   await expect(page.locator('#download-button')).toBeEnabled();

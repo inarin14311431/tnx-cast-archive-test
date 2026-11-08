@@ -67,7 +67,7 @@ body[data-page="showcase-generator.html"] .showcase-layout {
 .showcase-flow { display: grid; min-width: 0; gap: 18px; }
 .showcase-flow :is(.showcase-panel, .showcase-panel__body, .showcase-subsection, .selector-controls) { min-width: 0; }
 .showcase-flow .public-cast-grid, .showcase-flow .private-cast-grid { grid-template-columns: repeat(auto-fill, minmax(min(245px, 100%), 1fr)); }
-.showcase-flow .selector-controls { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+@media (min-width: 768px) { .showcase-flow .selector-controls { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); } }
 .showcase-panel[id^="section-"] { scroll-margin-top: 14px; }
 
 #section-act { --section-accent: var(--showcase-cyan); }
