@@ -25,13 +25,15 @@ async function initializeShowcaseGenerator() {
   try {
     // Guest persistence must be registered before mode-specific publishing so
     // both standard and cinematic buttons save the same supporting-cast data.
-    await import("./showcase-generator-v3.js?v=7397b1ba");
-    await import("./showcase-act-subtitle.js?v=8e9c2652");
+    await import("./showcase-generator-v3.js?v=5869cb9b");
+    await import("./showcase-act-subtitle.js?v=501b7a5b");
     await import("./showcase-scenario-writer.js?v=e4750a02");
     await import("./showcase-dedicated-output.js?v=cdd8099e");
     await import("./showcase-guests.js?v=f8351e3a");
+    // Before the guest bridge and the publisher: a publish click generates the HTML first, then reaches them.
+    await import("./showcase-publish-flow.js?v=f06815e0");
     await import("./showcase-guest-publish-bridge.js?v=809b92f6");
-    await import("./showcase-dynamic-publish-v3.js?v=b02d8e40");
+    await import("./showcase-dynamic-publish-v3.js?v=aecc2284");
     await import("./showcase-publish-url-canonicalizer.js?v=d365d9fd");
     document.documentElement.dataset.showcaseGeneratorState = "ready";
   } catch (error) {

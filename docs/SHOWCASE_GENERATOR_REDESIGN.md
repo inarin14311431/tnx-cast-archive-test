@@ -242,6 +242,21 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
 状態が変わっても土台になる。骨組み(2)で3列にしたあと、キャスト(3)と見せ方(4)は独立して進められる。手動画像(5)は
 手動追加フォームがPR3で完成してから足す。
 
+### 実装の結果
+
+- **PR1 公開の流れ(2026-11-08)。** 公開ボタン(`[data-publish-mode]`)の押下が、生成HTMLが無いときだけ自分で生成してから
+  同じ押下をやり直す。実装は `js/showcase-publish-flow.js`(押下を横取りして再生)と `js/showcase-generation-settle.js`
+  (`#generate-button` を押し、`#showcase-preview` の `srcdoc` の変更とその `load` が止まって120ms動かなくなるまで待つ。
+  生成が失敗したら `#generator-status` の `is-error` で止まり、理由は生成側が書く)。読み込みはゲスト区画のあと、ゲストの
+  保存(bridge)と公開(dynamic publish)の前。公開ボタンは、公開中・生成中・非公開キャストを含むときだけ無効で、
+  「生成済みかどうか」は見ない(旧 `#publish-button` の `disabled` を見る仕組みは外した。旧ボタン自体は、`output-rendering` の
+  テストが頼る有効/無効の動きとともに残している)。サブタイトルを変えても公開ボタンは無効にしない(出力を空にするだけ)。
+  ページタイトルの欄は既定が空で、空のとき生成が `#act-name` を使う(復元は保存された値をそのまま入れる)。
+  テスト: `tests/e2e/showcase-generator-publish-flow.spec.js`(偽ログインの生成画面。生成せずに公開・ゲスト保存が公開より前・
+  入力変更後は新しい内容を公開・生成済みの再利用・失敗理由の表示・非公開で無効・HTML書き出し)と
+  `tests/showcase-publish-flow-contract.test.mjs`。**気づいた点**: ページタイトルが空のとき、公開ページの `heroTitle` も
+  アクトタイトルになる。スタンダード版の見出し(`h1`)とアクト名の行が同じ文字になりうる(公開ページ側は触っていない)。
+
 ### 各PRの確認
 
 - どのPRも `npm run verify` と `npm run check:js`、JS/CSS/HTMLを変えたら `npm run version:update`。

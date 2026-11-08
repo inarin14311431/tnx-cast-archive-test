@@ -13,18 +13,16 @@ const showcaseThemeField = document.querySelector("#showcase-theme");
 const showcaseScenesField = document.querySelector("#showcase-scenes");
 const rulerField = document.querySelector("#ruler-name");
 const scenarioWriterField = document.querySelector("#scenario-writer-name");
-const legacyPublishButton = document.querySelector("#publish-button");
+const selectedCastsRoot = document.querySelector("#selected-casts");
 const publishButtons = [...document.querySelectorAll("[data-publish-mode]")];
 const MAX_SHOWCASE_BYTES = 500 * 1024;
 const TARGET_BACKGROUND_BYTES = 300 * 1024;
 let publishing = false;
 
-if (legacyPublishButton) {
-  new MutationObserver(syncPublishButtons).observe(legacyPublishButton, {
-    attributes: true,
-    attributeFilter: ["disabled"]
-  });
-}
+// The buttons need no generated HTML: a click generates it first (showcase-publish-flow.js). They are unavailable while a
+// publication or that generation runs, and when a private cast is selected (private casts can only be exported as HTML).
+if (selectedCastsRoot) new MutationObserver(syncPublishButtons).observe(selectedCastsRoot, { childList: true, subtree: true });
+new MutationObserver(syncPublishButtons).observe(document.documentElement, { attributes: true, attributeFilter: ["data-showcase-generating"] });
 preview?.addEventListener("load", syncPublishButtons);
 syncPublishButtons();
 
@@ -38,9 +36,17 @@ document.addEventListener("click", event => {
   void publishDynamicShowcase(button, mode);
 }, true);
 
+function hasPrivateCast() {
+  return Boolean(document.querySelector('#selected-casts [data-visibility="private"]'));
+}
+
 function syncPublishButtons() {
-  const unavailable = publishing || Boolean(legacyPublishButton?.disabled) || !String(preview?.srcdoc || "").trim();
-  publishButtons.forEach(button => { button.disabled = unavailable; });
+  const blockedByPrivate = hasPrivateCast();
+  const unavailable = publishing || blockedByPrivate || document.documentElement.hasAttribute("data-showcase-generating");
+  publishButtons.forEach(button => {
+    button.disabled = unavailable;
+    button.title = blockedByPrivate ? "非公開キャストを含むアクト紹介は公開できません。HTMLの書き出しだけ利用できます。" : "";
+  });
 }
 
 async function publishDynamicShowcase(button, mode) {
