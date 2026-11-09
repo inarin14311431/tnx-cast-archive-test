@@ -65,6 +65,18 @@ test("only classes of its own are styled, besides the shared shell it restyles; 
   }
 });
 
+test("while the opening sequence runs, the finished page of pattern B is out of the render tree, like pattern A's (trailer A + finale B showed it under the reading)", async () => {
+  const prefix = ':root[data-showcase-theme] body#act-showcase-page.showcase-neotokyo-intro-active #act-showcase-root';
+  const hiding = styleRules.filter(rule => rule.prelude.startsWith(prefix));
+  assert.equal(hiding.length, 1, "one rule hides the root while the sequence is active");
+  assert.equal(hiding[0].prelude, `${prefix}${SCOPE}`, "scoped to pattern B of the finale frame");
+  assert.equal(hiding[0].context, "", "not inside a media query: it holds at every width and setting");
+  assert.equal(hiding[0].body.trim(), "display:none");
+  // the same prefix as pattern A's rule in the theme layer, so the two have the same specificity
+  const themeScenes = await read("../css-next/pages/act-showcase-theme-scenes.css");
+  assert.ok(themeScenes.includes(`${prefix}:where([data-scene="finale"][data-scene-pattern="a"],`), "pattern A's rule has the same prefix");
+});
+
 test("keyframes are named for the pattern", () => {
   assert.ok(keyframes.length >= 1);
   for (const rule of keyframes) assert.match(rule.prelude, /^@keyframes neotokyo-finale-b-/);
