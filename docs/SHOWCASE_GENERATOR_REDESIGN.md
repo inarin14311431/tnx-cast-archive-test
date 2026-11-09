@@ -350,11 +350,11 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
   失敗は今までどおり `#generator-status` にエラーを出し、カードは出さない。「履歴だけ登録」の完了表示は変えていない。
 - 責務: `js/showcase-dynamic-publish-v3.js` は公開の動作だけを持ち、`tnx:showcase-publish-start`(公開の開始。カードを閉じる)と
   `tnx:showcase-published`(`detail`: `slug`・`mode`・`actName`・`historyOk`・`urls.cinematic` / `urls.standard`)を出す。
-  公開URLの組み立ては従来どおり公開側の1か所。カードの表示・コピー・「更新して再公開」の表記は `js/showcase-publish-result.js`、
+  公開URLの組み立ては従来どおり公開側の1か所。カードの表示・コピー・再公開の表記は `js/showcase-publish-result.js`、
   X投稿の文面・ハッシュタグ(`SHOWCASE_HASHTAG`、1か所)・公開済みかどうかの判定は純粋関数の `js/showcase-publish-result-core.js`。
 - 「X に投稿」は `https://x.com/intent/post?text=…&url=…`(`encodeURIComponent`)を新しいタブで開くだけ。APIやログインは使わない。
   文面は『アクトタイトル[ ― サブタイトル]』のアクト紹介を公開しました + 改行 + ハッシュタグ、`url` は公開した版のURL。文字数の調整はしない。
-- 公開済みになった識別名では、公開した版のボタンが「更新して再公開」になる(動作は公開と同じ)。既存のアクト紹介を読み込んだとき
+- 公開済みになった識別名では、公開した版のボタンが「豪華版を更新して再公開」「スタンダード版を更新して再公開」になる(版の名前は残す)(動作は公開と同じ)。既存のアクト紹介を読み込んだとき
   (`js/showcase-edit-restore.js` が出す `tnx:showcase-restored`)は版が分からないので両方。識別名を変えると元の表記に戻る。
 - 画面比較の状態は増やしていない。E2E は `tests/e2e/showcase-generator-publish-result.spec.js`、純粋関数は `tests/showcase-publish-result.test.mjs`。
 
