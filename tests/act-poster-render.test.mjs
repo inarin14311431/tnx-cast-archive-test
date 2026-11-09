@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildPosterModel, layoutPoster, POSTER_RIGHTS_NOTICE } from "../js/act-poster-layout.js";
+import { buildPosterModel, layoutPoster, POSTER_RIGHTS_NOTICE, POSTER_COPYRIGHT_NOTICE } from "../js/act-poster-layout.js";
 import {
   renderPoster, exportPosterBlob, loadPosterFonts, loadPosterImage, loadPosterImages, createPosterMeasurer, posterTexts,
   POSTER_PLACEHOLDER_URL, POSTER_FONTS, POSTER_MAX_PNG_BYTES, POSTER_JPEG_QUALITY, resolvePosterTheme
@@ -103,7 +103,7 @@ test("the text drawn is the model: names, readings, HO, styles, credits, date an
   const model = modelOf();
   await renderPoster(canvas, layoutOf(model), { images: new Map([["placeholder", PLACEHOLDER]]), theme: THEME });
   const texts = canvas.events.filter(event => event[0] === "fillText").map(event => event[1]);
-  for (const expected of ["NEON AFTERIMAGE", "ネオンの残像", "HO1", "HO3", "カブト", "“A”", "甲", "RL", "稲荷秋", "WRITER", "芳賀琉", "11.23", "SUN 21:00〜", POSTER_RIGHTS_NOTICE]) {
+  for (const expected of ["NEON AFTERIMAGE", "ネオンの残像", "HO1", "HO3", "カブト", "“A”", "甲", "RL", "稲荷秋", "WRITER", "芳賀琉", "11.23", "SUN 21:00〜", POSTER_RIGHTS_NOTICE, POSTER_COPYRIGHT_NOTICE]) {
     assert.ok(texts.includes(expected), `draws ${expected}`);
   }
   const all = texts.join("");
