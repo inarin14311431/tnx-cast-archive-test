@@ -51,7 +51,9 @@ X に「これからこのアクトを遊びます」と投稿するときに添
 - 計算は DOM に依存しない関数(`computeRubyUnit`、`computeNameLayout({ readingMode: "space-around" })`)で、js/cast-sns-name-layout.js にある。既定の `center` はSNSカードのまま。
 
 ## 配色・書体
-- テーマ(primary / secondary / accent)から取るのは、HOごとの色、タイトルのずれ影とグロー、RL・ライターのラベルの色だけ。HOごとの色はキャスト順に primary / secondary / accent を繰り返し、4人目以降は導出した補助色(明るく、次は暗く)。canvas では解決済みの色を getComputedStyle で取る(`readPosterTheme`)。
+- テーマ(primary / secondary / accent)から取るのは、HOごとの色、タイトルのずれ影とグロー、RL・ライターのラベルの色だけ。HOごとの色はキャスト順に primary / secondary / accent を繰り返し、4人目以降は導出した補助色(明るく、次は暗く)。
+  3色は、公開したアクト紹介のテーマ(`showcaseData.theme`: nova / intron / vlad / lutetia)のパレット(生成画面のテーマカードと同じ `getThemeSwatchColors` の2〜4番目)で、canvas に渡す前に getComputedStyle で解決する(`resolvePosterTheme`)。
+  生成画面には、公開ページの `--showcase-*` 変数が無いため、変数を読むのではなくパレットを渡す。暗い地で見えない色(明るいテーマの黒)は、見えるまで白へ混ぜる(`readableOnDark`)。
 - それ以外(暗い地、グリッド、光の筋、走査線、金のキャッチと日付、白→水色のタイトル)は固定デザインで、テーマに従わない(`js/act-poster-render.js` は `audit:colors` の対象外。`docs/UI_CONVENTIONS.md`)。配置を決める `js/act-poster-layout.js` は色を持たない。
 - タイトル(アクト名): Dela Gothic One。白→水色の縦グラデーション、secondary のずれ影(右下3px)、primary の弱いグロー。
 - 本文: Noto Sans JP(700/900)。HO番号・日付の数字: Orbitron。
@@ -65,6 +67,10 @@ X に「これからこのアクトを遊びます」と投稿するときに添
   右に日付(金。最初の空白まで=「11.23」を数字80〜96px、残り=「SUN 21:00〜」を26px)。
 - 最下行: 権利表記(11px)。
 - 日付が空のときは「近日開演」を同じ位置(大きい方の欄)に出す。
+
+## 画面(公開完了カード)
+公開完了カードの「X に投稿」の下に「投稿用画像を作る(POSTER IMAGE)」を置く。開くと(`aria-expanded`)、日付・キャッチの入力、プレビュー(canvas を縮小して表示)、「画像を保存」「画像をコピー」「共有」、ALT文が出る。
+パネルは、初めて開いたときに読み込む(生成画面は、ポスターのモジュールを最初から読まない)。日付・キャッチが変わると、250msのデバウンスのあとで描き直す。生成中・生成できなかったときは、プレビューの下に出し、保存とコピーは使えなくする。
 
 ## 入力(公開完了カード)
 - 日付: 自由入力1欄(例: 11.23 SUN 21:00〜)。最大24文字(入力欄の maxlength と、モデルの切り詰めの両方)。

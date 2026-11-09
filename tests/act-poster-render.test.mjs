@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildPosterModel, layoutPoster, POSTER_RIGHTS_NOTICE } from "../js/act-poster-layout.js";
 import {
   renderPoster, exportPosterBlob, loadPosterFonts, loadPosterImage, loadPosterImages, createPosterMeasurer, posterTexts,
-  POSTER_PLACEHOLDER_URL, POSTER_FONTS, POSTER_MAX_PNG_BYTES, POSTER_JPEG_QUALITY
+  POSTER_PLACEHOLDER_URL, POSTER_FONTS, POSTER_MAX_PNG_BYTES, POSTER_JPEG_QUALITY, resolvePosterTheme
 } from "../js/act-poster-render.js";
 
 // The canvas side of the poster (js/act-poster-render.js) against a recording context: what is drawn, in which order and with which numbers.
@@ -177,4 +177,28 @@ test("without a canvas the measurer falls back to an estimate instead of failing
   const measure = createPosterMeasurer();
   assert.equal(typeof measure("ABC", 20, 700, "title"), "number");
   assert.ok(measure("ABC", 20) > 0);
+});
+
+test("the clipboard always gets PNG: png:true skips the JPEG fallback even over 5 MB", async () => {
+  const asked = [];
+  const canvas = { convertToBlob: async options => { asked.push(options.type); return { size: POSTER_MAX_PNG_BYTES * 2, type: options.type }; } };
+  const blob = await exportPosterBlob(canvas, { png: true });
+  assert.equal(blob.type, "image/png");
+  assert.deepEqual(asked, ["image/png"]);
+});
+
+test("the theme colours are resolved by the browser: any CSS colour becomes what the computed style says", async () => {
+  const seen = [];
+  const document = { createElement: () => ({ style: {}, remove() {} }) };
+  const before = Object.getOwnPropertyDescriptor(globalThis, "getComputedStyle");
+  globalThis.getComputedStyle = probe => { seen.push(probe.style.color); return { color: `rgb(${seen.length}, 0, 0)` }; };
+  try {
+    const theme = await withDocument(document, () => resolvePosterTheme({ primary: "#70eaff", secondary: "color-mix(in srgb, red 50%, blue)", accent: "hsl(30 90% 60%)" }, { append() {} }));
+    assert.equal(theme.primary, "rgb(1, 0, 0)");
+    assert.equal(theme.secondary, "rgb(2, 0, 0)");
+    assert.equal(theme.accent, "rgb(3, 0, 0)");
+    assert.deepEqual(seen, ["#70eaff", "color-mix(in srgb, red 50%, blue)", "hsl(30 90% 60%)"]);
+  } finally {
+    if (before) Object.defineProperty(globalThis, "getComputedStyle", before); else delete globalThis.getComputedStyle;
+  }
 });

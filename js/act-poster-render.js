@@ -4,11 +4,11 @@
 // The poster is a fixed design: a dark ground, a grid, a gold catch line and date, a white-to-cyan title. Those colours deliberately ignore
 // the site theme (like the experience ticket: docs/UI_CONVENTIONS.md), so they live here as POSTER_COLORS and this file is outside
 // audit:colors. What follows the theme is only what the caller passes in as `theme` (primary / secondary / accent, already resolved:
-// readPosterTheme): the colour of each HO, the title's shadow and glow, the label chips.
+// resolvePosterTheme): the colour of each HO, the title's shadow and glow, the label chips.
 //
 // Not on it: the logo, the official fonts or illustrations, the words "official" / "公式" / "公認", the handout text, the guests.
 import { approximateTextWidth } from "./cast-sns-name-layout.js?v=71a5e4e1";
-import { POSTER_WIDTH, POSTER_HEIGHT, ROLE_BODY, ROLE_TITLE, ROLE_NUMBER } from "./act-poster-layout.js?v=8a5f9e97";
+import { POSTER_WIDTH, POSTER_HEIGHT, ROLE_BODY, ROLE_TITLE, ROLE_NUMBER } from "./act-poster-layout.js?v=b09b7150";
 
 export const POSTER_SCALE = 2;
 export const POSTER_MAX_PNG_BYTES = 5 * 1024 * 1024;
@@ -95,11 +95,12 @@ export function resolveCssColor(value, root = document.body) {
   }
 }
 
-// The three theme colours of the page (the showcase theme variables), resolved: {primary, secondary, accent}.
-export function readPosterTheme(element = document.documentElement) {
-  const style = getComputedStyle(element);
-  const read = name => resolveCssColor(`var(${name}, ${style.getPropertyValue(name).trim() || "currentColor"})`, document.body);
-  return { primary: read("--showcase-primary"), secondary: read("--showcase-secondary"), accent: read("--showcase-accent") };
+// The three theme colours of the poster ({primary, secondary, accent}: any CSS colours), resolved the way the browser resolves them
+// ("rgb(...)"), so the canvas gets plain colours. The caller takes them from the act's showcase theme (the generator page does not carry the
+// --showcase-* variables of the act pages, so the palette of the theme is passed in).
+export function resolvePosterTheme(colors, root = document.body) {
+  const resolve = value => resolveCssColor(value, root);
+  return { primary: resolve(colors.primary), secondary: resolve(colors.secondary), accent: resolve(colors.accent) };
 }
 
 // ---- images ----------------------------------------------------------------------------------------------------------------------------------
@@ -391,11 +392,11 @@ export async function renderPoster(canvas, layout, { images, theme, scale = POST
   return canvas;
 }
 
-// PNG; a picture over 5 MB is exported as JPEG (quality 0.9) instead.
-export async function exportPosterBlob(canvas) {
+// PNG; a picture over 5 MB is exported as JPEG (quality 0.9) instead. `png: true` always gives PNG (the clipboard takes PNG only).
+export async function exportPosterBlob(canvas, { png = false } = {}) {
   const toBlob = (type, quality) => (typeof canvas.convertToBlob === "function"
     ? canvas.convertToBlob({ type, quality })
     : new Promise((resolve, reject) => canvas.toBlob(blob => (blob ? resolve(blob) : reject(new Error("canvas export failed"))), type, quality)));
-  const png = await toBlob("image/png");
-  return png.size > POSTER_MAX_PNG_BYTES ? toBlob("image/jpeg", POSTER_JPEG_QUALITY) : png;
+  const blob = await toBlob("image/png");
+  return !png && blob.size > POSTER_MAX_PNG_BYTES ? toBlob("image/jpeg", POSTER_JPEG_QUALITY) : blob;
 }
