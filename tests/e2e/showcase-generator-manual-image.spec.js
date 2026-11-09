@@ -16,8 +16,8 @@ async function openGenerator(page, options = {}) {
     return hostname === "127.0.0.1" || hostname === "localhost" ? route.fallback() : route.abort();
   });
   const calls = await installShowcaseGeneratorMock(page, {
-    rpc: { publish_act_showcase_for_current_user: "act-mock-id", replace_act_showcase_guests_for_current_user: null, ...options.rpc },
-    ...options
+    ...options,
+    rpc: { publish_act_showcase_for_current_user: "act-mock-id", replace_act_showcase_guests_for_current_user: null, ...options.rpc }
   });
   await page.goto(`/showcase-generator.html${options.query || ""}`);
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 15_000 });
