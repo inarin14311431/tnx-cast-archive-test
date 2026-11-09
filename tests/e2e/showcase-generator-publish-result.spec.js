@@ -109,19 +109,19 @@ test("the card stays through edits, closes with the × button and is drawn again
   await expect(page.locator("#publish-result [data-result-share]")).toHaveAttribute("href", /%E5%85%A5%E5%8A%9B%E3%82%92%E5%A4%89%E3%81%88%E3%81%A6%E3%82%82%E6%B6%88%E3%81%88%E3%81%AA%E3%81%84/);
 });
 
-test("a published act turns the publish button of that version into 更新して再公開", async ({ page }) => {
+test("a published act turns the publish button of that version into 「<版>を更新して再公開」", async ({ page }) => {
   await openGenerator(page);
   await fillAct(page, { slug: "result-again" });
   await expect(page.locator("#publish-cinematic-button")).toContainText("豪華版で公開");
   await publish(page, "cinematic");
-  await expect(page.locator("#publish-cinematic-button")).toContainText("更新して再公開");
+  await expect(page.locator("#publish-cinematic-button")).toContainText("豪華版を更新して再公開");
   await expect(page.locator("#publish-cinematic-button")).toContainText("CINEMATIC SHOWCASE");
   await expect(page.locator("#publish-standard-button")).toContainText("スタンダード版で公開");
   // another identifier is a new act
   await page.locator("#publish-slug").fill("result-other");
   await expect(page.locator("#publish-cinematic-button")).toContainText("豪華版で公開");
   await page.locator("#publish-slug").fill("result-again");
-  await expect(page.locator("#publish-cinematic-button")).toContainText("更新して再公開");
+  await expect(page.locator("#publish-cinematic-button")).toContainText("豪華版を更新して再公開");
   // the republication works the same as the publication
   await page.locator("#publish-cinematic-button").click();
   await expect(page.locator("#publish-result")).toBeVisible();
@@ -132,8 +132,8 @@ test("an act loaded for editing reads as published in both versions", async ({ p
   await page.locator("#section-act .showcase-advanced > summary").click();
   await page.locator("#publish-slug").fill("loaded-act");
   await page.evaluate(() => document.dispatchEvent(new CustomEvent("tnx:showcase-restored", { detail: { slug: "loaded-act" } })));
-  await expect(page.locator("#publish-cinematic-button")).toContainText("更新して再公開");
-  await expect(page.locator("#publish-standard-button")).toContainText("更新して再公開");
+  await expect(page.locator("#publish-cinematic-button")).toContainText("豪華版を更新して再公開");
+  await expect(page.locator("#publish-standard-button")).toContainText("スタンダード版を更新して再公開");
 });
 
 test("a failed publication shows the error in the publish column and no card", async ({ page }) => {

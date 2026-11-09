@@ -10,7 +10,6 @@ const actNameField = document.querySelector("#act-name");
 const subtitleField = document.querySelector("#act-subtitle");
 const publishButtons = [...document.querySelectorAll("[data-publish-mode]")];
 const COPIED_MS = 2000;
-const REPUBLISH_LABEL = "更新して再公開 ";
 
 let published = emptyPublishedState();
 let copiedTimer = 0;
@@ -53,7 +52,8 @@ function syncButtonLabels() {
     const label = button.firstChild;
     if (original === undefined || label?.nodeType !== Node.TEXT_NODE) continue;
     const republish = isRepublish(published, slugField?.value, button.dataset.publishMode);
-    label.nodeValue = republish ? REPUBLISH_LABEL : original;
+    // The version stays in the label: both buttons can read "republish" at once.
+    label.nodeValue = republish ? `${modeLabel(button.dataset.publishMode)}を更新して再公開 ` : original;
     button.dataset.republish = republish ? "true" : "false";
   }
 }
