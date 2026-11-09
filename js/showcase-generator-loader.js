@@ -40,7 +40,8 @@ async function initializeShowcaseGenerator() {
     // Before the guest bridge and the publisher: a publish click generates the HTML first, then reaches them.
     await import("./showcase-publish-flow.js?v=f06815e0");
     await import("./showcase-guest-publish-bridge.js?v=809b92f6");
-    await import("./showcase-dynamic-publish-v3.js?v=758c38f4");
+    await import("./showcase-dynamic-publish-v3.js?v=b2a5976e");
+    await import("./showcase-publish-result.js?v=996c2c09");
     await import("./showcase-publish-url-canonicalizer.js?v=d365d9fd");
     document.documentElement.dataset.showcaseGeneratorState = "ready";
   } catch (error) {
@@ -66,7 +67,7 @@ async function initializeShowcaseGenerator() {
   try {
     await import("./showcase-output-normalizer.js?v=cea76d1b");
     await import("./showcase-scene-selector.js?v=c0f46f31");
-    await import("./showcase-edit-restore.js?v=b549be8f");
+    await import("./showcase-edit-restore.js?v=433de797");
     await import("./showcase-delete.js?v=3f62ca3a");
     await import("./showcase-owned-list.js?v=71944577");
   } catch (error) {

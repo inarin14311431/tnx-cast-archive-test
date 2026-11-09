@@ -48,7 +48,7 @@ function fakeJwt() {
   return `${encode({ alg: "HS256", typ: "JWT" })}.${encode({ sub: USER_ID, aud: "authenticated", role: "authenticated", exp: 4102444800 })}.mock`;
 }
 
-// Returns { rpcCalls, restCalls, storageUploads }. `options.rpc` maps an RPC name to its answer (default null).
+// Returns { rpcCalls, restCalls, storageUploads }. `options.rpc` maps an RPC name to its answer (default null); `options.rpcFailures` maps an RPC name to an error message (the call then answers 400).
 export async function installShowcaseGeneratorMock(page, options = {}) {
   const calls = { rpcCalls: [], restCalls: [], storageUploads: [], storageRemovals: [] };
   const user = { id: USER_ID, email: "mock@example.invalid", aud: "authenticated", role: "authenticated" };
@@ -78,6 +78,7 @@ export async function installShowcaseGeneratorMock(page, options = {}) {
       let body = null;
       try { body = request.postDataJSON(); } catch { /* no body */ }
       calls.rpcCalls.push({ name, body });
+      if (options.rpcFailures && name in options.rpcFailures) return json(400, { message: options.rpcFailures[name] });
       const answer = name in rpcAnswers ? rpcAnswers[name] : null;
       return json(200, typeof answer === "function" ? answer(body) : answer);
     }

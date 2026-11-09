@@ -135,6 +135,9 @@ async function restoreOwnedShowcase(slug) {
     restoreBasicFields(data, showcase, slug);
     const fallbackCount = await restoreCasts(casts, participants);
 
+    // The publish column learns that this act is already published (its buttons read "update and republish").
+    document.dispatchEvent(new CustomEvent("tnx:showcase-restored", { detail: { slug } }));
+
     const cleanUrl = new URL(location.href);
     cleanUrl.searchParams.delete(RESTORE_PARAM);
     history.replaceState(null, "", cleanUrl.href);

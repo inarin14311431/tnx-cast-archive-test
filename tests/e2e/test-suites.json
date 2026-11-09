@@ -66,6 +66,7 @@
         "tests/e2e/showcase-generator-cast.spec.js",
         "tests/e2e/showcase-generator-look.spec.js",
         "tests/e2e/showcase-generator-manual-image.spec.js",
+        "tests/e2e/showcase-generator-publish-result.spec.js",
         "tests/e2e/act-showcase-load-failure.spec.js",
         "tests/e2e/act-showcase-screen-timing.spec.js",
         "tests/e2e/showcase-background-preset-legacy.spec.js"
