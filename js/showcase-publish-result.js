@@ -128,3 +128,9 @@ function element(tag, className, children = [], attributes = {}) {
 }
 
 syncButtonLabels();
+
+// The announcement poster (js/act-poster-layout.js: model and layout, js/act-poster-render.js: the canvas) is loaded only when somebody asks
+// for it, so this page does not fetch it. The card offers it in the next change; nothing calls this yet.
+export function loadActPoster() {
+  return Promise.all([import("./act-poster-layout.js?v=8a5f9e97"), import("./act-poster-render.js?v=bf4fbe69")]).then(([layout, render]) => ({ layout, render }));
+}

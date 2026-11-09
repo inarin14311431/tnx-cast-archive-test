@@ -8,8 +8,10 @@ import path from "node:path";
 const CSS_EXCLUDED_DIRS = ["css-next/themes/", "css-next/foundation/", "css-next/tokens/"];
 const JS_EXCLUDED_DIRS = ["js/vendor/"];
 const JS_EXCLUDED_FILES = ["js/style-colors.js"];
-// The experience ticket is a fixed design (dark background + gold) that deliberately ignores the theme.
-const FIXED_DESIGN_FILES = ["css-next/pages/experience-ticket.css", "js/experience-ticket.js"];
+// The experience ticket is a fixed design (dark background + gold) that deliberately ignores the theme. So is the picture of the act
+// announcement poster (js/act-poster-render.js: dark ground, gold catch line and date, white-to-cyan title); the colours that do follow the
+// theme (the HO colours, the title's shadow and glow) are passed in by the caller, and the pure layout (js/act-poster-layout.js) has none.
+const FIXED_DESIGN_FILES = ["css-next/pages/experience-ticket.css", "js/experience-ticket.js", "js/act-poster-render.js"];
 
 const HEX = /(?<![\w&])#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])/gi;
 const FUNCTIONAL = /(?<![\w-])(?:rgb|hsl)a?\(/gi;
