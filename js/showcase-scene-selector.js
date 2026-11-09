@@ -5,7 +5,7 @@ import {
   formatSceneSelectionField,
   parseSceneSelectionField
 } from "./act-showcase-scenes.js?v=2647c951";
-import { summarizeScenes } from "./showcase-generator-summary.js?v=7d1ef899";
+import { summarizeScenes } from "./showcase-generator-summary.js?v=aa6bc728";
 
 // The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6): one row of buttons ("A 標準" / "B:<name>")
 // per scene frame that can play more than one pattern. The choice lives in the hidden field #showcase-scenes (JSON, see act-showcase-scenes.js);

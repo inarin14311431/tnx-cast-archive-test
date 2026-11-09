@@ -38,13 +38,14 @@ export function themeShortName(optionText) {
   return String(optionText ?? "").split("/")[0].trim();
 }
 
-// How the background is set, from what the three fields hold. A preset key is looked up in `presets` ([{ key, name }]).
+// How the background is set, from what the three fields hold. A preset key is looked up in `presets` ([{ key, name }]). Choosing a preset
+// writes the preset's own URL into the URL field and sets the key; typing another URL or choosing a file clears the key
+// (showcase-background-preset-picker.js), so a key that is set means "the preset", whatever the URL field holds.
 export function summarizeBackground({ presetKey = "", url = "", hasFile = false, presets = [] } = {}) {
-  const trimmedUrl = String(url ?? "").trim();
-  if (trimmedUrl) return "自分の画像(URL)";
-  if (hasFile) return "自分の画像(ファイル)";
   const preset = presets.find(item => item.key === String(presetKey ?? "").trim());
   if (preset) return preset.name;
+  if (String(url ?? "").trim()) return "自分の画像(URL)";
+  if (hasFile) return "自分の画像(ファイル)";
   return "未設定";
 }
 

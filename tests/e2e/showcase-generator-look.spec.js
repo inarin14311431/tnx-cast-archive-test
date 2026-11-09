@@ -65,7 +65,8 @@ test("a theme change makes the generated HTML stale and the generated HTML uses 
   await expect(page.locator("#showcase-preview")).not.toHaveAttribute("srcdoc", /./);
   await page.locator("#open-html-export").click();
   await expect(page.locator("#html-export-status")).toContainText("HTMLを生成しました", { timeout: 15_000 });
-  await expect(page.locator("#showcase-preview")).toHaveAttribute("srcdoc", /--showcase-bg:#050c18/);
+  // The exported page carries the chosen theme as its data-showcase-theme (showcase-dedicated-output.js).
+  await expect(page.locator("#showcase-preview")).toHaveAttribute("srcdoc", /data-showcase-theme="lutetia"/);
 });
 
 test("the background shows the chosen preset large, ten thumbnails in five columns, and folds the custom image", async ({ page }) => {
@@ -147,6 +148,8 @@ test("the scene composition is folded, tagged as deluxe-only, and shows its summ
 });
 
 test("the composition is published as chosen and a saved act restores its buttons, theme and background", async ({ page }) => {
+  const [first] = MOCK_PUBLIC_CASTS;
+  const { obfuscatePublicId } = await import("../../js/showcase-restore-matching.js");
   const saved = {
     slug: "look-restore",
     actName: "見せ方の復元",
@@ -155,9 +158,9 @@ test("the composition is published as chosen and a saved act restores its button
       version: 2, pageTitle: "ACT CAST FILE", actName: "見せ方の復元", rulerName: "", theme: "intron",
       background: "https://example.invalid/restored-background.webp",
       scenes: { loading: "b", finale: "b" },
-      casts: [{ serial: "PRIVATE", fullName: "復元用手動", styles: [{ label: "カブト◎", handoutRole: true }], meta: [], tagline: "", handout: { title: "共通ハンドアウト", body: "本文" } }]
+      casts: [{ serial: obfuscatePublicId(first.public_id), fullName: "ハンドル1 テストキャスト1", styles: [{ label: "カタナ◎", handoutRole: true }], meta: [], tagline: "", handout: { title: "『カタナ』用ハンドアウト", body: "本文" } }]
     },
-    participants: []
+    participants: [{ characterId: first.id, characterPublicId: first.public_id, castOrder: 1, participationRole: "カタナ" }]
   };
   const calls = await openGenerator(page, {
     query: `?edit=${saved.slug}`,

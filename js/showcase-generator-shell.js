@@ -10,7 +10,7 @@ import {
   summarizeScenes,
   summarizeSteps,
   themeShortName
-} from "./showcase-generator-summary.js?v=7d1ef899";
+} from "./showcase-generator-summary.js?v=aa6bc728";
 
 // The generator's frame (docs/SHOWCASE_GENERATOR_REDESIGN.md): the step navigation (the "published" band opens in showcase-owned-band.js),
 // the publish checklist and settings summary, and the HTML export dialog. Nothing here changes what is saved or published:

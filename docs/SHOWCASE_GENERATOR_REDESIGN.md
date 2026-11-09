@@ -304,6 +304,30 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
     既存のテストは、参加枠などを選ぶ前に行を開く操作と、非公開タブを押す操作を足した(確かめる内容は同じ)。契約テストは、行・候補カードの
     読む場所(`showcase-cast-row.js`・`showcase-generator-cast.css`)と、手動追加のイベントに合わせた。
 
+- **PR4 見せ方(2026-11-09)。** 「03 見せ方」を、テーマのカード・背景・演出の構成の3つのブロックに作り直した。保存値の欄
+  (`#showcase-theme`・`#background-preset`/`#background-url`/`#background-file`・`#showcase-scenes`)の `id` と値の形は変えていない。
+  - **紹介テーマ**: 4枚のカード(色見本4つ・日本語名・英字名)。選んだカードを枠で示す。`#showcase-theme` の `<select>` は
+    `hidden` で残り、カードの選択が値を入れて `change` を飛ばす(再生成が必要になる印が付く)。復元が `select` に値を入れて `change` を
+    飛ばすと、カードの印が動く。矢印キーで選べる。色見本は、書き出すHTMLのテーマの配色表(`js/showcase-output-css.js` の
+    `getThemeSwatchColors`。配色表を `THEME_PALETTES` に切り出しただけで、色は増えていない)から取る。「HTML・スタンダード版・豪華版で共通です」の注記。
+  - **背景**: 選んだ1枚を大きく見せる(`#background-current`: 番号・名前・説明。個別指定ならURL/ファイル名)。プリセット10枚は5列のサムネイル
+    (名前は `title`/`aria-label`)。URLとファイルは「▸ 自分の画像を使う(URL・ファイル)」に畳み、「URLが入力されている場合はURLを優先します。公開時は容量上限に
+    収まるよう自動圧縮します」の注記は残した。プリセットを選ぶと、これまでどおり URL欄にそのURLが入り、キー欄にキーが入る。
+  - **演出の構成**: 畳んだ枠(`<details id="showcase-scene-composition">`)。見出しに「豪華版のみ」の印と要約(`すべて A(標準)` /
+    `B:タイトル・ACT READY / ほかは A`)。開くと6つの場面ごとに「A 標準 / B:<パターン名>」のボタンと「すべて A に戻す」。`<select data-scene-frame>`
+    はボタン(`button[data-scene-frame][data-scene-pattern]`、`aria-pressed`)に替わった。**保存値(`#showcase-scenes` の JSON)の形、
+    「a を選ぶとその場面の項目を消す」「新しいスクリプトが保存した、その場面がまだ再生できないパターンは編集しても残る」は同じ**。
+    パターン名の表は `SCENE_PATTERN_NAMES`(起動ターミナル・タイトルカード・縦組み・ポートレート先行・ポートレート中央・キービジュアル。
+    資料 §6 で決めた名前)。新しいパターンを足すときは、`act-showcase-scenes.js` の `PLAYABLE_PATTERNS` と、この表に名前を足す(なければ「パターン C」と出る)。
+    「すべて A に戻す」は、ボタンで見えている(その場面が再生できる)ものだけを a に戻す。
+  - 公開の欄の「今の設定」の背景は、プリセットのキーがあればプリセット名、なければURL、ファイルの順(プリセットを選ぶとURL欄にもURLが入るため)。
+  - CSS: 新しい `css-next/pages/showcase-generator-look.css`(直書きの色0。色見本の色だけ `--swatch` で JS から渡す)。旧 `showcase-background-presets.css` は
+    置き換えて消した(直書きの色の上限が下がった)。
+  - テスト: E2E `showcase-generator-look.spec.js`(テーマカード・背景・ファイル・演出の構成・復元と公開・横あふれなし)。
+    `showcase-scene-selector.test.mjs` と `tests/e2e/showcase-scene-selector.spec.js` は、`select` からボタンに書き換えて同じ内容を確かめる
+    (選ぶと欄に書く・a で消える・復元でボタンが動く・未対応のパターンは残る・往復)。`tests/helpers/fake-dom.mjs` にボタン用の最小の機能を足した。
+    プリセットの E2E は、名前を `title` から読む形に。
+
 ### 各PRの確認
 
 - どのPRも `npm run verify` と `npm run check:js`、JS/CSS/HTMLを変えたら `npm run version:update`。

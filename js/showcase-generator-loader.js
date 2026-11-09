@@ -26,7 +26,7 @@ document.documentElement.dataset.showcaseGeneratorState = "loading";
 
 // The frame around the form (step navigation, checklist, export dialog) starts loading at once, beside the core modules, so its
 // controls answer early. It only reads and shows what the core modules write; a failure here leaves the form usable.
-void import("./showcase-generator-shell.js?v=66c29f99").catch(error => reportOptionalModuleError("generator-shell", error));
+void import("./showcase-generator-shell.js?v=02d2d1b2").catch(error => reportOptionalModuleError("generator-shell", error));
 
 async function initializeShowcaseGenerator() {
   try {
@@ -65,7 +65,7 @@ async function initializeShowcaseGenerator() {
 
   try {
     await import("./showcase-output-normalizer.js?v=cea76d1b");
-    await import("./showcase-scene-selector.js?v=7c55c0e2");
+    await import("./showcase-scene-selector.js?v=c0f46f31");
     await import("./showcase-edit-restore.js?v=f95ac2b4");
     await import("./showcase-delete.js?v=3f62ca3a");
     await import("./showcase-owned-list.js?v=71944577");
