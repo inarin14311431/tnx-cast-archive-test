@@ -106,6 +106,8 @@ async function publishDynamicShowcase(button, mode) {
     const publicUrl = new URL(publicPath, location.href).href;
     const modeLabel = mode === "standard" ? "従来版" : "豪華版";
     setStatus(`${modeLabel}の公開処理が完了しました。参加アクト履歴にも反映しました。${castOrderSync.ok ? "" : "（履歴のCAST No.は更新できませんでした）"} <a href="${escapeAttribute(publicUrl)}" target="_blank" rel="noopener">${modeLabel}の公開ページを開く</a>`, "success", true);
+    // The generator drops the manual-cast pictures this publication replaced (js/showcase-manual-image.js).
+    document.dispatchEvent(new CustomEvent("tnx:showcase-published", { detail: { slug, mode } }));
   } catch (error) {
     console.error(error);
     setStatus(error?.message || "アクト紹介の公開に失敗しました。", "error");

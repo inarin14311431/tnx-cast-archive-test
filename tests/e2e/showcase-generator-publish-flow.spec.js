@@ -16,12 +16,12 @@ async function openGenerator(page, options = {}) {
     return hostname === "127.0.0.1" || hostname === "localhost" ? route.fallback() : route.abort();
   });
   const calls = await installShowcaseGeneratorMock(page, {
+    ...options,
     rpc: {
       publish_act_showcase_for_current_user: "act-mock-id",
       replace_act_showcase_guests_for_current_user: null,
       ...options.rpc
-    },
-    ...options
+    }
   });
   await page.goto("/showcase-generator.html");
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 15_000 });

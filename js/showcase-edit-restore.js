@@ -129,6 +129,8 @@ async function restoreOwnedShowcase(slug) {
     if (!showcase || typeof showcase !== "object") throw new Error("保存済みのアクト紹介データを確認できませんでした。");
     if (!casts.length) throw new Error("保存済みの出演キャスト情報を確認できませんでした。");
 
+    // The generator forgets which pictures it uploaded or retired before it clears the rows (js/showcase-manual-image.js).
+    document.dispatchEvent(new CustomEvent("tnx:showcase-restore-start"));
     await clearSelections();
     restoreBasicFields(data, showcase, slug);
     const fallbackCount = await restoreCasts(casts, participants);
@@ -246,6 +248,9 @@ function fillManualIdentity(row, savedCast) {
   const [gender = "", rank = ""] = getMetaValue(savedCast, "GENDER / RANK").split(" / ");
   setControl(row.querySelector('[data-field="manual-gender"]'), gender);
   setControl(row.querySelector('[data-field="manual-rank"]'), rank);
+  // The picture the cast was published with (a manual cast saved before pictures existed has the placeholder, which is left empty).
+  const imageUrl = String(savedCast.imageUrl || "").trim();
+  if (imageUrl && !/\/assets\/placeholders\/scan-failed\.webp(?:[?#].*)?$/.test(imageUrl)) setControl(row.querySelector('[data-field="manual-image-url"]'), imageUrl);
 }
 
 function fillRoleAndHandout(row, savedCast, participant) {

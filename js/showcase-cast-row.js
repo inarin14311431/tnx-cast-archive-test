@@ -10,6 +10,17 @@ import { normalizeCastNumber, formatCastNumber, MAX_CAST_NUMBER } from "./showca
 
 export const PLACEHOLDER_IMAGE = "./assets/placeholders/scan-failed.webp";
 
+// A manual cast with no picture of its own points at the placeholder (an absolute URL, made at the time the row was created).
+export function isPlaceholderImage(url) {
+  const text = String(url ?? "").trim();
+  return !text || /\/assets\/placeholders\/scan-failed\.webp(?:[?#].*)?$/.test(text);
+}
+
+// The picture URL a manual cast shows ("" for the placeholder).
+export function manualImageValue(character) {
+  return isPlaceholderImage(character?.image_url) ? "" : String(character.image_url);
+}
+
 export function castImage(character) {
   return character?.image_thumbnail_url || character?.image_url || PLACEHOLDER_IMAGE;
 }
@@ -65,10 +76,25 @@ function roleOptions(character, selectedValue) {
   return `<option value="">参加枠を選択</option>${roles.map(role => `<option value="${escapeAttribute(role)}"${selected === role ? " selected" : ""}>${escapeHtml(role)}</option>`).join("")}`;
 }
 
+function manualImageBlock(character) {
+  const url = manualImageValue(character);
+  return `
+      <div class="manual-image manual-image--row">
+        <div class="manual-image__frame"><img class="manual-image__preview" src="${escapeAttribute(url || PLACEHOLDER_IMAGE)}" alt=""></div>
+        <div class="manual-image__controls">
+          <label class="manual-image__pick">画像を選ぶ <small>JPEG / PNG / WebP ・ 1MB以下</small><input type="file" data-manual-image-file="row" accept="image/jpeg,image/png,image/webp"></label>
+          <button type="button" class="manual-image__clear" data-action="manual-image-clear"${url ? "" : " hidden"}>画像を外す <small>REMOVE</small></button>
+          <label class="manual-image__url">画像URL<input type="text" inputmode="url" data-field="manual-image-url" value="${escapeAttribute(url)}" placeholder="https://… (ファイルを選ぶとそのURLが入ります)" autocomplete="off"></label>
+          <p class="manual-image__note">アップロードした画像は公開されます。画像を外すか差し替えると、アップロードしたファイルは削除されます。</p>
+          <p class="manual-field__note" data-manual-image-status role="status" aria-live="polite"></p>
+        </div>
+      </div>`;
+}
+
 function manualIdentityFields(character) {
   const field = (key, label, value, extra = "") => `<label>${label}<input type="text" data-field="${key}" value="${escapeAttribute(value)}"${extra}></label>`;
   return `
-    <div class="cast-row__identity-fields selected-cast__manual-fields">
+    <div class="cast-row__identity-fields selected-cast__manual-fields">${manualImageBlock(character)}
       ${field("manual-handle", "ハンドル", character.handle, ' placeholder="任意"')}
       ${field("manual-name", "キャスト名", character.character_name, ' placeholder="キャスト名" required')}
       ${field("manual-styles", "スタイル", character.manual_styles, ' placeholder="例：カタナ◎ / カブト● / フェイト"')}
@@ -108,7 +134,7 @@ export function createCastRowHtml({ item, index, total }) {
       <div class="cast-row__main">
         <span class="cast-row__grip" role="button" tabindex="0" draggable="true" data-action="grip" aria-label="${index + 1}番目のキャストを並べ替える(ドラッグ、または上下の矢印キー)" title="ドラッグで並べ替え">⠿</span>
         <p class="selected-cast__slot cast-row__slot"><span data-cast-slot-label>CAST ${formatCastNumber(item.castNo, index)}</span>${isPrivate ? " // PRIVATE" : ""}${manual ? " // MANUAL" : ""}</p>
-        <img class="cast-row__thumb" src="${escapeAttribute(manual ? PLACEHOLDER_IMAGE : castImage(character))}" alt="" style="object-position:${escapeAttribute(getImageObjectPosition(character.image_url))}">
+        <img class="cast-row__thumb" src="${escapeAttribute(manual ? (manualImageValue(character) || PLACEHOLDER_IMAGE) : castImage(character))}" alt="" style="object-position:${escapeAttribute(getImageObjectPosition(character.image_url))}">
         <div class="cast-row__identity selected-cast__identity">
           <p class="cast-row__handle"${handle ? "" : " hidden"}>${escapeHtml(handle)}</p>
           <h3 class="${manual ? "selected-cast__manual-preview-name " : ""}cast-row__name">${escapeHtml(name)}</h3>
