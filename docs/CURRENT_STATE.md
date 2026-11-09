@@ -7,17 +7,18 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 
 ## 1. Runtime同期基準点
 
-- 検証repo main: `8829a36`(PR #703 マージ点, 2026-11-08)。画面比較の基準ブランチ `visual-regression-baseline` は
+- 検証repo main: `72f519b2`(PR #722 マージ点, 2026-11-09)。画面比較の基準ブランチ `visual-regression-baseline` は
   `e444b6a`(PR #704 マージ点)。豪華版の撮影は6つの画面枠の名前に揃えた4テーマ × 2幅 × 13状態の104枚(PR #606、範囲は
   `docs/ACT_SHOWCASE_LAYERS.md` §4.1)。これに各枠のパターン B の spec と画像(loading・trailer・title・ready・handout-assign・finale)と、
   構成の選択欄が増えるたびに撮り直した生成画面(PC幅)の画像を足している。それ以外の基準画像は `d550978`(PR #538 マージ点)のままで、
   Playwright 1.62.1 時代の基準(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `bcea57f`(同期PR #271 マージ点, 2026-11-08)。検証 #703 までの runtime を同期済み(#692 finale の枠の表、
-  #694 finale B「キービジュアル」、#698 finale B のゲストのカード、#703 loading B「起動ターミナル」)。#688 までは、それより前の同期(#268)で入っていた。
+- 本番repo main: `30c94ff`(同期PR #272 マージ点, 2026-11-09)。検証 #722 までの runtime を同期済み(#708〜#722: アクト紹介生成画面の作り直し5本と、
+  公開結果のカード、ボタンの表記。生成画面の `js/`・`css-next/`・HTML は検証と全ファイル一致)。その前は同期PR #271(`bcea57f`)で、検証 #703 まで(#692 finale の枠の表、
+  #694 finale B「キービジュアル」、#698 finale B のゲストのカード、#703 loading B「起動ターミナル」)を入れた。#688 までは、それより前の同期(#268)で入っていた。
   各同期の前に、本番の対象ファイルが検証の直前の内容と一致することを実ファイルで確かめてからコピーしている(対象と同期元の SHA は
   本番の同期PRの本文に書く)。
 - 本番の画面比較は、検証と同じくデスクトップとモバイルの2ジョブに分けた(本番 #269 の内容を #268 に取り込んだ。CI の設定は同期しない決まりの例外として、検証 #681・#682 に合わせた)。
-- 未同期のruntime: なし(#701・#702・#704・#705 は資料と基準画像だけ)。
+- 未同期のruntime: なし(#701・#702・#704〜#707 と、基準画像の #714・#716〜#720 は資料と基準画像だけ)。
 - DB: migration `20261016_characters_updated_at_ignore_thumbnail.sql` は**適用済み**(2026-10-16、共有DB
   `koprmbkoftuuffslhsvt`)。`characters.updated_at` を、`image_thumbnail_url` だけが変わるUPDATEでは動かさない。
   適用後に、トリガー `characters_set_updated_at` が `characters_touch_updated_at()` を呼ぶ定義になっていること、
@@ -333,7 +334,7 @@ act-showcaseの「本体が作ったものを削除して作り直す」重複(`
 ## 5. 既知の制限
 
 - **アクト紹介のパターン(2026-11-08)。** B は loading・title・trailer・handout-assign・ready・finale まで済み(検証・本番とも。loading の B は検証 #703、本番 #271)。残りは全枠の C、プリセット(`docs/ACT_SHOWCASE_SCENES.md` §6)。
-- **アクト紹介生成画面の作り直し(2026-11-09、検証の実装は完了、本番は未同期)。** 5本(公開の流れ・骨組み・キャスト・見せ方・手動キャストの画像)が検証でマージ済み。保存データ(`showcase_data`)の形は変わっていない。詳細と結果は `docs/SHOWCASE_GENERATOR_REDESIGN.md`。本番への同期は、ユーザーの指示があってから(生成画面のJS・CSS・HTMLと、`showcase-output-html.js`・`showcase-output-css.js`・`showcase-dynamic-publish-v3.js` などが対象)。
+- **アクト紹介生成画面の作り直し(2026-11-09、検証の実装は完了、本番へ同期済み: 本番 #272)。** 5本(公開の流れ・骨組み・キャスト・見せ方・手動キャストの画像)が検証でマージ済み。保存データ(`showcase_data`)の形は変わっていない。詳細と結果は `docs/SHOWCASE_GENERATOR_REDESIGN.md`。本番へは、ユーザーが検証の実画面を確認してから同期した(本番 #272、`30c94ff`。検証 #708〜#722 の runtime 30ファイルと、本番に同一の既存テスト7ファイルの差分。検証にだけあるテスト・E2E・基準画像・資料は同期していない)。
 - **保留中の作業(2026-11-04、LOADING の残り)。** ユーザーが「大分改善された」ので一旦これでよしとし、保留にした(`docs/ACT_SHOWCASE_SCENES.md` §6.2):
   - (2) 最初の黒を短くする: 描画をブロックする CSS 7本と Google Fonts の CSS を待つ約5.4秒(Slow 4G+CPU 4倍)が残っている。Google Fonts の CSS を描画をブロックしない形にし、LOADING の文字に使う最小限のフォント(英数字)だけを先に読む。
   - (3〜5) 先読み・進捗・時間切れ: LOADING で先に読む素材(`showcase_data` と `scenes` から決める。必須はデータと、使う文字だけのフォント。先読みはキャスト画像最大6枚・ゲスト画像・背景)、進捗は `bootlog` に素材ごとの行(`DATA`・`FONT`・`CAST IMAGES 2/3`・`GUEST 0/2`、件数ベース)、時間切れは画像6秒(代替表示 `scan-failed.webp` で先に進み、届いたら差し替える)・全体8秒・フォント2.5秒(#660)。データ15秒は(6)で済んだ。
