@@ -189,7 +189,8 @@ async function restoreCasts(casts, participants) {
 
     if (!row) {
       const previousCount = selectedRowCount();
-      elements.manualAddButton?.click();
+      // "手動で追加" opens a form now; restoring asks the generator for an empty manual row and fills it below.
+      document.dispatchEvent(new CustomEvent("tnx:showcase-add-manual-cast"));
       row = await waitFor(() => findRowByIndex(previousCount), 1200);
       if (participant) fallbackCount += 1;
       if (row) fillManualIdentity(row, savedCast);

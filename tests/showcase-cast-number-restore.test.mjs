@@ -60,8 +60,11 @@ test("generator wires CAST No, sheet import and restore through the shared helpe
   const { readFile } = await import("node:fs/promises");
   const generator = await readFile(new URL("../js/showcase-generator-v3.js", import.meta.url), "utf8");
   const restore = await readFile(new URL("../js/showcase-edit-restore.js", import.meta.url), "utf8");
-  assert.match(generator, /data-field="cast-no"/);
-  assert.match(generator, /data-action="sheet-import"/);
+  const row = await readFile(new URL("../js/showcase-cast-row.js", import.meta.url), "utf8");
+  assert.match(row, /data-field="cast-no"/);
+  // The sheet import now fills the manual add form (the warehouse data, then "出演順に追加").
+  assert.match(generator, /#manual-sheet-import/);
+  assert.match(generator, /importManualFormFromSheet/);
   assertVersionedMatch(generator, /showcase-manual-sheet-import\.js\?v=VERSION/);
   assert.match(restore, /planShowcaseRestore\(casts, participants\)/);
   assert.match(restore, /!findSelectedRow\(participant\.characterId\)/);

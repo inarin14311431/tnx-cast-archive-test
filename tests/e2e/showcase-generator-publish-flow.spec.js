@@ -4,6 +4,12 @@ import { installShowcaseGeneratorMock, MOCK_PUBLIC_CASTS, MOCK_PRIVATE_CASTS } f
 // The generator with the real modules and a fake Supabase (tests/e2e/fixtures/showcase-generator-mock.mjs).
 // docs/SHOWCASE_GENERATOR_REDESIGN.md section 6-1: a publish click generates the HTML itself.
 
+// A row's handout panel (role, tagline, handout text) is closed until its "ハンドアウト" button is pressed.
+async function openRow(page, index) {
+  const panel = page.locator(`#selected-casts [data-selected-index="${index}"] .cast-row__panel`);
+  if (await panel.isHidden()) await page.locator(`#selected-casts [data-selected-index="${index}"] [data-action="toggle"]`).click();
+}
+
 async function openGenerator(page, options = {}) {
   await page.route("**/*", route => {
     const { hostname } = new URL(route.request().url());
@@ -50,6 +56,7 @@ test("a publish click generates the HTML first, saves the guests, then publishes
   await page.locator("#act-name").fill("公開の流れテスト");
   await setSlug(page, "flow-test");
   await pickPublicCast(page, 0);
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption("カタナ");
   await expect(page.locator("#showcase-preview")).not.toHaveAttribute("srcdoc", /./);
 
@@ -78,6 +85,7 @@ test("the standard publication button takes the same path", async ({ page }) => 
   const calls = await openGenerator(page);
   await setSlug(page, "flow-standard");
   await pickPublicCast(page, 1);
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption("共通");
   await page.locator("#publish-standard-button").click();
   await expect.poll(() => rpcCalls(calls, "publish_act_showcase_for_current_user").length, { timeout: 20_000 }).toBe(1);
@@ -89,6 +97,7 @@ test("an edit after a generation is published, not the old HTML", async ({ page 
   await page.locator("#act-name").fill("最初のタイトル");
   await setSlug(page, "flow-edit");
   await pickPublicCast(page, 0);
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption("カタナ");
   await generateInDialog(page);
   await expect(page.locator("#showcase-preview")).toHaveAttribute("srcdoc", /最初のタイトル/);
@@ -106,6 +115,7 @@ test("an existing generation is reused when nothing changed", async ({ page }) =
   const calls = await openGenerator(page);
   await setSlug(page, "flow-reuse");
   await pickPublicCast(page, 0);
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption("カタナ");
   await generateInDialog(page);
   await expect(page.locator("#showcase-preview")).toHaveAttribute("srcdoc", /./);
@@ -134,12 +144,14 @@ test("a private cast blocks publishing and leaves the HTML export", async ({ pag
   const calls = await openGenerator(page);
   await setSlug(page, "flow-private");
   await pickPublicCast(page, 0);
+  await page.locator("#cast-source-private").click();
   await page.locator(`[data-private-character-id="${MOCK_PRIVATE_CASTS[0].id}"]`).click();
   await expect(page.locator("#publish-cinematic-button")).toBeDisabled();
   await expect(page.locator("#publish-standard-button")).toBeDisabled();
   await expect(page.locator("#publish-cinematic-button")).toHaveAttribute("title", /非公開キャスト/);
 
   for (const index of [0, 1]) {
+    await openRow(page, index);
     await page.locator(`[data-selected-index="${index}"] [data-field="quote"]`).selectOption("共通");
   }
   await page.locator("#open-html-export").click();
@@ -155,6 +167,7 @@ test("a private cast blocks publishing and leaves the HTML export", async ({ pag
 test("the HTML export works as before without publishing", async ({ page }) => {
   const calls = await openGenerator(page);
   await pickPublicCast(page, 0);
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption("共通");
   await expect(page.locator("#download-button")).toBeDisabled();
   await page.locator("#open-html-export").click();

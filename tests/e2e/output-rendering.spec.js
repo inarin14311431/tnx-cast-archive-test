@@ -4,6 +4,12 @@ import { quickCases, character } from '../fixtures/output-rendering.mjs';
 
 // Isolated browser integration of the real entry modules. All data is synthetic;
 // the Supabase module is replaced before loading, and external requests are blocked.
+// A row's handout panel (role, tagline, handout text) is closed until its "ハンドアウト" button is pressed.
+async function openRow(page, index) {
+  const panel = page.locator(`#selected-casts [data-selected-index="${index}"] .cast-row__panel`);
+  if (await panel.isHidden()) await page.locator(`#selected-casts [data-selected-index="${index}"] [data-action="toggle"]`).click();
+}
+
 async function openIsolated(page, file, entry, tables) {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -79,6 +85,7 @@ test('紹介生成UIは公開リンクを作り、非公開追加後は公開ボ
     ]
   });
   await page.locator('[data-public-character-id="fixture"]').click();
+  await openRow(page, 0);
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption('フェイト');
   // The generate button is in the export dialog (the isolated page loads only the generator core, not the dialog's opener).
   await page.evaluate(() => document.querySelector('#html-export-dialog').showModal());
@@ -86,7 +93,10 @@ test('紹介生成UIは公開リンクを作り、非公開追加後は公開ボ
   await expect(page.locator('#publish-button')).toBeEnabled();
   await expect(page.frameLocator('#showcase-preview').locator('.cast-card__link')).toHaveAttribute('href', 'http://127.0.0.1:4173/cast.html?id=TNX-FIXTURE');
   await page.evaluate(() => document.querySelector('#html-export-dialog').close());
+  // The isolated page loads only the generator core: the private list is behind a tab that the page shell wires, so show it.
+  await page.evaluate(() => { document.querySelector('#cast-source-panel-private').hidden = false; });
   await page.locator('[data-private-character-id="private-fixture"]').click();
+  await openRow(page, 1);
   await page.locator('[data-selected-index="1"] [data-field="quote"]').selectOption('フェイト');
   await page.evaluate(() => document.querySelector('#html-export-dialog').showModal());
   await page.locator('#generate-button').click();

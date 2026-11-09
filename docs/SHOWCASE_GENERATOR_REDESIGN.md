@@ -276,6 +276,34 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
     単体テスト `showcase-generator-summary.test.mjs`。PR1のE2Eと `output-rendering` は、生成ボタンがダイアログの中に移ったので
     ダイアログを開く操作を足した(確かめる内容は同じ)。
 
+- **PR3 キャスト(2026-11-09)。** 「02 キャスト」を、出演順の一覧 → 「キャストを追加」の枠 → ゲストの順に作り直した。
+  - **出演順の行**(`js/showcase-cast-row.js` が行と候補カードのマークアップを作る純粋関数、状態とイベントは `showcase-generator-v3.js`):
+    つまみ・CAST番号・縦長サムネイル(`image_thumbnail_url`→`image_url`、丸くしない)・ハンドルと名前・スタイル・PL・ハンドアウトのバッジ
+    (入力済み/未入力)・「ハンドアウト」(開閉)・↑↓・×。開くと CAST No・参加枠・一言・ハンドアウト本文(項目は今のまま)。開閉は選択のモデル
+    (`item.open`)が持ち、再描画しても保つ。行の属性(`data-selected-index`・`data-character-id`・`data-visibility`・`data-manual`・
+    `data-action`・`data-field`)は変えていない(§4)。
+  - **並べ替え**: つまみのドラッグ(HTML5 のドラッグ&ドロップ)、つまみにフォーカスして ↑↓ キー、行の ↑↓ ボタン。タッチ端末は ↑↓ ボタンを使う。
+  - **一言はキャストごとに持つ**: `selectedCasts` の要素の `tagline`(`data-field="tagline"` の値)。`showcase-tagline.js` は行番号の配列をやめ、
+    生成のときに行(並び順)から読む。公開データ(`casts[].tagline`)の形は変わらず、旧データの復元(`data-field="tagline"` へ値を入れる)は
+    同じキャストに同じ一言が入る(E2E: 順番の違う保存データで確認)。
+  - **キャストを追加**: 「公開キャスト / 自分の非公開キャスト」のタブ(`#public-cast-grid` と `#owned-private-cast-grid` は別々のまま、
+    見えるのは片方だけ。復元は公開のカードを押すので、公開タブが既定)、検索・プレイヤー・スタイルは1組で両方の一覧に効く、候補カードは
+    小さく「追加済み」を出す。非公開タブには「非公開キャストを含むアクト紹介は、HTMLの書き出しだけできます」。
+  - **手動で追加**: `#add-manual-cast` は追加フォームを開く(ハンドル・キャスト名・スタイル・PL名・倉庫取込・「詳細」=所属/年齢/性別/市民ランク、
+    注記、「出演順に追加」「やめる」)。名前が空なら追加しない。追加した行は開いた状態で、ハンドアウトにフォーカスする。**画像の枠はPR5**。
+    保存済みのアクト紹介の復元は、フォームを開く代わりに `tnx:showcase-add-manual-cast` のイベントで空の手動行を作り、今までどおり
+    行の `manual-*` 欄へ値を入れる。手動行の開いた中に、名前・スタイル・PL名・ハンドル・「詳細」の欄があり、あとから直せる。
+  - **手動キャストのハンドル(新しい入力)**: 書き出すHTMLの名前の前に「“ハンドル”」を出す(ハンドルが空なら今までどおり名前だけ)。
+    `showcase-output-html.js` の手動キャストの名前の作り方を、ハンドルがあるときだけ `formatFullName` にした。
+  - **ゲストのカード**: 小さなカード(画像・GUEST番号・名前・ハンドルとスタイル)で、開くと今の編集欄。開閉は `guest.open` が持つ。
+    保存・画像のアップロード・RPCは変えていない。
+  - CSS: 新しい `css-next/pages/showcase-generator-cast.css`(直書きの色0)。旧 `showcase.css` の行・候補カードの規則は消した
+    (直書きの色の上限を下げた)。PR2の仮の行の規則(`showcase-generator-layout.css`)も消した。
+  - テスト: E2E `showcase-generator-cast.spec.js`(行・開閉とバッジ・並べ替えで一言/ハンドアウト/参加枠がキャストについていく・
+    生成カードの順と一言・上限6・タブとフィルタ・手動フォーム・手動のハンドル・旧データの復元・ゲストのカード・横あふれなし)。
+    既存のテストは、参加枠などを選ぶ前に行を開く操作と、非公開タブを押す操作を足した(確かめる内容は同じ)。契約テストは、行・候補カードの
+    読む場所(`showcase-cast-row.js`・`showcase-generator-cast.css`)と、手動追加のイベントに合わせた。
+
 ### 各PRの確認
 
 - どのPRも `npm run verify` と `npm run check:js`、JS/CSS/HTMLを変えたら `npm run version:update`。

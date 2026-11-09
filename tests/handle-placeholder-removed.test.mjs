@@ -39,7 +39,7 @@ test("list and pick cards no longer fall back to placeholder text and keep an ar
   for (const [file, className] of [
     ["js/archive.js", "cast-card__handle"],
     ["js/account.js", "owned-cast__handle"],
-    ["js/showcase-generator-v3.js", "cast-pick-card__handle"]
+    ["js/showcase-cast-row.js", "cast-pick-card__handle"]
   ]) {
     const source = await read(file);
     assert.doesNotMatch(source, /NO HANDLE|ハンドル未登録/, `${file} still has a placeholder`);
@@ -56,7 +56,7 @@ test("each handle row reserves one line so the name stays at the same height wit
   for (const [file, selector] of [
     ["css-next/pages/archive.css", /\.cast-card__handle \{[^}]*min-height: 1lh;/],
     ["css-next/pages/account-actions.css", /\.owned-cast__handle \{[^}]*min-height: 1lh;/],
-    ["css-next/pages/showcase.css", /\.cast-pick-card__handle \{[^}]*min-height: 1lh;/],
+    ["css-next/pages/showcase-generator-cast.css", /\.cast-pick-card__handle \{[^}]*min-height: 1lh;/],
     ["css-next/pages/cast.css", /\.quick-sheet__identity-name > span \{[^}]*min-height: 1lh;/]
   ]) assert.match(await read(file), selector, file);
 });

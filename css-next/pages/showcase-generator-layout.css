@@ -207,18 +207,3 @@ body[data-page="showcase-generator.html"] .showcase-layout {
 @media (prefers-reduced-motion: reduce) {
   .publish-actions button, .publish-other__button { transition: none; }
 }
-
-/* The input column is narrower than the old full-width page: rows of the order list use the compact arrangement at every width
-   (the cast section is rebuilt in the next step of the redesign). */
-body[data-page="showcase-generator.html"] .showcase-flow .selected-cast { grid-template-columns: 96px minmax(0, 1fr) auto; }
-html body[data-page="showcase-generator.html"] .showcase-flow .selected-cast > img { width: 96px; min-height: 190px; }
-body[data-page="showcase-generator.html"] .showcase-flow .selected-cast__fields { grid-column: 1 / -1; grid-template-columns: minmax(150px, .55fr) minmax(200px, 1.45fr); }
-body[data-page="showcase-generator.html"] .showcase-flow .selected-cast__manual-fields { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.showcase-flow .selected-cast__manual-fields :is(.manual-field--role, .manual-field--handout) { grid-column: 1 / -1; }
-@media (max-width: 767px) {
-  body[data-page="showcase-generator.html"] .showcase-flow .selected-cast { grid-template-columns: 72px minmax(0, 1fr); }
-  html body[data-page="showcase-generator.html"] .showcase-flow .selected-cast > img { width: 72px; min-height: 96px; height: 96px; }
-  body[data-page="showcase-generator.html"] .showcase-flow .selected-cast__actions { grid-column: 1 / -1; grid-template-columns: repeat(3, 1fr); }
-  body[data-page="showcase-generator.html"] .showcase-flow .selected-cast__actions .remove { grid-column: auto; }
-  body[data-page="showcase-generator.html"] .showcase-flow .selected-cast__fields { grid-template-columns: 1fr; }
-}
