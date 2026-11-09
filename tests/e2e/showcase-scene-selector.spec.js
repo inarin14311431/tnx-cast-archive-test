@@ -2,8 +2,9 @@ import { test, expect } from "@playwright/test";
 import { hasAuthCredentials } from "./helpers.js";
 
 // The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). Every frame the sequence plays has a second pattern (b),
-// so the real page offers a select for each of the six; the second test mounts the same selector with more frames
-// that can play other patterns to check the whole path in the browser: the select, the hidden field, and what a restore writes.
+// so the real page offers a row of "A 標準" / "B:<name>" buttons for each of the six (the block is folded under "演出の構成"); the second test
+// mounts the same selector with more frames that can play other patterns to check the whole path in the browser: the buttons, the hidden field,
+// and what a restore writes. The first test pins the names; tests/e2e/showcase-generator-look.spec.js covers the same block without a login.
 
 test.beforeEach(() => {
   test.skip(!hasAuthCredentials(), "E2E_EMAIL / E2E_PASSWORD が未設定のためスキップ");
@@ -14,46 +15,43 @@ async function openGenerator(page) {
   await expect(page.locator("html")).toHaveAttribute("data-showcase-generator-state", "ready", { timeout: 20_000 });
 }
 
+const button = (page, frame, pattern) => page.locator(`#showcase-scene-composition button[data-scene-frame="${frame}"][data-scene-pattern="${pattern}"]`);
+
 test("the generator offers six composition choices: the loading, title, trailer, handout-assign, ready and finale frames' pattern b; the choice lands in the hidden field", async ({ page }) => {
   await openGenerator(page);
-  // every frame can play a second pattern, so each has a select
+  // every frame can play a second pattern, so each has a row of buttons; the block opens from its summary
   const host = page.locator("#showcase-scene-composition");
   await expect(host).toBeVisible();
-  await expect(host.locator("select")).toHaveCount(6);
-  const loading = host.locator('select[data-scene-frame="loading"]');
-  const title = host.locator('select[data-scene-frame="title"]');
-  const trailer = host.locator('select[data-scene-frame="trailer"]');
-  const assign = host.locator('select[data-scene-frame="handout-assign"]');
-  const ready = host.locator('select[data-scene-frame="ready"]');
-  const finale = host.locator('select[data-scene-frame="finale"]');
-  for (const select of [loading, title, trailer, assign, ready, finale]) {
-    await expect(select.locator("option")).toHaveText(["パターン A", "パターン B"]);
-    await expect(select).toHaveValue("a");
+  await expect(host.locator(".look-scenes__badge")).toHaveText("豪華版のみ");
+  await host.locator("summary").click();
+  await expect(host.locator(".scene-choice")).toHaveCount(6);
+  const frames = ["loading", "title", "trailer", "handout-assign", "ready", "finale"];
+  const names = { loading: "B:起動ターミナル", title: "B:タイトルカード", trailer: "B:縦組み", "handout-assign": "B:ポートレート先行", ready: "B:ポートレート中央", finale: "B:キービジュアル" };
+  for (const frame of frames) {
+    await expect(host.locator(`button[data-scene-frame="${frame}"]`)).toHaveText(["A 標準", names[frame]]);
+    await expect(button(page, frame, "a")).toHaveAttribute("aria-pressed", "true");
+    await expect(button(page, frame, "b")).toHaveAttribute("aria-pressed", "false");
   }
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
-  await trailer.selectOption("b");
+  await button(page, "trailer", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"trailer":"b"}');
-  await title.selectOption("b");
+  await button(page, "title", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b"}');
-  await assign.selectOption("b");
+  await button(page, "handout-assign", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b","handout-assign":"b"}');
-  await ready.selectOption("b");
+  await button(page, "ready", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b","handout-assign":"b","ready":"b"}');
-  await finale.selectOption("b");
+  await button(page, "finale", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b","handout-assign":"b","ready":"b","finale":"b"}');
-  await finale.selectOption("a");
-  await ready.selectOption("a");
-  await assign.selectOption("a");
-  await trailer.selectOption("a");
-  await title.selectOption("a");
+  for (const frame of ["finale", "ready", "handout-assign", "trailer", "title"]) await button(page, frame, "a").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
-  await loading.selectOption("b");
+  await button(page, "loading", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"loading":"b"}');
-  await loading.selectOption("a");
+  await button(page, "loading", "a").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
 });
 
-test("a frame that can play b gets a select that writes the hidden field and follows a restore", async ({ page }) => {
+test("a frame that can play b gets buttons that write the hidden field and follow a restore", async ({ page }) => {
   await openGenerator(page);
   // The page's own selector module loads after "ready" and mounts with the real SCENE_PATTERNS (replacing any earlier mount),
   // so mount the b-capable frames only once the module after it (edit-restore, imported next) has loaded.
@@ -68,13 +66,15 @@ test("a frame that can play b gets a select that writes the hidden field and fol
   });
   const host = page.locator("#showcase-scene-composition");
   await expect(host).toBeVisible();
-  await expect(host.locator("select")).toHaveCount(2);
+  await host.locator("summary").click();
+  await expect(host.locator(".scene-choice")).toHaveCount(2);
 
-  await host.locator('select[data-scene-frame="title"]').selectOption("b");
-  await host.locator('select[data-scene-frame="ready"]').selectOption("c");
+  await button(page, "title", "b").click();
+  await button(page, "ready", "c").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","ready":"c"}');
+  await expect(host.locator("[data-scene-summary]")).toHaveText("B:タイトル / C:ACT READY / ほかは A");
 
-  await host.locator('select[data-scene-frame="title"]').selectOption("a");
+  await button(page, "title", "a").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"ready":"c"}');
 
   // what the restore of an owned showcase does: write the field and fire input
@@ -83,6 +83,6 @@ test("a frame that can play b gets a select that writes the hidden field and fol
     field.value = '{"title":"b"}';
     field.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  await expect(host.locator('select[data-scene-frame="title"]')).toHaveValue("b");
-  await expect(host.locator('select[data-scene-frame="ready"]')).toHaveValue("a");
+  await expect(button(page, "title", "b")).toHaveAttribute("aria-pressed", "true");
+  await expect(button(page, "ready", "a")).toHaveAttribute("aria-pressed", "true");
 });

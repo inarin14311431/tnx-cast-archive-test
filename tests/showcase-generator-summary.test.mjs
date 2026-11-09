@@ -27,10 +27,11 @@ test("the theme name is the Japanese part of the option text", () => {
   assert.equal(themeShortName(undefined), "");
 });
 
-test("the background summary prefers the URL, then the file, then the preset", () => {
+test("the background summary names the preset when its key is set (its URL is in the URL field too), then the custom URL, then the file", () => {
   const presets = [{ key: "green-area", name: "グリーンエリア" }];
-  assert.equal(summarizeBackground({ url: "https://example.invalid/a.png", presetKey: "green-area", presets }), "自分の画像(URL)");
-  assert.equal(summarizeBackground({ hasFile: true, presetKey: "green-area", presets }), "自分の画像(ファイル)");
+  assert.equal(summarizeBackground({ url: "https://example.invalid/green-area.avif", presetKey: "green-area", presets }), "グリーンエリア");
+  assert.equal(summarizeBackground({ url: "https://example.invalid/a.png", presetKey: "", presets }), "自分の画像(URL)");
+  assert.equal(summarizeBackground({ hasFile: true, presetKey: "", presets }), "自分の画像(ファイル)");
   assert.equal(summarizeBackground({ presetKey: "green-area", presets }), "グリーンエリア");
   assert.equal(summarizeBackground({ presetKey: "missing", presets }), "未設定");
   assert.equal(summarizeBackground(), "未設定");

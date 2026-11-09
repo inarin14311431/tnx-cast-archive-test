@@ -106,7 +106,7 @@ test("the step navigation shows what is filled in and moves to a section", async
   await expect(stepStatus(page, "act")).toHaveText("未入力");
   await expect(stepStatus(page, "publish")).toHaveText("アクトタイトルを入力してください");
   await page.locator("#act-name").fill("題");
-  await page.locator("#showcase-theme").selectOption("vlad");
+  await page.locator('.theme-card[data-theme-value="vlad"]').click();
   await expect(stepStatus(page, "look")).toHaveText("クリムゾン・ノワール");
 
   await page.locator('[data-step-target="look"]').click();
@@ -129,6 +129,7 @@ test("the publish column lists the checklist and the settings, and a private cas
   await expect(page.locator('[data-setting="theme"]')).toHaveText("ネオン・グリッド");
   await expect(page.locator('[data-setting="background"]')).toHaveText("未設定");
   await expect(page.locator('[data-setting="scenes"]')).toHaveText("すべて A(標準)");
+  await page.locator(".look-background__custom > summary").click();
   await page.locator("#background-url").fill("https://example.invalid/bg.png");
   await expect(page.locator('[data-setting="background"]')).toHaveText("自分の画像(URL)");
 

@@ -6,6 +6,7 @@ export class FakeElement {
     this.tagName = tagName.toUpperCase();
     this.ownerDocument = ownerDocument;
     this.dataset = {};
+    this.attributes = {};
     this.className = "";
     this.hidden = false;
     this.textContent = "";
@@ -24,13 +25,21 @@ export class FakeElement {
   replaceChildren(...items) { this.nodes = [...items]; if (this.tagName === "SELECT") this._value = this.options[0]?.value ?? ""; }
   addEventListener(type, listener) { this.listeners.set(type, [...(this.listeners.get(type) || []), listener]); }
   dispatchEvent(event) { for (const listener of this.listeners.get(event.type) || []) listener.call(this, event); return true; }
+  setAttribute(name, value) { this.attributes[name] = String(value); }
+  getAttribute(name) { return name in this.attributes ? this.attributes[name] : null; }
+  removeAttribute(name) { delete this.attributes[name]; }
+  click() { this.dispatchEvent({ type: "click" }); }
+  // Supports "tag[data-attr]", "[data-attr]" and "tag[data-attr]" with a camel-cased dataset key, which is all the generator's selector needs.
   querySelectorAll(selector) {
-    const match = selector.match(/^select\[data-scene-frame\]$/) ? node => node.tagName === "SELECT" && "sceneFrame" in node.dataset : () => false;
+    const parsed = selector.match(/^([a-z]*)\[(data-[a-z-]+)\]$/);
+    const key = parsed ? parsed[2].slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()) : "";
+    const match = parsed ? node => (!parsed[1] || node.tagName === parsed[1].toUpperCase()) && key in node.dataset : () => false;
     const found = [];
     const walk = element => { for (const child of element.children) { if (match(child)) found.push(child); walk(child); } };
     walk(this);
     return found;
   }
+  querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null; }
 }
 
 export function createFakeDocument() {

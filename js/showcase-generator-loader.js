@@ -26,13 +26,13 @@ document.documentElement.dataset.showcaseGeneratorState = "loading";
 
 // The frame around the form (step navigation, checklist, export dialog) starts loading at once, beside the core modules, so its
 // controls answer early. It only reads and shows what the core modules write; a failure here leaves the form usable.
-void import("./showcase-generator-shell.js?v=329444ea").catch(error => reportOptionalModuleError("generator-shell", error));
+void import("./showcase-generator-shell.js?v=02d2d1b2").catch(error => reportOptionalModuleError("generator-shell", error));
 
 async function initializeShowcaseGenerator() {
   try {
     // Guest persistence must be registered before mode-specific publishing so
     // both standard and cinematic buttons save the same supporting-cast data.
-    await import("./showcase-generator-v3.js?v=2c6d74dd");
+    await import("./showcase-generator-v3.js?v=4448fd5d");
     await import("./showcase-act-subtitle.js?v=501b7a5b");
     await import("./showcase-scenario-writer.js?v=e4750a02");
     await import("./showcase-dedicated-output.js?v=cdd8099e");
@@ -65,7 +65,7 @@ async function initializeShowcaseGenerator() {
 
   try {
     await import("./showcase-output-normalizer.js?v=cea76d1b");
-    await import("./showcase-scene-selector.js?v=eb72f9c7");
+    await import("./showcase-scene-selector.js?v=c0f46f31");
     await import("./showcase-edit-restore.js?v=f95ac2b4");
     await import("./showcase-delete.js?v=3f62ca3a");
     await import("./showcase-owned-list.js?v=71944577");
