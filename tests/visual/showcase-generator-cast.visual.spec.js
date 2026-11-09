@@ -31,6 +31,9 @@ for (const theme of THEMES) {
     // the scrolled page shows the theme's own scrollbar (spectrum-neon paints a gradient thumb whose colour follows the scroll position
     // and the page height), which is not what this image is about and made the capture differ from run to run
     await page.addStyleTag({ content: "html { scrollbar-width: none; } *::-webkit-scrollbar { display: none; }" });
+    // spectrum-neon animates its right-hand rail (body::after) and several glows with colour cycles; even with Playwright's animation
+    // freeze the phase of those differed between runs, so the theme's own animations are switched off for the capture
+    if (theme === "spectrum-neon") await page.addStyleTag({ content: "*, *::before, *::after { animation: none !important; transition: none !important; }" });
     const legalFooter = page.locator("[data-legal-footer]");
     if (await legalFooter.count()) await legalFooter.evaluate(element => { element.style.visibility = "hidden"; });
     await page.evaluate(() => {
