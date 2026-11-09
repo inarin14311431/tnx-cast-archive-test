@@ -33,12 +33,14 @@ test("a color in JS code after a URL string is still counted", () => {
   assert.equal(countHardcodedColors('const u = "https://example.test/"; const c = "#ffffff";', "js"), 1);
 });
 
-test("scope: theme/foundation/token CSS, showcase files, vendor, style-colors and the fixed-design ticket are excluded", () => {
+test("scope: theme/foundation/token CSS, showcase files, vendor, style-colors and the fixed-design ticket and poster picture are excluded", () => {
   for (const excluded of [
     "css-next/themes/presets.css", "css-next/foundation/base.css", "css-next/tokens/core.css",
     "css-next/pages/act-showcase.css", "js/showcase-output-css.js", "js/act-showcase-page.js", "js/vendor/x.js", "js/style-colors.js",
-    "css-next/pages/experience-ticket.css", "js/experience-ticket.js"
+    "css-next/pages/experience-ticket.css", "js/experience-ticket.js", "js/act-poster-render.js"
   ]) assert.equal(isTargetFile(excluded), false, excluded);
+  // only the drawing side of the poster is a fixed design: its pure layout is counted like any other script
+  assert.equal(isTargetFile("js/act-poster-layout.js"), true);
   for (const included of ["css-next/pages/sheet-mobile.css", "css-next/components/help.css", "js/cast-sns-card.js", "js/udonarium-export.js"]) {
     assert.equal(isTargetFile(included), true, included);
   }

@@ -143,6 +143,17 @@ PC/Mobileのファイル名が似ていても、以下の順で判断する。
 4. DB操作だけ切り出せないか
 5. 既存shared moduleが既にないか
 
+### アクト紹介の予告ポスター画像(描画コア)
+
+公開済みアクト紹介のX投稿に添える予告ポスター(論理 1200×675、2倍の 2400×1350 で描いて PNG、5MB超は JPEG)の描画コア。画面はまだ無く(公開完了カードからの生成・保存・共有は次の変更)、
+責務は2つに分けてある。`js/act-poster-layout.js` は DOM と canvas に依存しない純関数: `buildPosterModel`(公開ペイロード = `act-showcase-page.js` の `createShowcaseModel` が読むものと同じ読み方で、
+アクト名・RL・ライター・キャスト一覧(HO番号・ハンドアウトのスタイル名・ハンドル・氏名・ルビ・画像URL)・日付・キャッチ・権利表記を作る。キャストのスタイルのチップ・ハンドアウト本文・ゲストは持たない)と、
+`layoutPoster`(人数に応じた構図 = 1〜4人は斜めの立ち絵+名前の札、5〜6人は名簿型カード。名前の札は全員の1行の最小文字サイズが26px以上なら全員1行、未満なら全員2段。文字幅は注入された measurer で測る)。
+ルビの均等割り付け(`ruby-align: space-around`)は `js/cast-sns-name-layout.js` の `computeRubyUnit` / `computeNameLayout({ readingMode: "space-around" })` を使い、重複実装しない(既定の `center` は SNS カードのまま)。
+`js/act-poster-render.js` は canvas に描く側(書体の待機・画像の読み込み・背景/立ち絵/札/タイトル/日付/権利表記の描画・書き出し)。配色は固定デザインで `audit:colors` の対象外(`docs/UI_CONVENTIONS.md`)、
+テーマ色(primary / secondary / accent)だけを引数で受ける。権利表記は `POSTER_RIGHTS_NOTICE` の1か所にあり、文言は TRPGライツ事務局の二次創作ガイドラインを確認してから差し替える(要確認)。
+どちらも保存データ・DB・Storage の設定には触れず、画像は読むだけ。書体(Dela Gothic One / Noto Sans JP / Orbitron)を読み込むのは、これを使う画面の側の責務。
+
 ## 6. Persistence / Supabase
 
 ブラウザ側Supabase entryは `js/supabase-client.js`。
