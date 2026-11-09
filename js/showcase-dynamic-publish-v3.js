@@ -1,6 +1,5 @@
 import { supabase } from "./supabase-client.js";
 import { withRequestTimeout } from "./async-timeout.js?v=526a0b5a";
-import { escapeAttribute } from "./dom-escape.js?v=46402d5f";
 import { resolveCastNumber } from "./showcase-cast-number.js?v=944a948e";
 import { syncActCastOrders } from "./showcase-cast-order-sync.js?v=0e404b6b";
 import { parseSceneSelectionField } from "./act-showcase-scenes.js?v=2647c951";
@@ -70,6 +69,7 @@ async function publishDynamicShowcase(button, mode) {
 
     publishing = true;
     syncPublishButtons();
+    document.dispatchEvent(new CustomEvent("tnx:showcase-publish-start"));
     setStatus(`${mode === "standard" ? "従来版" : "豪華版"}の公開用データを準備中…`);
 
     const showcaseData = await extractShowcaseData(source);
@@ -100,14 +100,16 @@ async function publishDynamicShowcase(button, mode) {
     if (!actId) throw new Error("公開したアクト紹介を確認できませんでした。");
     const castOrderSync = await syncActCastOrders(supabase, slug, collectPublicCastOrders());
 
-    const publicPath = mode === "standard"
+    // Both versions read the same data; the URL of each is built the same way as before (the card shows the published one first).
+    const publicUrlOf = version => new URL(version === "standard"
       ? `./act-showcase-standard.html?id=${encodeURIComponent(slug)}&theme=${encodeURIComponent(showcaseData.theme)}`
-      : `./act-showcase.html?id=${encodeURIComponent(slug)}&theme=${encodeURIComponent(showcaseData.theme)}`;
-    const publicUrl = new URL(publicPath, location.href).href;
-    const modeLabel = mode === "standard" ? "従来版" : "豪華版";
-    setStatus(`${modeLabel}の公開処理が完了しました。参加アクト履歴にも反映しました。${castOrderSync.ok ? "" : "（履歴のCAST No.は更新できませんでした）"} <a href="${escapeAttribute(publicUrl)}" target="_blank" rel="noopener">${modeLabel}の公開ページを開く</a>`, "success", true);
+      : `./act-showcase.html?id=${encodeURIComponent(slug)}&theme=${encodeURIComponent(showcaseData.theme)}`, location.href).href;
+    // The result is shown by the card in the publish column (js/showcase-publish-result.js), not by the status line.
+    setStatus("");
     // The generator drops the manual-cast pictures this publication replaced (js/showcase-manual-image.js).
-    document.dispatchEvent(new CustomEvent("tnx:showcase-published", { detail: { slug, mode } }));
+    document.dispatchEvent(new CustomEvent("tnx:showcase-published", {
+      detail: { slug, mode, actName, historyOk: castOrderSync.ok, urls: { cinematic: publicUrlOf("cinematic"), standard: publicUrlOf("standard") } }
+    }));
   } catch (error) {
     console.error(error);
     setStatus(error?.message || "アクト紹介の公開に失敗しました。", "error");

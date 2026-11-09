@@ -344,6 +344,20 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
     ゲストの画像は消さない・公開に載る・横あふれなし)。生成画面のE2Eのヘルパーは、オプションを渡すと公開の既定の応答を消す不具合を直した(アプリではなくテスト側)。
   - **画面比較に足した状態**: 「公開キャスト3人を選び、1人のハンドアウトを開いた状態」の1つだけ(決定どおり。手動フォームの画像はE2E)。基準ブランチの `tests/visual/showcase-generator-cast.visual.spec.js`(2テーマ × desktop/mobile の4枚。手動キャストの画像の枠が無いページでは skip するので、先にspecだけをマージし、画像はこのPRのCIの成果物から作った)。実装の5本はこれで終わり。 撮影では、スクロールバーを隠し(spectrum-neonのつまみの色が位置で変わる)、spectrum-neonだけテーマのアニメーションを切る(右端のレールなどの色の位相が撮影ごとに違い、モバイルが右端3pxの差で落ちた)。画像は4回に分けて入れ直した。
 
+### 追加: 公開結果のカード
+
+- 公開が成功すると、右の公開欄(公開ボタンの下)に「公開結果のカード」(`#publish-result`)を出す。これまでの一行の完了文とリンク(`#generator-status`)は置き換えた。
+  失敗は今までどおり `#generator-status` にエラーを出し、カードは出さない。「履歴だけ登録」の完了表示は変えていない。
+- 責務: `js/showcase-dynamic-publish-v3.js` は公開の動作だけを持ち、`tnx:showcase-publish-start`(公開の開始。カードを閉じる)と
+  `tnx:showcase-published`(`detail`: `slug`・`mode`・`actName`・`historyOk`・`urls.cinematic` / `urls.standard`)を出す。
+  公開URLの組み立ては従来どおり公開側の1か所。カードの表示・コピー・「更新して再公開」の表記は `js/showcase-publish-result.js`、
+  X投稿の文面・ハッシュタグ(`SHOWCASE_HASHTAG`、1か所)・公開済みかどうかの判定は純粋関数の `js/showcase-publish-result-core.js`。
+- 「X に投稿」は `https://x.com/intent/post?text=…&url=…`(`encodeURIComponent`)を新しいタブで開くだけ。APIやログインは使わない。
+  文面は『アクトタイトル[ ― サブタイトル]』のアクト紹介を公開しました + 改行 + ハッシュタグ、`url` は公開した版のURL。文字数の調整はしない。
+- 公開済みになった識別名では、公開した版のボタンが「更新して再公開」になる(動作は公開と同じ)。既存のアクト紹介を読み込んだとき
+  (`js/showcase-edit-restore.js` が出す `tnx:showcase-restored`)は版が分からないので両方。識別名を変えると元の表記に戻る。
+- 画面比較の状態は増やしていない。E2E は `tests/e2e/showcase-generator-publish-result.spec.js`、純粋関数は `tests/showcase-publish-result.test.mjs`。
+
 ### 各PRの確認
 
 - どのPRも `npm run verify` と `npm run check:js`、JS/CSS/HTMLを変えたら `npm run version:update`。

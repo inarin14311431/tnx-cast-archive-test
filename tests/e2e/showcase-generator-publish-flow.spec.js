@@ -77,7 +77,7 @@ test("a publish click generates the HTML first, saves the guests, then publishes
   // The page title was left blank, so the act title is used.
   expect(published.p_showcase_data.pageTitle).toBe("公開の流れテスト");
   expect(published.p_showcase_data.heroTitle).toBe("公開の流れテスト");
-  await expect(page.locator("#generator-status")).toContainText("公開処理が完了しました");
+  await expect(page.locator("#publish-result")).toContainText("公開しました");
   expect(errors).toEqual([]);
 });
 
@@ -89,7 +89,7 @@ test("the standard publication button takes the same path", async ({ page }) => 
   await page.locator('[data-selected-index="0"] [data-field="quote"]').selectOption("共通");
   await page.locator("#publish-standard-button").click();
   await expect.poll(() => rpcCalls(calls, "publish_act_showcase_for_current_user").length, { timeout: 20_000 }).toBe(1);
-  await expect(page.locator("#generator-status")).toContainText("従来版の公開処理が完了しました");
+  await expect(page.locator("#publish-result")).toContainText("スタンダード版で公開");
 });
 
 test("an edit after a generation is published, not the old HTML", async ({ page }) => {
