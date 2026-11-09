@@ -28,6 +28,9 @@ for (const theme of THEMES) {
 
     // settleVisualPage ends by scrolling to the top: scroll to the section only afterwards
     await settleVisualPage(page);
+    // the scrolled page shows the theme's own scrollbar (spectrum-neon paints a gradient thumb whose colour follows the scroll position
+    // and the page height), which is not what this image is about and made the capture differ from run to run
+    await page.addStyleTag({ content: "html { scrollbar-width: none; } *::-webkit-scrollbar { display: none; }" });
     const legalFooter = page.locator("[data-legal-footer]");
     if (await legalFooter.count()) await legalFooter.evaluate(element => { element.style.visibility = "hidden"; });
     await page.evaluate(() => {
