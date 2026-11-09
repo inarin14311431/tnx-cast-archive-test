@@ -129,6 +129,7 @@ test("the publish column lists the checklist and the settings, and a private cas
   await expect(page.locator('[data-setting="theme"]')).toHaveText("ネオン・グリッド");
   await expect(page.locator('[data-setting="background"]')).toHaveText("未設定");
   await expect(page.locator('[data-setting="scenes"]')).toHaveText("すべて A(標準)");
+  await page.locator(".look-background__custom > summary").click();
   await page.locator("#background-url").fill("https://example.invalid/bg.png");
   await expect(page.locator('[data-setting="background"]')).toHaveText("自分の画像(URL)");
 
