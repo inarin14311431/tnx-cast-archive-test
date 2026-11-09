@@ -4,7 +4,9 @@
 
 const SUPABASE_ORIGIN = "https://koprmbkoftuuffslhsvt.supabase.co";
 const AUTH_STORAGE_KEY = "sb-koprmbkoftuuffslhsvt-auth-token";
-const USER_ID = "11111111-1111-4111-8111-111111111111";
+const ONE_PIXEL_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+export const MOCK_USER_ID = "11111111-1111-4111-8111-111111111111";
+const USER_ID = MOCK_USER_ID;
 
 function castRow(index, overrides = {}) {
   const id = `00000000-0000-4000-8000-00000000000${index}`;
@@ -31,6 +33,11 @@ function castRow(index, overrides = {}) {
     updated_at: "2026-08-25T00:00:00.000Z",
     ...overrides
   };
+}
+
+// The paths the page asked Storage to remove, in order (the DELETE body is { prefixes: [...] }).
+export function removedStoragePaths(calls) {
+  return calls.storageRemovals.flatMap(body => { try { return JSON.parse(body).prefixes ?? []; } catch { return []; } });
 }
 
 export const MOCK_PUBLIC_CASTS = Object.freeze([1, 2, 3, 4].map(index => Object.freeze(castRow(index))));
@@ -73,6 +80,9 @@ export async function installShowcaseGeneratorMock(page, options = {}) {
       calls.rpcCalls.push({ name, body });
       const answer = name in rpcAnswers ? rpcAnswers[name] : null;
       return json(200, typeof answer === "function" ? answer(body) : answer);
+    }
+    if (url.pathname.startsWith("/storage/v1/object/public/") && request.method() === "GET") {
+      return route.fulfill({ status: 200, contentType: "image/png", body: ONE_PIXEL_PNG });
     }
     if (url.pathname.startsWith("/storage/v1/object/")) {
       if (request.method() === "POST") {

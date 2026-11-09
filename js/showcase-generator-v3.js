@@ -5,7 +5,8 @@ import { escapeHtml, escapeAttribute } from "./dom-escape.js?v=46402d5f";
 import { normalizeShowcaseTheme } from "./showcase-output-css.js?v=6c2c74a1";
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=a766246e";
-import { createCastRowHtml, createLibraryCardHtml, handoutBadgeText, handoutState, reorder } from "./showcase-cast-row.js?v=b07c3557";
+import { createImageLedger, manualImagePathFromUrl, removeManualImages, uploadManualImage, validateManualImage } from "./showcase-manual-image.js?v=ab40c1a2";
+import { createCastRowHtml, createLibraryCardHtml, handoutBadgeText, handoutState, isPlaceholderImage, manualImageValue, reorder } from "./showcase-cast-row.js?v=ca2cb81f";
 
 const MAX_CASTS = 6;
 const FUNCTION_NAME = "publish-showcase";
@@ -60,6 +61,8 @@ let selectedCasts = [];
 let generatedHtml = "";
 let publishing = false;
 let registeringHistory = false;
+let imageLedger = createImageLedger();
+let formImagePath = "";
 
 initialize();
 
@@ -88,6 +91,16 @@ function bindEvents() {
   elements.selectedCasts?.addEventListener("drop", handleGripDrop);
   elements.selectedCasts?.addEventListener("dragend", handleGripDragEnd);
   elements.selectedCasts?.addEventListener("keydown", handleGripKeydown);
+  elements.selectedCasts?.addEventListener("change", event => { handleManualImageFileChange(event); });
+  elements.manualForm?.addEventListener("change", event => { handleManualImageFileChange(event); });
+  elements.manualForm?.querySelector('[data-manual-new="imageUrl"]')?.addEventListener("input", handleFormImageUrlInput);
+  $("#manual-image-clear")?.addEventListener("click", clearFormImage);
+  const drop = elements.manualForm?.querySelector("[data-manual-drop]");
+  drop?.addEventListener("dragover", event => { event.preventDefault(); drop.classList.add("is-over"); });
+  drop?.addEventListener("dragleave", () => drop.classList.remove("is-over"));
+  drop?.addEventListener("drop", event => { event.preventDefault(); drop.classList.remove("is-over"); const file = event.dataTransfer?.files?.[0]; if (file) void uploadFormImage(file); });
+  document.addEventListener("tnx:showcase-published", handleShowcasePublished);
+  document.addEventListener("tnx:showcase-restore-start", handleRestoreStart);
   // "手動で追加" opens the add form; the cast is created from it ("出演順に追加"). Restoring a saved act asks for an empty one by event.
   elements.manualAddButton?.addEventListener("click", () => setManualFormOpen(Boolean(elements.manualForm?.hidden)));
   elements.manualForm?.addEventListener("submit", submitManualCastForm);
@@ -253,7 +266,7 @@ function toggleArchiveCast(source, characterId, library) {
   renderSelections();
 }
 
-const MANUAL_FORM_KEYS = ["handle", "name", "styles", "player", "affiliation", "age", "gender", "rank", "sheetUrl"];
+const MANUAL_FORM_KEYS = ["handle", "name", "styles", "player", "affiliation", "age", "gender", "rank", "sheetUrl", "imageUrl"];
 
 function manualFormField(key) {
   return elements.manualForm?.querySelector(`[data-manual-new="${key}"]`) ?? null;
@@ -271,8 +284,14 @@ function setManualFormOpen(open) {
   if (open) manualFormField("name")?.focus();
 }
 
-function resetManualForm() {
+// The picture the add form holds (uploaded but not yet part of a cast) goes when the form is cancelled.
+function resetManualForm({ keepImage = false } = {}) {
+  if (!keepImage) releaseImagePath(formImagePath);
+  formImagePath = "";
   elements.manualForm?.reset();
+  renderFormImage();
+  const imageStatus = $("#manual-image-status");
+  if (imageStatus) { imageStatus.textContent = ""; imageStatus.className = "manual-field__note"; }
   const note = $("#manual-sheet-import-status");
   if (note) { note.textContent = DEFAULT_SHEET_NOTE; note.className = "manual-field__note"; }
   const error = $("#manual-cast-form-status");
@@ -298,7 +317,7 @@ function addManualCast(fields = {}) {
       character_name: fields.name ?? "",
       player_name: fields.player ?? "",
       manual_styles: fields.styles ?? "",
-      image_url: placeholder,
+      image_url: fields.imageUrl || placeholder,
       handle: fields.handle ?? "",
       handle_kana: "",
       character_kana: "",
@@ -308,6 +327,7 @@ function addManualCast(fields = {}) {
       citizen_rank: fields.rank ?? ""
     },
     sheetUrl: fields.sheetUrl ?? "",
+    imagePath: fields.imagePath ?? "",
     quote: "",
     tagline: "",
     description: "",
@@ -330,8 +350,8 @@ function submitManualCastForm(event) {
     manualFormField("name")?.focus();
     return;
   }
-  if (!addManualCast(fields)) return;
-  resetManualForm();
+  if (!addManualCast({ ...fields, imagePath: formImagePath })) return;
+  resetManualForm({ keepImage: true });
   setManualFormOpen(false);
   const index = selectedCasts.length - 1;
   requestAnimationFrame(() => elements.selectedCasts?.querySelector(`[data-selected-index="${index}"] [data-field="description"]`)?.focus());
@@ -389,9 +409,12 @@ function handleSelectedCastClick(event) {
   } else if (action === "down" && index < selectedCasts.length - 1) {
     moveCast(index, index + 1);
   } else if (action === "remove") {
-    selectedCasts.splice(index, 1);
+    const [removed] = selectedCasts.splice(index, 1);
+    releaseImagePath(removed?.imagePath);
     invalidateGeneratedHtml();
     renderSelections();
+  } else if (action === "manual-image-clear") {
+    setManualRowImage(row, selectedCasts[index], "", "");
   }
 }
 
@@ -503,6 +526,137 @@ async function importManualFormFromSheet() {
   }
 }
 
+// ---- the picture of a manual cast (js/showcase-manual-image.js) ----
+
+// A picture that stops being used: one uploaded in this session goes at once, one a published showcase shows waits for the next publication.
+function releaseImagePath(path) {
+  const now = imageLedger.release(path);
+  if (now.length) void removeManualImages(supabase, now);
+}
+
+function setImageStatus(node, message, state = "") {
+  if (!node) return;
+  node.textContent = message;
+  node.className = `manual-field__note${state ? ` is-${state}` : ""}`;
+}
+
+function renderFormImage() {
+  const form = elements.manualForm;
+  if (!form) return;
+  const url = String(manualFormField("imageUrl")?.value ?? "").trim();
+  const preview = form.querySelector(".manual-image__preview");
+  const hint = form.querySelector(".manual-image__hint");
+  const clear = $("#manual-image-clear");
+  if (preview) { preview.hidden = !url; if (url) preview.src = url; else preview.removeAttribute("src"); }
+  if (hint) hint.hidden = Boolean(url);
+  if (clear) clear.hidden = !url;
+}
+
+async function uploadFormImage(file) {
+  const status = $("#manual-image-status");
+  const problem = validateManualImage(file);
+  if (problem) return setImageStatus(status, problem, "error");
+  try {
+    setImageStatus(status, "画像をアップロードしています…");
+    const { path, url } = await uploadManualImage(supabase, currentUser?.id, file);
+    releaseImagePath(formImagePath);
+    imageLedger.uploaded(path);
+    formImagePath = path;
+    const field = manualFormField("imageUrl");
+    if (field) field.value = url;
+    renderFormImage();
+    setImageStatus(status, "画像をアップロードしました。", "success");
+  } catch (error) {
+    console.error(error);
+    setImageStatus(status, error?.message || "画像を登録できませんでした。", "error");
+  }
+}
+
+function clearFormImage() {
+  releaseImagePath(formImagePath);
+  formImagePath = "";
+  const field = manualFormField("imageUrl");
+  if (field) field.value = "";
+  renderFormImage();
+  setImageStatus($("#manual-image-status"), "");
+}
+
+// Typing another URL in the form replaces an uploaded picture: the uploaded file is not used any more.
+function handleFormImageUrlInput() {
+  const url = String(manualFormField("imageUrl")?.value ?? "").trim();
+  if (formImagePath && !url.endsWith(formImagePath)) {
+    releaseImagePath(formImagePath);
+    formImagePath = "";
+  }
+  renderFormImage();
+}
+
+// Sets the picture URL of a manual row (an upload, a typed URL, a restore, "外す") and keeps what depends on it in step.
+function setManualRowImage(row, item, url, uploadedPath) {
+  if (!item) return;
+  const nextUrl = String(url ?? "").trim();
+  const placeholder = new URL("./assets/placeholders/scan-failed.webp", location.href).href;
+  const nextPath = uploadedPath || manualImagePathFromUrl(nextUrl, currentUser?.id);
+  if (item.imagePath && item.imagePath !== nextPath) releaseImagePath(item.imagePath);
+  if (uploadedPath) imageLedger.uploaded(uploadedPath);
+  else if (nextPath) imageLedger.known(nextPath);
+  item.imagePath = nextPath;
+  item.character.image_url = nextUrl || placeholder;
+  const shown = nextUrl || "./assets/placeholders/scan-failed.webp";
+  row.querySelector(".cast-row__thumb")?.setAttribute("src", shown);
+  row.querySelector(".manual-image__preview")?.setAttribute("src", shown);
+  const field = row.querySelector('[data-field="manual-image-url"]');
+  if (field && field.value !== nextUrl) field.value = nextUrl;
+  const clear = row.querySelector('[data-action="manual-image-clear"]');
+  if (clear) clear.hidden = !nextUrl;
+  invalidateGeneratedHtml();
+}
+
+async function uploadRowImage(row, item, file) {
+  const status = row.querySelector("[data-manual-image-status]");
+  const problem = validateManualImage(file);
+  if (problem) return setImageStatus(status, problem, "error");
+  try {
+    setImageStatus(status, "画像をアップロードしています…");
+    const { path, url } = await uploadManualImage(supabase, currentUser?.id, file);
+    if (!selectedCasts.includes(item)) { void removeManualImages(supabase, [path]); return; }
+    setManualRowImage(row, item, url, path);
+    setImageStatus(status, "画像をアップロードしました。", "success");
+  } catch (error) {
+    console.error(error);
+    setImageStatus(status, error?.message || "画像を登録できませんでした。", "error");
+  }
+}
+
+function handleManualImageFileChange(event) {
+  const input = event.target.closest?.("[data-manual-image-file]");
+  if (!input) return false;
+  const file = input.files?.[0];
+  input.value = "";
+  if (!file) return true;
+  if (input.dataset.manualImageFile === "new") { void uploadFormImage(file); return true; }
+  const row = input.closest("[data-selected-index]");
+  const item = selectedCasts[Number(row?.dataset.selectedIndex)];
+  if (row && item) void uploadRowImage(row, item, file);
+  return true;
+}
+
+// After a publication: the pictures in use are now part of the published showcase, and the ones that were replaced or removed may go.
+function handleShowcasePublished() {
+  const inUse = selectedCasts.filter(item => item.manual).map(item => item.imagePath).filter(Boolean);
+  const gone = imageLedger.published(inUse);
+  if (gone.length) void removeManualImages(supabase, gone);
+}
+
+// Restoring a saved showcase replaces everything: what was uploaded here and never published goes, and the ledger starts again from
+// the restored showcase (the rows it clears must not retire the pictures of the showcase that was open before).
+function handleRestoreStart() {
+  const { uploaded } = imageLedger.snapshot();
+  if (uploaded.length) void removeManualImages(supabase, uploaded);
+  imageLedger = createImageLedger();
+  formImagePath = "";
+}
+
 function refreshHandoutBadge(row, item) {
   const badge = row.querySelector("[data-handout-badge]");
   if (!badge) return;
@@ -533,7 +687,11 @@ function handleSelectedCastInput(event) {
     item.description = field.value;
     refreshHandoutBadge(row, item);
   } else if (field.dataset.field === "tagline") item.tagline = field.value;
-  else if (item.manual && field.dataset.field === "manual-name") {
+  else if (item.manual && field.dataset.field === "manual-image-url") {
+    // typed or restored: the URL decides the picture (a restored URL of this user's own file is remembered as published)
+    setManualRowImage(row, item, field.value, "");
+    return;
+  } else if (item.manual && field.dataset.field === "manual-name") {
     item.character.character_name = field.value;
     const preview = row.querySelector(".selected-cast__manual-preview-name");
     if (preview) preview.textContent = field.value.trim() || "未入力キャスト";
