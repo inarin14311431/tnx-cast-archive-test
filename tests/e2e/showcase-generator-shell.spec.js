@@ -106,7 +106,7 @@ test("the step navigation shows what is filled in and moves to a section", async
   await expect(stepStatus(page, "act")).toHaveText("未入力");
   await expect(stepStatus(page, "publish")).toHaveText("アクトタイトルを入力してください");
   await page.locator("#act-name").fill("題");
-  await page.locator("#showcase-theme").selectOption("vlad");
+  await page.locator('.theme-card[data-theme-value="vlad"]').click();
   await expect(stepStatus(page, "look")).toHaveText("クリムゾン・ノワール");
 
   await page.locator('[data-step-target="look"]').click();

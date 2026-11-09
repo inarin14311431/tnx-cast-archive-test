@@ -1,3 +1,4 @@
+import { getThemeSwatchColors } from "./showcase-output-css.js?v=6c2c74a1";
 import { SHOWCASE_BACKGROUND_PRESETS } from "./showcase-background-presets.js?v=7068197c";
 import { parseSceneSelectionField } from "./act-showcase-scenes.js?v=2647c951";
 import { hasGeneratedOutput } from "./showcase-generation-settle.js?v=cdbb78a8";
@@ -21,6 +22,7 @@ const generatorStatus = $("#generator-status");
 
 mountSteps();
 mountCastSourceTabs();
+mountThemeCards();
 mountSummary();
 mountExportDialog();
 
@@ -79,6 +81,46 @@ function mountCastSourceTabs() {
     });
   }
   select("public");
+}
+
+// ---- theme cards -------------------------------------------------------------------------------------------------------
+// The four cards are the visible control of the (hidden) #showcase-theme select, which stays the value other modules read and write:
+// choosing a card sets the select and fires "change" (the stale-output check), and a restore that sets the select moves the mark.
+function mountThemeCards() {
+  const select = $("#showcase-theme");
+  const cards = [...document.querySelectorAll(".theme-card[data-theme-value]")];
+  if (!select || !cards.length) return;
+  for (const card of cards) {
+    const [ground, first, second, third] = getThemeSwatchColors(card.dataset.themeValue);
+    [...card.querySelectorAll(".theme-card__swatch i")].forEach((swatch, index) => swatch.style.setProperty("--swatch", [ground, first, second, third][index]));
+  }
+  const mark = () => {
+    for (const card of cards) {
+      const checked = card.dataset.themeValue === select.value;
+      card.setAttribute("aria-checked", String(checked));
+      card.tabIndex = checked ? 0 : -1;
+    }
+  };
+  const choose = card => {
+    if (select.value === card.dataset.themeValue) return;
+    select.value = card.dataset.themeValue;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    mark();
+  };
+  for (const card of cards) {
+    card.addEventListener("click", () => choose(card));
+    card.addEventListener("keydown", event => {
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+      event.preventDefault();
+      const step = event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1;
+      const next = cards[(cards.indexOf(card) + step + cards.length) % cards.length];
+      choose(next);
+      next.focus();
+    });
+  }
+  select.addEventListener("change", mark);
+  select.addEventListener("input", mark);
+  mark();
 }
 
 // ---- checklist, step states, settings summary -------------------------------------------------------------------------
@@ -149,6 +191,8 @@ function renderSummary() {
     const node = document.querySelector(`[data-setting="${key}"]`);
     if (node && node.textContent !== text) node.textContent = text;
   }
+  const sceneSummary = $("[data-scene-summary]");
+  if (sceneSummary && sceneSummary.textContent !== settings.scenes) sceneSummary.textContent = settings.scenes;
 }
 
 function mountSummary() {
