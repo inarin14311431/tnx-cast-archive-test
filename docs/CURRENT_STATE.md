@@ -333,7 +333,7 @@ act-showcaseの「本体が作ったものを削除して作り直す」重複(`
 ## 5. 既知の制限
 
 - **アクト紹介のパターン(2026-11-08)。** B は loading・title・trailer・handout-assign・ready・finale まで済み(検証・本番とも。loading の B は検証 #703、本番 #271)。残りは全枠の C、プリセット(`docs/ACT_SHOWCASE_SCENES.md` §6)。
-- **アクト紹介生成画面の作り直し(2026-11-08、進行中)。** 第1段階(調査と分け方)が済み、実装は未着手。保存データ(`showcase_data`)の形は変えずに作り直せる。分け方は5本(公開の流れ → 骨組み → キャスト → 見せ方 → 手動キャストの画像)。詳細は `docs/SHOWCASE_GENERATOR_REDESIGN.md`。
+- **アクト紹介生成画面の作り直し(2026-11-09、検証の実装は完了、本番は未同期)。** 5本(公開の流れ・骨組み・キャスト・見せ方・手動キャストの画像)が検証でマージ済み。保存データ(`showcase_data`)の形は変わっていない。詳細と結果は `docs/SHOWCASE_GENERATOR_REDESIGN.md`。本番への同期は、ユーザーの指示があってから(生成画面のJS・CSS・HTMLと、`showcase-output-html.js`・`showcase-output-css.js`・`showcase-dynamic-publish-v3.js` などが対象)。
 - **保留中の作業(2026-11-04、LOADING の残り)。** ユーザーが「大分改善された」ので一旦これでよしとし、保留にした(`docs/ACT_SHOWCASE_SCENES.md` §6.2):
   - (2) 最初の黒を短くする: 描画をブロックする CSS 7本と Google Fonts の CSS を待つ約5.4秒(Slow 4G+CPU 4倍)が残っている。Google Fonts の CSS を描画をブロックしない形にし、LOADING の文字に使う最小限のフォント(英数字)だけを先に読む。
   - (3〜5) 先読み・進捗・時間切れ: LOADING で先に読む素材(`showcase_data` と `scenes` から決める。必須はデータと、使う文字だけのフォント。先読みはキャスト画像最大6枚・ゲスト画像・背景)、進捗は `bootlog` に素材ごとの行(`DATA`・`FONT`・`CAST IMAGES 2/3`・`GUEST 0/2`、件数ベース)、時間切れは画像6秒(代替表示 `scan-failed.webp` で先に進み、届いたら差し替える)・全体8秒・フォント2.5秒(#660)。データ15秒は(6)で済んだ。
