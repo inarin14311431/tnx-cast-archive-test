@@ -142,6 +142,7 @@ AIにとって文書は補助メモではなく、コードとテストと並ぶ
 | 画面の文言・見た目 | `docs/UI_CONVENTIONS.md` |
 | ACT SHOWCASE(豪華版)のCSS/JS | `docs/ACT_SHOWCASE_LAYERS.md` |
 | アクト紹介生成画面(`showcase-generator.html`) | `docs/SHOWCASE_GENERATOR_REDESIGN.md` |
+| アクト紹介のX投稿用画像(予告ポスター) | `docs/ACT_POSTER_SPEC.md` |
 | Theme | `docs/THEME_SYSTEM.md` |
 | テスト/CI | `docs/TESTING_STRATEGY.md`, `tests/e2e/README.md` |
 | CI失敗調査 | `docs/CI_FAILURE_INVESTIGATION.md` |

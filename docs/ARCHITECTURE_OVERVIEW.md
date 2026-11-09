@@ -143,10 +143,11 @@ PC/Mobileのファイル名が似ていても、以下の順で判断する。
 4. DB操作だけ切り出せないか
 5. 既存shared moduleが既にないか
 
-### アクト紹介の予告ポスター画像(描画コア)
+### アクト紹介の予告ポスター画像
 
-公開済みアクト紹介のX投稿に添える予告ポスター(論理 1200×675、2倍の 2400×1350 で描いて PNG、5MB超は JPEG)の描画コア。画面はまだ無く(公開完了カードからの生成・保存・共有は次の変更)、
-責務は2つに分けてある。`js/act-poster-layout.js` は DOM と canvas に依存しない純関数: `buildPosterModel`(公開ペイロード = `act-showcase-page.js` の `createShowcaseModel` が読むものと同じ読み方で、
+公開済みアクト紹介のX投稿に添える予告ポスター(論理 1200×675、2倍の 2400×1350 で描いて PNG、5MB超は JPEG)を、公開完了カードから生成して保存・コピー・共有する機能。
+公開完了カード(`js/showcase-publish-result.js`)から開く `js/showcase-poster-panel.js` が画面側(DOM・ボタンの状態・デバウンス・プレビュー・保存/コピー/共有・sessionStorage への記憶)で、文面(ALT文・投稿文・入力の上限・記憶の読み書き)は純関数の `js/act-poster-text.js`。
+責務は次のように分けてある。`js/act-poster-layout.js` は DOM と canvas に依存しない純関数: `buildPosterModel`(公開ペイロード = `act-showcase-page.js` の `createShowcaseModel` が読むものと同じ読み方で、
 アクト名・RL・ライター・キャスト一覧(HO番号・ハンドアウトのスタイル名・ハンドル・氏名・ルビ・画像URL)・日付・キャッチ・権利表記を作る。キャストのスタイルのチップ・ハンドアウト本文・ゲストは持たない)と、
 `layoutPoster`(人数に応じた構図 = 1〜4人は斜めの立ち絵+名前の札、5〜6人は名簿型カード。名前の札は全員の1行の最小文字サイズが26px以上なら全員1行、未満なら全員2段。文字幅は注入された measurer で測る)。
 ルビの均等割り付け(`ruby-align: space-around`)は `js/cast-sns-name-layout.js` の `computeRubyUnit` / `computeNameLayout({ readingMode: "space-around" })` を使い、重複実装しない(既定の `center` は SNS カードのまま)。

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { countHardcodedColors } from "../scripts/hardcoded-colors-lib.mjs";
 import {
-  buildPosterModel, layoutPoster, defaultCatchCopy, splitReading, splitDate, deriveAuxiliaryColor, hoColor,
+  buildPosterModel, layoutPoster, defaultCatchCopy, splitReading, splitDate, deriveAuxiliaryColor, hoColor, readableOnDark, posterImageUrl,
   POSTER_DEFAULT_DATE, POSTER_RIGHTS_NOTICE, ONE_LINE_MIN_FONT, TWO_LINE_FONT, PLATE_TOP_ONE_LINE, PLATE_TOP_TWO_LINE, ROLE_TITLE
 } from "../js/act-poster-layout.js";
 
@@ -248,4 +248,31 @@ test("no colour is written in the layout file, and nothing in the poster code sa
     const code = (await readFile(new URL(`../js/${file}`, import.meta.url), "utf8")).replace(/\/\*[\s\S]*?\*\/|(^|[\s;,{}()])\/\/[^\n]*/g, "$1").replace(/非公式/g, "");
     assert.doesNotMatch(code, /公式|公認|official/i, `${file} claims nothing official`);
   }
+});
+
+test("a cast whose published image is the placeholder's path has no image (the renderer draws its own, lifted placeholder)", () => {
+  assert.equal(posterImageUrl("./assets/placeholders/scan-failed.webp"), "");
+  assert.equal(posterImageUrl("https://example.test/assets/placeholders/scan-failed.webp?v=2"), "");
+  assert.equal(posterImageUrl("https://example.test/storage/cast.png"), "https://example.test/storage/cast.png");
+  assert.equal(posterImageUrl(""), "");
+  assert.equal(posterImageUrl("javascript:alert(1)"), "");
+  const model = buildPosterModel({ ...SHOWCASE, casts: [cast("CAST 01", "甲", "", "カブト", { imageUrl: "./assets/placeholders/scan-failed.webp" })] });
+  assert.equal(model.casts[0].imageUrl, "");
+});
+
+test("an HO colour too dark for the dark ground (the black of a light theme) is lifted until it can be seen; a bright one is left alone", () => {
+  const luminance = color => {
+    const [r, g, b] = [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16) / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  assert.ok(luminance(readableOnDark("#111111")) >= 0.2, "lifted");
+  assert.notEqual(readableOnDark("#111111"), "#111111");
+  assert.equal(readableOnDark("#70eaff"), "#70eaff");
+  assert.equal(readableOnDark("#ffffff"), "#ffffff");
+  assert.equal(readableOnDark("var(--unknown)"), "var(--unknown)", "an unreadable colour is left as it is");
+  const dark = hoColor({ primary: "#111111", secondary: "#9b3268", accent: "#236b49" }, 0);
+  assert.equal(dark.base, "#111111");
+  assert.ok(luminance(dark.value) >= 0.2);
+  const layout = layoutPoster(modelOf(3), measureWith(0.5), { theme: { primary: "#111111", secondary: "#9b3268", accent: "#236b49" } });
+  assert.ok(layout.panels.every(panel => luminance(panel.color.value) >= 0.2 || !/^#/.test(panel.color.value)));
 });

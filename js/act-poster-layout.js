@@ -97,11 +97,28 @@ export function deriveAuxiliaryColor(color, step = 1) {
   return toHex(channels.map(channel => Math.round(channel + (target - channel) * amount)));
 }
 
+// The poster's ground is dark: a colour that is too dark to be seen on it (the black of a light theme) is mixed toward white until it can be.
+const MIN_LUMINANCE = 0.2;
+function luminanceOf(color) {
+  const channels = parseColor(color);
+  if (!channels) return 1;
+  const [red, green, blue] = channels.map(channel => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+export function readableOnDark(color) {
+  let value = color;
+  for (let round = 0; round < 6 && luminanceOf(value) < MIN_LUMINANCE; round += 1) value = deriveAuxiliaryColor(value, 1);
+  return value;
+}
+
 export function hoColor(theme, index) {
   const key = PALETTE_KEYS[index % PALETTE_KEYS.length];
   const step = Math.floor(index / PALETTE_KEYS.length);
   const base = clean(theme?.[key]);
-  return { key, step, base, value: deriveAuxiliaryColor(base, step) };
+  return { key, step, base, value: deriveAuxiliaryColor(readableOnDark(base), step) };
 }
 
 // ---- the model ---------------------------------------------------------------------------------------------------------------------------
@@ -123,6 +140,19 @@ export function splitReading(reading) {
   const { handle, name } = splitCastName(normalizeShowcaseDisplayQuotes(reading));
   const strip = value => clean(value).replace(/^[“"「『‘']+|[”"」』’']+$/gu, "").trim();
   return { handleReading: strip(handle), nameReading: name };
+}
+
+// A cast without an image has the placeholder's path as its imageUrl in a published act (js/showcase-dynamic-publish-v3.js): that is "no image",
+// the renderer draws its own placeholder (lifted clear of the name plate) instead of treating it as the cast's portrait.
+const PLACEHOLDER_PATH = /\/assets\/placeholders\/scan-failed\.webp$/i;
+export function posterImageUrl(value) {
+  const url = safeImageUrl(value);
+  if (!url) return "";
+  try {
+    return PLACEHOLDER_PATH.test(new URL(url).pathname) ? "" : url;
+  } catch {
+    return url;
+  }
 }
 
 const hoNumberOf = (cast, index) => {
@@ -159,7 +189,7 @@ export function buildPosterModel(showcase, { date, catchCopy, rightsNotice } = {
       name: full.name,
       handleReading: full.handle ? reading.handleReading : "",
       nameReading: reading.nameReading,
-      imageUrl: safeImageUrl(cast?.imageUrl)
+      imageUrl: posterImageUrl(cast?.imageUrl)
     };
   });
   return {
