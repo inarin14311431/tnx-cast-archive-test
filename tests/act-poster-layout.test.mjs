@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { countHardcodedColors } from "../scripts/hardcoded-colors-lib.mjs";
 import {
   buildPosterModel, layoutPoster, defaultCatchCopy, splitReading, splitDate, deriveAuxiliaryColor, hoColor, readableOnDark, posterImageUrl,
-  POSTER_DEFAULT_DATE, POSTER_RIGHTS_NOTICE, ONE_LINE_MIN_FONT, TWO_LINE_FONT, PLATE_TOP_ONE_LINE, PLATE_TOP_TWO_LINE, ROLE_TITLE
+  POSTER_DEFAULT_DATE, POSTER_RIGHTS_NOTICE, POSTER_COPYRIGHT_NOTICE, ONE_LINE_MIN_FONT, TWO_LINE_FONT, PLATE_TOP_ONE_LINE, PLATE_TOP_TWO_LINE, ROLE_TITLE
 } from "../js/act-poster-layout.js";
 
 // The announcement poster's model and layout (js/act-poster-layout.js). The measurer is a deterministic mock: every character is `size * k` wide
@@ -74,7 +74,7 @@ test("the style chips, the handout text, the guests and the hashtag are not in t
   const text = JSON.stringify(model);
   assert.doesNotMatch(text, /ここはハンドアウト本文|ゲスト|カゼ|#トーキョー/);
   assert.deepEqual(Object.keys(model.casts[0]).sort(), ["ho", "hoNumber", "handle", "handleReading", "imageUrl", "index", "name", "nameReading", "style"].sort());
-  assert.deepEqual(Object.keys(model).sort(), ["actName", "casts", "catchCopy", "dateText", "rightsNotice", "rulerName", "subtitle", "writerName"]);
+  assert.deepEqual(Object.keys(model).sort(), ["actName", "casts", "catchCopy", "copyrightNotice", "dateText", "rightsNotice", "rulerName", "subtitle", "writerName"]);
 });
 
 test("the catch line: the last non-empty line of the trailer; nothing without a trailer; an explicit value wins; an empty value is no catch line", () => {
@@ -98,7 +98,8 @@ test("an empty date reads 近日開演; the date is limited to 24 characters; th
   assert.equal(buildPosterModel(SHOWCASE, { date: "   " }).dateText, "近日開演");
   assert.equal(Array.from(buildPosterModel(SHOWCASE, { date: "9".repeat(40) }).dateText).length, 24);
   assert.equal(buildPosterModel(SHOWCASE).rightsNotice, POSTER_RIGHTS_NOTICE);
-  assert.equal(POSTER_RIGHTS_NOTICE, "本画像は非公式ファンツール「CAST ARCHIVE」で作成した二次創作物です。");
+  assert.equal(POSTER_RIGHTS_NOTICE, "本画像は非公式ファンツール「CAST ARCHIVE」で生成したものです。各権利者による公式の画像・サービスではありません。");
+  assert.equal(POSTER_COPYRIGHT_NOTICE, "(C)FarEast Amusement Research Co.,Ltd.／(C)GameField Co.,Ltd.");
   assert.equal(layoutPoster(buildPosterModel(SHOWCASE), measureWith(0.5), { theme: THEME }).date.main.text, "近日開演");
   assert.deepEqual(splitDate("11.23 SUN 21:00〜"), { main: "11.23", sub: "SUN 21:00〜" });
   assert.deepEqual(splitDate("12.01"), { main: "12.01", sub: "" });
@@ -219,6 +220,19 @@ test("the credits: RL and writer, left out when empty", () => {
   const none = layoutPoster(buildPosterModel({ ...SHOWCASE, rulerName: "", scenarioWriterName: "" }), measureWith(0.5), { theme: THEME });
   assert.deepEqual(none.credits.items, []);
   assert.equal(both.rights.text, POSTER_RIGHTS_NOTICE);
+  assert.equal(both.rights.copyright.text, POSTER_COPYRIGHT_NOTICE);
+  assert.equal(both.rights.copyright.right, 1160, "the copyright line is right-aligned to the margin");
+  assert.equal(both.rights.copyright.baseline, both.rights.baseline, "one bottom row");
+});
+
+test("the bottom row: the notice stays at 11px when both fit, and shrinks (never below 9px) only when they do not", () => {
+  const model = modelOf(3);
+  const wide = layoutPoster(model, measureWith(0.5), { theme: THEME });
+  assert.equal(wide.rights.fontSize, 11);
+  const narrow = layoutPoster(model, measureWith(0.95), { theme: THEME });
+  assert.ok(narrow.rights.fontSize < 11 && narrow.rights.fontSize >= 9);
+  const tooWide = layoutPoster(model, measureWith(3), { theme: THEME });
+  assert.equal(tooWide.rights.fontSize, 9);
 });
 
 test("the HO colours are primary, secondary, accent in the order of the casts, repeating; the fourth on is a derived variant", () => {
@@ -245,7 +259,7 @@ test("no colour is written in the layout file, and nothing in the poster code sa
   assert.doesNotMatch(layoutSource.replace(/\/\*[\s\S]*?\*\/|(^|[\s;,{}()])\/\/[^\n]*/g, "$1"), /#[0-9a-f]{3,8}\b/i);
   assert.match(layoutSource, /要確認/, "the rights wording is marked to be confirmed");
   for (const file of ["act-poster-layout.js", "act-poster-render.js"]) {
-    const code = (await readFile(new URL(`../js/${file}`, import.meta.url), "utf8")).replace(/\/\*[\s\S]*?\*\/|(^|[\s;,{}()])\/\/[^\n]*/g, "$1").replace(/非公式/g, "");
+    const code = (await readFile(new URL(`../js/${file}`, import.meta.url), "utf8")).replace(/\/\*[\s\S]*?\*\/|(^|[\s;,{}()])\/\/[^\n]*/g, "$1").replace(/非公式/g, "").replace(/各権利者による公式の画像・サービスではありません。/g, "");
     assert.doesNotMatch(code, /公式|公認|official/i, `${file} claims nothing official`);
   }
 });
