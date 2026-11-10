@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { hasAuthCredentials } from "./helpers.js";
 
-// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). Every frame the sequence plays has a second pattern (b),
+// The scene composition choice of the generator (docs/ACT_SHOWCASE_SCENES.md section 6 #6). Every frame the sequence plays has a second pattern (b), and the title frame a third (c),
 // so the real page offers a row of "A 標準" / "B:<name>" buttons for each of the six (the block is folded under "演出の構成"); the second test
 // mounts the same selector with more frames that can play other patterns to check the whole path in the browser: the buttons, the hidden field,
 // and what a restore writes. The first test pins the names; tests/e2e/showcase-generator-look.spec.js covers the same block without a login.
@@ -28,13 +28,17 @@ test("the generator offers six composition choices: the loading, title, trailer,
   const frames = ["loading", "title", "trailer", "handout-assign", "ready", "finale"];
   const names = { loading: "B:起動ターミナル", title: "B:タイトルカード", trailer: "B:縦組み", "handout-assign": "B:ポートレート先行", ready: "B:ポートレート中央", finale: "B:キービジュアル" };
   for (const frame of frames) {
-    await expect(host.locator(`button[data-scene-frame="${frame}"]`)).toHaveText(["A 標準", names[frame]]);
+    await expect(host.locator(`button[data-scene-frame="${frame}"]`)).toHaveText(frame === "title" ? ["A 標準", names[frame], "C:シネマスコープ"] : ["A 標準", names[frame]]);
     await expect(button(page, frame, "a")).toHaveAttribute("aria-pressed", "true");
     await expect(button(page, frame, "b")).toHaveAttribute("aria-pressed", "false");
   }
   await expect(page.locator("#showcase-scenes")).toHaveValue("");
   await button(page, "trailer", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"trailer":"b"}');
+  await button(page, "title", "b").click();
+  await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b"}');
+  await button(page, "title", "c").click();
+  await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"c","trailer":"b"}');
   await button(page, "title", "b").click();
   await expect(page.locator("#showcase-scenes")).toHaveValue('{"title":"b","trailer":"b"}');
   await button(page, "handout-assign", "b").click();

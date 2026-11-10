@@ -159,8 +159,8 @@ test("a missing host or field mounts nothing", () => {
   assert.equal(mountSceneSelector({ host: doc.createElement("details"), field: null, doc }), null);
 });
 
-test("the real SCENE_PATTERNS offers two choices, pattern b of the loading, title, trailer, handout-assign, ready and finale frames", () => {
-  assert.deepEqual(selectableFrames(), [{ frame: "loading", patterns: ["a", "b"] }, { frame: "title", patterns: ["a", "b"] }, { frame: "trailer", patterns: ["a", "b"] }, { frame: "handout-assign", patterns: ["a", "b"] }, { frame: "ready", patterns: ["a", "b"] }, { frame: "finale", patterns: ["a", "b"] }]);
+test("the real SCENE_PATTERNS offers pattern b on every frame and a pattern c on the title frame", () => {
+  assert.deepEqual(selectableFrames(), [{ frame: "loading", patterns: ["a", "b"] }, { frame: "title", patterns: ["a", "b", "c"] }, { frame: "trailer", patterns: ["a", "b"] }, { frame: "handout-assign", patterns: ["a", "b"] }, { frame: "ready", patterns: ["a", "b"] }, { frame: "finale", patterns: ["a", "b"] }]);
 });
 
 test("the generator page has the hidden fieldset with the one hidden field in it, and the loader mounts the selector", async () => {
@@ -175,4 +175,8 @@ test("the generator page has the hidden fieldset with the one hidden field in it
   assertVersionedMatch(source, /from "\.\/act-showcase-scenes\.js\?v=VERSION"/);
   assert.match(source, /querySelector\("#showcase-scene-composition"\)/);
   assert.match(source, /querySelector\("#showcase-scenes"\)/);
+});
+
+test("the title frame's pattern c has a name of its own in the generator", () => {
+  assert.equal(patternLabel("title", "c"), "C:シネマスコープ");
 });

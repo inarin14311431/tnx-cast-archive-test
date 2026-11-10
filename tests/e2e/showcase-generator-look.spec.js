@@ -127,7 +127,7 @@ test("the scene composition is folded, tagged as deluxe-only, and shows its summ
   const rows = host.locator(".scene-choice");
   await expect(rows).toHaveCount(6);
   await expect(rows.nth(0).locator("button")).toHaveText(["A 標準", "B:起動ターミナル"]);
-  await expect(rows.nth(1).locator("button")).toHaveText(["A 標準", "B:タイトルカード"]);
+  await expect(rows.nth(1).locator("button")).toHaveText(["A 標準", "B:タイトルカード", "C:シネマスコープ"]);
   await expect(rows.nth(2).locator("button")).toHaveText(["A 標準", "B:縦組み"]);
   await expect(rows.nth(3).locator("button")).toHaveText(["A 標準", "B:ポートレート先行"]);
   await expect(rows.nth(4).locator("button")).toHaveText(["A 標準", "B:ポートレート中央"]);

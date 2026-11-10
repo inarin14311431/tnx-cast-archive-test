@@ -83,7 +83,7 @@ test("the screen is built by its own module with its own class names, and the lo
   assert.ok(showActTitleB.indexOf("createTitleScreenB(") < showActTitleB.indexOf("setProgress("));
   assert.match(showActTitleB, /markScene\(screen, scene, "b"\)/);
   assert.match(showActTitleB, /waitForAdvance\(state, "NEXT \/\/ ACT TRAILER"\)/);
-  assert.match(neotokyo, /patterns: Object\.freeze\(\{ a: showActTitle, b: showActTitleB \}\)/);
+  assert.match(neotokyo, /patterns: Object\.freeze\(\{ a: showActTitle, b: showActTitleB, c: showActTitleC \}\)/);
 });
 
 test("pattern B draws the subtitle and the scenario writer from the model, and leaves out the default subtitle", async () => {

@@ -20,10 +20,10 @@ test("six frames in a fixed order (docs/ACT_SHOWCASE_SCENES.md §6.1); handout a
   assert.ok(Object.isFrozen(SCENE_FRAMES));
 });
 
-test("pattern a exists on every frame; every frame also has b, nothing has more", () => {
+test("pattern a exists on every frame; every frame also has b; only the title frame has a c, nothing has more", () => {
   assert.equal(DEFAULT_SCENE_PATTERN, "a");
   assert.deepEqual(Object.keys(SCENE_PATTERNS), SCENE_FRAMES);
-  for (const frame of SCENE_FRAMES) assert.deepEqual(SCENE_PATTERNS[frame], ["a", "b"], frame);
+  for (const frame of SCENE_FRAMES) assert.deepEqual(SCENE_PATTERNS[frame], frame === "title" ? ["a", "b", "c"] : ["a", "b"], frame);
 });
 
 test("playWithFallback plays the asked pattern, and \"a\" when it is unknown or throws", async () => {

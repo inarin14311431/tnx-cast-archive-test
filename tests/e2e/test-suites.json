@@ -58,6 +58,7 @@
         "tests/e2e/act-showcase-scene-markers.spec.js",
         "tests/e2e/act-showcase-scene-b.spec.js",
         "tests/e2e/act-showcase-scene-title-b.spec.js",
+        "tests/e2e/act-showcase-scene-title-c.spec.js",
         "tests/e2e/act-showcase-scene-ready-b.spec.js",
         "tests/e2e/act-showcase-scene-assign-b.spec.js",
         "tests/e2e/act-showcase-scene-finale-b.spec.js",
