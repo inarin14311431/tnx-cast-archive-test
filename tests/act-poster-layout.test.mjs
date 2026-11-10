@@ -257,7 +257,8 @@ test("no colour is written in the layout file, and nothing in the poster code sa
   const layoutSource = await readFile(new URL("../js/act-poster-layout.js", import.meta.url), "utf8");
   assert.equal(countHardcodedColors(layoutSource, "js"), 0, "audit:colors counts nothing in the layout");
   assert.doesNotMatch(layoutSource.replace(/\/\*[\s\S]*?\*\/|(^|[\s;,{}()])\/\/[^\n]*/g, "$1"), /#[0-9a-f]{3,8}\b/i);
-  assert.match(layoutSource, /要確認/, "the rights wording is marked to be confirmed");
+  assert.equal(layoutSource.split(POSTER_RIGHTS_NOTICE).length - 1, 1, "the rights wording is written once, in the constant");
+  assert.equal((await readFile(new URL("../js/act-poster-render.js", import.meta.url), "utf8")).includes("非公式ファンツール"), false, "the renderer draws layout.rights, it does not carry the wording");
   for (const file of ["act-poster-layout.js", "act-poster-render.js"]) {
     const code = (await readFile(new URL(`../js/${file}`, import.meta.url), "utf8")).replace(/\/\*[\s\S]*?\*\/|(^|[\s;,{}()])\/\/[^\n]*/g, "$1").replace(/非公式/g, "").replace(/各権利者による公式の画像・サービスではありません。/g, "");
     assert.doesNotMatch(code, /公式|公認|official/i, `${file} claims nothing official`);
