@@ -9,7 +9,7 @@ import { ACT_SLUG, ACT_THEMES, installActShowcaseRoutes } from "./act-showcase-f
 //   title-c       the default act (one credit, no subtitle), in every theme
 //   title-c-long  a long act name with the subtitle and the scenario-writer credit, nova only
 //
-// The spec skips itself while the page under test does not offer pattern "b" for the title frame yet, so this file and its
+// The spec skips itself while the page under test does not offer pattern "c" for the title frame yet, so this file and its
 // images can be merged before the pattern itself and never turn other pull requests red.
 const LONG = {
   actName: "夜明けを駆ける者たちと、消えた都市の記憶を追う長い一夜の物語",
