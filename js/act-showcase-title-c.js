@@ -6,9 +6,16 @@
 // (.neotokyo-sequence__screen--title, __act-title, __ruler-credit, ...): those carry observers that would decorate this screen, so the
 // subtitle and the scenario-writer credit are drawn from the model. Styles live in css-next/pages/act-showcase-patterns.css, scoped to
 // [data-scene="title"][data-scene-pattern="c"]. See docs/ACT_SHOWCASE_SCENES.md section 6 #7 (4th pattern: title C).
-import { meaningfulSubtitle } from "./act-showcase-title-b.js?v=6f05db48";
 
 const clean = value => String(value ?? "").replace(/\s+/g, " ").trim();
+
+// The same rule patterns A and B use for the subtitle: the hero's default "CAST SHOWCASE" says nothing, so it is left out. It is written here
+// again on purpose: importing it from js/act-showcase-title-b.js would tie C to B, and a broken B module (which the E2E for B's fallback
+// simulates) would then stop C, and the whole sequence with it, from loading.
+export function meaningfulSubtitle(value) {
+  const text = clean(value);
+  return !text || text.toUpperCase() === "CAST SHOWCASE" ? "" : text;
+}
 
 // How wide the letters start apart (in em) before they close in. A short name starts wide; a long one starts closer, so that it does not
 // wrap differently while it animates (the wide spacing would push it onto more lines, and the lines would jump as it closes).

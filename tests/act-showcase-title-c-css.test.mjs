@@ -108,3 +108,13 @@ test("reduced motion shows the final state at once; high contrast and forced col
   assert.ok(all.some(rule => /prefers-contrast:\s*more/.test(rule.context) && /flare/.test(rule.prelude)));
   assert.ok(all.some(rule => /forced-colors:\s*active/.test(rule.context) && /CanvasText/.test(rule.body)));
 });
+
+test("pattern C does not import another pattern's module, and keeps the default subtitle out", async () => {
+  const source = await readFile(new URL("../js/act-showcase-title-c.js", import.meta.url), "utf8");
+  assert.doesNotMatch(withoutComments(source), /from\s+["']\.\/act-showcase-title-b\.js/);
+  const { meaningfulSubtitle } = await import("../js/act-showcase-title-c.js");
+  assert.equal(meaningfulSubtitle("CAST SHOWCASE"), "");
+  assert.equal(meaningfulSubtitle("  cast showcase "), "");
+  assert.equal(meaningfulSubtitle("  夜明け  前の   物語 "), "夜明け 前の 物語");
+  assert.equal(meaningfulSubtitle(undefined), "");
+});
