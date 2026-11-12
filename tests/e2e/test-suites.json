@@ -95,7 +95,8 @@
         "tests/e2e/account-mobile.spec.js",
         "tests/e2e/troop-view.spec.js",
         "tests/e2e/mobile-combo-counter.spec.js",
-        "tests/e2e/mobile-experience.spec.js"
+        "tests/e2e/mobile-experience.spec.js",
+        "tests/e2e/sheet-mobile-image-zoom.spec.js"
       ]
     },
     "live-write": {
