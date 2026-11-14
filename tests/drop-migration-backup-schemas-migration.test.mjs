@@ -10,8 +10,10 @@ const statements = code.split(";").map(statement => statement.replace(/\s+/g, " 
 
 test("migration is registered after the previous migration", () => {
   const index = manifest.files.indexOf(FILE.replace("supabase/", ""));
-  assert.ok(index > manifest.files.indexOf("migrations/20261020_unlisted_bundle_troops_public_and_rls_initplan.sql"));
-  assert.equal(index, manifest.files.length - 1);
+  const previous = manifest.files.indexOf("migrations/20261020_unlisted_bundle_troops_public_and_rls_initplan.sql");
+  assert.ok(previous >= 0 && index > previous);
+  // right after the previous one (later migrations are appended after it)
+  assert.equal(index, previous + 1);
 });
 
 test("header states the reason, the targets with row counts, and that the drop cannot be undone", () => {

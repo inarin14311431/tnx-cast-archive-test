@@ -32,7 +32,7 @@
 | 6 | `showcase-guest-publish-bridge.js` | 公開ボタンを横取りし、ゲストを `replace_act_showcase_guests_for_current_user` で保存してからボタンを押し直す |
 | 7 | `showcase-dynamic-publish-v3.js` | 公開ボタン(`[data-publish-mode]`)を横取りし、**生成HTMLを解析して `showcase_data` を作り**、`publish_act_showcase_for_current_user` で保存する |
 | 8 | `showcase-publish-url-canonicalizer.js` | 公開完了メッセージのURLを整える |
-| 任意 | `showcase-tagline.js` / `-tagline-auto.js` / `-history-role.js` | 出演順の行へ「一言／キャッチコピー」欄を足す(行番号で持つ)。一言の自動入力(概要の最初の「」)。履歴の参加枠の保存 |
+| 任意 | `showcase-tagline.js` / `-tagline-auto.js` | 出演順の行へ「一言／キャッチコピー」欄を足す(行番号で持つ)。一言の自動入力(概要の最初の「」)。(履歴の参加枠の保存は、`-history-role.js` が `supabase.rpc` / `functions.invoke` を後から包んでいたが、今の公開 RPC を包まず効いていなかったため、2026-11-14 に削除。下の「履歴の参加枠」へ) |
 | 任意 | `showcase-output-normalizer.js` / `-scene-selector.js` / `-edit-restore.js` / `-delete.js` / `-owned-list.js` | 表示名の整え、演出の構成の切り替え、公開済みの再編集(復元)、公開の取り下げ、公開済み一覧の見た目 |
 | 別 | `showcase-cast-pagination.js` / `-background-preset-picker.js` / `-auto-slug.js` / `-wording.js` / `-remove-label.js` / `-trailer-multiline.js` / `-handle-normalizer.js` | 候補の「さらに15件」、背景プリセット、識別名の自動、文言の整え、削除ボタンの文言、トレーラーの改行、ハンドルの整え |
 
@@ -381,3 +381,10 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
 4. **「公開を取り下げる」でStorageの画像も消すか**(§7.3)。今のゲストの画像も消えない。今回は手動画像の差し替え・削除のときだけ消し、
    取り下げ時の掃除は別の判断にするのが安全、という案。
 5. **画面比較の状態を足すか**(§5.2)。キャストを選んだ行・手動追加フォームなどの撮影を足すかどうか。
+
+## 履歴の参加枠(2026-11-14)
+アクト履歴の「スタイル ASSIGN STYLE」(`act_participants.participation_role`)は、行の「参加枠」(`data-field="quote"` の値)を、**公開したあと・履歴だけ登録したあとに、生成画面が明示的に保存する**。CAST No(`cast_order`)と同じ呼び出し(`showcase-cast-order-sync.js` の `syncActCastOrders` → RPC `set_act_participant_cast_orders_for_current_user`)で、キャストの特定は `character_id`、値は 80 文字まで(空文字は枠を消す)。手動キャスト(`character_id` なし)は対象外。
+- 呼ぶ場所は2か所: `showcase-dynamic-publish-v3.js`(`publish_act_showcase_for_current_user` のあと。公開キャストだけ)と `showcase-generator-v3.js` の `registerHistoryOnly`(`record_act_history_for_current_user` のあと。登録済みの公開・非公開キャスト)。
+- 保存に失敗しても公開・履歴登録は失敗にしない(`historyOk` に反映し、公開完了カードと状態表示が「CAST No.と参加枠は更新できませんでした」と言う)。
+- RPC は migration `supabase/migrations/20261114_act_participant_roles.sql` で、既存の RPC を広げた(項目の `participationRole` は任意。送らなければ保存済みの枠を変えない)。**実DBへの適用が要る**(適用前は、呼び出しは成功するが枠は保存されない)。
+- 以前の方式(`showcase-history-role.js` が `supabase.rpc` / `supabase.functions.invoke` を後から包む)は、`record_act_history_for_current_user` と旧 `publish-showcase` だけを対象にしていて、今の公開(`publish_act_showcase_for_current_user`)は対象外だった(`supabase.functions` は呼ぶたびに新しいオブジェクトを返すので、`invoke` を包む方式はもともと効かない)。2026-09-08 以降に公開したアクトの `participation_role` は空のまま。この修正は過去分を直さない。

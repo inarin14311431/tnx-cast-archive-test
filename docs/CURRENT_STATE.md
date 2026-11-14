@@ -39,6 +39,11 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   (security definer、作成者本人のアクトの `act_participants.cast_order` だけ更新、anon不可を確認)。既存データは
   `20261017anoyuuhi` の1行(CAST 01→02)だけを個別に修正した。「履歴のみ登録」の過去分は正しい番号が残っていないため
   未修正(再登録で直る)。ロールバックはmigration先頭のコメント。
+- DB: migration `20261114_act_participant_roles.sql` は**未適用**(2026-11-14 にrepoへ追加。実DBへの適用は人が行う)。
+  `set_act_participant_cast_orders_for_current_user(text, jsonb)` を `create or replace` で広げ、項目の任意の `participationRole` を
+  `act_participants.participation_role` に保存する(80文字まで、送らなければ保存済みの枠は変えない)。適用前は、生成画面の呼び出しは
+  成功するが枠は保存されない。適用後に、`has_function_privilege('anon', …, 'execute')` が false、`authenticated` が true のままであること、
+  自分のアクトで `participationRole` を送ると `participation_role` が変わり、他人のアクトでは `Act not found or owned by another user.` になることを確認する。
 - DB: migration `20261020_unlisted_bundle_troops_public_and_rls_initplan.sql` は**適用済み**(2026-10-20、共有DB
   `koprmbkoftuuffslhsvt`、`apply_migration`。`supabase_migrations` に記録済み)。`get_unlisted_character_bundle` の
   troops を `visibility = 'public'` のものだけにし、advisor `auth_rls_initplan` の35件を `ALTER POLICY` で
