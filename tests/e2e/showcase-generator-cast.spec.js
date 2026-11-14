@@ -200,16 +200,19 @@ test("the manual form opens in place, needs a name, adds a row and keeps the res
   await expect(manual.locator(".cast-row__name")).toHaveText("手動の名前");
   await expect(manual.locator(".cast-row__styles")).toHaveText("カブト◎ / フェイト●");
   await expect(manual.locator(".cast-row__player")).toHaveText("PL：手動PL");
-  // The new row opens its panel, and the details typed in the form are in the row's identity fields.
-  await expect(manual.locator(".cast-row__panel")).toBeVisible();
+  // The new row opens only its handout panel (the details were typed in the form), at its first field; the identity panel is closed
+  // but holds the details typed in the form.
+  await expect(manual.locator(".cast-row__panel--handout")).toBeVisible();
+  await expect(manual.locator(".cast-row__panel--identity")).toBeHidden();
   await expect(manual.locator('[data-field="manual-name"]')).toHaveValue("手動の名前");
   await expect(manual.locator('[data-field="manual-affiliation"]')).toHaveValue("所属X");
-  await expect(manual.locator('[data-field="description"]')).toBeFocused();
+  await expect(manual.locator('[data-field="cast-no"]')).toBeFocused();
   // The form is empty the next time.
   await open.click();
   await expect(form.locator('[data-manual-new="name"]')).toHaveValue("");
 
-  // Editing the row's identity updates the row's header live.
+  // Editing the row's identity (its "編集" panel) updates the row's header live.
+  await manual.locator('[data-action="toggle"][data-panel="identity"]').click();
   await manual.locator('[data-field="manual-name"]').fill("直した名前");
   await expect(manual.locator(".cast-row__name")).toHaveText("直した名前");
   await form.locator('button[type="button"]#cancel-manual-cast').click();

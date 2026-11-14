@@ -33,6 +33,11 @@ async function openForm(page) {
   await expect(form(page)).toBeVisible();
 }
 
+// A manual row's picture, handle, name and details are in its "編集" panel; a row added from the form opens only its handout panel.
+async function openEdit(page, index = 0) {
+  await row(page, index).locator('[data-action="toggle"][data-panel="identity"]').click();
+}
+
 test("the add form has a drop area, an optional URL, and says that uploaded pictures are public", async ({ page }) => {
   await openGenerator(page);
   await openForm(page);
@@ -119,6 +124,7 @@ test("a row's picture can be replaced, removed with the button, or go with the c
   await expect.poll(() => calls.storageUploads.length).toBe(1);
   const one = calls.storageUploads[0].replace("character-images/", "");
   await form(page).locator('button[type="submit"]').click();
+  await openEdit(page);
   await expect(row(page).locator(".manual-image__preview")).toBeVisible();
 
   // replace: the new file is uploaded, the old one removed
@@ -150,6 +156,7 @@ test("an external URL is never touched in Storage", async ({ page }) => {
   await form(page).locator('[data-manual-new="imageUrl"]').fill("https://example.invalid/own.webp");
   await form(page).locator('button[type="submit"]').click();
   await expect(row(page).locator("img.cast-row__thumb")).toHaveAttribute("src", "https://example.invalid/own.webp");
+  await openEdit(page);
   await row(page).locator('[data-action="manual-image-clear"]').click();
   await row(page).locator('[data-action="remove"]').click();
   expect(calls.storageUploads).toHaveLength(0);
