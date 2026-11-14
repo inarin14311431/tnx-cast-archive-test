@@ -279,9 +279,17 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
 - **PR3 キャスト(2026-11-09)。** 「02 キャスト」を、出演順の一覧 → 「キャストを追加」の枠 → ゲストの順に作り直した。
   - **出演順の行**(`js/showcase-cast-row.js` が行と候補カードのマークアップを作る純粋関数、状態とイベントは `showcase-generator-v3.js`):
     つまみ・CAST番号・縦長サムネイル(`image_thumbnail_url`→`image_url`、丸くしない)・ハンドルと名前・スタイル・PL・ハンドアウトのバッジ
-    (入力済み/未入力)・「ハンドアウト」(開閉)・↑↓・×。開くと CAST No・参加枠・一言・ハンドアウト本文(項目は今のまま)。開閉は選択のモデル
-    (`item.open`)が持ち、再描画しても保つ。行の属性(`data-selected-index`・`data-character-id`・`data-visibility`・`data-manual`・
-    `data-action`・`data-field`)は変えていない(§4)。
+    (入力済み/未入力)・「ハンドアウト HANDOUT」(開閉)・↑↓・×。開くと CAST No・参加枠・一言・ハンドアウト本文(項目は今のまま)。
+    **手動キャストの行は、パネルが2つ**(2026-11-14): 「編集 EDIT」(`data-panel="identity"`。画像・ハンドル・キャスト名・スタイル・PL名・詳細。
+    ボタンはハンドアウトの左)と「ハンドアウト HANDOUT」(`data-panel="handout"`)。登録済みキャストはハンドアウトだけ。どちらのボタンも
+    `data-action="toggle"` で、`data-panel` が開くパネルを決める。**開いているパネルは出演順リスト全体で常に1つ**: 選択のモデル
+    (`item.panel` = `"handout"` | `"identity"` | `null`)が持ち、`openRowPanel(index, panel)` がほかの行とその行のもう一方を閉じる。
+    開閉は行を再描画せず、`aria-expanded`・`hidden`・`is-open` をその場で直す(閉じたパネルに入力した値や画像が失われない)。並べ替え・削除で
+    再描画しても、`item.panel` が選択の要素に付いているので、開いているパネルはそのキャストについていく(開いている行を削除すると、どれも開かない)。
+    各パネルの末尾に「閉じる CLOSE」(`data-action="close"`)があり、そのパネルを閉じて、行の見出し行(`.cast-row__main`、`tabindex="-1"`)へフォーカスを戻す。
+    「手動で追加」のフォームから追加した直後は、情報は入力済みなので、ハンドアウトのパネルだけを開き(行を画面内にスクロールし、CAST No にフォーカス)、
+    保存済みアクトの復元(`addManualCast({})` で空の行を足して値を入れる)は、どのパネルも開かない。行の属性(`data-selected-index`・
+    `data-character-id`・`data-visibility`・`data-manual`・`data-action`・`data-field`)は変えていない(§4)。
   - **並べ替え**: つまみのドラッグ(HTML5 のドラッグ&ドロップ)、つまみにフォーカスして ↑↓ キー、行の ↑↓ ボタン。タッチ端末は ↑↓ ボタンを使う。
   - **一言はキャストごとに持つ**: `selectedCasts` の要素の `tagline`(`data-field="tagline"` の値)。`showcase-tagline.js` は行番号の配列をやめ、
     生成のときに行(並び順)から読む。公開データ(`casts[].tagline`)の形は変わらず、旧データの復元(`data-field="tagline"` へ値を入れる)は
