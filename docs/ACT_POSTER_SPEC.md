@@ -55,7 +55,7 @@ X に「これからこのアクトを遊びます」と投稿するときに添
   3色は、公開したアクト紹介のテーマ(`showcaseData.theme`: nova / intron / vlad / lutetia)のパレット(生成画面のテーマカードと同じ `getThemeSwatchColors` の2〜4番目)で、canvas に渡す前に getComputedStyle で解決する(`resolvePosterTheme`)。
   生成画面には、公開ページの `--showcase-*` 変数が無いため、変数を読むのではなくパレットを渡す。暗い地で見えない色(明るいテーマの黒)は、見えるまで白へ混ぜる(`readableOnDark`)。
 - それ以外(暗い地、グリッド、光の筋、走査線、金のキャッチと日付、白→水色のタイトル)は固定デザインで、テーマに従わない(`js/act-poster-render.js` は `audit:colors` の対象外。`docs/UI_CONVENTIONS.md`)。配置を決める `js/act-poster-layout.js` は色を持たない。
-- タイトル(アクト名): Dela Gothic One。白→水色の縦グラデーション、secondary のずれ影(右下3px)、primary の弱いグロー。
+- タイトル(アクト名): Dela Gothic One。白→水色の縦グラデーション。**3段で描く**(2026-11-14): ① secondary のずれ影(右下 2.5px)、② 背景色(`POSTER_COLORS.ground`)の縁取り(`strokeText`、幅3px、角は丸、primary の弱いグロー `shadowBlur` 10 は縁取りに付ける)、③ 本体の `fillText`(影なし)。画数の多い漢字(例「攻略計画」)の中の狭いすき間から、ずらした影の色が透けて潰れて見えたので、縁取りですき間を背景色で抜く。縁取りと影が文字の外へ出るのは最大 2.5px(`TITLE_REACH`)で、タイトルと日付の間(`COLUMN_GAP` 28px)に収まる(単体テストで確認)。`shadowBlur` は端末ピクセル単位(描画の倍率はかからない)。
 - 本文: Noto Sans JP(700/900)。HO番号・日付の数字: Orbitron。
 - 書体は、これを使う画面(`showcase-generator.html`)が `<link>` で読み込む(Dela Gothic One、Noto Sans JP 700/900、Orbitron 700/900 だけ)。canvas で描く前と配置を測る前に document.fonts.load で必要な書体を読み込み終えるのを待つ。
 

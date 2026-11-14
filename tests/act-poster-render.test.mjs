@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { buildPosterModel, layoutPoster, POSTER_RIGHTS_NOTICE, POSTER_COPYRIGHT_NOTICE } from "../js/act-poster-layout.js";
 import {
   renderPoster, exportPosterBlob, loadPosterFonts, loadPosterImage, loadPosterImages, createPosterMeasurer, posterTexts,
-  POSTER_PLACEHOLDER_URL, POSTER_FONTS, POSTER_MAX_PNG_BYTES, POSTER_JPEG_QUALITY, resolvePosterTheme
+  POSTER_PLACEHOLDER_URL, POSTER_FONTS, POSTER_MAX_PNG_BYTES, POSTER_JPEG_QUALITY, resolvePosterTheme,
+  TITLE_SHADOW_OFFSET, TITLE_OUTLINE_WIDTH, TITLE_REACH
 } from "../js/act-poster-render.js";
 
 // The canvas side of the poster (js/act-poster-render.js) against a recording context: what is drawn, in which order and with which numbers.
@@ -200,5 +201,62 @@ test("the theme colours are resolved by the browser: any CSS colour becomes what
     assert.deepEqual(seen, ["#70eaff", "color-mix(in srgb, red 50%, blue)", "hsl(30 90% 60%)"]);
   } finally {
     if (before) Object.defineProperty(globalThis, "getComputedStyle", before); else delete globalThis.getComputedStyle;
+  }
+});
+
+// A recording context that also keeps the state a call was made with (fillStyle, strokeStyle, lineWidth, shadowBlur, ...).
+function statefulCanvas() {
+  const calls = [];
+  const state = {};
+  const ctx = new Proxy({}, {
+    get(target, name) {
+      if (name === "createLinearGradient") return (...args) => { const gradient = { kind: "gradient", args, stops: [], addColorStop(offset, color) { this.stops.push([offset, color]); } }; return gradient; };
+      if (name === "measureText") return text => ({ width: String(text).length * 10 });
+      if (name in state) return state[name];
+      return (...args) => { calls.push({ call: String(name), args, state: { ...state } }); };
+    },
+    set(target, name, value) { state[name] = value; return true; }
+  });
+  return { width: 0, height: 0, getContext: () => ctx, calls };
+}
+
+test("the title is drawn in three steps: the shifted shadow, an outline in the ground colour carrying the glow, then the fill with no shadow", async () => {
+  const canvas = statefulCanvas();
+  const layout = layoutOf(modelOf());
+  await renderPoster(canvas, layout, { images: new Map([["placeholder", PLACEHOLDER]]), theme: THEME });
+  const title = layout.title;
+  const mine = canvas.calls.filter(item => (item.call === "fillText" || item.call === "strokeText") && item.args[0] === title.text);
+  assert.deepEqual(mine.map(item => item.call), ["fillText", "strokeText", "fillText"]);
+  const [shadow, outline, fill] = mine;
+  // 1. the secondary colour, shifted 2.5px (not 3) right and down
+  assert.equal(TITLE_SHADOW_OFFSET, 2.5);
+  assert.equal(shadow.state.fillStyle, THEME.secondary);
+  assert.deepEqual(shadow.args.slice(1), [title.x + 2.5, title.baseline + 2.5]);
+  // 2. the outline: ground colour, 3px, round joins, at the text's own position; the glow (primary colour, weaker than the old 16) is on it
+  assert.equal(outline.state.strokeStyle, "#04070f");
+  assert.equal(outline.state.lineWidth, 3);
+  assert.equal(TITLE_OUTLINE_WIDTH, 3);
+  assert.equal(outline.state.lineJoin, "round");
+  assert.deepEqual(outline.args.slice(1), [title.x, title.baseline]);
+  assert.ok(outline.state.shadowBlur > 0 && outline.state.shadowBlur < 16, `glow ${outline.state.shadowBlur}`);
+  assert.match(outline.state.shadowColor, /^rgba\(112, 234, 255, 0\.45\)$/);
+  // 3. the white-to-cyan fill, with no shadow of its own, at the text's own position
+  assert.equal(fill.state.shadowBlur, 0);
+  assert.equal(fill.state.shadowColor, "transparent");
+  assert.equal(fill.state.fillStyle.kind, "gradient");
+  assert.deepEqual(fill.state.fillStyle.stops, [[0, "#ffffff"], [1, "#7fe9ff"]]);
+  assert.deepEqual(fill.args.slice(1), [title.x, title.baseline]);
+});
+
+test("the outline and the shadow stay clear of the date and of the left margin, for a title with kanji and a title in kana only", () => {
+  const measure = createPosterMeasurer();
+  assert.equal(TITLE_REACH, 2.5);
+  for (const actName of ["ストレイジ攻略計画", "ストレイジこうりゃくけいかく", "NEON AFTERIMAGE", "攻略計画攻略計画攻略計画攻略計画攻略計画攻略計画攻略計画", "夜明けを駆ける者"]) {
+    for (const date of ["11.23 SUN 21:00〜", "近日開演", "2026.11.23 SUN 21:00〜"]) {
+      const layout = layoutOf(buildPosterModel({ ...SHOWCASE, actName }, { date }));
+      const width = measure(actName, layout.title.fontSize, 900, "title");
+      assert.ok(layout.title.x - TITLE_REACH >= 0, `${actName}: the outline stays inside the picture`);
+      assert.ok(layout.title.x + width + TITLE_REACH <= layout.date.left, `${actName} / ${date}: the outline and the shadow clear the date`);
+    }
   }
 });
