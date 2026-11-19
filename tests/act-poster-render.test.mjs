@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildPosterModel, layoutPoster, POSTER_RIGHTS_NOTICE, POSTER_COPYRIGHT_NOTICE } from "../js/act-poster-layout.js";
+import { buildPosterModel, layoutPoster, readableOnDark, POSTER_RIGHTS_NOTICE, POSTER_COPYRIGHT_NOTICE } from "../js/act-poster-layout.js";
 import {
   renderPoster, exportPosterBlob, loadPosterFonts, loadPosterImage, loadPosterImages, createPosterMeasurer, posterTexts,
   POSTER_PLACEHOLDER_URL, POSTER_FONTS, POSTER_MAX_PNG_BYTES, POSTER_JPEG_QUALITY, resolvePosterTheme,
@@ -246,6 +246,21 @@ test("the title is drawn in three steps: the shifted shadow, an outline in the g
   assert.equal(fill.state.fillStyle.kind, "gradient");
   assert.deepEqual(fill.state.fillStyle.stops, [[0, "#ffffff"], [1, "#7fe9ff"]]);
   assert.deepEqual(fill.args.slice(1), [title.x, title.baseline]);
+});
+
+test("the RL / WRITER chips are readable on the dark ground: a theme colour too dark there (intron's black) is lightened like the HO tags", async () => {
+  const dark = Object.freeze({ primary: "#111111", secondary: "#9b3268", accent: "#236b49" });
+  const canvas = statefulCanvas();
+  const layout = layoutPoster(modelOf(), createPosterMeasurer(), { theme: dark });
+  await renderPoster(canvas, layout, { images: new Map([["placeholder", PLACEHOLDER]]), theme: dark });
+  const chipFill = label => {
+    const at = canvas.calls.findIndex(item => item.call === "fillText" && item.args[0] === label);
+    assert.ok(at > 0, label);
+    return canvas.calls.slice(0, at).reverse().find(item => item.call === "fill").state.fillStyle;
+  };
+  assert.equal(chipFill("RL"), readableOnDark("#111111"));
+  assert.equal(chipFill("WRITER"), readableOnDark("#9b3268"));
+  assert.notEqual(chipFill("RL"), "#111111");
 });
 
 test("the outline and the shadow stay clear of the date and of the left margin, for a title with kanji and a title in kana only", () => {
