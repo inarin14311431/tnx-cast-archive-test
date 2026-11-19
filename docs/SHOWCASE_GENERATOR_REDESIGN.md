@@ -388,3 +388,14 @@ CSS は `css-next/pages/showcase-entry.css` が `showcase.css`(135行、直書�
 - 保存に失敗しても公開・履歴登録は失敗にしない(`historyOk` に反映し、公開完了カードと状態表示が「CAST No.と参加枠は更新できませんでした」と言う)。
 - RPC は migration `supabase/migrations/20261114_act_participant_roles.sql` で、既存の RPC を広げた(項目の `participationRole` は任意。送らなければ保存済みの枠を変えない)。**実DBへの適用が要る**(適用前は、呼び出しは成功するが枠は保存されない)。
 - 以前の方式(`showcase-history-role.js` が `supabase.rpc` / `supabase.functions.invoke` を後から包む)は、`record_act_history_for_current_user` と旧 `publish-showcase` だけを対象にしていて、今の公開(`publish_act_showcase_for_current_user`)は対象外だった(`supabase.functions` は呼ぶたびに新しいオブジェクトを返すので、`invoke` を包む方式はもともと効かない)。2026-09-08 以降に公開したアクトの `participation_role` は空のまま。この修正は過去分を直さない。
+
+## 公開中のアクト紹介からコピー(2026-11-19)
+同じアクトの参加者が公開したアクト紹介を、自分の**新しい下書き**として生成画面に流し込む。「公開済みを編集」の帯の2段目に、公開URL(`act-showcase.html?id=…` / スタンダード版のURL)かアクト識別名を入れる欄と「読み込む」ボタンがある。公開済みなら誰でもコピーできる(許可スイッチはない)。DB・RPCの変更はない。
+- 読むのは公開データだけ: `public-showcase-service.js` の `loadPublicShowcase` / `loadPublicShowcaseGuests`。コピー元の acts 行・ゲスト・画像には書き込みも削除もしない。
+- 規則は純関数の `js/showcase-copy-source.js`、画面側は `js/showcase-copy-from-public.js`。行への流し込みは編集再開(`showcase-edit-restore.js`)の関数を `export` して使う(loader と同じ `?v=` で読み、同じモジュールを共有する)。編集再開とは違い、`tnx:showcase-restored` は出さない(公開ボタンは「新規」のまま)。
+- スラッグはコピー元を引き継がない。新規作成と同じ自動採番(`acts` の `act-%`)を、コピー元のスラッグも数に入れて行うので、コピー元と同じ番号にはならない。さらに、アクト識別名を手でコピー元に戻して公開・履歴登録しようとすると、`window` のキャプチャ段階で止める(ゲストの保存や公開より前)。他人のスラッグはサーバー(`record_act_history_for_current_user`)でも拒否されるが、自分のアクトをコピーした場合はサーバーでは止まらないため、画面で止める。
+- キャスト: 登録キャスト(serial が公開IDの難読化値)は公開キャスト一覧、なければ自分の非公開キャストから選ぶ(参照。生成画面の `tnx:showcase-select-archive-cast`)。見つからないもの(非公開になった等)は出演順から外し、名前を状態表示に出す。ARCHIVE ID のないカード(`ScanFailed`、古いデータの `PRIVATE`、serial なし)は手動キャストとして複製する(ハンドルとキャスト名は分けて入れる)。
+- 画像: 手動キャストとゲストの画像は公開URLから取得して `uploadManualImage` で自分のフォルダへ上げ直す(手動は `act-manual/`、ゲストは `act-guests/`。`folder` オプション)。手動キャストの画像は `tnx:showcase-copied-images` で imageLedger に「このセッションのアップロード」として登録する(使われなくなれば既存の規則どおり消える)。取得・アップロードに失敗した画像は画像なしにして、名前を状態表示に出す。
+- ゲスト: `showcase-guests.js` が `tnx:showcase-guests-replace` で受け取り、未保存(dirty)として持つ。公開時に新しいスラッグで保存される。スラッグ変更で走る保存済みゲストの読み込みが、受け取ったゲストを上書きしないようにした。
+- 入力中の内容(キャスト・ゲスト、初期値から変えたアクト名・トレーラー)があるときは、置き換えてよいか確認する。
+- テスト: `tests/showcase-copy-from-public.test.mjs`(規則・画像の複製先・コピー元が変わらないこと)と `tests/e2e/showcase-copy-from-public.spec.js`(モックでのコピー → 公開、コピー元スラッグへの公開の阻止、確認、非公開のコピー元)。
