@@ -70,6 +70,7 @@
         "tests/e2e/showcase-generator-participation-role.spec.js",
         "tests/e2e/showcase-generator-look.spec.js",
         "tests/e2e/showcase-generator-manual-image.spec.js",
+        "tests/e2e/showcase-copy-from-public.spec.js",
         "tests/e2e/showcase-generator-publish-result.spec.js",
         "tests/e2e/act-showcase-load-failure.spec.js",
         "tests/e2e/act-showcase-screen-timing.spec.js",
