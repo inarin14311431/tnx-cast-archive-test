@@ -12,7 +12,7 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   `docs/ACT_SHOWCASE_LAYERS.md` §4.1)。これに各枠のパターン B の spec と画像(loading・trailer・title・ready・handout-assign・finale)、title のパターン C の spec と画像(4テーマ + 長いアクト名 × 2幅の10枚)と、
   構成の選択欄が増えるたびに撮り直した生成画面(PC幅)の画像を足している。それ以外の基準画像は `d550978`(PR #538 マージ点)のままで、
   Playwright 1.62.1 時代の基準(1.64 への更新は見送り。`docs/TESTING_STRATEGY.md` 第8節)。
-- 本番repo main: `b8753fa`(同期PR #292 マージ点, 2026-11-21)。検証 #756(手動追加キャストにもルビ(読み)を入れられるようにする)までの runtime を同期済み。`js/`・`css-next/`・`config/`・`supabase/`・全HTML は、検証 `ac821af` と本番 `b8753fa` で全ファイル一致(2026-11-21 に確認)。migration `20261114_act_participant_roles.sql` もrepoには入っているが、実DBへの適用は別(下記DBの項)。
+- 本番repo main: `b8753fa`(同期PR #292 マージ点, 2026-11-21)。検証 #756(手動追加キャストにもルビ(読み)を入れられるようにする)までの runtime を同期済み。`js/`・`css-next/`・`config/`・`supabase/`・全HTML は、検証 `ac821af` と本番 `b8753fa` で全ファイル一致(2026-11-21 に確認)。migration `20261114_act_participant_roles.sql` もrepoに入っており、実DBにも適用済み(下記DBの項)。
   直近の同期: #292(`b8753fa`、検証 #756 手動追加キャストのルビ)、#291(`2ce04aa`、検証 #754 公開中のアクト紹介からコピー)、#290(`88c440a`、検証 #752 予告ポスターの RL / WRITER の帯の色)、#289(`9e13058`、検証 #750 倉庫取込のハンドル欄)、#287(`4ca882e`、検証 #745 アクト履歴の参加枠の明示保存)、#286(`051efc5`、検証 #744 予告ポスターのタイトルの縁取り)、#285(`3b094ae`、検証 #743 SKD・OFC補完の初期値)、#284(`fc19515`、検証 #741 生成画面のキャスト行の EDIT/HANDOUT パネル)、#282(`24e2407`、検証 #735 title のパターン C「シネマスコープ」)。
   その前の同期: #281(`fb57b18`、検証 #733 権利表記の確定。コメントと `?v=` だけで挙動は変わらない)、#280(`6537d2d`、検証 #731 予告ポスターの権利表記を最下行の左右に置く)、#277(`d2f99d5`、検証 #728 予告ポスター画像の描画コアと #729 公開完了カードのポスター画面。#729 は #728 の上に作ってあるので2本まとめて同期した)、#276(`b873954`、検証 #727 フィナーレ B が演出中に下へ出る不具合の修正)、#275(`ea77ff1`、検証 #725 スキャン演出のスキップ)、#272(`30c94ff`、検証 #708〜#722: アクト紹介生成画面の作り直し5本と、
   公開結果のカード、ボタンの表記)、#271(`bcea57f`、検証 #703 まで: #692 finale の枠の表、#694 finale B「キービジュアル」、#698 finale B のゲストのカード、#703 loading B「起動ターミナル」)。#688 までは、それより前の同期(#268)で入っていた。
@@ -40,11 +40,13 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
   (security definer、作成者本人のアクトの `act_participants.cast_order` だけ更新、anon不可を確認)。既存データは
   `20261017anoyuuhi` の1行(CAST 01→02)だけを個別に修正した。「履歴のみ登録」の過去分は正しい番号が残っていないため
   未修正(再登録で直る)。ロールバックはmigration先頭のコメント。
-- DB: migration `20261114_act_participant_roles.sql` は**未適用**(2026-11-14 にrepoへ追加。実DBへの適用は人が行う)。
-  `set_act_participant_cast_orders_for_current_user(text, jsonb)` を `create or replace` で広げ、項目の任意の `participationRole` を
-  `act_participants.participation_role` に保存する(80文字まで、送らなければ保存済みの枠は変えない)。適用前は、生成画面の呼び出しは
-  成功するが枠は保存されない。適用後に、`has_function_privilege('anon', …, 'execute')` が false、`authenticated` が true のままであること、
-  自分のアクトで `participationRole` を送ると `participation_role` が変わり、他人のアクトでは `Act not found or owned by another user.` になることを確認する。
+- DB: migration `20261114_act_participant_roles.sql` は**適用済み**(共有DB `koprmbkoftuuffslhsvt`。適用日と適用者は記録がなく不明。
+  2026-11-21 に実DBを読んで、適用済みだと確認した)。`set_act_participant_cast_orders_for_current_user(text, jsonb)` を `create or replace` で広げ、
+  項目の任意の `participationRole` を `act_participants.participation_role` に保存する(80文字まで、送らなければ保存済みの枠は変えない)。
+  確認したこと: 関数の本体に `left(btrim(item->>'participationRole'), 80)` と `coalesce(r.participation_role, ap.participation_role)` がある、
+  `security definer`・`search_path=public, pg_temp`、`has_function_privilege` が anon で false・authenticated で true。
+  確認していないこと: 実データでの呼び出し(自分のアクトで枠が保存され、他人のアクトでは `Act not found or owned by another user.` になること。
+  本番データを書き換えるため行っていない)と、`supabase_migrations` の履歴テーブルへの記録。
 - DB: migration `20261020_unlisted_bundle_troops_public_and_rls_initplan.sql` は**適用済み**(2026-10-20、共有DB
   `koprmbkoftuuffslhsvt`、`apply_migration`。`supabase_migrations` に記録済み)。`get_unlisted_character_bundle` の
   troops を `visibility = 'public'` のものだけにし、advisor `auth_rls_initplan` の35件を `ALTER POLICY` で
