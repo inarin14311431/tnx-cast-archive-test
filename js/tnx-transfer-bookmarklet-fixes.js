@@ -256,6 +256,26 @@ window.TNXTransferFixesDone=(async()=>{
     return"";
   }
 
+  // The sheet stores persona/key as styles.pk1-3: 1=●, 2=◎, 3=◎●. Without any mark in the cast the
+  // sheet's own marks are left alone, so an update cannot erase them.
+  const PK_VALUES={"●":"1","◎":"2","◎●":"3"};
+  function repairStyleMarks(list){
+    const marks=list.slice(0,3).map(record=>normalizeMark(record.mark));
+    if(!marks.some(Boolean))return;
+    let changed=false;
+    for(let position=0;position<3;position++){
+      const control=document.getElementById(`styles.pk${position+1}`);
+      if(!control)continue;
+      const value=PK_VALUES[marks[position]]||"";
+      if(Number(control.value)!==Number(value)){
+        control.value=value;
+        changed=true;
+      }
+      notify(control);
+    }
+    if(changed&&typeof window.styleChange==="function")window.styleChange();
+  }
+
   async function repairStyles(records){
     const list=Object.keys(records||{}).sort((a,b)=>Number(a)-Number(b)).map(key=>records[key]);
     const styleIndexes=indexes("styles");
@@ -276,6 +296,7 @@ window.TNXTransferFixesDone=(async()=>{
       if(persona)await setBoolean(persona,desired.includes("◎"),row,"reason");
       if(key)await setBoolean(key,desired.includes("●"),row,"passion");
     }
+    repairStyleMarks(list);
   }
 
   try{
