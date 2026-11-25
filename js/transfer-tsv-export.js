@@ -1,6 +1,5 @@
 import { supabase } from "./supabase-client.js";
-import { extractCharacterSheetKey } from "./character-sheet-url.js?v=9b3404e3";
-import { buildTransferUrl, supportsTransferFragment } from "./transfer-fragment.js?v=0ea921f2";
+import { buildTransferUrl, supportsTransferFragment, transferModeFor } from "./transfer-fragment.js?v=7897a816";
 
 const FORMAT = "TNX_CAST_TRANSFER_TSV";
 const VERSION = "1";
@@ -9,18 +8,23 @@ const STYLE_DETAIL_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const GENERAL_ORDER = ["医療","射撃","知覚","電脳","製作：","心理","自我","交渉","芸術：","運動","回避","白兵","操縦：","信用","圧力","隠密"];
 const OPEN_LABELS = {
   loading: ["転記", "CHECKING"],
-  idle: ["転記", "OPEN SHEET"],
+  new: ["新規転記", "NEW SHEET"],
+  update: ["更新転記", "UPDATE SHEET"],
   working: ["準備中…", "BUILDING DATA"],
   success: ["倉庫を開きました", "RUN BOOKMARKLET"],
   error: ["転記エラー", "OPEN ERROR"],
-  unavailable: ["転記不可", "USE 転記TSV"]
+  unavailable: ["転記不可", "UNAVAILABLE"]
+};
+const OPEN_HINTS = {
+  new: "倉庫URLが未登録のため、新しいシートを開きます。開いたページで転記BMを実行してください。",
+  update: "登録済みの倉庫シートを開きます。開いたページで転記BMを実行してください。"
 };
 
 const { transferButton, bookmarkletButton, openButton } = ensureButtons();
 const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
 const isSheetEditor = Boolean(document.querySelector("#character-name"));
 
-if (transferButton) initialize();
+if (bookmarkletButton) initialize();
 
 function createButton(id, className, main, sub) {
   const button = document.createElement("button");
@@ -34,7 +38,10 @@ function createButton(id, className, main, sub) {
 function ensureButtons() {
   let transfer = document.querySelector("#transfer-tsv-copy-button");
   let bookmarklet = document.querySelector("#transfer-bookmarklet-copy-button");
-  if (!transfer) transfer = createButton("transfer-tsv-copy-button", "transfer-tsv-copy-button", "転記TSV", "CAST DATA COPY");
+  const isEditor = Boolean(document.querySelector("#character-name"));
+  // TSV copy stays in the editor (unsaved input) and for browsers that cannot build the fragment.
+  const usesTsv = isEditor || !supportsTransferFragment();
+  if (!transfer && usesTsv) transfer = createButton("transfer-tsv-copy-button", "transfer-tsv-copy-button", "転記TSV", "CAST DATA COPY");
   if (!bookmarklet) bookmarklet = createButton("transfer-bookmarklet-copy-button", "transfer-bookmarklet-copy-button", "転記BM", "COPY BOOKMARKLET");
 
   const editorPanel = document.querySelector(".exp-panel");
@@ -46,32 +53,30 @@ function ensureButtons() {
   const cocofolia = container.querySelector("#cocofolia-copy-button");
   const anchor = udonarium || cocofolia || container.querySelector("#cast-view-button") || container.lastElementChild;
 
-  if (!transfer.isConnected) {
-    if (anchor) anchor.insertAdjacentElement("afterend", transfer);
-    else container.append(transfer);
+  const primary = usesTsv
+    ? transfer
+    : document.querySelector("#transfer-open-button")
+      || createButton("transfer-open-button", "transfer-tsv-copy-button transfer-open-button", ...OPEN_LABELS.loading);
+  if (!primary.isConnected) {
+    if (anchor) anchor.insertAdjacentElement("afterend", primary);
+    else container.append(primary);
   }
-  if (!bookmarklet.isConnected) transfer.insertAdjacentElement("afterend", bookmarklet);
+  if (!bookmarklet.isConnected) primary.insertAdjacentElement("afterend", bookmarklet);
 
-  // The editor keeps TSV copy only: the one-click transfer belongs to the saved cast.
-  let open = null;
-  if (!document.querySelector("#character-name")) {
-    open = document.querySelector("#transfer-open-button")
-      || createButton("transfer-open-button", "transfer-tsv-copy-button transfer-open-button", "転記", "OPEN SHEET");
-    if (!open.isConnected) transfer.insertAdjacentElement("beforebegin", open);
-  }
-
-  return { transferButton: transfer, bookmarkletButton: bookmarklet, openButton: open };
+  return { transferButton: usesTsv ? transfer : null, bookmarkletButton: bookmarklet, openButton: usesTsv ? null : primary };
 }
 
 function initialize() {
-  transferButton.addEventListener("click", copyTransferTsv);
   bookmarkletButton?.addEventListener("click", copyBookmarklet);
   if (openButton) {
     openButton.addEventListener("click", openTransfer);
     refreshOpenButton();
   }
-  transferButton.disabled = !publicId;
-  if (!publicId) transferButton.title = "キャストを保存すると利用できます。";
+  if (transferButton) {
+    transferButton.addEventListener("click", copyTransferTsv);
+    transferButton.disabled = !publicId;
+    if (!publicId) transferButton.title = "キャストを保存すると利用できます。";
+  }
   if (bookmarkletButton) bookmarkletButton.title = "転記先サイトで実行するブックマークレットをコピーします。";
 }
 
@@ -101,25 +106,19 @@ function setOpenState(state, message = "") {
 
 async function refreshOpenButton() {
   setOpenState("loading");
-  if (!supportsTransferFragment()) {
-    setOpenState("unavailable", "このブラウザは転記ボタンに対応していません。「転記TSV」を使ってください。");
-    return;
-  }
   try {
     const character = publicId ? await fetchCharacter(publicId) : null;
-    if (extractCharacterSheetKey(character?.character_sheet_url)) {
-      setOpenState("idle", "キャラクターシート倉庫を開きます。開いたページで転記BMを実行してください。");
-    } else {
-      setOpenState("unavailable", "倉庫URLが登録されていません。「転記TSV」を使ってください。");
-    }
+    const mode = character ? transferModeFor(character.character_sheet_url) : null;
+    if (mode) setOpenState(mode, OPEN_HINTS[mode]);
+    else setOpenState("unavailable", character ? "倉庫URLの形式を確認してください。" : "キャストを保存すると利用できます。");
   } catch (error) {
     console.error(error);
-    setOpenState("unavailable", "キャストデータを確認できませんでした。「転記TSV」を使ってください。");
+    setOpenState("unavailable", "キャストデータを確認できませんでした。再読み込みしてください。");
   }
 }
 
 async function openTransfer() {
-  if (!publicId || openButton.disabled) return;
+  if (openButton.disabled) return;
   // Opened synchronously so popup blockers see the click; the payload is built afterwards.
   const opened = window.open("about:blank", "_blank");
   if (!opened) {
@@ -138,7 +137,7 @@ async function openTransfer() {
     });
     opened.location.replace(url);
     setOpenState("success", "開いたページで転記BMを実行してください。");
-    window.setTimeout(() => setOpenState("idle"), 2600);
+    window.setTimeout(refreshOpenButton, 2600);
   } catch (error) {
     console.error(error);
     opened.close();

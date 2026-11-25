@@ -206,9 +206,10 @@ DB履歴は `supabase/migrations-manifest.json` をrepository側の順序契約�
 
 ### 倉庫への転記(URLの#)
 
-- `js/transfer-fragment.js` が `#tnxcast=v1.<base64url(gzip(JSON))>` の生成と解釈を持つ(閲覧画面とBMの共通)。データは倉庫シートのキーと転記TSV。
+- `js/transfer-fragment.js` が `#tnxcast=v1.<base64url(gzip(JSON))>` の生成と解釈を持つ(閲覧画面とBMの共通)。データは種別(新規=キーなし / 更新=キーあり)・倉庫シートのキー・転記TSV。種別は倉庫URLの有無で決まる。
 - `js/tnx-transfer-bookmarklet.js` は # を読んだ直後にURLから消し、キーを照合してから入力する。# が不正なときはクリップボードに戻らない。# がないときだけ、キャスト名の確認後にクリップボードのTSVを使う。
 - 基本の入力処理は `js/tnx-transfer-base.js`、補正は `tnx-transfer-*.js` が持つ。補正がすべて終わってから完了を表示する。
+- 転記TSVのコピーは編集画面(未保存の内容)と、圧縮非対応ブラウザだけに出す。
 - 倉庫への送信・自動保存はしない。保存はユーザーが倉庫のボタンで行う。
 
 ## 10. Navigation context

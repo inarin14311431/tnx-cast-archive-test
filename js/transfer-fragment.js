@@ -1,10 +1,12 @@
 import { extractCharacterSheetKey, buildCharacterSheetEditUrl } from "./character-sheet-url.js?v=9b3404e3";
 
 /* URL-fragment transfer payload shared by the cast page (encode) and the bookmarklet (decode).
- * Format: #tnxcast=v1.<base64url(gzip(JSON { key, publicId, tsv }))>. gzip keeps a CRC, so a
- * truncated or altered fragment is rejected. */
+ * Format: #tnxcast=v1.<base64url(gzip(JSON { mode, key, publicId, tsv }))>. gzip keeps a CRC, so a
+ * truncated or altered fragment is rejected. mode "new" has an empty key and opens a blank sheet;
+ * mode "update" carries the key of the sheet it may be written to. */
 export const FRAGMENT_PREFIX = "#tnxcast=";
 export const FRAGMENT_VERSION = "v1";
+const NEW_SHEET_URL = "https://character-sheets.appspot.com/tnx/edit.html";
 const TSV_FORMAT = "TNX_CAST_TRANSFER_TSV";
 const MAX_ENCODED_LENGTH = 200000;
 const MAX_DECODED_BYTES = 1024 * 1024;
@@ -15,6 +17,13 @@ function payloadError(userMessage) {
 
 export function supportsTransferFragment() {
   return typeof CompressionStream === "function" && typeof DecompressionStream === "function";
+}
+
+/** "new" without a sheet URL, "update" with a valid one, null when the URL cannot be used. */
+export function transferModeFor(sheetUrl) {
+  const key = extractCharacterSheetKey(sheetUrl);
+  if (key === null) return null;
+  return key ? "update" : "new";
 }
 
 export function isTransferTsv(text) {
@@ -58,16 +67,18 @@ export async function buildTransferUrl({ sheetUrl, publicId, tsv }) {
   if (!supportsTransferFragment()) {
     throw payloadError("このブラウザは転記ボタンに対応していません。「転記TSV」を使ってください。");
   }
+  const mode = transferModeFor(sheetUrl);
+  if (!mode) throw payloadError("倉庫URLの形式を確認してください。");
   const key = extractCharacterSheetKey(sheetUrl);
-  if (!key) throw payloadError("倉庫URLが登録されていません。「転記TSV」を使ってください。");
   if (!isTransferTsv(tsv)) throw payloadError("転記データを作成できませんでした。");
-  const bytes = new TextEncoder().encode(JSON.stringify({ key, publicId: String(publicId || ""), tsv }));
+  const bytes = new TextEncoder().encode(JSON.stringify({ mode, key, publicId: String(publicId || ""), tsv }));
   const compressed = new Blob([bytes]).stream().pipeThrough(new CompressionStream("gzip"));
   const encoded = toBase64Url(new Uint8Array(await new Response(compressed).arrayBuffer()));
   if (bytes.length > MAX_DECODED_BYTES || encoded.length > MAX_ENCODED_LENGTH) {
-    throw payloadError("転記データが大きすぎます。「転記TSV」を使ってください。");
+    throw payloadError("転記データが大きすぎます。");
   }
-  return `${buildCharacterSheetEditUrl(key)}${FRAGMENT_PREFIX}${FRAGMENT_VERSION}.${encoded}`;
+  const target = mode === "new" ? NEW_SHEET_URL : buildCharacterSheetEditUrl(key);
+  return `${target}${FRAGMENT_PREFIX}${FRAGMENT_VERSION}.${encoded}`;
 }
 
 export async function decodeTransferFragment(hash) {
@@ -88,8 +99,12 @@ export async function decodeTransferFragment(hash) {
     throw payloadError("転記データが壊れています。");
   }
   const key = payload?.key;
-  if (typeof key !== "string" || !/^[A-Za-z0-9_-]+$/.test(key) || !isTransferTsv(payload.tsv)) {
+  // Links made before modes existed carry a key only.
+  const mode = payload?.mode ?? "update";
+  const keyMatchesMode = typeof key === "string"
+    && (mode === "update" ? /^[A-Za-z0-9_-]+$/.test(key) : mode === "new" && key === "");
+  if (!keyMatchesMode || typeof payload.tsv !== "string" || !isTransferTsv(payload.tsv)) {
     throw payloadError("転記データが壊れています。");
   }
-  return { key, publicId: String(payload.publicId || ""), tsv: payload.tsv };
+  return { mode, key, publicId: String(payload.publicId || ""), tsv: payload.tsv };
 }

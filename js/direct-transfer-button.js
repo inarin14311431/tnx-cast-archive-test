@@ -106,7 +106,7 @@
     });
     observationRoots().forEach(root => observer.observe(root, { childList: true, subtree: true }));
 
-    import("./transfer-tsv-export.js?v=45a2f45f").catch(error => {
+    import("./transfer-tsv-export.js?v=6d74f000").catch(error => {
       console.error("bookmarklet transfer adapter failed to load", error);
     });
   }
