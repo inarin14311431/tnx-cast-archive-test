@@ -1,6 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { buildTransferUrl, supportsTransferFragment, transferModeFor } from "./transfer-fragment.js?v=7897a816";
-import { transferAbilityInputs } from "./transfer-ability-inputs.js?v=77d5e7ba";
+import { transferAbilityInputs } from "./transfer-ability-inputs.js?v=5f15d46b";
 
 const FORMAT = "TNX_CAST_TRANSFER_TSV";
 const VERSION = "1";

@@ -5,7 +5,8 @@ const ABILITIES = [["reason"], ["passion"], ["life"], ["mundane"]];
 const number = value => Number(value || 0);
 
 /* What the character-sheets editor calculates from: growth ("上昇") and gear ("装備"). The saved base
- * already contains growth (the PC editor leaves the *_growth columns at 0), so growth is base - styles.
+ * already contains growth (the PC editor also writes the *_growth columns on save: the part of the
+ * current value above the style total), so growth is derived as base - styles.
  * Returns null when a style is unknown, because growth cannot be separated then. */
 export function transferAbilityInputs(character) {
   const slots = [1, 2, 3].map(index => ({
