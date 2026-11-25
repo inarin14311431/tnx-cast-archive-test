@@ -259,6 +259,23 @@ window.TNXTransferFixesDone=(async()=>{
   // The sheet stores persona/key as styles.pk1-3: 1=●, 2=◎, 3=◎●. Without any mark in the cast the
   // sheet's own marks are left alone, so an update cannot erase them.
   const PK_VALUES={"●":"1","◎":"2","◎●":"3"};
+  // styleChange() redraws the marks but also recalculates the abilities from the styles alone, which
+  // would drop the transferred totals.
+  function redrawStylesKeepingAbilities(){
+    if(typeof window.styleChange!=="function")return;
+    const kept=[];
+    for(const name of ["reason","passion","life","mundane"]){
+      for(const part of ["abl","ctl"]){
+        const control=document.getElementById(`ability.${name}.${part}`);
+        if(control)kept.push([control,control.value]);
+      }
+    }
+    const cs=document.getElementById("ability.cs");
+    if(cs)kept.push([cs,cs.value]);
+    try{window.styleChange()}
+    finally{for(const [control,value] of kept)control.value=value}
+  }
+
   function repairStyleMarks(list){
     const marks=list.slice(0,3).map(record=>normalizeMark(record.mark));
     if(!marks.some(Boolean))return;
@@ -273,7 +290,7 @@ window.TNXTransferFixesDone=(async()=>{
       }
       notify(control);
     }
-    if(changed&&typeof window.styleChange==="function")window.styleChange();
+    if(changed)redrawStylesKeepingAbilities();
   }
 
   async function repairStyles(records){

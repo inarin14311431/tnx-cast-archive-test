@@ -213,6 +213,7 @@ function collectEditorBundle() {
     eyes: value("eyes"),
     hair: value("hair"),
     skin: value("skin"),
+    birthplace: value("birthplace"),
     life_path_origin: value("life-path-origin"),
     life_path_experience: value("life-path-experience"),
     life_path_encounter: value("life-path-encounter"),
@@ -409,7 +410,7 @@ function createTransferTsv({ character, skills, outfits }) {
     player: character.player_name, rank: character.citizen_rank, affiliation: character.affiliation, summary: character.summary,
     profile: character.profile, age: character.age, sex: character.gender, height: character.height, weight: character.weight,
     eyes: character.eyes, hair: character.hair, skin: character.skin, lifepath_origin: character.life_path_origin,
-    lifepath_experience: character.life_path_experience, lifepath_encounter: character.life_path_encounter,
+    birthplace: character.birthplace, lifepath_experience: character.life_path_experience, lifepath_encounter: character.life_path_encounter,
     source_url: location.href.split("#")[0]
   };
   Object.entries(baseFields).forEach(([field, val]) => add("base", 0, field, val));
