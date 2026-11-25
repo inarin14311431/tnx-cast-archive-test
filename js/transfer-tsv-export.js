@@ -1,12 +1,22 @@
 import { supabase } from "./supabase-client.js";
+import { extractCharacterSheetKey } from "./character-sheet-url.js?v=9b3404e3";
+import { buildTransferUrl, supportsTransferFragment } from "./transfer-fragment.js?v=0ea921f2";
 
 const FORMAT = "TNX_CAST_TRANSFER_TSV";
 const VERSION = "1";
 const BOOKMARKLET_URL = new URL("./js/tnx-transfer-bookmarklet.js?v=2", location.href).href;
 const STYLE_DETAIL_PREFIX = "@@TNX_STYLE_DETAIL_V1@@";
 const GENERAL_ORDER = ["医療","射撃","知覚","電脳","製作：","心理","自我","交渉","芸術：","運動","回避","白兵","操縦：","信用","圧力","隠密"];
+const OPEN_LABELS = {
+  loading: ["転記", "CHECKING"],
+  idle: ["転記", "OPEN SHEET"],
+  working: ["準備中…", "BUILDING DATA"],
+  success: ["倉庫を開きました", "RUN BOOKMARKLET"],
+  error: ["転記エラー", "OPEN ERROR"],
+  unavailable: ["転記不可", "USE 転記TSV"]
+};
 
-const { transferButton, bookmarkletButton } = ensureButtons();
+const { transferButton, bookmarkletButton, openButton } = ensureButtons();
 const publicId = new URLSearchParams(location.search).get("id")?.trim() || "";
 const isSheetEditor = Boolean(document.querySelector("#character-name"));
 
@@ -30,7 +40,7 @@ function ensureButtons() {
   const editorPanel = document.querySelector(".exp-panel");
   const headerActions = document.querySelector(".cast-header__export-actions") || document.querySelector(".cast-header__actions");
   const container = editorPanel || headerActions;
-  if (!container) return { transferButton: null, bookmarkletButton: null };
+  if (!container) return { transferButton: null, bookmarkletButton: null, openButton: null };
 
   const udonarium = container.querySelector("#udonarium-export-button");
   const cocofolia = container.querySelector("#cocofolia-copy-button");
@@ -42,12 +52,24 @@ function ensureButtons() {
   }
   if (!bookmarklet.isConnected) transfer.insertAdjacentElement("afterend", bookmarklet);
 
-  return { transferButton: transfer, bookmarkletButton: bookmarklet };
+  // The editor keeps TSV copy only: the one-click transfer belongs to the saved cast.
+  let open = null;
+  if (!document.querySelector("#character-name")) {
+    open = document.querySelector("#transfer-open-button")
+      || createButton("transfer-open-button", "transfer-tsv-copy-button transfer-open-button", "転記", "OPEN SHEET");
+    if (!open.isConnected) transfer.insertAdjacentElement("beforebegin", open);
+  }
+
+  return { transferButton: transfer, bookmarkletButton: bookmarklet, openButton: open };
 }
 
 function initialize() {
   transferButton.addEventListener("click", copyTransferTsv);
   bookmarkletButton?.addEventListener("click", copyBookmarklet);
+  if (openButton) {
+    openButton.addEventListener("click", openTransfer);
+    refreshOpenButton();
+  }
   transferButton.disabled = !publicId;
   if (!publicId) transferButton.title = "キャストを保存すると利用できます。";
   if (bookmarkletButton) bookmarkletButton.title = "転記先サイトで実行するブックマークレットをコピーします。";
@@ -69,6 +91,62 @@ async function copyTransferTsv() {
   }
 }
 
+function setOpenState(state, message = "") {
+  const [main, sub] = OPEN_LABELS[state];
+  openButton.dataset.copyState = state === "working" ? "copying" : ["success", "error"].includes(state) ? state : "idle";
+  openButton.disabled = ["loading", "working", "unavailable"].includes(state);
+  openButton.title = message;
+  openButton.innerHTML = `<span>${main}</span><small>${sub}</small>`;
+}
+
+async function refreshOpenButton() {
+  setOpenState("loading");
+  if (!supportsTransferFragment()) {
+    setOpenState("unavailable", "このブラウザは転記ボタンに対応していません。「転記TSV」を使ってください。");
+    return;
+  }
+  try {
+    const character = publicId ? await fetchCharacter(publicId) : null;
+    if (extractCharacterSheetKey(character?.character_sheet_url)) {
+      setOpenState("idle", "キャラクターシート倉庫を開きます。開いたページで転記BMを実行してください。");
+    } else {
+      setOpenState("unavailable", "倉庫URLが登録されていません。「転記TSV」を使ってください。");
+    }
+  } catch (error) {
+    console.error(error);
+    setOpenState("unavailable", "キャストデータを確認できませんでした。「転記TSV」を使ってください。");
+  }
+}
+
+async function openTransfer() {
+  if (!publicId || openButton.disabled) return;
+  // Opened synchronously so popup blockers see the click; the payload is built afterwards.
+  const opened = window.open("about:blank", "_blank");
+  if (!opened) {
+    setOpenState("error", "新しいタブを開けませんでした。ポップアップを許可してください。");
+    window.setTimeout(refreshOpenButton, 3600);
+    return;
+  }
+  opened.opener = null;
+  setOpenState("working");
+  try {
+    const bundle = await fetchBundle(publicId);
+    const url = await buildTransferUrl({
+      sheetUrl: bundle.character.character_sheet_url,
+      publicId,
+      tsv: createTransferTsv(bundle)
+    });
+    opened.location.replace(url);
+    setOpenState("success", "開いたページで転記BMを実行してください。");
+    window.setTimeout(() => setOpenState("idle"), 2600);
+  } catch (error) {
+    console.error(error);
+    opened.close();
+    setOpenState("error", error instanceof Error ? error.message : "転記データを作成できませんでした。");
+    window.setTimeout(refreshOpenButton, 3600);
+  }
+}
+
 async function copyBookmarklet() {
   if (!bookmarkletButton) return;
   setState(bookmarkletButton, "copying", "", true);
@@ -84,13 +162,18 @@ async function copyBookmarklet() {
   }
 }
 
-async function fetchBundle(id) {
-  const { data: character, error: characterError } = await supabase
+async function fetchCharacter(id) {
+  const { data, error } = await supabase
     .from("characters")
     .select("*")
     .eq("public_id", id)
     .maybeSingle();
-  if (characterError) throw characterError;
+  if (error) throw error;
+  return data;
+}
+
+async function fetchBundle(id) {
+  const character = await fetchCharacter(id);
   if (!character) throw new Error("キャストデータを取得できませんでした。");
 
   const [{ data: skills, error: skillError }, { data: outfits, error: outfitError }] = await Promise.all([

@@ -75,7 +75,11 @@
     return true;
   }
 
-  for (const delay of [50, 300, 900, 1800, 3600]) {
-    window.setTimeout(repair, delay);
-  }
+  window.TNXTransferHandleDone = Promise.all(
+    [50, 300, 900, 1800, 3600].map(delay => new Promise((resolve, reject) => {
+      window.setTimeout(() => {
+        try { resolve(repair()); } catch (error) { reject(error); }
+      }, delay);
+    }))
+  );
 })();
