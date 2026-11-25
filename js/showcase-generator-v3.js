@@ -1,12 +1,12 @@
-import { renderShowcase, getStyleNames, formatHandle, obfuscatePublicId } from "./showcase-output-html.js?v=0214e5e5";
+import { renderShowcase, getStyleNames, formatHandle, formatFullName, obfuscatePublicId } from "./showcase-output-html.js?v=58ec06fd";
 import { normalizeCastNumber, formatCastNumber, resolveCastNumber, findDuplicateCastNumber } from "./showcase-cast-number.js?v=944a948e";
 import { syncActCastOrders } from "./showcase-cast-order-sync.js?v=e989578b";
 import { escapeHtml, escapeAttribute } from "./dom-escape.js?v=46402d5f";
 import { normalizeShowcaseTheme } from "./showcase-output-css.js?v=6c2c74a1";
 import { supabase } from "./supabase-client.js";
 import { requireAuth } from "./auth-state.js?v=a766246e";
-import { createImageLedger, manualImagePathFromUrl, removeManualImages, uploadManualImage, validateManualImage } from "./showcase-manual-image.js?v=ab40c1a2";
-import { createCastRowHtml, createLibraryCardHtml, handoutBadgeText, handoutState, isPlaceholderImage, manualImageValue, nextPanel, reorder } from "./showcase-cast-row.js?v=31b01e50";
+import { createImageLedger, manualImagePathFromUrl, removeManualImages, uploadManualImage, validateManualImage } from "./showcase-manual-image.js?v=775d7987";
+import { createCastRowHtml, createLibraryCardHtml, handoutBadgeText, handoutState, isPlaceholderImage, manualImageValue, nextPanel, reorder } from "./showcase-cast-row.js?v=70d63233";
 
 const MAX_CASTS = 6;
 const FUNCTION_NAME = "publish-showcase";
@@ -107,6 +107,20 @@ function bindEvents() {
   $("#cancel-manual-cast")?.addEventListener("click", () => { resetManualForm(); setManualFormOpen(false); });
   $("#manual-sheet-import")?.addEventListener("click", () => { void importManualFormFromSheet(); });
   document.addEventListener("tnx:showcase-add-manual-cast", () => { addManualCast({}); });
+  // Copying a published showcase (js/showcase-copy-from-public.js): it reads the libraries, picks registered casts by id and hands over
+  // the pictures it uploaded for the copy, which are this session's uploads like any other (gone again if they stop being used).
+  document.addEventListener("tnx:showcase-library-request", event => {
+    if (!event.detail) return;
+    event.detail.publicCharacters = publicCharacters.slice();
+    event.detail.ownPrivateCharacters = privateCharacters.slice();
+  });
+  document.addEventListener("tnx:showcase-select-archive-cast", event => {
+    const detail = event.detail;
+    if (detail) detail.selected = selectArchiveCast(detail.source, detail.characterId);
+  });
+  document.addEventListener("tnx:showcase-copied-images", event => {
+    for (const path of event.detail?.paths || []) imageLedger.uploaded(path);
+  });
   elements.actName?.addEventListener("input", suggestSlug);
   elements.publishSlug?.addEventListener("input", () => {
     elements.publishSlug.dataset.edited = "true";
@@ -266,7 +280,20 @@ function toggleArchiveCast(source, characterId, library) {
   renderSelections();
 }
 
-const MANUAL_FORM_KEYS = ["handle", "name", "styles", "player", "affiliation", "age", "gender", "rank", "sheetUrl", "imageUrl"];
+// Selects a registered cast (never toggles it off, unlike a click on its card). False when it is not in the library or at the limit.
+function selectArchiveCast(source, characterId) {
+  const library = source === "private" ? privateCharacters : publicCharacters;
+  const character = library.find(item => String(item.id) === String(characterId));
+  if (!character) return false;
+  if (selectedCasts.some(item => item.source === source && item.character.id === character.id)) return true;
+  if (selectedCasts.length >= MAX_CASTS) return false;
+  selectedCasts.push({ source, manual: false, character, description: "", quote: "", tagline: "", castNo: "", panel: null });
+  invalidateGeneratedHtml();
+  renderSelections();
+  return true;
+}
+
+const MANUAL_FORM_KEYS = ["handle", "name", "handleKana", "nameKana", "styles", "player", "affiliation", "age", "gender", "rank", "sheetUrl", "imageUrl"];
 
 function manualFormField(key) {
   return elements.manualForm?.querySelector(`[data-manual-new="${key}"]`) ?? null;
@@ -319,8 +346,8 @@ function addManualCast(fields = {}) {
       manual_styles: fields.styles ?? "",
       image_url: fields.imageUrl || placeholder,
       handle: fields.handle ?? "",
-      handle_kana: "",
-      character_kana: "",
+      handle_kana: fields.handleKana ?? "",
+      character_kana: fields.nameKana ?? "",
       affiliation: fields.affiliation ?? "",
       age: fields.age ?? "",
       gender: fields.gender ?? "",
@@ -510,6 +537,8 @@ function handleGripKeydown(event) {
 
 const MANUAL_FIELD_KEYS = {
   "manual-handle": "handle",
+  "manual-handle-kana": "handle_kana",
+  "manual-name-kana": "character_kana",
   "manual-styles": "manual_styles",
   "manual-player": "player_name",
   "manual-affiliation": "affiliation",
@@ -518,7 +547,7 @@ const MANUAL_FIELD_KEYS = {
   "manual-rank": "citizen_rank"
 };
 
-const DEFAULT_SHEET_NOTE = "名前・スタイル・PL名・所属・年齢・性別・市民ランクを倉庫のデータで入力します。";
+const DEFAULT_SHEET_NOTE = "名前・読み・スタイル・PL名・所属・年齢・性別・市民ランクを倉庫のデータで入力します。";
 
 // The add form's "取込": the warehouse data fills the form, the writer then adds the cast to the order.
 async function importManualFormFromSheet() {
@@ -533,14 +562,14 @@ async function importManualFormFromSheet() {
   if (button) button.disabled = true;
   setStatus("キャラクターシート倉庫からデータを取得しています…");
   try {
-    const { fetchManualCastFromSheet } = await import("./showcase-manual-sheet-import.js?v=d305c6d8");
+    const { fetchManualCastFromSheet } = await import("./showcase-manual-sheet-import.js?v=8b698bb9");
     const fields = await fetchManualCastFromSheet(url);
-    const values = { name: fields.name, styles: fields.styles, player: fields.player, affiliation: fields.affiliation, age: fields.age, gender: fields.gender, rank: fields.rank };
+    const values = { handle: fields.handle, name: fields.name, handleKana: fields.handleKana, nameKana: fields.nameKana, styles: fields.styles, player: fields.player, affiliation: fields.affiliation, age: fields.age, gender: fields.gender, rank: fields.rank };
     for (const [key, value] of Object.entries(values)) {
       const input = manualFormField(key);
       if (input) input.value = value ?? "";
     }
-    setStatus(`「${fields.name}」を取り込みました。内容を確認して「出演順に追加」を押してください。`, "success");
+    setStatus(`「${formatFullName({ handle: fields.handle, character_name: fields.name })}」を取り込みました。内容を確認して「出演順に追加」を押してください。`, "success");
   } catch (error) {
     console.error(error);
     setStatus(error?.message || "キャラクターシート倉庫から取り込めませんでした。", "error");

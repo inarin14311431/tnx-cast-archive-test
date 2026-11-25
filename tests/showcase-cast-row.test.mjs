@@ -51,7 +51,7 @@ test("a manual row has EDIT before HANDOUT, two panels, and each button controls
   ]);
   // the identity fields are in the identity panel only, the handout fields in the handout panel only
   const [identity, handout] = row.split('id="cast-panel-1-handout"').map((part, at) => at === 0 ? part.slice(part.indexOf('id="cast-panel-1-identity"')) : part);
-  for (const field of ["manual-image-url", "manual-handle", "manual-name", "manual-styles", "manual-player", "manual-affiliation"]) {
+  for (const field of ["manual-image-url", "manual-handle", "manual-name", "manual-handle-kana", "manual-name-kana", "manual-styles", "manual-player", "manual-affiliation"]) {
     assert.ok(identity.includes(`data-field="${field}"`), `${field} in identity`);
     assert.ok(!handout.includes(`data-field="${field}"`), `${field} not in handout`);
   }
@@ -102,4 +102,11 @@ test("each panel ends with CLOSE (閉じる + small CLOSE), and the row's headin
   assert.ok(identityPanel.lastIndexOf("cast-row__panel-foot") > identityPanel.lastIndexOf('data-field="manual-'));
   const handoutPanel = row.slice(row.indexOf('id="cast-panel-0-handout"'));
   assert.ok(handoutPanel.lastIndexOf("cast-row__panel-foot") > handoutPanel.lastIndexOf('data-field="description"'));
+});
+
+test("the identity panel of a manual row carries the two readings, filled from the character", () => {
+  const row = html(manualItem({ character: { id: "manual-1", character_name: "夜明け", handle: "青", handle_kana: "ブルー", character_kana: "ヨアケ", player_name: "", manual_styles: "", image_url: "" } }));
+  assert.match(row, /data-field="manual-handle-kana" value="ブルー"/);
+  assert.match(row, /data-field="manual-name-kana" value="ヨアケ"/);
+  assert.match(html(manualItem()), /data-field="manual-handle-kana" value=""/);
 });

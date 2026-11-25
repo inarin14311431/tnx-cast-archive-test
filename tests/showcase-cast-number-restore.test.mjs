@@ -53,7 +53,7 @@ test("character sheet import maps canonical warehouse data onto manual cast fiel
     personal: { age: "24", gender: "男" },
     styles: { style_1: "カタナ", style_1_mark: "◎", style_2: "カブト", style_2_mark: "●", style_3: "", style_3_mark: "" }
   });
-  assert.deepEqual(fields, { name: "“一振り” ワンズ", styles: "カタナ◎ / カブト●", player: "キカイ", affiliation: "フリーランス", age: "24", gender: "男", rank: "B-" });
+  assert.deepEqual(fields, { handle: "一振り", name: "ワンズ", handleKana: "", nameKana: "", styles: "カタナ◎ / カブト●", player: "キカイ", affiliation: "フリーランス", age: "24", gender: "男", rank: "B-" });
 });
 
 test("generator wires CAST No, sheet import and restore through the shared helpers", async () => {

@@ -113,7 +113,7 @@ MobileはPCと同じDOMを再利用するのではなく、Mobile UI adapterと�
   `sheet-baseline-adjustment.js` の `resolveStyleBaselineValue()` を利用(旧基準値のままか0なら新基準値に追従、
   上げた値はそのまま残す)。モバイルで「新基準値＋成長分」に作り直すと経験点がPCとずれる
 - CS(基礎値・最終値・保存する `cs_base`): `sheet-sidebar-actions.js`(PC)と
-  `sheet-mobile-ability.js` が `sheet-ability-calculation.js` の `calculateCombatSpeed()` を利用
+  `sheet-mobile-ability.js` が `sheet-ability-calculation.js` の `calculateCombatSpeed()` を利用。能力値は装備・手動の補正を含めない(倉庫と同じ)
 
 つまり「画面は別、ルールは共有」が基本形である。
 
@@ -203,6 +203,15 @@ DB履歴は `supabase/migrations-manifest.json` をrepository側の順序契約�
 - legacy backup/import
 
 外部キーを内部DB schemaへそのまま増殖させない。
+
+### 倉庫への転記(URLの#)
+
+- `js/transfer-fragment.js` が `#tnxcast=v1.<base64url(gzip(JSON))>` の生成と解釈を持つ(閲覧画面とBMの共通)。データは種別(新規=キーなし / 更新=キーあり)・倉庫シートのキー・転記TSV。種別は倉庫URLの有無で決まる。
+- `js/tnx-transfer-bookmarklet.js` は # を読んだ直後にURLから消し、キーを照合してから入力する。# が不正なときはクリップボードに戻らない。# がないときだけ、キャスト名の確認後にクリップボードのTSVを使う。
+- 能力値・CSの合計は書かない。成長(上昇)と装備補正を渡し、倉庫の `styleChange()` に計算させる(`js/transfer-ability-inputs.js`)。装備補正0では倉庫の値を消さない。
+- 基本の入力処理は `js/tnx-transfer-base.js`、補正は `tnx-transfer-*.js` が持つ。補正がすべて終わってから完了を表示する。
+- 転記TSVのコピーは編集画面(未保存の内容)と、圧縮非対応ブラウザだけに出す。
+- 倉庫への送信・自動保存はしない。保存はユーザーが倉庫のボタンで行う。
 
 ## 10. Navigation context
 

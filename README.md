@@ -24,3 +24,8 @@ npm run verify
 `npm run verify` は静的監査、runtime契約、セキュリティ、マイグレーション、Node回帰テスト等をまとめて確認します。
 
 Playwrightの実行方法やE2E分類、共有DBへの書込み制限・復元条件は [`docs/TESTING_STRATEGY.md`](docs/TESTING_STRATEGY.md) を参照してください。
+
+## サードパーティライセンス
+
+`js/vendor/supabase-js.js` は、Supabase の各パッケージなど MIT License のソフトウェアを同梱しています。著作権表示とライセンス本文は
+[`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) を参照してください。
