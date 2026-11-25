@@ -140,7 +140,7 @@ jobs:
         run: npm install
       - name: Download the shards' JSON reports
         if: needs.act-showcase-changes.outputs.run == 'true'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: act-showcase-json-*
           path: shard-reports
