@@ -34,7 +34,7 @@ async function initialize() {
   if (castLabel) castLabel.textContent = `CAST ID ${publicId}`;
   if (backLink) backLink.href = `./cast.html?id=${encodeURIComponent(publicId)}`;
 
-  await import("./transfer-tsv-export.js?v=d9b152b9");
+  await import("./transfer-tsv-export.js?v=45a2f45f");
 
   const transferButton = document.querySelector("#transfer-tsv-copy-button");
   const originalBookmarkletButton = document.querySelector("#transfer-bookmarklet-copy-button");
@@ -51,6 +51,8 @@ async function initialize() {
 
   bookmarkletSlot?.append(bookmarkletButton);
   tsvSlot?.append(transferButton);
+  const openButton = document.querySelector("#transfer-open-button");
+  if (openButton) document.querySelector("#mobile-transfer-open-slot")?.append(openButton);
 
   bookmarkletButton.addEventListener("click", copyMobileBookmarklet);
   observeTransferState(transferButton);

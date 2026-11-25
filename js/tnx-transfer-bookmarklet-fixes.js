@@ -1,4 +1,4 @@
-(async()=>{
+window.TNXTransferFixesDone=(async()=>{
   const FORMAT="TNX_CAST_TRANSFER_TSV";
   const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -297,5 +297,6 @@
     }
   }catch(error){
     console.error("TNX transfer fix failed",error);
+    throw error;
   }
 })();
