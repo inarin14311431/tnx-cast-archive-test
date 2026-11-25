@@ -167,7 +167,34 @@
     }
   }
 
+  // Gear 0 may only mean that an import dropped it, so it never clears what the sheet already has.
+  function setAbilityInput(id,value,keepWhenZero){
+    const element=document.getElementById(id);
+    if(!element){results.missing++;return}
+    const next=Number(value)||0;
+    if(Number(element.value)===next||(keepWhenZero&&next===0))return;
+    setElement(element,next===0?"":next);results.set++;
+  }
+
+  // The sheet calculates the totals itself from the styles, growth and gear.
+  function setAbilityInputs(abilities){
+    for(const key of ["reason","passion","life","mundane"]){
+      const data=abilities[key];
+      setAbilityInput(`ability.up.${key}.abl`,data.up,false);
+      setAbilityInput(`ability.up.${key}.ctl`,data.up_control,false);
+      setAbilityInput(`ability.outfits.${key}.abl`,data.gear,true);
+      setAbilityInput(`ability.outfits.${key}.ctl`,data.gear_control,true);
+    }
+    setAbilityInput("ability.outfits.cs",abilities.cs?.gear,true);
+    window.styleChange();
+  }
+
   function setAbilities(abilities){
+    const hasInputs=["reason","passion","life","mundane"].every(key=>clean(abilities[key]?.up)!=="");
+    if(hasInputs&&typeof window.styleChange==="function"&&document.getElementById("ability.up.reason.abl")){
+      setAbilityInputs(abilities);
+      return;
+    }
     for(const key of ["reason","passion","life","mundane"]){
       const data=abilities[key]||{};
       setPath([`ability.${key}.abl`,`ability.${key}.value`,`abilities.${key}.value`],data.value,false);
