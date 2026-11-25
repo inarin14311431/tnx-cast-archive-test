@@ -32,7 +32,7 @@ async function initialize() {
   if (castLabel) castLabel.textContent = `CAST ID ${publicId}`;
   if (backLink) backLink.href = `./cast.html?id=${encodeURIComponent(publicId)}`;
 
-  await import("./transfer-tsv-export.js?v=6eb55c68");
+  await import("./transfer-tsv-export.js?v=ea37be54");
 
   // Exactly one exists: the transfer button, or TSV copy where the browser cannot build the fragment.
   const openButton = document.querySelector("#transfer-open-button");
