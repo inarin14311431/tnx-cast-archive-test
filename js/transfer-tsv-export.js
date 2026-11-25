@@ -1,5 +1,6 @@
 import { supabase } from "./supabase-client.js";
 import { buildTransferUrl, supportsTransferFragment, transferModeFor } from "./transfer-fragment.js?v=7897a816";
+import { transferAbilityInputs } from "./transfer-ability-inputs.js?v=77d5e7ba";
 
 const FORMAT = "TNX_CAST_TRANSFER_TSV";
 const VERSION = "1";
@@ -181,7 +182,7 @@ async function fetchBundle(id) {
   ]);
   if (skillError) throw skillError;
   if (outfitError) throw outfitError;
-  return { character, skills: skills || [], outfits: (outfits || []).map(normalizeOutfit) };
+  return { character, skills: skills || [], outfits: (outfits || []).map(normalizeOutfit), abilityInputs: transferAbilityInputs(character) };
 }
 
 function value(id) {
@@ -227,6 +228,13 @@ function collectEditorBundle() {
     mundane_control: textNumber("mundane-control-final"),
     cs: textNumber("cs-final")
   };
+  for (const key of ["reason", "passion", "life", "mundane"]) {
+    character[`${key}_base`] = Number(value(`${key}-base`) || 0);
+    character[`${key}_gear`] = Number(value(`${key}-mod`) || 0);
+    character[`${key}_control_base`] = Number(value(`${key}-control-base`) || 0);
+    character[`${key}_control_gear`] = Number(value(`${key}-control-mod`) || 0);
+  }
+  character.cs_gear = Number(value("cs-mod") || 0);
 
   for (let index = 1; index <= 3; index += 1) {
     character[`style_${index}`] = value(`style-${index}`);
@@ -291,7 +299,7 @@ function collectEditorBundle() {
     });
   }).filter(outfit => outfit.name.trim());
 
-  return { character, skills, outfits };
+  return { character, skills, outfits, abilityInputs: transferAbilityInputs(character) };
 }
 
 function normalizeOutfit(outfit) {
@@ -400,7 +408,7 @@ function escapeCell(value) {
     .replace(/\r?\n/g, "\\n");
 }
 
-function createTransferTsv({ character, skills, outfits }) {
+function createTransferTsv({ character, skills, outfits, abilityInputs = null }) {
   if (!String(character.character_name || "").trim()) throw new Error("キャスト名が入力されていません。");
   const rows = [[FORMAT, VERSION, "section", "index", "field", "value"]];
   const add = (section, index, field, value) => rows.push([FORMAT, VERSION, section, String(index), field, escapeCell(value)]);
@@ -433,6 +441,9 @@ function createTransferTsv({ character, skills, outfits }) {
     add("ability", key, "control", control || 0);
   });
   add("ability", "cs", "value", character.cs ?? character.cs_base ?? 0);
+  for (const [key, inputs] of Object.entries(abilityInputs || {})) {
+    for (const [field, val] of Object.entries(inputs)) add("ability", key, field, val);
+  }
 
   const orderedGeneral = [...skills.filter(skill => skill.category === "general")].sort((a, b) => {
     const ai = GENERAL_ORDER.indexOf(a.name), bi = GENERAL_ORDER.indexOf(b.name);
