@@ -113,7 +113,7 @@ MobileはPCと同じDOMを再利用するのではなく、Mobile UI adapterと�
   `sheet-baseline-adjustment.js` の `resolveStyleBaselineValue()` を利用(旧基準値のままか0なら新基準値に追従、
   上げた値はそのまま残す)。モバイルで「新基準値＋成長分」に作り直すと経験点がPCとずれる
 - CS(基礎値・最終値・保存する `cs_base`): `sheet-sidebar-actions.js`(PC)と
-  `sheet-mobile-ability.js` が `sheet-ability-calculation.js` の `calculateCombatSpeed()` を利用
+  `sheet-mobile-ability.js` が `sheet-ability-calculation.js` の `calculateCombatSpeed()` を利用。能力値は装備・手動の補正を含めない(倉庫と同じ)
 
 つまり「画面は別、ルールは共有」が基本形である。
 
