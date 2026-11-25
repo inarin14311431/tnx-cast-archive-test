@@ -62,15 +62,20 @@
     return fragment;
   }
 
+  // Empty on the blank page that registers a new sheet.
+  function pageKey(){
+    return new URLSearchParams(location.search).get("key")||"";
+  }
+
   async function readFragment(fragment){
     let module;
     try{module=await import(localResource("transfer-fragment.js"))}
-    catch{throw transferError("転記スクリプトを読み込めませんでした。入力していません。\nCAST ARCHIVEの「転記」ボタンから開き直してください。")}
+    catch{throw transferError("転記スクリプトを読み込めませんでした。入力していません。\nCAST ARCHIVEの転記ボタンから開き直してください。")}
     let payload;
     try{payload=await module.decodeTransferFragment(fragment)}
-    catch(error){throw transferError(`${error?.userMessage||"転記データを読み取れませんでした。"}入力していません。\nCAST ARCHIVEの「転記」ボタンから開き直してください。`)}
-    if(payload.key!==new URLSearchParams(location.search).get("key")){
-      throw transferError("転記データと、開いているシートが一致しません。入力していません。\nCAST ARCHIVEの「転記」ボタンから開き直してください。");
+    catch(error){throw transferError(`${error?.userMessage||"転記データを読み取れませんでした。"}入力していません。\nCAST ARCHIVEの転記ボタンから開き直してください。`)}
+    if(payload.key!==pageKey()){
+      throw transferError("転記データと、開いているシートが一致しません。入力していません。\nCAST ARCHIVEの転記ボタンから開き直してください。");
     }
     return payload.tsv;
   }
@@ -80,7 +85,7 @@
     try{text=await navigator.clipboard.readText()}
     catch{text=prompt("転記TSVを貼り付けてください。","")||""}
     if(!text.startsWith(`${FORMAT}\t`)){
-      throw transferError("転記データがありません。CAST ARCHIVEの「転記」ボタンから開き直してください。\n倉庫URLのないキャストは、先に「転記TSV」を押してください。");
+      throw transferError("転記データがありません。CAST ARCHIVEの転記ボタンから開き直してください。");
     }
     const name=text.match(/^TNX_CAST_TRANSFER_TSV\t[^\t]*\tbase\t0\tname\t([^\r\n]*)/m)?.[1]||"名称不明";
     if(!confirm(`クリップボードの転記データ「${name}」を、このシートに入力しますか？`))return null;
@@ -89,12 +94,12 @@
 
   // The editor fills its form over AJAX; writing before that finishes would be overwritten.
   async function waitForSheetLoaded(){
-    if(!new URLSearchParams(location.search).get("key")||!("originData" in window))return;
+    if(!pageKey()||!("originData" in window))return;
     for(let attempt=0;attempt<150;attempt++){
       if(window.originData!=null)return;
       await new Promise(resolve=>setTimeout(resolve,100));
     }
-    throw transferError("シートの読み込みが終わりません。入力していません。\nCAST ARCHIVEの「転記」ボタンから開き直してください。");
+    throw transferError("シートの読み込みが終わりません。入力していません。\nCAST ARCHIVEの転記ボタンから開き直してください。");
   }
 
   function showProgress(message){
@@ -172,7 +177,7 @@
     if(transferText===null)return;
     transferText=normalizeStyleSeparatorLevels(transferText);
     if(!transferText.startsWith(`${FORMAT}\t`)||countTransferRows(transferText)<=1){
-      throw transferError("転記データに中身がありません。入力していません。\nCAST ARCHIVEの「転記」ボタンから開き直してください。");
+      throw transferError("転記データに中身がありません。入力していません。\nCAST ARCHIVEの転記ボタンから開き直してください。");
     }
 
     progress=showProgress("転記中です。完了の表示が出るまで保存しないでください。");
@@ -197,7 +202,10 @@
 
     progress.remove();
     const missing=results.missing?`\n（入力先が見つからなかった項目：${results.missing}件）`:"";
-    alert(`${tracker.count()}項目を入力しました。保存してください。${missing}`);
+    const note=pageKey()
+      ?"別のシートとして残すときは「コピーして登録」を押してください（リストに載せない状態で登録されます）。"
+      :"登録後に表示されるページのURLを、CAST ARCHIVEの倉庫URL欄に保存してください。次から更新転記になります。";
+    alert(`${tracker.count()}項目を入力しました。保存してください。\n\n${note}${missing}`);
   }catch(error){
     console.error("TNX transfer failed",error);
     alert(error?.userFacing?error.message:`転記に失敗しました。保存せずに開き直してください。\n${error?.message||error}`);
