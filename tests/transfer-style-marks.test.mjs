@@ -13,14 +13,18 @@ const body = source.slice(normalizeStart, end);
 function run(marks, before = ["", "", ""]) {
   const controls = Object.fromEntries(before.map((value, index) => [`styles.pk${index + 1}`, { value }]));
   let styleChanges = 0;
+  controls["ability.reason.abl"] = { value: "9" };
+  controls["ability.cs"] = { value: "12" };
   vm.runInNewContext(`${body}; repairStyleMarks(list);`, {
     list: marks.map(mark => ({ mark })),
     clean: value => String(value ?? "").trim(),
     notify() {},
     document: { getElementById: id => controls[id] || null },
-    window: { styleChange: () => { styleChanges += 1; } }
+    window: { styleChange: () => { styleChanges += 1; controls["ability.reason.abl"].value = "4"; controls["ability.cs"].value = "1"; } }
   });
-  return { values: Object.values(controls).map(control => control.value), styleChanges };
+  assert.equal(controls["ability.reason.abl"].value, "9", "redrawing the marks must keep the transferred abilities");
+  assert.equal(controls["ability.cs"].value, "12");
+  return { values: [1, 2, 3].map(index => controls[`styles.pk${index}`].value), styleChanges };
 }
 
 test("persona and key marks map to the sheet's pk values and redraw once", () => {

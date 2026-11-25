@@ -96,6 +96,27 @@
     setElement(element,value);results.set++;return true;
   }
 
+  // Every cast starts with the default birthplace, and imports never set it, so the default only fills
+  // an empty field and never replaces what the sheet already says.
+  const DEFAULT_BIRTHPLACE="Ｎ◎ＶＡ";
+  function setBirthplace(value){
+    const birthplace=clean(value);
+    const element=document.getElementById("base.birth");
+    if(!birthplace||!element)return;
+    if(birthplace===DEFAULT_BIRTHPLACE&&clean(element.value))return;
+    setElement(element,birthplace);results.set++;
+  }
+
+  // Only a listed element may be selected: the sheet's own recalculation fails on any other value.
+  function setUtsuwaElement(style,position){
+    const attribute=clean(style.attribute);
+    const element=document.getElementById(`styles.utsuwa.element${position+1}`);
+    if(!attribute||clean(style.name)!=="ウツワ"||!element)return false;
+    const option=[...element.options].find(item=>clean(item.value)===attribute||clean(item.textContent)===attribute);
+    if(!option)return false;
+    element.value=option.value;notify(element);results.set++;return true;
+  }
+
   function setBase(base){
     const mappings={
       player:["base.player","player"],rank:["base.rank","rank"],name:["base.name","name"],kana:["base.namekana","base.kana","kana"],
@@ -105,6 +126,7 @@
       lifepath_origin:["base.lifepath.experience","base.lifepath.origin"],lifepath_experience:["base.lifepath.environment"],lifepath_encounter:["base.lifepath.encounter","base.lifepath.encouter"]
     };
     for(const [field,paths] of Object.entries(mappings))setPath(paths,base[field]);
+    setBirthplace(base.birthplace);
   }
 
   const STYLE_NAMES=["カブキ","カタナ","バサラ","タタラ","ミストレス","カブト","カリスマ","マネキン","カゼ","フェイト","クロマク","エグゼク","クグツ","カゲ","チャクラ","レッガー","カブトワリ","ハイランダー","マヤカシ","トーキー","イヌ","ニューロ","ヒルコ","コモン","クロガネ","イブキ","シキガミ","アラシ","カゲムシャ","ミギウデ","エトランゼ","アヤカシ","ウツワ"];
@@ -134,7 +156,7 @@
       const index=detectedIndexes[position]??(position===0?"0":String(position).padStart(3,"0"));
       const styleControl=findControl([`styles.${index}.name`,`style.${index}.name`,`styles.${index}.style`,`style.${index}.style`])||fallbacks[position];
       if(styleControl&&clean(style.name)){setElement(styleControl,style.name);results.set++}else if(clean(style.name))results.missing++;
-      setPath([`styles.${index}.attribute`,`style.${index}.attribute`,`styles.${index}.utsuwa`],style.attribute);
+      if(!setUtsuwaElement(style,position))setPath([`styles.${index}.attribute`,`style.${index}.attribute`,`styles.${index}.utsuwa`],style.attribute);
       setPath([`styles.${index}.mark`,`style.${index}.mark`,`styles.${index}.symbol`],style.mark);
       const prefixes=[`styles.${index}.`,`style.${index}.`];
       for(const [key,element] of controlMap){
@@ -247,7 +269,7 @@
   function outfitRecord(record){
     return {
       name:record.name,purchase:record.purchase,permanent:record.permanent,concealA:record.concealA,concealB:record.concealB,
-      attack:record.attack,range:record.range,slot:record.slot,control:record.control,electrical_control:record.electrical_control,
+      attack:record.attack,defense:record.category==="weapon"?record.defense:"",range:record.range,slot:record.slot,control:record.control,electrical_control:record.electrical_control,
       protecS:record.protecS,protecP:record.protecP,protecI:record.protecI,crew:record.crew,sf:record.sf,entry:record.entry,
       part:record.part,notes:record.notes,page:record.page
     };
