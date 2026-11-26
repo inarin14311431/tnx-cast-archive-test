@@ -63,12 +63,14 @@ jobs:
         id: detect
         run: node scripts/e2e-changed-groups.mjs ci-act-showcase
 
-  # The suite takes about 35 minutes in one piece, so it runs as 3 shards (Playwright's --shard) on separate runners. The
-  # shards do not share a CPU, which matters for the specs that measure animation timing. The job below, named "Act showcase E2E"
-  # like before, is the one the branch protection requires: it passes when the shards were not needed, and otherwise only when
-  # every shard passed AND the shards together ran exactly the tests of the suite (scripts/summarize-e2e-shards.mjs).
+  # The suite takes about 45 minutes in one piece, so it runs as 4 shards on separate runners. The spec files are dealt out by
+  # their run time (tests/e2e/shard-weights.json, scripts/e2e-shard-plan.mjs), so the shards take about the same time; Playwright's
+  # own --shard would cut by the number of tests. The shards do not share a CPU, which matters for the specs that measure animation
+  # timing. The job below, named "Act showcase E2E" like before, is the one the branch protection requires: it passes when the
+  # shards were not needed, and otherwise only when every shard passed AND ran the spec files planned for it AND the shards
+  # together ran exactly the tests of the suite (scripts/summarize-e2e-shards.mjs).
   act-showcase-shard:
-    name: Act showcase E2E shard ${{ matrix.shard }}/3
+    name: Act showcase E2E shard ${{ matrix.shard }}/4
     needs: act-showcase-changes
     if: needs.act-showcase-changes.outputs.run == 'true'
     runs-on: ubuntu-latest
@@ -77,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -92,7 +94,7 @@ jobs:
       - name: Run ACT SHOWCASE tests (shard)
         run: npm run e2e:ci-act-showcase
         env:
-          E2E_SHARD: ${{ matrix.shard }}/3
+          E2E_SHARD: ${{ matrix.shard }}/4
           PLAYWRIGHT_JSON_OUTPUT_NAME: shard-${{ matrix.shard }}.json
       - name: Upload ACT SHOWCASE Playwright report
         if: always()
@@ -147,7 +149,7 @@ jobs:
           merge-multiple: true
       - name: The shards ran every test of the suite, once
         if: needs.act-showcase-changes.outputs.run == 'true'
-        run: node scripts/summarize-e2e-shards.mjs ci-act-showcase 3 shard-reports
+        run: node scripts/summarize-e2e-shards.mjs ci-act-showcase 4 shard-reports
 
   authenticated-editor:
     name: Authenticated editor E2E

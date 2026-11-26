@@ -4,13 +4,15 @@
  *
  * Each shard writes a Playwright JSON report. This counts the tests in them (the `setup` project, which every shard runs, is
  * left out), compares the sum with what `playwright test --list` finds for the whole suite, and compares the test titles, so
- * "the same number" cannot hide a test that ran twice while another did not run. Writes a table to $GITHUB_STEP_SUMMARY.
+ * "the same number" cannot hide a test that ran twice while another did not run. It also checks that shard N ran the spec files
+ * planned for it (scripts/e2e-shard-plan.mjs, the same plan the shard jobs used). Writes a table to $GITHUB_STEP_SUMMARY.
  * Exits 1 on any difference, on a missing shard, and on a failed or skipped test.
  */
 import { execFileSync } from "node:child_process";
 import { appendFileSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { loadWeights, planShards, toSuitePath } from "./e2e-shard-plan.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -47,6 +49,24 @@ export function compareShards({ expectedIds, shards }) {
   return { problems, total: [...seen.values()].reduce((a, b) => a + b, 0) };
 }
 
+// Shard N has to have run exactly the spec files the plan gives it. `shards` are { index, tests: [{ id }] } (the id starts with the spec file).
+export function compareShardPlan({ plan, shards }) {
+  const problems = [];
+  for (const shard of shards) {
+    if (!Number.isInteger(shard.index) || !plan[shard.index - 1]) {
+      problems.push(`cannot tell which shard report ${shard.file} is (the name has to be shard-<number>.json, number 1-${plan.length})`);
+      continue;
+    }
+    const planned = new Set(plan[shard.index - 1].files);
+    const ran = new Set(shard.tests.map(test => toSuitePath(test.id.split(" :: ")[0])));
+    const unplanned = [...ran].filter(file => !planned.has(file));
+    const notRun = [...planned].filter(file => !ran.has(file));
+    if (unplanned.length) problems.push(`shard ${shard.index} ran files that are not in its plan (${unplanned.length}): ${unplanned.slice(0, 5).join(" | ")}`);
+    if (notRun.length) problems.push(`shard ${shard.index} did not run files of its plan (${notRun.length}): ${notRun.slice(0, 5).join(" | ")}`);
+  }
+  return problems;
+}
+
 function listSuite(group, manifest) {
   const { tests, project } = manifest.groups[group];
   const output = execFileSync("npx", ["playwright", "test", "--list", "--reporter=json", ...tests, `--project=${project}`], {
@@ -67,19 +87,22 @@ function main() {
   const shards = files.map(file => {
     const report = JSON.parse(readFileSync(file, "utf8"));
     const tests = collectTests(report);
-    return { file: path.basename(file), tests, duration: Math.round((report.stats?.duration || 0) / 1000), flaky: tests.filter(test => test.status === "flaky") };
-  });
+    const name = path.basename(file);
+    return { file: name, index: Number(name.match(/^shard-(\d+)\.json$/)?.[1]), tests, duration: Math.round((report.stats?.duration || 0) / 1000), flaky: tests.filter(test => test.status === "flaky") };
+  }).sort((a, b) => a.index - b.index);
 
   const expectedIds = listSuite(group, manifest);
   const { problems, total } = compareShards({ expectedIds, shards });
+  const plan = planShards({ files: manifest.groups[group].tests, weights: loadWeights(), count: shardCount });
+  problems.push(...compareShardPlan({ plan, shards }));
   if (shards.length !== shardCount) problems.unshift(`expected ${shardCount} shard report(s), found ${shards.length}`);
 
   const lines = [
     `### ${group}: ${shards.length}/${shardCount} shards, ${total} tests run, ${expectedIds.length} in the suite (\`playwright test --list\`)`,
     "",
-    "| shard report | tests | time (s) | flaky (passed on retry) |",
-    "|---|---|---|---|",
-    ...shards.map(shard => `| ${shard.file} | ${shard.tests.length} | ${shard.duration} | ${shard.flaky.length} |`),
+    "| shard report | spec files | tests | planned (s) | time (s) | flaky (passed on retry) |",
+    "|---|---|---|---|---|---|",
+    ...shards.map(shard => `| ${shard.file} | ${plan[shard.index - 1]?.files.length ?? "?"} | ${shard.tests.length} | ${Math.round(plan[shard.index - 1]?.seconds ?? 0)} | ${shard.duration} | ${shard.flaky.length} |`),
     "",
     problems.length ? problems.map(problem => `- **NG** ${problem}`).join("\n") : "- every test of the suite ran exactly once, and none failed or was skipped"
   ];
