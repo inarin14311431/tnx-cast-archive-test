@@ -314,13 +314,19 @@ AIや新規担当者が「何が完了済みで、何が途中か」を誤認し
 その後進む。固定値を最新mainと解釈しないこと。テスト・CI構成の同期は別で、意図的に同期しない
 (`AGENTS.md`参照)。
 
-## 2. 開いているPRとbranch(2026-10-16確認)
+## 2. 開いているPRとbranch
 
-- 開いているPR: Dependabotの依存更新のみ。検証 #560(`@fontsource/noto-sans-jp` 5.3.1)・#561(`@playwright/test` 1.64.0)、
-  本番 #208(同 noto-sans-jp)・#209(同 playwright)。いずれも未マージで、runtimeには関係しない。
-  Playwright 1.64 への更新(検証 #568)は見送りでクローズ済み。経緯と再開時の前提は `docs/TESTING_STRATEGY.md` 第8節。
-- 残っているbranch: 検証は `main`・`visual-regression-baseline` と上記Dependabot 2本。本番は `main`・`dashboard-data` と
-  上記Dependabot 2本。
+- 開いているPR・branchの最新は、この資料ではなく GitHub で確かめる。一覧はすぐ古くなるので、資料には置かない。
+- 常に残すbranch:
+  - 検証 `visual-regression-baseline`: 画面比較の基準画像。削除しない。
+  - 本番 `dashboard-data`: bot が更新する本番専用の記録。削除しない。
+- Dependabot の扱い:
+  - CI設定だけの更新(GitHub Actions の版)は、CIが green ならマージしてよい。例: 2026-11-26 検証 #747(`actions/download-artifact` v8)。
+    v8 の download が v7 の upload を読めることを確認済み。
+  - `@playwright/test`・`@fontsource/noto-sans-jp` は単独でマージしない(`docs/TESTING_STRATEGY.md`「フォント固定用の依存」)。
+  - `@supabase/supabase-js` は、`package.json` だけ上げても実際に使う `js/vendor/supabase-js.js` が変わらないので、単独ではマージしない。
+    上げるときは、vendor の作り直しと `THIRD_PARTY_LICENSES.md` の更新を合わせる。
+- 2026-11-26 に、不要なDependabot PR(検証 #749・#760、本番 #288)を閉じ、古いbranchを両repoで削除した。
 - 他の未PR branchは本資料で維持しない。再開前に必ず最新mainとのdiffを確認し、branch名だけで
   「変更済み/不要」と判断しないこと。
 
