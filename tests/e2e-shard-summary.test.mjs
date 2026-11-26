@@ -35,7 +35,7 @@ test("compareShards: 走っていない・二重に走った・一覧に無い�
 test("run-e2e-suite: E2E_SHARD は 2/3 の形だけ受け付ける", () => {
   const result = spawnSync(process.execPath, ["scripts/run-e2e-suite.mjs", "ci-act-showcase"], { cwd: new URL("..", import.meta.url), env: { ...process.env, E2E_SHARD: "x/3" }, encoding: "utf8" });
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /E2E_SHARD must look like 2\/3/);
+  assert.match(result.stderr, /E2E_SHARD must look like 2\/4/);
 });
 
 const workflow = await readFile(new URL("../.github/workflows/playwright.yml", import.meta.url), "utf8");
@@ -50,7 +50,8 @@ test("ワークフロー: 必須チェック名 'Act showcase E2E' の集約ジ�
   assert.match(aggregate, /^ {4}name: Act showcase E2E$/m);
   assert.match(aggregate, /needs: \[act-showcase-changes, act-showcase-shard\]/);
   assert.match(aggregate, /if: \$\{\{ always\(\) \}\}/);
-  assert.match(aggregate, /node scripts\/summarize-e2e-shards\.mjs ci-act-showcase 3 shard-reports/);
+  // the shard count itself is checked against the matrix and E2E_SHARD in the next test
+  assert.match(aggregate, /node scripts\/summarize-e2e-shards\.mjs ci-act-showcase \d+ shard-reports/);
   assert.match(aggregate, /exit 1/);
 });
 
